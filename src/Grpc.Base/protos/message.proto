@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package Grpc.Base;
+
+service MessageCall {
+  rpc DuplexStreamingServerMethod (stream StreamBuffer) returns (stream StreamBuffer) {}
+}
+
+message StreamBuffer {
+    bytes body = 1;
+}

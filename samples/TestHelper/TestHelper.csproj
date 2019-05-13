@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Nrpc.Grpc\Nrpc.Grpc.csproj" />
+    <ProjectReference Include="..\..\src\Nrpc.RabbitMQ\Nrpc.RabbitMQ.csproj" />
+    <ProjectReference Include="..\..\src\Nrpc\Nrpc.csproj" />
+  </ItemGroup>
+
+</Project>
