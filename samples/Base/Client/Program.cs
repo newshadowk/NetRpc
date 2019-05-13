@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
+using Nrpc;
 using Nrpc.RabbitMQ;
 using Helper = TestHelper.Helper;
 
@@ -19,13 +18,29 @@ namespace Client
 
         static void Main(string[] args)
         {
+            //RabbitMQ
             Console.WriteLine("---  [RabbitMQ]  ---");
             var mqF = new ClientConnectionFactory(Helper.GetMQParam());
-            _proxy = NRpcManager.CreateClientProxy<IService>(mqF).Proxy;
+            var clientProxy = NRpcManager.CreateClientProxy<IService>(mqF);
+            clientProxy.Connected += (s, e) => Console.WriteLine("[event] Connected");
+            clientProxy.DisConnected += (s, e) => Console.WriteLine("[event] DisConnected");
+            clientProxy.ExceptionInvoked += (s, e) => Console.WriteLine("[event] ExceptionInvoked");
+
+            //Heartbeat
+            clientProxy.Heartbeat += async s =>
+            {
+                Console.WriteLine("[event] Heartbeat");
+                s.Proxy.Hearbeat();
+            };
+            clientProxy.StartHeartbeat(true);
+
+            _proxy = clientProxy.Proxy;
             _proxyAsync = NRpcManager.CreateClientProxy<IServiceAsync>(mqF).Proxy;
             RunTest();
             RunTestAsync().Wait();
 
+
+            //Grpc
             Console.WriteLine("\r\n--- [Grpc]  ---");
             var grpcF = new Nrpc.Grpc.ClientConnectionFactory("localhost", 50001);
             _proxy = Nrpc.Grpc.NRpcManager.CreateClientProxy<IService>(grpcF).Proxy;
@@ -35,6 +50,11 @@ namespace Client
 
             Console.WriteLine("Test end.");
             Console.Read();
+        }
+
+        private static void ClientProxy_Connected(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         #region Test
@@ -65,7 +85,7 @@ namespace Client
         {
             CustomObj obj = new CustomObj { Date = DateTime.Now, Name = "test" };
             Console.Write($"[CallByGeneric], send:{obj}, receive:");
-            var ret = _proxy.CallByGeneric<CustomObj, int>(obj);
+            var ret = _proxy.CallByGenericType<CustomObj, int>(obj);
             Console.WriteLine($"{ret}");
         }
 

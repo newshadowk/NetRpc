@@ -5,9 +5,11 @@ namespace DataContract
 {
     public interface IService
     {
+        void Hearbeat();
+
         void FilterAndHeader();
 
-        T2 CallByGeneric<T1, T2>(T1 obj);
+        T2 CallByGenericType<T1, T2>(T1 obj);
 
         CustomObj SetAndGetObj(CustomObj obj);
 

@@ -14,21 +14,24 @@ namespace Nrpc
         public event EventHandler<EventArgsT<Exception>> ExceptionInvoked;
         private readonly object LockObj = new object();
         private readonly IConnectionFactory _factory;
+        private readonly int _hearbeatInterval;
         private bool _isConnected;
         public event Func<ClientProxy<TService>, Task> Heartbeat;
-        private readonly Timer _tHearbeat = new Timer(1000 * 10);
+        private readonly Timer _tHearbeat;
 
         public NrpcContext Context { get; } = new NrpcContext();
 
         public TService Proxy { get; }
 
-        public ClientProxy(IConnectionFactory factory, int timeoutInterval)
+        public ClientProxy(IConnectionFactory factory, int timeoutInterval, int hearbeatInterval = 1000 * 10)
         {
             _factory = factory;
+            _hearbeatInterval = hearbeatInterval;
             var call = new Call(factory, timeoutInterval, Context);
             ClientMethodInvoker invoker = new ClientMethodInvoker(call);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
             ((SimpleDispatchProxyAsync)(object)Proxy).ExceptionInvoked += ProxyExceptionInvoked;
+            _tHearbeat = new Timer(hearbeatInterval);
             _tHearbeat.Elapsed += THearbeatElapsed;
         }
 
@@ -65,9 +68,13 @@ namespace Nrpc
             }
         }
 
-        public void StartHeartbeat()
+        public void StartHeartbeat(bool isImmediate = false)
         {
             _tHearbeat.Start();
+            if (isImmediate)
+#pragma warning disable 4014
+                HeartbeatAsync();
+#pragma warning restore 4014
         }
 
         public async Task HeartbeatAsync()

@@ -8,6 +8,11 @@ namespace Service
 {
     internal class Service : IService
     {
+        public void Hearbeat()
+        {
+            Console.WriteLine("[Hearbeat]");
+        }
+
         [TestFilter]
         public void FilterAndHeader()
         {
@@ -15,7 +20,7 @@ namespace Service
             Console.WriteLine($"[TestFilter], Header:{h["k1"]}");
         }
 
-        public T2 CallByGeneric<T1, T2>(T1 obj)
+        public T2 CallByGenericType<T1, T2>(T1 obj)
         {
             Console.WriteLine($"[CallByGeneric], {obj}");
             return default;

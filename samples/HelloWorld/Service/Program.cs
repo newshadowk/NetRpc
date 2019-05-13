@@ -1,10 +1,5 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Runtime.Serialization;
-using System.Threading.Tasks;
 using DataContract;
-using Nrpc;
-using Helper = TestHelper.Helper;
 
 namespace Service
 {
@@ -12,9 +7,8 @@ namespace Service
     {
         static void Main(string[] args)
         {
-            //Helper.OpenRabbitMQService(new Service());
-            var s = Helper.OpenGrpcService(new Service());
-            Console.WriteLine("Service Opened.");
+            var service = Nrpc.Grpc.NRpcManager.CreateServiceProxy("0.0.0.0", 50001, new Service());
+            service.Open();
             Console.Read();
         }
     }
