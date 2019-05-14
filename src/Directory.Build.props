@@ -1,0 +1,5 @@
+﻿<Project>
+  <PropertyGroup>
+     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+</Project>

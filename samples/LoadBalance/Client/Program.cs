@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using DataContract;
-using Nrpc.RabbitMQ;
+using NetRpc.RabbitMQ;
 using Helper = TestHelper.Helper;
 
 namespace Client
@@ -10,7 +10,7 @@ namespace Client
     {
         static void Main(string[] args)
         {
-            var proxy = NRpcManager.CreateClientProxy<IService>(Helper.GetMQParam()).Proxy;
+            var proxy = NetRpcManager.CreateClientProxy<IService>(Helper.GetMQParam()).Proxy;
             var fileStream = File.Open(@"d:\4\1212.pdf", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             for (int i = 0; i < 10; i++)
             {

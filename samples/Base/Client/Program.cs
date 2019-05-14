@@ -5,8 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
-using Nrpc;
-using Nrpc.RabbitMQ;
+using NetRpc.RabbitMQ;
 using Helper = TestHelper.Helper;
 
 namespace Client
@@ -21,7 +20,7 @@ namespace Client
             //RabbitMQ
             Console.WriteLine("---  [RabbitMQ]  ---");
             var mqF = new ClientConnectionFactory(Helper.GetMQParam());
-            var clientProxy = NRpcManager.CreateClientProxy<IService>(mqF);
+            var clientProxy = NetRpcManager.CreateClientProxy<IService>(mqF);
             clientProxy.Connected += (s, e) => Console.WriteLine("[event] Connected");
             clientProxy.DisConnected += (s, e) => Console.WriteLine("[event] DisConnected");
             clientProxy.ExceptionInvoked += (s, e) => Console.WriteLine("[event] ExceptionInvoked");
@@ -35,16 +34,16 @@ namespace Client
             clientProxy.StartHeartbeat(true);
 
             _proxy = clientProxy.Proxy;
-            _proxyAsync = NRpcManager.CreateClientProxy<IServiceAsync>(mqF).Proxy;
+            _proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(mqF).Proxy;
             RunTest();
             RunTestAsync().Wait();
 
 
             //Grpc
             Console.WriteLine("\r\n--- [Grpc]  ---");
-            var grpcF = new Nrpc.Grpc.ClientConnectionFactory("localhost", 50001);
-            _proxy = Nrpc.Grpc.NRpcManager.CreateClientProxy<IService>(grpcF).Proxy;
-            _proxyAsync = Nrpc.Grpc.NRpcManager.CreateClientProxy<IServiceAsync>(grpcF).Proxy;
+            var grpcF = new NetRpc.Grpc.ClientConnectionFactory("localhost", 50001);
+            _proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(grpcF).Proxy;
+            _proxyAsync = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IServiceAsync>(grpcF).Proxy;
             RunTest();
             RunTestAsync().Wait();
 
@@ -76,7 +75,7 @@ namespace Client
 
         private static void Test_FilterAndHeader()
         {
-            Nrpc.NrpcContext.ThreadHeader.CopyFrom(new Dictionary<string, object> { { "k1", "header value" } });
+            NetRpc.NetRpcContext.ThreadHeader.CopyFrom(new Dictionary<string, object> { { "k1", "header value" } });
             Console.Write("[FilterAndHeader], send:k1, header value");
             _proxy.FilterAndHeader();
         }

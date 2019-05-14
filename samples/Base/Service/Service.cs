@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using DataContract;
-using Nrpc;
+using NetRpc;
 
 namespace Service
 {
@@ -16,7 +16,7 @@ namespace Service
         [TestFilter]
         public void FilterAndHeader()
         {
-            var h = NrpcContext.ThreadHeader.Clone();
+            var h = NetRpcContext.ThreadHeader.Clone();
             Console.WriteLine($"[TestFilter], Header:{h["k1"]}");
         }
 

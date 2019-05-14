@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Nrpc;
+using NetRpc;
 
 namespace Service
 {
-    public class TestFilter : NrpcFilterAttribute
+    public class TestFilter : NetRpcFilterAttribute
     {
         public override Task InvokeAsync(ApiContext context)
         {

@@ -7,7 +7,7 @@ namespace Service
     {
         static void Main(string[] args)
         {
-            var service = Nrpc.Grpc.NRpcManager.CreateServiceProxy("0.0.0.0", 50001, new Service());
+            var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy("0.0.0.0", 50001, new Service());
             service.Open();
             Console.Read();
         }

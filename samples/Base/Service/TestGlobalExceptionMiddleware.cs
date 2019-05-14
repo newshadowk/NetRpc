@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Nrpc;
+using NetRpc;
 
 namespace Service
 {

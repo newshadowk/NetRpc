@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
-using Nrpc.RabbitMQ;
+using NetRpc.RabbitMQ;
 using System.Reflection;
 using System.Text;
 
@@ -10,14 +10,14 @@ namespace TestHelper
     {
         public static ServiceProxy OpenRabbitMQService(params object[] instances)
         {
-            var service = NRpcManager.CreateServiceProxy(GetMQParam(), instances);
+            var service = NetRpcManager.CreateServiceProxy(GetMQParam(), instances);
             service.Open();
             return service;
         }
 
-        public static Nrpc.Grpc.ServiceProxy OpenGrpcService(params object[] instances)
+        public static NetRpc.Grpc.ServiceProxy OpenGrpcService(params object[] instances)
         {
-            var service = Nrpc.Grpc.NRpcManager.CreateServiceProxy("0.0.0.0", 50001, instances);
+            var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy("0.0.0.0", 50001, instances);
             service.Open();
             return service;
         }

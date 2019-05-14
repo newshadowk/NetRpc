@@ -1,5 +1,5 @@
-# Nrpc
-Nrpc is a light weight rpc engine base on **RabbitMQ** or **Grpc** targeting .NET Standard 2.0.  It use the simple interface to call each other, contains the load balance mode.
+# NetRpc
+NetRpc is a light weight rpc engine base on **RabbitMQ** or **Grpc** targeting .NET Standard 2.0.  It use the simple interface to call each other, contains the load balance mode.
 
 ![Alt text](nrpc.png)
 
@@ -10,7 +10,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        var service = Nrpc.Grpc.NRpcManager.CreateServiceProxy("0.0.0.0", 50001, new Service());
+        var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy("0.0.0.0", 50001, new Service());
         service.Open();
         Console.Read();
     }
@@ -30,7 +30,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        var proxy = Nrpc.Grpc.NRpcManager.CreateClientProxy<IService>("localhost", 50001).Proxy;
+        var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>("localhost", 50001).Proxy;
         proxy.Call("hello world!");
         Console.Read();
     }
@@ -44,29 +44,29 @@ public interface IService
 }
 ```
 ## Swithch RabbitMQ/Grpc
-* **Nrpc.RabbitMQ.NRpcManager** for **RabbitMQ**.
-* **Nrpc.Grpc.NRpcManager** for **Grpc**.
+* **NetRpc.RabbitMQ.NetRpcManager** for **RabbitMQ**.
+* **NetRpc.Grpc.NetRpcManager** for **Grpc**.
 
 ```c#
 //create RabbitMQ servcie
 var p = new MQParam(host, virtualHost, rpcQueue, port, user, password, prefetchCount);
-var service = Nrpc.RabbitMQ.NRpcManager.CreateServiceProxy(p, instances);
+var service = NetRpc.RabbitMQ.NetRpcManager.CreateServiceProxy(p, instances);
 
 //create Grpc servcie
-var service = Nrpc.Grpc.NRpcManager.CreateServiceProxy("0.0.0.0", 50001, instances);
+var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy("0.0.0.0", 50001, instances);
 ```
 
 ```c#
 //create RabbitMQ client
 var p = new MQParam(host, virtualHost, rpcQueue, port, user, password, prefetchCount);
-var client = Nrpc.RabbitMQ.NRpcManager.CreateClientProxy<IService>(p)
+var client = NetRpc.RabbitMQ.NetRpcManager.CreateClientProxy<IService>(p)
 
 //create Grpc client
-var client = Nrpc.Grpc.NRpcManager.CreateClientProxy<IService>("localhost", 50001)
+var client = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>("localhost", 50001)
 ```
 
 ## Serialization
-Nrpc base on **BinaryFormatter**, make sure all interface model mark as **[Serializable]**.
+NetRpc base on **BinaryFormatter**, make sure all interface model mark as **[Serializable]**.
 ```c#
 [Serializable]
 public class CustomObj
@@ -149,7 +149,7 @@ public interface IServiceAsync
 }
 ```
 ## Sync/Async
-Nrpc could use the both Sync/Async ways to defines the interface.
+NetRpc could use the both Sync/Async ways to defines the interface.
 ```c#
 void SetObj(CustomObj obj);
 Task SetObjAsync(CustomObj obj);
@@ -165,7 +165,7 @@ Header is a type of **Dictionary<string, object>** object, mark sure your object
 Before call method, client set the **ThreadHeader** which mark as **[ThreadStatic]** that guarantee muti-threads don`t influence each other.
 ```c#
 //client
-Nrpc.NrpcContext.ThreadHeader.CopyFrom(new Dictionary<string, object> { { "k1", "header value" } });
+NetRpc.NetRpcContext.ThreadHeader.CopyFrom(new Dictionary<string, object> { { "k1", "header value" } });
 _proxy.TestHeader();
 ```
 Service can receive the header object which client sent.
@@ -173,14 +173,14 @@ Service can receive the header object which client sent.
 //service
 public void TestHeader()
 {
-    var h = NrpcContext.ThreadHeader.Clone();
+    var h = NetRpcContext.ThreadHeader.Clone();
 }
 ```
 * **DefaultHeader**  
 On the client side, when **DefaultHeader** items count > 0, **ThreadHeader** will get the value of **DefaultHeader** when call the remote. This feature is usefull when you wan to transfer a sessionId to service.
 ```c#
 //client
-var client = Nrpc.Grpc.NRpcManager.CreateClientProxy<IService>("localhost", 50001);
+var client = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>("localhost", 50001);
 //set the DefaultHeader with SessionId
 client.Context.DefaultHeader.CopyFrom(new Dictionary<string, object> {{"SessionId", 1}});
 //will tranfer the header of SessionId to service.
@@ -199,7 +199,7 @@ client.Proxy.Call();
 Filter is common function like MVC. 
 ```c#
 //service
-public class TestFilter : NrpcFilterAttribute
+public class TestFilter : NetRpcFilterAttribute
 {
     public override Task InvokeAsync(ApiContext context)
     {
@@ -221,7 +221,7 @@ internal class Service : IService
 Middleware is common function like MVC. 
 ```c#
 //servcie
-var service = Nrpc.Grpc.NRpcManager.CreateServiceProxy("0.0.0.0", 50001, instances);
+var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy("0.0.0.0", 50001, instances);
 serviceProxy.UseMiddleware<TestGlobalExceptionMiddleware>("testArg1");
 
 public class TestGlobalExceptionMiddleware : MiddlewareBase
@@ -294,13 +294,13 @@ public class ComplexStream
 Client should use the **ClientConnectionFactory** manage the connection, that use one connection apply to muti interfaces.
 ```c#
 //service
-var service = Nrpc.Grpc.NRpcManager.CreateServiceProxy("0.0.0.0", 50001, new Servcie1(), new Service2());
+var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy("0.0.0.0", 50001, new Servcie1(), new Service2());
 ```
 ```c#
 //client
-var factory = new Nrpc.Grpc.ClientConnectionFactory("localhost", 50001);
-_proxy = Nrpc.Grpc.NRpcManager.CreateClientProxy<IService1>(factory).Proxy;
-_proxyAsync = Nrpc.Grpc.NRpcManager.CreateClientProxy<IService2>(factory).Proxy;
+var factory = new NetRpc.Grpc.ClientConnectionFactory("localhost", 50001);
+_proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService1>(factory).Proxy;
+_proxyAsync = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService2>(factory).Proxy;
 ```
 ## Event
 **ClientProxy** has events:  
@@ -320,7 +320,7 @@ Client should register the **Heartbeat** event and implement logic of heartbeat.
 According to **Heartbeat** is successfull or faild, **Connected** or **DisConnected** will invoke correspondingly.
 ```c#
 //client set the heartbeat interval to 10*1000
-var proxy = Nrpc.Grpc.NRpcManager.CreateClientProxy<IService>("localhost", 50001, 10*1000).Proxy;
+var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>("localhost", 50001, 10*1000).Proxy;
 clientProxy.Heartbeat += async s => s.Proxy.Hearbeat();
 clientProxy.StartHeartbeat(true);
 ```
@@ -329,7 +329,7 @@ clientProxy.StartHeartbeat(true);
 ```c#
 ComplexStream Call(Stream data, Action<CustomCallbackObj> cb);
 ```
-* **TimeoutInterval** of call is a mechanism of Nrpc owns, it do not use the Grpc or RabbitMQ timeout mechanism.
+* **TimeoutInterval** of call is a mechanism of NetRpc owns, it do not use the Grpc or RabbitMQ timeout mechanism.
 ```c#
 CreateClientProxy<TService>(string host, int port, int timeoutInterval = 1200000)
 ```
