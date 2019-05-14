@@ -1,5 +1,12 @@
 ﻿<Project>
+  <Import Project="version.props" />
   <PropertyGroup>
+    <Authors>ShadowK</Authors>
+    <PackageProjectUrl>https://github.com/newshadowk/NetRpc</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <RepositoryUrl>https://github.com/newshadowk/NetRpc</RepositoryUrl>
      <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 </Project>
