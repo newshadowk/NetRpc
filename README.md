@@ -1,37 +1,39 @@
 # Nrpc
 Nrpc is a light weight rpc engine base on **RabbitMQ** or **Grpc** targeting .NET Standard 2.0.  It use the simple interface to call each other, contains the load balance mode.
 
+![Alt text](nrpc.png)
+
 ## Hello world!
 ```c#
 //service
 class Program
 {
-	static void Main(string[] args)
-	{
-		var service = Nrpc.Grpc.NRpcManager.CreateServiceProxy("0.0.0.0", 50001, new Service());
-		service.Open();
-		Console.Read();
-	}
+    static void Main(string[] args)
+    {
+        var service = Nrpc.Grpc.NRpcManager.CreateServiceProxy("0.0.0.0", 50001, new Service());
+        service.Open();
+        Console.Read();
+    }
 }
 
 internal class Service : IService
 {
-	public void Call(string s)
-	{
-		Console.WriteLine($"Receive: {s}");
-	}
+    public void Call(string s)
+    {
+        Console.WriteLine($"Receive: {s}");
+    }
 }
 ```
 ```c#
 //client
 class Program
 {
-	static void Main(string[] args)
-	{
-		var proxy = Nrpc.Grpc.NRpcManager.CreateClientProxy<IService>("localhost", 50001).Proxy;
-		proxy.Call("hello world!");
-		Console.Read();
-	}
+    static void Main(string[] args)
+    {
+        var proxy = Nrpc.Grpc.NRpcManager.CreateClientProxy<IService>("localhost", 50001).Proxy;
+        proxy.Call("hello world!");
+        Console.Read();
+    }
 }
 ```
 ```c#
@@ -184,7 +186,14 @@ client.Context.DefaultHeader.CopyFrom(new Dictionary<string, object> {{"SessionI
 //will tranfer the header of SessionId to service.
 client.Proxy.Call();
 ```
-
+## ApiContext
+**Midderware** or **Filter** can access **ApiContext**, it is
+| Property | Type | Description |
+| :------- | :--------- | :------------------------------------  |
+| Header | Dictionary\<string object> | Header sent from client. |
+| Target | object | Service instance of invoked mothod.     |
+| Method | MethodInfo | Current invoked Method.      |
+| Args   | object[] | Args of invoked mothod.       |
 ## Filter
 Filter is common function like MVC. 
 ```c#
@@ -200,11 +209,11 @@ public class TestFilter : NrpcFilterAttribute
 
 internal class Service : IService
 {
-	[TestFilter]
-	public void Test()
-	{
-		//...
-	}
+    [TestFilter]
+    public void Test()
+    {
+        //...
+    }
 }
 ```
 ## Middleware
@@ -314,7 +323,7 @@ var proxy = Nrpc.Grpc.NRpcManager.CreateClientProxy<IService>("localhost", 50001
 clientProxy.Heartbeat += async s => s.Proxy.Hearbeat();
 clientProxy.StartHeartbeat(true);
 ```
-## Other
+## Others
 * An interface args can only contains one **Action**, one **Stream**, same as return value.
 ```c#
 ComplexStream Call(Stream data, Action<CustomCallbackObj> cb);
