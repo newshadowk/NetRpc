@@ -188,12 +188,13 @@ client.Proxy.Call();
 ```
 ## ApiContext
 **Midderware** or **Filter** can access **ApiContext**, it is
+
 | Property | Type | Description |
-| :------- | :--------- | :------------------------------------  |
-| Header | Dictionary\<string object> | Header sent from client. |
-| Target | object | Service instance of invoked mothod.     |
-| Method | MethodInfo | Current invoked Method.      |
-| Args   | object[] | Args of invoked mothod.       |
+| :-----   | :--- | :---------- |
+| Header   | Dictionary\<string object> | Header sent from client. |
+| Target   | object                     | Service instance of invoked mothod.|
+| Method   | MethodInfo                 | Current invoked Method.|
+| Args     | object[]                   | Args of invoked mothod.|
 ## Filter
 Filter is common function like MVC. 
 ```c#
