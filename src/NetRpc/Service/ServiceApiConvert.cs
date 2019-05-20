@@ -58,20 +58,32 @@ namespace NetRpc
             if (body is Stream)
                 return SafeSend(new Reply(ReplyType.ResultStream).All);
 
-            var t = CheckSerializable(body);
-            if (t != null)
-                return t;
+            byte[] bytes;
+            try
+            {
+                bytes = body.ToBytes();
+            }
+            catch
+            {
+                return SendSerializationException(body);
+            }
 
-            return SafeSend(new Reply(ReplyType.Result, body.ToBytes()).All);
+            return SafeSend(new Reply(ReplyType.Result, bytes).All);
         }
 
         public Task SendFaultAsync(Exception body)
         {
-            var t = CheckSerializable(body);
-            if (t != null)
-                return t;
+            byte[] bytes;
+            try
+            {
+                bytes = body.ToBytes();
+            }
+            catch
+            {
+                return SendSerializationException(body);
+            }
 
-            return SafeSend(new Reply(ReplyType.Fault, body.ToBytes()).All);
+            return SafeSend(new Reply(ReplyType.Fault, bytes).All);
         }
 
         public Task SendBufferAsync(byte[] body)
@@ -96,11 +108,17 @@ namespace NetRpc
 
         public Task SendCallbackAsync(object body)
         {
-            var t = CheckSerializable(body);
-            if (t != null)
-                return t;
+            byte[] bytes;
+            try
+            {
+                bytes = body.ToBytes();
+            }
+            catch
+            {
+                return SendSerializationException(body);
+            }
 
-            return SafeSend(new Reply(ReplyType.Callback, body.ToBytes()).All);
+            return SafeSend(new Reply(ReplyType.Callback, bytes).All);
         }
 
         public BufferBlockStream GetRequestStream()
@@ -108,13 +126,9 @@ namespace NetRpc
             return new BufferBlockStream(_block);
         }
 
-        private Task CheckSerializable(object body)
+        private Task SendSerializationException(object body)
         {
-            if (body == null)
-                return null;
-            if (!body.IsSerializable())
-                return SendFaultAsync(new System.Runtime.Serialization.SerializationException($"{body.GetType()} is not serializable."));
-            return null;
+            return SendFaultAsync(new System.Runtime.Serialization.SerializationException($"{body.GetType()} is not serializable."));
         }
 
         private async Task SafeSend(byte[] body)

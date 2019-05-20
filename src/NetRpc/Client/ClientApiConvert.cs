@@ -138,7 +138,7 @@ namespace NetRpc
             End?.Invoke(this, EventArgs.Empty);
         }
 
-        private bool TryToObject(byte[] body, out object obj)
+        private static bool TryToObject(byte[] body, out object obj)
         {
             try
             {

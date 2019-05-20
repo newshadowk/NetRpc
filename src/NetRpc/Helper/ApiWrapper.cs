@@ -69,6 +69,7 @@ namespace NetRpc
             return invokeRet;
         }
 
+        /// <exception cref="TypeLoadException"></exception>
         public static ApiContext Convert(ServiceCallParam scp, object[] instances)
         {
             (MethodInfo method, object instance) = GetMethodInfo(scp.Method, instances);
@@ -77,6 +78,7 @@ namespace NetRpc
             return new ApiContext(scp.Header, instance, method, args);
         }
 
+        /// <exception cref="TypeLoadException"></exception>
         private static (MethodInfo method, object instance) GetMethodInfo(MethodInfoDto method, object[] instances)
         {
             foreach (var o in instances)

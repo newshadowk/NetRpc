@@ -27,10 +27,11 @@ namespace NetRpc
         public async Task HandleRequestAsync()
         {
             ServiceCallParam scp = await GetServiceCallParamAsync();
-            var apiContext = ApiWrapper.Convert(scp, _instances);
             object ret;
+
             try
             {
+                var apiContext = ApiWrapper.Convert(scp, _instances);
                 ret = await _middlewareRegister.InvokeAsync(new MiddlewareContext(apiContext));
             }
             catch (Exception e)
