@@ -1,4 +1,5 @@
 ﻿using System;
+using NetRpc;
 using Helper = TestHelper.Helper;
 
 namespace Service
@@ -7,11 +8,13 @@ namespace Service
     {
         static void Main(string[] args)
         {
+            //RabbitMQ
             var serviceProxy = Helper.OpenRabbitMQService(new Service(), new ServiceAsync());
             //add a Middleware
             serviceProxy.UseMiddleware<TestGlobalExceptionMiddleware>("testArg1");
 
-            Helper.OpenGrpcService(new Service(), new ServiceAsync());
+            //Grpc wrap Exception to FaultException
+            Helper.OpenGrpcService(true, new Service(), new ServiceAsync());
             Console.WriteLine("Service Opened.");
             Console.Read();
         }

@@ -7,7 +7,7 @@ namespace NetRpc
     [Serializable]
     public sealed class ServiceCallParam
     {
-        public MethodInfoDto Method { get; }
+        public ActionInfo Action { get; }
 
         public object[] Args { get; }
 
@@ -21,7 +21,7 @@ namespace NetRpc
 
         public ServiceCallParam(OnceCallParam param, Action<object> callback, CancellationToken token, BufferBlockStream stream)
         {
-            Method = param.Method;
+            Action = param.Action;
             Args = param.Args;
             Callback = callback;
             Token = token;

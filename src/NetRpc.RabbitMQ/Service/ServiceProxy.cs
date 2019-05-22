@@ -8,16 +8,15 @@ namespace NetRpc.RabbitMQ
     {
         public event EventHandler<ShutdownEventArgs> ConnectionShutdown;
         public event EventHandler<EventArgs> RecoverySucceeded;
-
+        private readonly RequestHandler _requestHandler;
         private readonly Service _service;
 
-        private readonly object[] _instances;
         private readonly MiddlewareRegister _middlewareRegister = new MiddlewareRegister();
 
-        public ServiceProxy(Service service, object[] instances)
+        public ServiceProxy(Service service, bool isWrapFaultException, object[] instances)
         {
             _service = service;
-            _instances = instances;
+            _requestHandler = new RequestHandler(_middlewareRegister, isWrapFaultException, instances);
             _service.Received += ServiceReceived;
             _service.RecoverySucceeded += ConnectRecoverySucceeded;
             _service.ConnectionShutdown += ConnectConnectionShutdown;
@@ -26,7 +25,7 @@ namespace NetRpc.RabbitMQ
         private async void ServiceReceived(object sender, global::RabbitMQ.Base.EventArgsT<CallSession> e)
         {
             using (var serviceOnceTransfer = new ServiceConnection(e.Value))
-                await NetRpc.HandleRequestAsync(serviceOnceTransfer, _instances, _middlewareRegister);
+                await _requestHandler.HandleAsync(serviceOnceTransfer);
         }
 
         public void UseMiddleware<TMiddleware>(params object[] args) where TMiddleware : MiddlewareBase

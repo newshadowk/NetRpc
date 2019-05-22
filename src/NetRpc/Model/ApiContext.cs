@@ -11,21 +11,21 @@ namespace NetRpc
 
         public object Target { get; }
 
-        public MethodInfo Method { get; }
+        public MethodInfo Action { get; }
 
         public object[] Args { get; }
 
-        public ApiContext(Dictionary<string, object> header, object target, MethodInfo method, object[] args)
+        public ApiContext(Dictionary<string, object> header, object target, MethodInfo action, object[] args)
         {
             Header = header;
             Target = target;
-            Method = method;
+            Action = action;
             Args = args;
         }
 
         public override string ToString()
         {
-            return $"Header:{DicToStringForDisplay(Header)}, MethodName:{Method.Name}, Args:{ListToStringForDisplay(Args, ",")}";
+            return $"Header:{DicToStringForDisplay(Header)}, MethodName:{Action.Name}, Args:{ListToStringForDisplay(Args, ",")}";
         }
 
         private static string ListToStringForDisplay(Array list, string split)

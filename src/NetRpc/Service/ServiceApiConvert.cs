@@ -9,13 +9,15 @@ namespace NetRpc
     internal sealed class ServiceApiConvert
     {
         private readonly IConnection _transfer;
+        private readonly bool _isWrapFaultException;
         private readonly CancellationTokenSource _cts;
         private readonly BufferBlock<(byte[], BufferType)> _block = new BufferBlock<(byte[], BufferType)>();
         private readonly WriteOnceBlock<Request> _cmdWob = new WriteOnceBlock<Request>(null);
 
-        public ServiceApiConvert(IConnection transfer, CancellationTokenSource cts)
+        public ServiceApiConvert(IConnection transfer, bool isWrapFaultException, CancellationTokenSource cts)
         {
             _transfer = transfer;
+            _isWrapFaultException = isWrapFaultException;
             _cts = cts;
             _transfer.Received += TransferReceived;
         }
@@ -53,7 +55,7 @@ namespace NetRpc
             return r.Body.ToObject<OnceCallParam>();
         }
 
-        public Task SendResultAsync(object body)
+        public Task SendResultAsync(object body, ActionInfo action, object[] args)
         {
             if (body is Stream)
                 return SafeSend(new Reply(ReplyType.ResultStream).All);
@@ -63,26 +65,42 @@ namespace NetRpc
             {
                 bytes = body.ToBytes();
             }
-            catch
+            catch (Exception e)
             {
-                return SendSerializationException(body);
+                return SendFaultAsync(e, action, args);
             }
 
             return SafeSend(new Reply(ReplyType.Result, bytes).All);
         }
 
-        public Task SendFaultAsync(Exception body)
+        public Task SendFaultAsync(Exception body, ActionInfo action, object[] args)
         {
             byte[] bytes;
             try
             {
-                bytes = body.ToBytes();
+                var bodyFe = body as FaultException;
+                if (_isWrapFaultException &&
+                    bodyFe == null &&
+                    !(body is OperationCanceledException))
+                {
+                    var gt = typeof(FaultException<>).MakeGenericType(body.GetType());
+                    var fe = (FaultException)Activator.CreateInstance(gt, body);
+                    fe.AppendMethodInfo(action, args);
+                    bytes = fe.ToBytes();
+                }
+                else if (bodyFe != null)
+                {
+                    bodyFe.AppendMethodInfo(action, args);
+                    bytes = bodyFe.ToBytes();
+                }
+                else
+                    bytes = body.ToBytes();
             }
             catch
             {
-                return SendSerializationException(body);
+                var se = new System.Runtime.Serialization.SerializationException($"{body.GetType()} is not serializable.");
+                return SafeSend(new Reply(ReplyType.Fault, se.ToBytes()).All);
             }
-
             return SafeSend(new Reply(ReplyType.Fault, bytes).All);
         }
 
@@ -106,16 +124,16 @@ namespace NetRpc
             return SafeSend(new Reply(ReplyType.BufferFault).All);
         }
 
-        public Task SendCallbackAsync(object body)
+        public Task SendCallbackAsync(object body, ActionInfo action, object[] args)
         {
             byte[] bytes;
             try
             {
                 bytes = body.ToBytes();
             }
-            catch
+            catch (Exception e)
             {
-                return SendSerializationException(body);
+                return SendFaultAsync(e, action, args);
             }
 
             return SafeSend(new Reply(ReplyType.Callback, bytes).All);
@@ -124,11 +142,6 @@ namespace NetRpc
         public BufferBlockStream GetRequestStream()
         {
             return new BufferBlockStream(_block);
-        }
-
-        private Task SendSerializationException(object body)
-        {
-            return SendFaultAsync(new System.Runtime.Serialization.SerializationException($"{body.GetType()} is not serializable."));
         }
 
         private async Task SafeSend(byte[] body)

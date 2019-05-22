@@ -8,10 +8,12 @@ namespace NetRpc.Grpc
     {
         private readonly object[] _instances;
         private readonly MiddlewareRegister _middlewareRegister = new MiddlewareRegister();
+        private readonly RequestHandler _requestHandler;
 
-        public MessageCallImpl(object[] instances)
+        public MessageCallImpl(bool isWrapFaultException, object[] instances)
         {
             _instances = instances;
+            _requestHandler = new RequestHandler(_middlewareRegister, isWrapFaultException, instances);
         }
 
         public void UseMiddleware<TMiddleware>(params object[] args) where TMiddleware : MiddlewareBase
@@ -23,9 +25,7 @@ namespace NetRpc.Grpc
             ServerCallContext context)
         {
             using (var serviceOnceTransfer = new ServiceConnection(requestStream, responseStream))
-            {
-                await NetRpc.HandleRequestAsync(serviceOnceTransfer, _instances, _middlewareRegister);
-            }
+                await _requestHandler.HandleAsync(serviceOnceTransfer);
         }
     }
 }

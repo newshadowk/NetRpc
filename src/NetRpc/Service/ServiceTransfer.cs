@@ -12,9 +12,9 @@ namespace NetRpc
         private readonly MiddlewareRegister _middlewareRegister;
         private readonly CancellationTokenSource _serviceCts = new CancellationTokenSource();
 
-        public ServiceTransfer(IConnection connection, object[] instances, MiddlewareRegister middlewareRegister)
+        public ServiceTransfer(IConnection connection, MiddlewareRegister middlewareRegister, bool isWrapFaultException, object[] instances)
         {
-            _convert = new ServiceApiConvert(connection, _serviceCts);
+            _convert = new ServiceApiConvert(connection, isWrapFaultException, _serviceCts);
             _instances = instances;
             _middlewareRegister = middlewareRegister;
         }
@@ -37,12 +37,12 @@ namespace NetRpc
             catch (Exception e)
             {
                 //send fault
-                await _convert.SendFaultAsync(e);
+                await _convert.SendFaultAsync(e, scp.Action, scp.Args);
                 return;
             }
 
             //send result
-            await _convert.SendResultAsync(ret);
+            await _convert.SendResultAsync(ret, scp.Action, scp.Args);
 
             //send stream
             if (ret.TryGetStream(out Stream retStream))
@@ -68,7 +68,7 @@ namespace NetRpc
             var onceCallParam = await _convert.GetOnceCallParamAsync();
             var stream = _convert.GetRequestStream();
             ServiceCallParam serviceCallParam = new ServiceCallParam(onceCallParam,
-                async i => await _convert.SendCallbackAsync(i),
+                async i => await _convert.SendCallbackAsync(i, onceCallParam.Action, onceCallParam.Args),
                 _serviceCts.Token, stream);
             return serviceCallParam;
         }

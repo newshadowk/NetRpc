@@ -101,6 +101,11 @@ namespace NetRpc
 
         public static TObject ToObject<TObject>(this byte[] bytes)
         {
+            return (TObject) bytes.ToObject();
+        }
+
+        public static object ToObject(this byte[] bytes)
+        {
             if (bytes == default)
                 return default;
 
@@ -109,7 +114,7 @@ namespace NetRpc
                 var formatter = new BinaryFormatter();
                 var data = formatter.Deserialize(stream);
                 stream.Flush();
-                return (TObject)data;
+                return data;
             }
         }
 
@@ -145,23 +150,59 @@ namespace NetRpc
             return s.Substring(0, s.Length - delLength);
         }
 
-        public static bool IsSerializable(this object obj)
-        {
-            return obj.GetType().IsSerializable;
-        }
-
         public static string GetFullMethodName(this MethodInfo method)
         {
             return $"{method.DeclaringType}/{method.Name}";
         }
 
-        public static MethodInfoDto GetMethodInfoDto(this MethodInfo method)
+        public static ActionInfo GetMethodInfoDto(this MethodInfo method)
         {
-            return new MethodInfoDto
+            return new ActionInfo
             {
                 GenericArguments = method.GetGenericArguments().ToList().ConvertAll(GetTypeName).ToArray(),
                 FullName = method.GetFullMethodName()
             };
+        }
+
+        public static void AppendMethodInfo(this FaultException ex, ActionInfo action, object[] args)
+        {
+            if (!string.IsNullOrEmpty(ex.Action))
+                ex.Action += " | ";
+
+            ex.Action += $"{action}, {args.ListToString(", ")}";
+            ex.Action = ex.Action.TrimEndString(", ");
+        }
+
+        public static string ExceptionToString(Exception e)
+        {
+            if (e == null)
+                return "";
+
+            var msgContent = new StringBuilder("\r\n");
+            msgContent.Append(GetMsgContent(e));
+
+            List<Exception> lastE = new List<Exception>();
+            Exception currE = e.InnerException;
+            lastE.Add(e);
+            lastE.Add(currE);
+            while (currE != null && !lastE.Contains(currE))
+            {
+                msgContent.Append("\r\n[InnerException]\r\n");
+                msgContent.Append(GetMsgContent(e.InnerException));
+                currE = currE.InnerException;
+                lastE.Add(currE);
+            }
+
+            return msgContent.ToString();
+        }
+
+        private static string GetMsgContent(Exception ee)
+        {
+            string ret = ee.Message;
+            if (!string.IsNullOrEmpty(ee.StackTrace))
+                ret += "\r\n" + ee.StackTrace;
+            ret += "\r\n";
+            return ret;
         }
 
         private static string GetTypeName(Type t)

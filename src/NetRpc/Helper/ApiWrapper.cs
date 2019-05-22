@@ -72,36 +72,36 @@ namespace NetRpc
         /// <exception cref="TypeLoadException"></exception>
         public static ApiContext Convert(ServiceCallParam scp, object[] instances)
         {
-            (MethodInfo method, object instance) = GetMethodInfo(scp.Method, instances);
+            (MethodInfo method, object instance) = GetMethodInfo(scp.Action, instances);
             var ps = method.GetParameters();
             var args = GetArgs(ps, scp.Args, scp.Callback, scp.Token, scp.Stream);
             return new ApiContext(scp.Header, instance, method, args);
         }
 
         /// <exception cref="TypeLoadException"></exception>
-        private static (MethodInfo method, object instance) GetMethodInfo(MethodInfoDto method, object[] instances)
+        private static (MethodInfo method, object instance) GetMethodInfo(ActionInfo action, object[] instances)
         {
             foreach (var o in instances)
             {
-                var found = GetMethodInfo(method, o);
+                var found = GetMethodInfo(action, o);
                 if (found != null)
                     return (found, o);
             }
-            throw new TypeLoadException($"{method.FullName} not found in instances");
+            throw new TypeLoadException($"{action.FullName} not found in instances");
         }
 
-        private static MethodInfo GetMethodInfo(MethodInfoDto method, object instance)
+        private static MethodInfo GetMethodInfo(ActionInfo action, object instance)
         {
             var instanceType = instance.GetType();
             foreach (var item in instanceType.GetInterfaces())
             {
-                var found = item.GetMethods().FirstOrDefault(i => i.GetFullMethodName() == method.FullName);
+                var found = item.GetMethods().FirstOrDefault(i => i.GetFullMethodName() == action.FullName);
                 if (found != null)
                 {
                     var retM = instanceType.GetMethod(found.Name);
-                    if (method.GenericArguments.Length > 0)
+                    if (action.GenericArguments.Length > 0)
                     {
-                        var ts = method.GenericArguments.ToList().ConvertAll(Type.GetType).ToArray();
+                        var ts = action.GenericArguments.ToList().ConvertAll(Type.GetType).ToArray();
                         // ReSharper disable once PossibleNullReferenceException
                         retM = retM.MakeGenericMethod(ts);
                     }

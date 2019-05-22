@@ -162,7 +162,7 @@ Task<T2> CallByGenericTypeAsync<T1, T2>(T1 obj);
 ## Header
 Header is a type of **Dictionary<string, object>** object, mark sure your object mark as **[Serializable]**.  
 * **ThreadHeader**  
-Before call method, client set the **ThreadHeader** which mark as **[ThreadStatic]** that guarantee muti-threads don`t influence each other.
+Before call action, client set the **ThreadHeader** which mark as **[ThreadStatic]** that guarantee muti-threads don`t influence each other.
 ```c#
 //client
 NetRpc.NetRpcContext.ThreadHeader.CopyFrom(new Dictionary<string, object> { { "k1", "header value" } });
@@ -192,9 +192,9 @@ client.Proxy.Call();
 | Property | Type | Description |
 | :-----   | :--- | :---------- |
 | Header   | Dictionary\<string object> | Header sent from client. |
-| Target   | object                     | Service instance of invoked mothod.|
-| Method   | MethodInfo                 | Current invoked Method.|
-| Args     | object[]                   | Args of invoked mothod.|
+| Target   | object                     | Service instance of invoked action.|
+| Action   | MethodInfo                 | Current invoked action.|
+| Args     | object[]                   | Args of invoked action.|
 ## Filter
 Filter is common function like MVC. 
 ```c#
@@ -248,19 +248,55 @@ public class TestGlobalExceptionMiddleware : MiddlewareBase
 ## Load Balance
 Only for RabbitMQ.  
 When run multiple service instances, ther service will auto apply the load balance, this function is base on the **RabbitMQ**.
-## Pass Exception
-Can pass the exception via the interface, on the client side, just use the **try** \{} **catch** \{} block.
-```c#
-/// <exception cref="CustomException"></exception>
-Task CallByCustomExceptionAsync();
+## FaultException\<T>
+Enable the feature of **FaultException** by set **isWrapFaultException** to true, FaultException is usefull when you want to get the exactly **StackTrace** info.  
+**isWrapFaultException** is invalid to **OperationCanceledException** and **TaskCanceledException** because of convenience purpose.
 
+**FaultException** is
+
+| Property | Type | Description |
+| :-----   | :--- | :---------- |
+| Detail   | Exception | Threw exception, will save the orginal **StackTrace** when Exception via remote transfer. |
+| Action   | string | Invoked action info. |
+
+```c#
+//service
+var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy("0.0.0.0", 50001, isWrapFaultException:true, instances);
+...
+internal class ServiceAsync : IServiceAsync
+{
+    public Task CallBySystemExceptionAsync()
+    {
+        throw new NotImplementedException();
+    }
+}
+```
+```c#
+//client
 try
 {
-     await proxy.CallByCustomExceptionAsync();
+    await _proxy.CallBySystemExceptionAsync();
 }
-catch (CustomException e)
+catch (FaultException<NotImplementedException> e)
 {
-    //handling exception
+    //catched FaultException<NotImplementedException> when set isWrapFaultException to true.
+    //e.Deta.StackTrace will get the orginal info.
+}
+catch (FaultException e2)
+{
+   //catched all type of FaultException<> when set isWrapFaultException to true.
+}
+catch (OperationCanceledException e2)
+{
+   //catched OperationCanceledException when set isWrapFaultException to false/true.
+}
+catch (TaskCanceledException e2)
+{
+   //catched TaskCanceledException when set isWrapFaultException to false/true.
+}
+catch (NotImplementedException e2)
+{
+   //catched NotImplementedException when set isWrapFaultException to false.
 }
 ```
 ## Cancel

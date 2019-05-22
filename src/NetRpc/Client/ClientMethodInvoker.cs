@@ -27,14 +27,13 @@ namespace NetRpc
             }
             catch (AggregateException e)
             {
-                ExceptionDispatchInfo edi;
                 if (e.InnerException != null)
-                    edi = ExceptionDispatchInfo.Capture(e.InnerException);
-                else
-                    edi = ExceptionDispatchInfo.Capture(e);
-                edi.Throw();
+                {
+                    var edi = ExceptionDispatchInfo.Capture(e.InnerException);
+                    edi.Throw();
+                }
+                throw;
             }
-            return default;
         }
 
         public Task InvokeAsync(MethodInfo targetMethod, object[] args)

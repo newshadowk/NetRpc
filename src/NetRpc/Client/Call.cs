@@ -18,7 +18,7 @@ namespace NetRpc
             _context = context;
         }
 
-        public async Task<T> CallAsync<T>(MethodInfoDto method, Action<object> callback, CancellationToken token, Stream stream, params object[] args)
+        public async Task<T> CallAsync<T>(ActionInfo action, Action<object> callback, CancellationToken token, Stream stream, params object[] args)
         {
             var onceTransfer = _factory.Create();
             var t = new OnceCall<T>(onceTransfer, _timeoutInterval);
@@ -31,7 +31,7 @@ namespace NetRpc
             NetRpcContext.ThreadHeader.Clear();
 
             //onceTransfer will dispose after stream translate finished in OnceCall.
-            return await t.CallAsync(header, method, callback, token, stream, args);
+            return await t.CallAsync(header, action, callback, token, stream, args);
         }
     }
 }

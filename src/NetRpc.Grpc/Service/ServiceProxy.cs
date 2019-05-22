@@ -9,11 +9,11 @@ namespace NetRpc.Grpc
         private Service _service;
         private readonly MessageCallImpl _messageCallImpl;
 
-        public ServiceProxy(string host, int port, object[] instances)
+        public ServiceProxy(string host, int port, bool isWrapFaultException, object[] instances)
         {
             _host = host;
             _port = port;
-            _messageCallImpl = new MessageCallImpl(instances);
+            _messageCallImpl = new MessageCallImpl(isWrapFaultException, instances);
         }
 
         public void UseMiddleware<TMiddleware>(params object[] args) where TMiddleware : MiddlewareBase

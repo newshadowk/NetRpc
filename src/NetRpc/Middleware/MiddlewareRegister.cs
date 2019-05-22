@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 
 namespace NetRpc
@@ -23,7 +24,7 @@ namespace NetRpc
             }
         }
 
-        public MiddlewareContext(ApiContext context) : base(context.Header, context.Target, context.Method, context.Args)
+        public MiddlewareContext(ApiContext context) : base(context.Header, context.Target, context.Action, context.Args)
         {
         }
     }
@@ -65,7 +66,7 @@ namespace NetRpc
 
         public override async Task InvokeAsync(MiddlewareContext context)
         {
-            var filters = context.Method.GetCustomAttributes(typeof(NetRpcFilterAttribute), true);
+            var filters = context.Action.GetCustomAttributes(typeof(NetRpcFilterAttribute), true);
             foreach (NetRpcFilterAttribute f in filters)
                 await f.InvokeAsync(context);
             NetRpcContext.ThreadHeader.CopyFrom(context.Header);
@@ -74,16 +75,19 @@ namespace NetRpc
             try
             {
                 // ReSharper disable once PossibleNullReferenceException
-                ret = context.Method.Invoke(context.Target, context.Args);
+                ret = context.Action.Invoke(context.Target, context.Args);
             }
-            catch (TargetInvocationException ee)
+            catch (TargetInvocationException e)
             {
-                if (ee.InnerException != null)
-                    throw ee.InnerException;
+                if (e.InnerException != null)
+                {
+                    var edi = ExceptionDispatchInfo.Capture(e.InnerException);
+                    edi.Throw();
+                }
                 throw;
             }
 
-            var isGenericType = context.Method.ReturnType.IsGenericType;
+            var isGenericType = context.Action.ReturnType.IsGenericType;
             context.Result = await ApiWrapper.GetTaskResult(ret, isGenericType);
         }
     }

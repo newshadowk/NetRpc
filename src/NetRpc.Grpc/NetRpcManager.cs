@@ -4,7 +4,12 @@
     {
         public static ServiceProxy CreateServiceProxy(string host, int port, params object[] instances)
         {
-            return new ServiceProxy(host, port, instances);
+            return new ServiceProxy(host, port,  false, instances);
+        }
+
+        public static ServiceProxy CreateServiceProxy(string host, int port, bool isWrapFaultException, params object[] instances)
+        {
+            return new ServiceProxy(host, port, isWrapFaultException, instances);
         }
 
         public static ClientProxy<TService> CreateClientProxy<TService>(string host, int port, int timeoutInterval = 1200000, int hearbeatInterval = 10000)

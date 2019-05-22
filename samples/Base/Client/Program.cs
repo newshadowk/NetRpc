@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
+using NetRpc;
 using NetRpc.RabbitMQ;
 using Helper = TestHelper.Helper;
 
@@ -38,7 +38,6 @@ namespace Client
             RunTest();
             RunTestAsync().Wait();
 
-
             //Grpc
             Console.WriteLine("\r\n--- [Grpc]  ---");
             var grpcF = new NetRpc.Grpc.ClientConnectionFactory("localhost", 50001);
@@ -49,11 +48,6 @@ namespace Client
 
             Console.WriteLine("Test end.");
             Console.Read();
-        }
-
-        private static void ClientProxy_Connected(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
         }
 
         #region Test
@@ -75,14 +69,14 @@ namespace Client
 
         private static void Test_FilterAndHeader()
         {
-            NetRpc.NetRpcContext.ThreadHeader.CopyFrom(new Dictionary<string, object> { { "k1", "header value" } });
+            NetRpcContext.ThreadHeader.CopyFrom(new Dictionary<string, object> {{"k1", "header value"}});
             Console.Write("[FilterAndHeader], send:k1, header value");
             _proxy.FilterAndHeader();
         }
 
         private static void Test_CallByGeneric()
         {
-            CustomObj obj = new CustomObj { Date = DateTime.Now, Name = "test" };
+            CustomObj obj = new CustomObj {Date = DateTime.Now, Name = "test"};
             Console.Write($"[CallByGeneric], send:{obj}, receive:");
             var ret = _proxy.CallByGenericType<CustomObj, int>(obj);
             Console.WriteLine($"{ret}");
@@ -110,13 +104,16 @@ namespace Client
             {
                 _proxy.CallBySystemException();
             }
+            catch (FaultException<NotImplementedException> e)
+            {
+                Console.WriteLine($"catch FaultException<NotImplementedException> {e}");
+            }
             catch (NotImplementedException)
             {
                 Console.WriteLine("catch NotImplementedException");
             }
             catch (Exception)
             {
-
             }
         }
 
@@ -126,6 +123,10 @@ namespace Client
             try
             {
                 _proxy.CallByCustomException();
+            }
+            catch (FaultException<CustomException>)
+            {
+                Console.WriteLine("catch FaultException<CustomException>");
             }
             catch (CustomException)
             {
@@ -203,7 +204,7 @@ namespace Client
 
         private static async Task Test_CallByGenericAsync()
         {
-            CustomObj obj = new CustomObj { Date = DateTime.Now, Name = "test" };
+            CustomObj obj = new CustomObj {Date = DateTime.Now, Name = "test"};
             Console.Write($"[CallByGenericAsync], send:{obj}, ");
             var ret = await _proxyAsync.CallByGenericAsync<CustomObj, int>(obj);
             Console.WriteLine($"receive:{ret}");
@@ -246,6 +247,10 @@ namespace Client
             {
                 await _proxyAsync.CallBySystemExceptionAsync();
             }
+            catch (FaultException<NotImplementedException> e)
+            {
+                Console.WriteLine($"catch FaultException<NotImplementedException> {e}");
+            }
             catch (NotImplementedException)
             {
                 Console.WriteLine("catch NotImplementedException");
@@ -258,6 +263,10 @@ namespace Client
             try
             {
                 await _proxyAsync.CallByCustomExceptionAsync();
+            }
+            catch (FaultException<CustomException>)
+            {
+                Console.WriteLine("catch FaultException<CustomException>");
             }
             catch (CustomException)
             {
@@ -276,7 +285,7 @@ namespace Client
         {
             Console.Write("[SetStreamAsync]...Send TestFile.txt");
             using (var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-               await _proxyAsync.SetStreamAsync(stream);
+                await _proxyAsync.SetStreamAsync(stream);
         }
 
         private static async Task Test_EchoStreamAsync()
@@ -304,9 +313,9 @@ namespace Client
             {
                 Console.Write("[ComplexCallAsync]...Send TestFile.txt...");
                 var complexStream = await _proxyAsync.ComplexCallAsync(
-                    new CustomObj { Date = DateTime.Now, Name = "ComplexCall" },
+                    new CustomObj {Date = DateTime.Now, Name = "ComplexCall"},
                     stream,
-                    i => Console.Write(", " + i.Progress), 
+                    i => Console.Write(", " + i.Progress),
                     default);
 
                 using (var stream2 = complexStream.Stream)
