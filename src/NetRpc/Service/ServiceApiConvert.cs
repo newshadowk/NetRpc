@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -9,15 +10,13 @@ namespace NetRpc
     internal sealed class ServiceApiConvert
     {
         private readonly IConnection _transfer;
-        private readonly bool _isWrapFaultException;
         private readonly CancellationTokenSource _cts;
         private readonly BufferBlock<(byte[], BufferType)> _block = new BufferBlock<(byte[], BufferType)>();
         private readonly WriteOnceBlock<Request> _cmdWob = new WriteOnceBlock<Request>(null);
 
-        public ServiceApiConvert(IConnection transfer, bool isWrapFaultException, CancellationTokenSource cts)
+        public ServiceApiConvert(IConnection transfer, CancellationTokenSource cts)
         {
             _transfer = transfer;
-            _isWrapFaultException = isWrapFaultException;
             _cts = cts;
             _transfer.Received += TransferReceived;
         }
@@ -79,8 +78,7 @@ namespace NetRpc
             try
             {
                 var bodyFe = body as FaultException;
-                if (_isWrapFaultException &&
-                    bodyFe == null &&
+                if (bodyFe == null &&
                     !(body is OperationCanceledException))
                 {
                     var gt = typeof(FaultException<>).MakeGenericType(body.GetType());
@@ -96,10 +94,11 @@ namespace NetRpc
                 else
                     bytes = body.ToBytes();
             }
-            catch
+            catch (Exception e)
             {
-                var se = new System.Runtime.Serialization.SerializationException($"{body.GetType()} is not serializable.");
-                return SafeSend(new Reply(ReplyType.Fault, se.ToBytes()).All);
+                var se = new SerializationException($"{e.Message}");
+                FaultException<SerializationException> fse = new FaultException<SerializationException>(se);
+                return SafeSend(new Reply(ReplyType.Fault, fse.ToBytes()).All);
             }
             return SafeSend(new Reply(ReplyType.Fault, bytes).All);
         }

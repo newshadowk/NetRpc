@@ -6,18 +6,16 @@ namespace NetRpc
     {
         private readonly object[] _instances;
         private readonly MiddlewareRegister _middlewareRegister;
-        private readonly bool _isWrapFaultException;
 
-        public RequestHandler(MiddlewareRegister middlewareRegister, bool isWrapFaultException, object[] instances)
+        public RequestHandler(MiddlewareRegister middlewareRegister, object[] instances)
         {
             _instances = instances;
             _middlewareRegister = middlewareRegister;
-            _isWrapFaultException = isWrapFaultException;
         }
 
         public async Task HandleAsync(IConnection connection)
         {
-            var t = new ServiceTransfer(connection, _middlewareRegister, _isWrapFaultException, _instances);
+            var t = new ServiceTransfer(connection, _middlewareRegister, _instances);
             t.Start();
             await t.HandleRequestAsync();
         }

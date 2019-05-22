@@ -15,9 +15,9 @@ namespace TestHelper
             return service;
         }
 
-        public static NetRpc.Grpc.ServiceProxy OpenGrpcService(bool isWrapFaultException, params object[] instances)
+        public static NetRpc.Grpc.ServiceProxy OpenGrpcService(params object[] instances)
         {
-            var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy("0.0.0.0", 50001, isWrapFaultException, instances);
+            var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy("0.0.0.0", 50001, instances);
             service.Open();
             return service;
         }

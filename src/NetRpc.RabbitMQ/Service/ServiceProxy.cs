@@ -13,10 +13,10 @@ namespace NetRpc.RabbitMQ
 
         private readonly MiddlewareRegister _middlewareRegister = new MiddlewareRegister();
 
-        public ServiceProxy(Service service, bool isWrapFaultException, object[] instances)
+        public ServiceProxy(Service service, object[] instances)
         {
             _service = service;
-            _requestHandler = new RequestHandler(_middlewareRegister, isWrapFaultException, instances);
+            _requestHandler = new RequestHandler(_middlewareRegister, instances);
             _service.Received += ServiceReceived;
             _service.RecoverySucceeded += ConnectRecoverySucceeded;
             _service.ConnectionShutdown += ConnectConnectionShutdown;

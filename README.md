@@ -249,7 +249,8 @@ public class TestGlobalExceptionMiddleware : MiddlewareBase
 Only for RabbitMQ.  
 When run multiple service instances, ther service will auto apply the load balance, this function is base on the **RabbitMQ**.
 ## FaultException\<T>
-Enable the feature of **FaultException** by set **isWrapFaultException** to true, FaultException is usefull when you want to get the exactly **StackTrace** info.  
+When create **ClientProxy** that can pass **isWrapFaultException**, if true will wrap Exception to **FaultExcetpion\<Exception>**.  
+FaultException is usefull when you want to get the exactly **StackTrace** info.  
 **isWrapFaultException** is invalid to **OperationCanceledException** and **TaskCanceledException** because of convenience purpose.
 
 **FaultException** is
@@ -261,8 +262,6 @@ Enable the feature of **FaultException** by set **isWrapFaultException** to true
 
 ```c#
 //service
-var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy("0.0.0.0", 50001, isWrapFaultException:true, instances);
-...
 internal class ServiceAsync : IServiceAsync
 {
     public Task CallBySystemExceptionAsync()
@@ -273,9 +272,10 @@ internal class ServiceAsync : IServiceAsync
 ```
 ```c#
 //client
+var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>("localhost", 50001, isWrapFaultException:true).Proxy;
 try
 {
-    await _proxy.CallBySystemExceptionAsync();
+    await proxy.CallBySystemExceptionAsync();
 }
 catch (FaultException<NotImplementedException> e)
 {

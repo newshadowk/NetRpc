@@ -8,12 +8,14 @@ namespace NetRpc
     internal sealed class Call : ICall
     {
         private readonly IConnectionFactory _factory;
+        private readonly bool _isWrapFaultException;
         private readonly int _timeoutInterval;
         private readonly NetRpcContext _context;
 
-        public Call(IConnectionFactory factory, int timeoutInterval, NetRpcContext context)
+        public Call(IConnectionFactory factory, bool isWrapFaultException, int timeoutInterval, NetRpcContext context)
         {
             _factory = factory;
+            _isWrapFaultException = isWrapFaultException;
             _timeoutInterval = timeoutInterval;
             _context = context;
         }
@@ -21,7 +23,7 @@ namespace NetRpc
         public async Task<T> CallAsync<T>(ActionInfo action, Action<object> callback, CancellationToken token, Stream stream, params object[] args)
         {
             var onceTransfer = _factory.Create();
-            var t = new OnceCall<T>(onceTransfer, _timeoutInterval);
+            var t = new OnceCall<T>(onceTransfer, _isWrapFaultException, _timeoutInterval);
             t.Start();
 
             //header

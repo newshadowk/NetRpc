@@ -20,7 +20,7 @@ namespace Client
             //RabbitMQ
             Console.WriteLine("---  [RabbitMQ]  ---");
             var mqF = new ClientConnectionFactory(Helper.GetMQParam());
-            var clientProxy = NetRpcManager.CreateClientProxy<IService>(mqF);
+            var clientProxy = NetRpcManager.CreateClientProxy<IService>(mqF, false);
             clientProxy.Connected += (s, e) => Console.WriteLine("[event] Connected");
             clientProxy.DisConnected += (s, e) => Console.WriteLine("[event] DisConnected");
             clientProxy.ExceptionInvoked += (s, e) => Console.WriteLine("[event] ExceptionInvoked");
@@ -34,7 +34,7 @@ namespace Client
             clientProxy.StartHeartbeat(true);
 
             _proxy = clientProxy.Proxy;
-            _proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(mqF).Proxy;
+            _proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(mqF, false).Proxy;
             RunTest();
             RunTestAsync().Wait();
 

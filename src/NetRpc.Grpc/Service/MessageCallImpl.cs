@@ -10,10 +10,10 @@ namespace NetRpc.Grpc
         private readonly MiddlewareRegister _middlewareRegister = new MiddlewareRegister();
         private readonly RequestHandler _requestHandler;
 
-        public MessageCallImpl(bool isWrapFaultException, object[] instances)
+        public MessageCallImpl(object[] instances)
         {
             _instances = instances;
-            _requestHandler = new RequestHandler(_middlewareRegister, isWrapFaultException, instances);
+            _requestHandler = new RequestHandler(_middlewareRegister, instances);
         }
 
         public void UseMiddleware<TMiddleware>(params object[] args) where TMiddleware : MiddlewareBase

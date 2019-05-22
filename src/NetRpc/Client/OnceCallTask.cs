@@ -13,10 +13,12 @@ namespace NetRpc
         private CancellationTokenRegistration? _reg;
         private readonly ClientApiConvert _convert;
         private readonly IConnection _connection;
+        private readonly bool _isWrapFaultException;
 
-        public OnceCall(IConnection connection, int timeoutInterval)
+        public OnceCall(IConnection connection, bool isWrapFaultException, int timeoutInterval)
         {
             _connection = connection;
+            _isWrapFaultException = isWrapFaultException;
             _timeoutInterval = timeoutInterval;
             _convert = new ClientApiConvert(connection);
         }
@@ -129,6 +131,9 @@ namespace NetRpc
 
         private void SetFault(TaskCompletionSource<T> tcs, object result)
         {
+            if (!_isWrapFaultException && result is FaultException fe)
+                result = fe.Detail;
+
             _reg?.Dispose();
             _timeOutCts.Cancel();
             tcs.TrySetException((Exception)result);

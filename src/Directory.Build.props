@@ -1,7 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <Authors>ShadowK</Authors>
-    <Version>1.0.27</Version>
+    <Version>1.0.28</Version>
     <Description>NetRpc is a light weight rpc engine base on RabbitMq or Grpc targeting .NET Standard. It use the simple interface to call each other, contains the load balance mode, middleware.</Description>
     <PackageProjectUrl>https://github.com/newshadowk/NetRpc</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>

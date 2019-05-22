@@ -5,7 +5,7 @@ namespace NetRpc.Grpc
 {
     public sealed class GrpcClientProxy<TService> : ClientProxy<TService>
     {
-        public GrpcClientProxy(IConnectionFactory factory, int timeoutInterval, int hearbeatInterval) : base(factory, timeoutInterval, hearbeatInterval)
+        public GrpcClientProxy(IConnectionFactory factory, bool isWrapFaultException, int timeoutInterval, int hearbeatInterval) : base(factory, isWrapFaultException, timeoutInterval, hearbeatInterval)
         {
             ExceptionInvoked += GrpcClientProxy_ExceptionInvoked;
         }

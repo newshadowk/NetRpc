@@ -12,9 +12,9 @@ namespace NetRpc
         private readonly MiddlewareRegister _middlewareRegister;
         private readonly CancellationTokenSource _serviceCts = new CancellationTokenSource();
 
-        public ServiceTransfer(IConnection connection, MiddlewareRegister middlewareRegister, bool isWrapFaultException, object[] instances)
+        public ServiceTransfer(IConnection connection, MiddlewareRegister middlewareRegister, object[] instances)
         {
-            _convert = new ServiceApiConvert(connection, isWrapFaultException, _serviceCts);
+            _convert = new ServiceApiConvert(connection, _serviceCts);
             _instances = instances;
             _middlewareRegister = middlewareRegister;
         }

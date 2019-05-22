@@ -23,11 +23,11 @@ namespace NetRpc
 
         public TService Proxy { get; }
 
-        public ClientProxy(IConnectionFactory factory, int timeoutInterval, int hearbeatInterval = 1000 * 10)
+        public ClientProxy(IConnectionFactory factory, bool isWrapFaultException, int timeoutInterval, int hearbeatInterval = 1000 * 10)
         {
             _factory = factory;
             _hearbeatInterval = hearbeatInterval;
-            var call = new Call(factory, timeoutInterval, Context);
+            var call = new Call(factory, isWrapFaultException, timeoutInterval, Context);
             ClientMethodInvoker invoker = new ClientMethodInvoker(call);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
             ((SimpleDispatchProxyAsync)(object)Proxy).ExceptionInvoked += ProxyExceptionInvoked;
