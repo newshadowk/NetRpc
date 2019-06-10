@@ -5,44 +5,48 @@ using System.Threading.Tasks.Dataflow;
 
 namespace NetRpc
 {
-    internal sealed class ClientApiConvert
+    internal sealed class ClientOnceApiConvert
     {
-        private readonly IConnection _transfer;
+        private readonly IConnection _connection;
 
         private readonly BufferBlock<(byte[], BufferType)> _block = new BufferBlock<(byte[], BufferType)>();
 
-        public event EventHandler ResultStream;
+        public event EventHandler<ResultStreamEventArgs> ResultStream;
         public event EventHandler End;
-        public event EventHandler<ResultEventArgs> Result;
+        public event EventHandler<EventArgsT<CustomResult>> CustomResult;
         public event EventHandler<EventArgsT<object>> Callback;
         public event EventHandler<EventArgsT<object>> Fault;
 
-        public ClientApiConvert(IConnection transfer)
+        public ClientOnceApiConvert(IConnection connection)
         {
-            _transfer = transfer;
-            transfer.Received += TransferReceived;
+            _connection = connection;
+            _connection.Received += ConnectionReceived;
         }
 
         public void Start()
         {
-            _transfer.Start();
+            _connection.Start();
         }
 
-        private void TransferReceived(object sender, EventArgsT<byte[]> e)
+        private void ConnectionReceived(object sender, EventArgsT<byte[]> e)
         {
             var r = new Reply(e.Value);
             switch (r.Type)
             {
                 case ReplyType.ResultStream:
-                    OnResultStream();
-                    break;
-                case ReplyType.Result:
                 {
-                    if (TryToObject(r.Body, out object obj))
+                    if (TryToObject(r.Body, out long? body))
+                        OnResultStream(new ResultStreamEventArgs(body));
+                    else
+                        OnFaultSerializationException();
+                    break;
+                }
+                case ReplyType.CustomResult:
+                {
+                    if (TryToObject(r.Body, out CustomResult body))
                     {
-                        var hasStream = obj.HasStream();
-                        OnResult(new ResultEventArgs(hasStream, obj));
-                        if (!hasStream)
+                        OnCustomResult(new EventArgsT<CustomResult>(body));
+                        if (!body.HasStream)
                             OnEnd();
                     }
                     else
@@ -51,17 +55,17 @@ namespace NetRpc
                 }
                 case ReplyType.Callback:
                 {
-                    if (TryToObject(r.Body, out object obj))
-                        OnCallback(new EventArgsT<object>(obj));
+                    if (TryToObject(r.Body, out object body))
+                        OnCallback(new EventArgsT<object>(body));
                     else
                         OnFaultSerializationException();
                     break;
                 }
                 case ReplyType.Fault:
                 {
-                    if (TryToObject(r.Body, out object obj))
+                    if (TryToObject(r.Body, out object body))
                     {
-                        OnFault(new EventArgsT<object>(obj));
+                        OnFault(new EventArgsT<object>(body));
                         OnEnd();
                     }
                     else
@@ -90,32 +94,32 @@ namespace NetRpc
 
         public Task SendCancelAsync()
         {
-            return _transfer.Send(new Request(RequestType.Cancel).All);
+            return _connection.Send(new Request(RequestType.Cancel).All);
         }
 
         public Task SendBufferAsync(byte[] body)
         {
-            return _transfer.Send(new Request(RequestType.Buffer, body).All);
+            return _connection.Send(new Request(RequestType.Buffer, body).All);
         }
 
         public Task SendBufferEndAsync()
         {
-            return _transfer.Send(new Request(RequestType.BufferEnd).All);
+            return _connection.Send(new Request(RequestType.BufferEnd).All);
         }
 
         public Task SendCmdAsync(OnceCallParam body)
         {
-            return _transfer.Send(new Request(RequestType.Cmd, body.ToBytes()).All);
+            return _connection.Send(new Request(RequestType.Cmd, body.ToBytes()).All);
         }
 
-        public BufferBlockStream GetRequestStream()
+        public BufferBlockStream GetRequestStream(long? length)
         {
-            return new BufferBlockStream(_block);
+            return new BufferBlockStream(_block, length);
         }
 
-        private void OnResult(ResultEventArgs e)
+        private void OnCustomResult(EventArgsT<CustomResult> e)
         {
-            Result?.Invoke(this, e);
+            CustomResult?.Invoke(this, e);
         }
 
         private void OnCallback(EventArgsT<object> e)
@@ -128,9 +132,9 @@ namespace NetRpc
             Fault?.Invoke(this, e);
         }
 
-        private void OnResultStream()
+        private void OnResultStream(ResultStreamEventArgs e)
         {
-            ResultStream?.Invoke(this, EventArgs.Empty);
+            ResultStream?.Invoke(this, e);
         }
 
         private void OnEnd()
@@ -150,6 +154,17 @@ namespace NetRpc
                 obj = default;
                 return false;   
             }
+        }
+
+        private static bool TryToObject<T>(byte[] body, out T obj)
+        {
+            if (TryToObject(body, out object obj2))
+            {
+                obj = (T) obj2;
+                return true;
+            }
+            obj = default;
+            return false;
         }
 
         private void OnFaultSerializationException()

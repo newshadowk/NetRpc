@@ -5,72 +5,11 @@ using System.Threading.Tasks.Dataflow;
 
 namespace NetRpc
 {
-    public sealed class FastBufferBlockStream : Stream
-    {
-        private readonly BufferBlock<(byte[], BufferType)> _block;
-
-        private bool _isEnd;
-
-        public FastBufferBlockStream(BufferBlock<(byte[], BufferType)> block)
-        {
-            _block = block;
-        }
-
-        public override void Flush()
-        {
-        }
-
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            if (_isEnd)
-                return 0;
-
-            (byte[] data, BufferType type) = _block.Receive(TimeSpan.FromSeconds(1000));
-            
-            if (type == BufferType.End ||
-                type == BufferType.Fault)
-            {
-                _isEnd = true;
-            }
-            else if (type == BufferType.Cancel)
-            {
-                _isEnd = true;
-                throw new TaskCanceledException();
-            }
-
-            data.CopyTo(buffer, 0);
-            Position += data.Length;
-            return data.Length;
-        }
-
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void SetLength(long value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool CanRead { get; } = true;
-
-        public override bool CanSeek { get; } = false;
-
-        public override bool CanWrite { get; } = false;
-
-        public override long Length => throw new NotImplementedException();
-
-        public override long Position { get; set; }
-    }
-
     public sealed class BufferBlockStream : Stream
     {
+        private bool _isEnd;
+        private long? _length;
+
         private readonly TransformManyBlock<(byte[], BufferType), (byte, BufferType)> _byteBlock =
             new TransformManyBlock<(byte[], BufferType), (byte, BufferType)>(data =>
             {
@@ -87,10 +26,9 @@ namespace NetRpc
                 return ret;
             });
 
-        private bool _isEnd;
-
-        public BufferBlockStream(BufferBlock<(byte[], BufferType)> block)
+        public BufferBlockStream(BufferBlock<(byte[], BufferType)> block, long? length)
         {
+            _length = length;
             block.LinkTo(_byteBlock);
         }
 
@@ -136,7 +74,7 @@ namespace NetRpc
 
         public override void SetLength(long value)
         {
-            throw new NotImplementedException();
+            _length = value;
         }
 
         public override void Write(byte[] buffer, int offset, int count)
@@ -150,7 +88,15 @@ namespace NetRpc
 
         public override bool CanWrite { get; } = false;
 
-        public override long Length => throw new NotImplementedException();
+        public override long Length
+        {
+            get
+            {
+                if (_length == null)
+                    throw new NotSupportedException();
+                return _length.Value;
+            }
+        }
 
         public override long Position { get; set; }
     }

@@ -40,7 +40,7 @@ namespace Service
             {
                 Console.Write($"{i}, ");
                 cb(new CustomCallbackObj {Progress = i});
-                Task.Delay(500).Wait();
+                Task.Delay(100).Wait();
             }
 
             Console.WriteLine();
@@ -67,12 +67,12 @@ namespace Service
 
         public void SetStream(Stream data)
         {
-            Console.WriteLine($"[SetStream]...{TestHelper.Helper.ReadStr(data)}");
+            Console.WriteLine($"[SetStream]...length:{data.Length}, {TestHelper.Helper.ReadStr(data)}");
         }
 
         public Stream EchoStream(Stream data)
         {
-            Console.WriteLine($"[EchoStream]...Received:{TestHelper.Helper.ReadStr(data)}...Send TestFile.txt");
+            Console.WriteLine($"[EchoStream]...Received length:{data.Length}, {TestHelper.Helper.ReadStr(data)}...Send TestFile.txt");
             var stream = File.Open(TestHelper.Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             return stream;
         }
@@ -89,12 +89,12 @@ namespace Service
 
         public ComplexStream ComplexCall(CustomObj obj, Stream data, Action<CustomCallbackObj> cb)
         {
-            Console.Write($"[ComplexCall]...Received:{TestHelper.Helper.ReadStr(data)}, ");
+            Console.Write($"[ComplexCall]...Received length:{data.Length}, {TestHelper.Helper.ReadStr(data)}, ");
             for (int i = 1; i <= 3; i++)
             {
                 Console.Write($"{i}, ");
                 cb(new CustomCallbackObj { Progress = i });
-                Task.Delay(500).Wait();
+                Task.Delay(100).Wait();
             }
             Console.WriteLine("...Send TestFile.txt");
             return new ComplexStream

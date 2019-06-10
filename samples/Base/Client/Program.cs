@@ -138,7 +138,7 @@ namespace Client
         {
             Console.Write("[GetStream]...");
             using (var stream = _proxy.GetStream())
-                Console.WriteLine(Helper.ReadStr(stream));
+                Console.WriteLine($"length:{stream.Length}, {Helper.ReadStr(stream)}");
         }
 
         private static void Test_SetStream()
@@ -154,7 +154,7 @@ namespace Client
             {
                 Console.Write("[EchoStream]...Send TestFile.txt...");
                 var data = _proxy.EchoStream(stream);
-                Console.WriteLine($"Received:{Helper.ReadStr(data)}");
+                Console.WriteLine($"Received length:{stream.Length}, {Helper.ReadStr(data)}");
             }
         }
 
@@ -163,7 +163,7 @@ namespace Client
             Console.Write("[GetComplexStream]...");
             var complexStream = _proxy.GetComplexStream();
             using (var stream = complexStream.Stream)
-                Console.Write(Helper.ReadStr(stream));
+                Console.WriteLine($"length:{stream.Length}, {Helper.ReadStr(stream)}");
             Console.WriteLine($", otherInfo:{complexStream.OtherInfo}");
         }
 
@@ -178,7 +178,7 @@ namespace Client
                     i => Console.Write(", " + i.Progress));
 
                 using (var stream2 = complexStream.Stream)
-                    Console.Write($", receive:{Helper.ReadStr(stream2)}");
+                    Console.Write($", receive length:{stream.Length}, {Helper.ReadStr(stream2)}");
                 Console.WriteLine($", otherInfo:{complexStream.OtherInfo}");
             }
         }
@@ -221,10 +221,10 @@ namespace Client
         private static async Task Test_CallByCancelAsync()
         {
             CancellationTokenSource cts = new CancellationTokenSource();
-            cts.CancelAfter(2000);
+            cts.CancelAfter(500);
             try
             {
-                Console.Write("[CallWithCancelAsync], cancel after 2000 ms, ");
+                Console.Write("[CallWithCancelAsync], cancel after 500 ms, ");
                 await _proxyAsync.CallByCancelAsync(cts.Token);
             }
             catch (TaskCanceledException)
@@ -278,7 +278,7 @@ namespace Client
         {
             Console.Write("[GetStreamAsync]...");
             using (var stream = await _proxyAsync.GetStreamAsync())
-                Console.WriteLine(Helper.ReadStr(stream));
+                Console.WriteLine($"length:{stream.Length}, {Helper.ReadStr(stream)}");
         }
 
         private static async Task Test_SetStreamAsync()
@@ -294,7 +294,7 @@ namespace Client
             {
                 Console.Write("[EchoStreamAsync]...Send TestFile.txt...");
                 var data = await _proxyAsync.EchoStreamAsync(stream);
-                Console.WriteLine($"Received:{Helper.ReadStr(data)}");
+                Console.WriteLine($"Received length:{stream.Length}, {Helper.ReadStr(data)}");
             }
         }
 
@@ -303,7 +303,7 @@ namespace Client
             Console.Write("[GetComplexStreamAsync]...");
             var complexStream = await _proxyAsync.GetComplexStreamAsync();
             using (var stream = complexStream.Stream)
-                Console.Write(Helper.ReadStr(stream));
+                Console.WriteLine($"length:{stream.Length}, {Helper.ReadStr(stream)}");
             Console.WriteLine($", otherInfo:{complexStream.OtherInfo}");
         }
 
@@ -319,7 +319,7 @@ namespace Client
                     default);
 
                 using (var stream2 = complexStream.Stream)
-                    Console.Write($", receive:{Helper.ReadStr(stream2)}");
+                    Console.Write($", receive length:{stream.Length}, {Helper.ReadStr(stream2)}");
                 Console.WriteLine($", otherInfo:{complexStream.OtherInfo}");
             }
         }

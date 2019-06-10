@@ -15,7 +15,7 @@ namespace NetRpc
 
         public async Task HandleAsync(IConnection connection)
         {
-            var t = new ServiceTransfer(connection, _middlewareRegister, _instances);
+            var t = new ServiceOnceTransfer(connection, _middlewareRegister, _instances);
             t.Start();
             await t.HandleRequestAsync();
         }

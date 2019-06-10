@@ -11,6 +11,8 @@ namespace NetRpc
 
         public object[] Args { get; }
 
+        public long? StreamLength { get; set; }
+
         public Dictionary<string, object> Header { get; }
 
         public Action<object> Callback { get; }
@@ -23,6 +25,7 @@ namespace NetRpc
         {
             Action = param.Action;
             Args = param.Args;
+            StreamLength = param.StreamLength;
             Callback = callback;
             Token = token;
             Stream = stream;

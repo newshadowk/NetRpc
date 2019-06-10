@@ -11,7 +11,7 @@ namespace NetRpc
         private readonly int _timeoutInterval;
         private readonly CancellationTokenSource _timeOutCts = new CancellationTokenSource();
         private CancellationTokenRegistration? _reg;
-        private readonly ClientApiConvert _convert;
+        private readonly ClientOnceApiConvert _convert;
         private readonly IConnection _connection;
         private readonly bool _isWrapFaultException;
 
@@ -20,7 +20,7 @@ namespace NetRpc
             _connection = connection;
             _isWrapFaultException = isWrapFaultException;
             _timeoutInterval = timeoutInterval;
-            _convert = new ClientApiConvert(connection);
+            _convert = new ClientOnceApiConvert(connection);
         }
 
         public void Start()
@@ -34,8 +34,6 @@ namespace NetRpc
             var tcs = new TaskCompletionSource<T>();
             var t = Task.Run(async () =>
             {
-                BufferBlockStream reciStream = _convert.GetRequestStream();
-
                 _convert.End += (s, e) =>
                 {
                     _connection.Dispose();
@@ -43,19 +41,21 @@ namespace NetRpc
 
                 _convert.ResultStream += (s, e) =>
                 {
+                    var reciStream = _convert.GetRequestStream(e.StreamLength);
                     SetStreamResult(tcs, reciStream);
                 };
 
-                _convert.Result += (s, e) =>
+                _convert.CustomResult += (s, e) =>
                 {
-                    if (e.HasStream)
+                    if (e.Value.HasStream)
                     {
-                        var resultWithStream = e.Body.SetStream(reciStream);
+                        var reciStream = _convert.GetRequestStream(e.Value.StreamLength);
+                        var resultWithStream = e.Value.Result.SetStream(reciStream);
                         SetStreamResult(tcs, resultWithStream);
                         return;
                     }
 
-                    SetResult(tcs, e.Body);
+                    SetResult(tcs, e.Value.Result);
                 };
 
                 _convert.Callback += (s, e) =>
@@ -71,7 +71,7 @@ namespace NetRpc
                 try
                 {
                     //Send cmd
-                    OnceCallParam p = new OnceCallParam(header, action, args);
+                    OnceCallParam p = new OnceCallParam(header, action, stream.GetLength(), args);
                     if (token.IsCancellationRequested)
                     {
                         SetCancel(tcs);

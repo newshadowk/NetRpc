@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -171,6 +172,21 @@ namespace NetRpc
 
             ex.Action += $"{action}, {args.ListToString(", ")}";
             ex.Action = ex.Action.TrimEndString(", ");
+        }
+
+        public static long? GetLength(this Stream stream)
+        {
+            if (stream == null)
+                return null;
+
+            try
+            {
+                return stream.Length;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public static string ExceptionToString(Exception e)

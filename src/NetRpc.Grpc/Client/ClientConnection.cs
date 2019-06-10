@@ -39,7 +39,6 @@ namespace NetRpc.Grpc
         public void Start()
         {
             _api = _client.CallClient.DuplexStreamingServerMethod();
-
             Task.Run(async () =>
             {
                 while (await _api.ResponseStream.MoveNext(CancellationToken.None))

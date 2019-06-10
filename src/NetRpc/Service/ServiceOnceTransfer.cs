@@ -5,16 +5,16 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    internal sealed class ServiceTransfer
+    internal sealed class ServiceOnceTransfer
     {
-        private readonly ServiceApiConvert _convert;
+        private readonly ServiceOnceApiConvert _convert;
         private readonly object[] _instances;
         private readonly MiddlewareRegister _middlewareRegister;
         private readonly CancellationTokenSource _serviceCts = new CancellationTokenSource();
 
-        public ServiceTransfer(IConnection connection, MiddlewareRegister middlewareRegister, object[] instances)
+        public ServiceOnceTransfer(IConnection connection, MiddlewareRegister middlewareRegister, object[] instances)
         {
-            _convert = new ServiceApiConvert(connection, _serviceCts);
+            _convert = new ServiceOnceApiConvert(connection, _serviceCts);
             _instances = instances;
             _middlewareRegister = middlewareRegister;
         }
@@ -41,11 +41,13 @@ namespace NetRpc
                 return;
             }
 
+            var hasStream = ret.TryGetStream(out Stream retStream);
+
             //send result
-            await _convert.SendResultAsync(ret, scp.Action, scp.Args);
+            await _convert.SendResultAsync(new CustomResult(ret, retStream.GetLength()), scp.Action, scp.Args);
 
             //send stream
-            if (ret.TryGetStream(out Stream retStream))
+            if (hasStream)
             {
                 try
                 {
@@ -66,7 +68,7 @@ namespace NetRpc
         private async Task<ServiceCallParam> GetServiceCallParamAsync()
         {
             var onceCallParam = await _convert.GetOnceCallParamAsync();
-            var stream = _convert.GetRequestStream();
+            var stream = _convert.GetRequestStream(onceCallParam.StreamLength);
             ServiceCallParam serviceCallParam = new ServiceCallParam(onceCallParam,
                 async i => await _convert.SendCallbackAsync(i, onceCallParam.Action, onceCallParam.Args),
                 _serviceCts.Token, stream);

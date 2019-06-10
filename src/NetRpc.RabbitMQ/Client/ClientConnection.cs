@@ -10,7 +10,7 @@ namespace NetRpc.RabbitMQ
 
         public ClientConnection(global::RabbitMQ.Client.IConnection connect, string rpcQueue)
         {
-            _call = new RabbitMQOnceCall(connect, rpcQueue); 
+            _call = new RabbitMQOnceCall(connect, rpcQueue);
             _call.Received += CallReceived;
         }
 

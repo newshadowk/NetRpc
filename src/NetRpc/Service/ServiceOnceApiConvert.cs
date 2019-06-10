@@ -7,26 +7,26 @@ using System.Threading.Tasks.Dataflow;
 
 namespace NetRpc
 {
-    internal sealed class ServiceApiConvert
+    internal sealed class ServiceOnceApiConvert
     {
-        private readonly IConnection _transfer;
+        private readonly IConnection _connection;
         private readonly CancellationTokenSource _cts;
         private readonly BufferBlock<(byte[], BufferType)> _block = new BufferBlock<(byte[], BufferType)>();
         private readonly WriteOnceBlock<Request> _cmdWob = new WriteOnceBlock<Request>(null);
 
-        public ServiceApiConvert(IConnection transfer, CancellationTokenSource cts)
+        public ServiceOnceApiConvert(IConnection connection, CancellationTokenSource cts)
         {
-            _transfer = transfer;
             _cts = cts;
-            _transfer.Received += TransferReceived;
+            _connection = connection;
+            _connection.Received += ConnectionReceived;
         }
 
         public void Start()
         {
-            _transfer.Start();
+            _connection.Start();
         }
 
-        private void TransferReceived(object sender, EventArgsT<byte[]> e)
+        private void ConnectionReceived(object sender, EventArgsT<byte[]> e)
         {
             var r = new Request(e.Value);
             switch (r.Type)
@@ -54,100 +54,98 @@ namespace NetRpc
             return r.Body.ToObject<OnceCallParam>();
         }
 
-        public Task SendResultAsync(object body, ActionInfo action, object[] args)
+        public Task SendResultAsync(CustomResult result, ActionInfo action, object[] args)
         {
-            if (body is Stream)
-                return SafeSend(new Reply(ReplyType.ResultStream).All);
+            if (result.Result is Stream s)
+                return SafeSend(Reply.FromResultStream(s.GetLength()));
 
-            byte[] bytes;
+            Reply reply;
             try
             {
-                bytes = body.ToBytes();
+                reply = Reply.FromResult(result);
             }
             catch (Exception e)
             {
                 return SendFaultAsync(e, action, args);
             }
 
-            return SafeSend(new Reply(ReplyType.Result, bytes).All);
+            return SafeSend(reply);
         }
 
         public Task SendFaultAsync(Exception body, ActionInfo action, object[] args)
         {
-            byte[] bytes;
             try
             {
+                Reply reply;
                 var bodyFe = body as FaultException;
-                if (bodyFe == null &&
-                    !(body is OperationCanceledException))
+                if (bodyFe == null && !(body is OperationCanceledException))
                 {
                     var gt = typeof(FaultException<>).MakeGenericType(body.GetType());
                     var fe = (FaultException)Activator.CreateInstance(gt, body);
                     fe.AppendMethodInfo(action, args);
-                    bytes = fe.ToBytes();
+                    reply = Reply.FromResult(new CustomResult(fe));
                 }
                 else if (bodyFe != null)
                 {
                     bodyFe.AppendMethodInfo(action, args);
-                    bytes = bodyFe.ToBytes();
+                    reply = Reply.FromResult(new CustomResult(bodyFe));
                 }
                 else
-                    bytes = body.ToBytes();
+                    reply = Reply.FromResult(new CustomResult(body));
+                return SafeSend(reply);
             }
             catch (Exception e)
             {
                 var se = new SerializationException($"{e.Message}");
                 FaultException<SerializationException> fse = new FaultException<SerializationException>(se);
-                return SafeSend(new Reply(ReplyType.Fault, fse.ToBytes()).All);
+                return SafeSend(Reply.FromFault(fse));
             }
-            return SafeSend(new Reply(ReplyType.Fault, bytes).All);
         }
 
-        public Task SendBufferAsync(byte[] body)
+        public Task SendBufferAsync(byte[] buffer)
         {
-            return SafeSend(new Reply(ReplyType.Buffer, body).All);
+            return SafeSend(Reply.FromBuffer(buffer));
         }
 
         public Task SendBufferEndAsync()
         {
-            return SafeSend(new Reply(ReplyType.BufferEnd).All);
+            return SafeSend(Reply.FromBufferEnd());
         }
 
         public Task SendBufferCancelAsync()
         {
-            return SafeSend(new Reply(ReplyType.BufferCancel).All);
+            return SafeSend(Reply.FromBufferCancel());
         }
 
         public Task SendBufferFaultAsync()
         {
-            return SafeSend(new Reply(ReplyType.BufferFault).All);
+            return SafeSend(Reply.FromBufferFault());
         }
 
-        public Task SendCallbackAsync(object body, ActionInfo action, object[] args)
+        public Task SendCallbackAsync(object callbackObj, ActionInfo action, object[] args)
         {
-            byte[] bytes;
+            Reply reply;
             try
             {
-                bytes = body.ToBytes();
+                reply = Reply.FromCallback(callbackObj);
             }
             catch (Exception e)
             {
                 return SendFaultAsync(e, action, args);
             }
-
-            return SafeSend(new Reply(ReplyType.Callback, bytes).All);
+            return SafeSend(reply);
         }
 
-        public BufferBlockStream GetRequestStream()
+        public BufferBlockStream GetRequestStream(long? length)
         {
-            return new BufferBlockStream(_block);
+            return new BufferBlockStream(_block, length);
         }
 
-        private async Task SafeSend(byte[] body)
+        private async Task SafeSend(Reply reply)
         {
             try
             {
-                await _transfer.Send(body);
+                await _connection.Send(reply.All);
             }
             catch
             {
