@@ -1,17 +1,16 @@
-﻿using Grpc.Core;
+﻿using System.Collections.Generic;
+using Grpc.Core;
 
 namespace Grpc.Base
 {
     public sealed class Service
     {
-        private readonly string _host;
-        private readonly int _port;
+        private readonly List<ServerPort> _ports;
         private readonly MessageCall.MessageCallBase _messageCall;
 
-        public Service(string host, int port, MessageCall.MessageCallBase messageCall)
+        public Service(List<ServerPort> ports, MessageCall.MessageCallBase messageCall)
         {
-            _host = host;
-            _port = port;
+            _ports = ports;
             _messageCall = messageCall;
         }
 
@@ -19,9 +18,12 @@ namespace Grpc.Base
         {
             Server server = new Server
             {
-                Services = { MessageCall.BindService(_messageCall) },
-                Ports = {new ServerPort(_host, _port, ServerCredentials.Insecure)}
+                Services = {MessageCall.BindService(_messageCall)}
             };
+
+            foreach (var port in _ports)
+                server.Ports.Add(port);
+
             server.Start();
         }
     }

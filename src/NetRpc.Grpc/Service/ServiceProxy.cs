@@ -1,18 +1,18 @@
-﻿using Grpc.Base;
+﻿using System.Collections.Generic;
+using Grpc.Base;
+using Grpc.Core;
 
 namespace NetRpc.Grpc
 {
     public sealed class ServiceProxy
     {
-        private readonly string _host;
-        private readonly int _port;
+        private readonly List<ServerPort> _ports;
         private Service _service;
         private readonly MessageCallImpl _messageCallImpl;
 
-        public ServiceProxy(string host, int port, object[] instances)
+        public ServiceProxy(List<ServerPort> ports, object[] instances)
         {
-            _host = host;
-            _port = port;
+            _ports = ports;
             _messageCallImpl = new MessageCallImpl(instances);
         }
 
@@ -23,7 +23,7 @@ namespace NetRpc.Grpc
 
         public void Open()
         {
-            _service = new Service(_host, _port, _messageCallImpl);
+            _service = new Service(_ports, _messageCallImpl);
             _service.Open();
         }
     }

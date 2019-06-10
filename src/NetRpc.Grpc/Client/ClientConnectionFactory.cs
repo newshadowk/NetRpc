@@ -1,4 +1,5 @@
 ﻿using Grpc.Base;
+using Grpc.Core;
 
 namespace NetRpc.Grpc
 {
@@ -6,9 +7,9 @@ namespace NetRpc.Grpc
     {
         private readonly Client _client;
 
-        public ClientConnectionFactory(string host, int port)
+        public ClientConnectionFactory(Channel channel)
         {
-            _client = new Client(host, port);
+            _client = new Client(channel);
             _client.Connect();
         }
 

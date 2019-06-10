@@ -13,39 +13,19 @@ namespace Grpc.Base
 
         public MessageCall.MessageCallClient CallClient { get; private set; }
 
-        public Client(string host, int port)
+        public Client(Channel channel)
         {
-            _ip = GetFirstIp(host);
-            _port = port;
+            _channel = channel;
         }
 
         public void Connect()
         {
-            _channel = new Channel(_ip, _port, ChannelCredentials.Insecure);
             CallClient = new MessageCall.MessageCallClient(_channel);
         }
 
         public void Dispose()
         {
             _channel?.ShutdownAsync().Wait();
-        }
-
-        public static string GetFirstIp(string host)
-        {
-            try
-            {
-                var ips = Dns.GetHostAddresses(host);
-                foreach (var ip in ips)
-                {
-                    if (ip.AddressFamily == AddressFamily.InterNetwork)
-                        return ip.ToString();
-                }
-                return null;
-            }
-            catch
-            {
-                return null;
-            }
         }
     }
 }
