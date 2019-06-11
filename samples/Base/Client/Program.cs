@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
+using Grpc.Core;
 using NetRpc;
 using NetRpc.RabbitMQ;
 using Helper = TestHelper.Helper;
@@ -40,7 +41,7 @@ namespace Client
 
             //Grpc
             Console.WriteLine("\r\n--- [Grpc]  ---");
-            var grpcF = new NetRpc.Grpc.ClientConnectionFactory("localhost", 50001);
+            var grpcF = new NetRpc.Grpc.ClientConnectionFactory(new Channel("localhost", 50001, ChannelCredentials.Insecure));
             _proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(grpcF).Proxy;
             _proxyAsync = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IServiceAsync>(grpcF).Proxy;
             RunTest();

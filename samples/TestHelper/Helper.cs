@@ -3,6 +3,7 @@ using System.Linq;
 using NetRpc.RabbitMQ;
 using System.Reflection;
 using System.Text;
+using Grpc.Core;
 
 namespace TestHelper
 {
@@ -17,7 +18,7 @@ namespace TestHelper
 
         public static NetRpc.Grpc.ServiceProxy OpenGrpcService(params object[] instances)
         {
-            var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy("0.0.0.0", 50001, instances);
+            var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy(new ServerPort("0.0.0.0", 50001, ServerCredentials.Insecure), instances);
             service.Open();
             return service;
         }

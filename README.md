@@ -10,7 +10,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy("0.0.0.0", 50001, new Service());
+        var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy(new ServerPort("0.0.0.0", 50001, ServerCredentials.Insecure), new Service());
         service.Open();
         Console.Read();
     }
@@ -30,7 +30,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>("localhost", 50001).Proxy;
+        var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
         proxy.Call("hello world!");
         Console.Read();
     }
@@ -53,16 +53,15 @@ var p = new MQParam(host, virtualHost, rpcQueue, port, user, password, prefetchC
 var service = NetRpc.RabbitMQ.NetRpcManager.CreateServiceProxy(p, instances);
 
 //create Grpc servcie
-var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy("0.0.0.0", 50001, instances);
+var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy(new ServerPort("0.0.0.0", 50001, ServerCredentials.Insecure), instances);
 ```
-
 ```c#
 //create RabbitMQ client
 var p = new MQParam(host, virtualHost, rpcQueue, port, user, password, prefetchCount);
 var client = NetRpc.RabbitMQ.NetRpcManager.CreateClientProxy<IService>(p)
 
 //create Grpc client
-var client = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>("localhost", 50001)
+var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
 ```
 
 ## Serialization
@@ -180,7 +179,7 @@ public void TestHeader()
 On the client side, when **DefaultHeader** items count > 0, **ThreadHeader** will get the value of **DefaultHeader** when call the remote. This feature is usefull when you wan to transfer a sessionId to service.
 ```c#
 //client
-var client = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>("localhost", 50001);
+var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
 //set the DefaultHeader with SessionId
 client.Context.DefaultHeader.CopyFrom(new Dictionary<string, object> {{"SessionId", 1}});
 //will tranfer the header of SessionId to service.
@@ -221,7 +220,7 @@ internal class Service : IService
 Middleware is common function like MVC. 
 ```c#
 //servcie
-var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy("0.0.0.0", 50001, instances);
+var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy(new ServerPort("0.0.0.0", 50001, ServerCredentials.Insecure), instances);
 serviceProxy.UseMiddleware<TestGlobalExceptionMiddleware>("testArg1");
 
 public class TestGlobalExceptionMiddleware : MiddlewareBase
@@ -272,7 +271,7 @@ internal class ServiceAsync : IServiceAsync
 ```
 ```c#
 //client
-var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>("localhost", 50001, isWrapFaultException:true).Proxy;
+var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure), isWrapFaultException:true).Proxy;
 try
 {
     await proxy.CallBySystemExceptionAsync();
@@ -330,7 +329,7 @@ public class ComplexStream
 Client should use the **ClientConnectionFactory** manage the connection, that use one connection apply to muti interfaces.
 ```c#
 //service
-var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy("0.0.0.0", 50001, new Servcie1(), new Service2());
+var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy(new ServerPort("0.0.0.0", 50001, ServerCredentials.Insecure), new Servcie1(), new Service2());
 ```
 ```c#
 //client
@@ -356,7 +355,7 @@ Client should register the **Heartbeat** event and implement logic of heartbeat.
 According to **Heartbeat** is successfull or faild, **Connected** or **DisConnected** will invoke correspondingly.
 ```c#
 //client set the heartbeat interval to 10*1000
-var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>("localhost", 50001, 10*1000).Proxy;
+var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure), 10*1000).Proxy;
 clientProxy.Heartbeat += async s => s.Proxy.Hearbeat();
 clientProxy.StartHeartbeat(true);
 ```
@@ -367,7 +366,7 @@ ComplexStream Call(Stream data, Action<CustomCallbackObj> cb);
 ```
 * **TimeoutInterval** of call is a mechanism of NetRpc owns, it do not use the Grpc or RabbitMQ timeout mechanism.
 ```c#
-CreateClientProxy<TService>(string host, int port, int timeoutInterval = 1200000)
+CreateClientProxy<TService>(Channel channel, int timeoutInterval = 1200000)
 ```
 ## Samples
 * [Hello World](samples/HelloWorld)

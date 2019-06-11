@@ -1,5 +1,6 @@
 ﻿using System;
 using DataContract;
+using Grpc.Core;
 
 namespace Service
 {
@@ -7,7 +8,7 @@ namespace Service
     {
         static void Main(string[] args)
         {
-            var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy("0.0.0.0", 50001, new Service());
+            var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy(new ServerPort("0.0.0.0", 50001, ServerCredentials.Insecure), new Service());
             service.Open();
             Console.Read();
         }
