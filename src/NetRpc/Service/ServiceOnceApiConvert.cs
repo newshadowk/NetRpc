@@ -11,7 +11,10 @@ namespace NetRpc
     {
         private readonly IConnection _connection;
         private readonly CancellationTokenSource _cts;
-        private readonly BufferBlock<(byte[], BufferType)> _block = new BufferBlock<(byte[], BufferType)>();
+
+        private readonly BufferBlock<(byte[], BufferType)> _block =
+            new BufferBlock<(byte[], BufferType)>(new DataflowBlockOptions { BoundedCapacity = Helper.StreamBufferCount });
+
         private readonly WriteOnceBlock<Request> _cmdWob = new WriteOnceBlock<Request>(null);
 
         public ServiceOnceApiConvert(IConnection connection, CancellationTokenSource cts)
@@ -35,10 +38,10 @@ namespace NetRpc
                     _cmdWob.Post(new Request(e.Value));
                     break;
                 case RequestType.Buffer:
-                    _block.Post((r.Body, BufferType.Buffer));
+                    _block.SendAsync((r.Body, BufferType.Buffer)).Wait();
                     break;
                 case RequestType.BufferEnd:
-                    _block.Post((r.Body, BufferType.End));
+                    _block.SendAsync((r.Body, BufferType.End)).Wait();
                     break;
                 case RequestType.Cancel:
                     _cts.Cancel();
@@ -81,7 +84,7 @@ namespace NetRpc
                 if (bodyFe == null && !(body is OperationCanceledException))
                 {
                     var gt = typeof(FaultException<>).MakeGenericType(body.GetType());
-                    var fe = (FaultException)Activator.CreateInstance(gt, body);
+                    var fe = (FaultException) Activator.CreateInstance(gt, body);
                     fe.AppendMethodInfo(action, args);
                     reply = Reply.FromResult(new CustomResult(fe));
                 }
@@ -92,6 +95,7 @@ namespace NetRpc
                 }
                 else
                     reply = Reply.FromResult(new CustomResult(body));
+
                 return SafeSend(reply);
             }
             catch (Exception e)
@@ -133,6 +137,7 @@ namespace NetRpc
             {
                 return SendFaultAsync(e, action, args);
             }
+
             return SafeSend(reply);
         }
 

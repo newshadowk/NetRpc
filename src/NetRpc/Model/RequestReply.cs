@@ -43,7 +43,6 @@ namespace NetRpc
         public byte[] All { get; }
     }
 
-
     internal sealed class Request : Message
     {
         public new RequestType Type => (RequestType) Enum.ToObject(typeof(RequestType), base.Type);

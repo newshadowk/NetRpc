@@ -5,31 +5,87 @@ using System.Threading.Tasks.Dataflow;
 
 namespace NetRpc
 {
-    public sealed class BufferBlockStream : Stream
+    public class CacheBuffer
     {
+        public byte[] Body { get; }
+
+        public int Position { get; private set; }
+
+        public bool IsEnd => Position >= Body.Length;
+
+        public int LeftCount => Body.Length - Position;
+
+        public CacheBuffer(byte[] body)
+        {
+            Body = body;
+        }
+
+        public int Read(byte[] buffer, int offset, int count)
+        {
+            int readCount = Math.Min(count, LeftCount);
+            Buffer.BlockCopy(Body, Position, buffer, offset, readCount);
+            Position += readCount;
+            return readCount;
+        }
+    }
+
+    public class BufferBlockReader
+    {
+        private readonly BufferBlock<(byte[], BufferType)> _block;
+
+        private CacheBuffer lastBuffer;
+
         private bool _isEnd;
-        private long? _length;
 
-        private readonly TransformManyBlock<(byte[], BufferType), (byte, BufferType)> _byteBlock =
-            new TransformManyBlock<(byte[], BufferType), (byte, BufferType)>(data =>
+        public BufferBlockReader(BufferBlock<(byte[], BufferType)> block)
+        {
+            _block = block;
+        }
+
+        public int Read(byte[] buffer, int count)
+        {
+            if (_isEnd)
+                return 0;
+
+            int readCount = 0;
+            while (readCount < count)
             {
-                if (data.Item1 == null)
-                    return new (byte, BufferType)[] { (default, data.Item2) };
-
-                var ret = new (byte, BufferType)[data.Item1.Length];
-                for (int i = 0; i < data.Item1.Length; i++)
+                if (lastBuffer == null || lastBuffer.IsEnd)
                 {
-                    ret[i].Item1 = data.Item1[i];
-                    ret[i].Item2 = data.Item2;
+                    (byte[], BufferType) value = _block.Receive(TimeSpan.FromSeconds(20));
+                    if (value.Item2 == BufferType.End ||
+                        value.Item2 == BufferType.Fault)
+                    {
+                        _isEnd = true;
+                        return readCount;
+                    }
+
+                    if (value.Item2 == BufferType.Cancel)
+                    {
+                        _isEnd = true;
+                        throw new TaskCanceledException();
+                    }
+
+                    lastBuffer = new CacheBuffer(value.Item1);
                 }
 
-                return ret;
-            });
+                var readBufferCount = lastBuffer.Read(buffer, readCount, count - readCount);
+                readCount += readBufferCount;
+            }
+
+            return readCount;
+        }
+    }
+
+    public sealed class BufferBlockStream : Stream
+    {
+        private long? _length;
+        private readonly BufferBlockReader _reader;
 
         public BufferBlockStream(BufferBlock<(byte[], BufferType)> block, long? length)
         {
+            _reader = new BufferBlockReader(block);
             _length = length;
-            block.LinkTo(_byteBlock);
         }
 
         public override void Flush()
@@ -38,33 +94,9 @@ namespace NetRpc
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            if (_isEnd)
-                return 0;
-
-            int currLength = 0;
-            for (int i = 0; i < count; i++)
-            {
-                (byte, BufferType) value = _byteBlock.Receive();
-                if (value.Item2 == BufferType.End ||
-                    value.Item2 == BufferType.Fault)
-                {
-                    _isEnd = true;
-                    Position += currLength;
-                    return currLength;
-                }
-
-                if (value.Item2 == BufferType.Cancel)
-                {
-                    _isEnd = true;
-                    throw new TaskCanceledException();
-                }
-
-                buffer[i] = value.Item1;
-                currLength = i + 1;
-            }
-
-            Position += currLength;
-            return currLength;
+            int readCount = _reader.Read(buffer, count);
+            Position += readCount;
+            return readCount;
         }
 
         public override long Seek(long offset, SeekOrigin origin)

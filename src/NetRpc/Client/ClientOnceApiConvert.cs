@@ -9,7 +9,8 @@ namespace NetRpc
     {
         private readonly IConnection _connection;
 
-        private readonly BufferBlock<(byte[], BufferType)> _block = new BufferBlock<(byte[], BufferType)>();
+        private readonly BufferBlock<(byte[], BufferType)> _block =
+            new BufferBlock<(byte[], BufferType)>(new DataflowBlockOptions { BoundedCapacity = Helper.StreamBufferCount });
 
         public event EventHandler<ResultStreamEventArgs> ResultStream;
         public event EventHandler End;
@@ -41,6 +42,7 @@ namespace NetRpc
                         OnFaultSerializationException();
                     break;
                 }
+
                 case ReplyType.CustomResult:
                 {
                     if (TryToObject(r.Body, out CustomResult body))
@@ -51,8 +53,10 @@ namespace NetRpc
                     }
                     else
                         OnFaultSerializationException();
+
                     break;
                 }
+
                 case ReplyType.Callback:
                 {
                     if (TryToObject(r.Body, out object body))
@@ -61,6 +65,7 @@ namespace NetRpc
                         OnFaultSerializationException();
                     break;
                 }
+
                 case ReplyType.Fault:
                 {
                     if (TryToObject(r.Body, out object body))
@@ -70,21 +75,23 @@ namespace NetRpc
                     }
                     else
                         OnFaultSerializationException();
+
                     break;
                 }
+
                 case ReplyType.Buffer:
-                    _block.Post((r.Body, BufferType.Buffer));
+                    _block.SendAsync((r.Body, BufferType.Buffer)).Wait();
                     break;
                 case ReplyType.BufferCancel:
-                    _block.Post((default, BufferType.Cancel));
+                    _block.SendAsync((default, BufferType.Cancel)).Wait();
                     OnEnd();
                     break;
                 case ReplyType.BufferFault:
-                    _block.Post((default, BufferType.Fault));
+                    _block.SendAsync((default, BufferType.Fault)).Wait();
                     OnEnd();
                     break;
                 case ReplyType.BufferEnd:
-                    _block.Post((r.Body, BufferType.End));
+                    _block.SendAsync((r.Body, BufferType.End)).Wait();
                     OnEnd();
                     break;
                 default:
@@ -152,7 +159,7 @@ namespace NetRpc
             catch
             {
                 obj = default;
-                return false;   
+                return false;
             }
         }
 
@@ -163,6 +170,7 @@ namespace NetRpc
                 obj = (T) obj2;
                 return true;
             }
+
             obj = default;
             return false;
         }

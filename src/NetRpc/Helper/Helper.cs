@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +13,11 @@ namespace NetRpc
     public static class Helper
     {
         public const int StreamBufferSize = 81920;
+
+        /// <summary>
+        /// about 4 MB
+        /// </summary>
+        public const int StreamBufferCount = 53;
 
         public static async Task SendStreamAsync(Func<byte[], Task> publishBuffer, Func<Task> publishBufferEnd, Stream stream, CancellationToken token)
         {
