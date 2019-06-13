@@ -86,15 +86,15 @@ namespace NetRpc
                     var gt = typeof(FaultException<>).MakeGenericType(body.GetType());
                     var fe = (FaultException) Activator.CreateInstance(gt, body);
                     fe.AppendMethodInfo(action, args);
-                    reply = Reply.FromResult(new CustomResult(fe));
+                    reply = Reply.FromFault(fe);
                 }
                 else if (bodyFe != null)
                 {
                     bodyFe.AppendMethodInfo(action, args);
-                    reply = Reply.FromResult(new CustomResult(bodyFe));
+                    reply = Reply.FromFault(bodyFe);
                 }
                 else
-                    reply = Reply.FromResult(new CustomResult(body));
+                    reply = Reply.FromFault(body);
 
                 return SafeSend(reply);
             }

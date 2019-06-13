@@ -10,7 +10,7 @@ namespace NetRpc
         private readonly IConnection _connection;
 
         private readonly BufferBlock<(byte[], BufferType)> _block =
-            new BufferBlock<(byte[], BufferType)>(new DataflowBlockOptions { BoundedCapacity = Helper.StreamBufferCount });
+            new BufferBlock<(byte[], BufferType)>(new DataflowBlockOptions {BoundedCapacity = Helper.StreamBufferCount});
 
         public event EventHandler<ResultStreamEventArgs> ResultStream;
         public event EventHandler End;
