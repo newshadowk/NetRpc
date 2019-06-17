@@ -9,6 +9,7 @@ namespace NetRpc.Grpc
 {
     internal sealed class ServiceConnection : IConnection
     {
+        private readonly AsyncLock _sendLock = new AsyncLock();
         private readonly IAsyncStreamReader<StreamBuffer> _requestStream;
         private readonly IServerStreamWriter<StreamBuffer> _responseStream;
 
@@ -25,9 +26,10 @@ namespace NetRpc.Grpc
 
         public event EventHandler<EventArgsT<byte[]>> Received;
 
-        public Task Send(byte[] buffer)
+        public async Task Send(byte[] buffer)
         {
-            return _responseStream.WriteAsync(new StreamBuffer {Body = ByteString.CopyFrom(buffer)});
+            using (await _sendLock.LockAsync())
+                await _responseStream.WriteAsync(new StreamBuffer { Body = ByteString.CopyFrom(buffer) });
         }
 
         public void Start()

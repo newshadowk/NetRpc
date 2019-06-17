@@ -11,7 +11,6 @@ namespace RabbitMQ.Base
         private readonly int _prefetchCount;
         private readonly IConnection _connect;
         private volatile IModel _mainModel;
-        private volatile IModel _clientToServiceModel;
 
         public ServiceInner(IConnection connect, string rpcQueueName, int prefetchCount)
         {
@@ -23,8 +22,6 @@ namespace RabbitMQ.Base
         public void CreateChannel()
         {
             _mainModel = _connect.CreateModel();
-            _clientToServiceModel = _connect.CreateModel();
-
             _mainModel.QueueDeclare(_rpcQueueName, false, false, true, null);
             var consumer = new EventingBasicConsumer(_mainModel);
             _mainModel.BasicQos(0, (ushort)_prefetchCount, true);
@@ -34,13 +31,11 @@ namespace RabbitMQ.Base
 
         private void ConsumerReceived(object sender, BasicDeliverEventArgs e)
         {
-            OnReceived(new EventArgsT<CallSession>(new CallSession(_mainModel, _clientToServiceModel, e)));
+            OnReceived(new EventArgsT<CallSession>(new CallSession(_connect, _mainModel, e)));
         }
 
         public void Dispose()
         {
-            _clientToServiceModel?.Close();
-            _clientToServiceModel?.Dispose();
             _mainModel?.Close();
             _mainModel?.Dispose();
         }

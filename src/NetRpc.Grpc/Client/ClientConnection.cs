@@ -33,7 +33,7 @@ namespace NetRpc.Grpc
 
         public async Task Send(byte[] buffer)
         {
-           await _api.RequestStream.WriteAsync(new StreamBuffer {Body = ByteString.CopyFrom(buffer)});
+            await _api.RequestStream.WriteAsync(new StreamBuffer { Body = ByteString.CopyFrom(buffer) });
         }
 
         public void Start()

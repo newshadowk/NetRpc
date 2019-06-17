@@ -7,28 +7,27 @@ namespace RabbitMQ.Base
 {
     public sealed class CallSession : IDisposable
     {
+        private readonly IModel _mainModel;
         private readonly BasicDeliverEventArgs _e;
 
-        private readonly IModel _mainModel;
         private readonly IModel _clientToServiceModel;
         private readonly string _serviceToClientQueue;
         private string _clientToServiceQueue;
 
         public event EventHandler<EventArgsT<byte[]>> Received;
 
-        public CallSession(IModel mainModel, IModel clientToServiceModel, BasicDeliverEventArgs e)
+        public CallSession(IConnection connection, IModel mainModel, BasicDeliverEventArgs e)
         {
-            _mainModel = mainModel;
-            _clientToServiceModel = clientToServiceModel;
+            _clientToServiceModel = connection.CreateModel();
             _serviceToClientQueue = e.BasicProperties.ReplyTo;
+            _mainModel = mainModel;
             _e = e;
         }
 
         public void Start()
         {
             _clientToServiceQueue = _clientToServiceModel.QueueDeclare().QueueName;
-
-            var replyConsumer = new EventingBasicConsumer(_mainModel);
+            var replyConsumer = new EventingBasicConsumer(_clientToServiceModel);
             replyConsumer.Received += (s, e) =>
             {
                 OnReceived(new EventArgsT<byte[]>(e.Body));
@@ -42,7 +41,7 @@ namespace RabbitMQ.Base
 
         public void Send(byte[] buffer)
         {
-            _mainModel.BasicPublish("", _serviceToClientQueue, null, buffer);
+            _clientToServiceModel.BasicPublish("", _serviceToClientQueue, null, buffer);
         }
 
         public void Dispose()
