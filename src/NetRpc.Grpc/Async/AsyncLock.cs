@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace NetRpc.Grpc
 {
-    public class AsyncLock
+    internal class AsyncLock
     {
         private readonly AsyncSemaphore _semaphore;
         private readonly Task<Release> _release;

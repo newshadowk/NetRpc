@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace NetRpc.Grpc
 {
-    public class AsyncSemaphore
+    internal class AsyncSemaphore
     {
         private static readonly Task SCompleted = Task.FromResult(true);
         private readonly Queue<TaskCompletionSource<bool>> _waiters = new Queue<TaskCompletionSource<bool>>();
