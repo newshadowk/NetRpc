@@ -9,6 +9,8 @@ namespace NetRpc
 
         public string[] GenericArguments { get; set; }
 
+        public string[] ParameterTypes { get; set; }
+
         public override string ToString()
         {
             return $"{FullName}<{GenericArguments.ListToString(",")}>";

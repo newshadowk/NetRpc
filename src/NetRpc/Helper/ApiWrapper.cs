@@ -95,17 +95,19 @@ namespace NetRpc
             var instanceType = instance.GetType();
             foreach (var item in instanceType.GetInterfaces())
             {
-                var found = item.GetMethods().FirstOrDefault(i => i.GetFullMethodName() == action.FullName);
-                if (found != null)
+                var foundList = item.GetMethods().Where(i => i.GetFullMethodName() == action.FullName);
+                foreach (var found in foundList)
                 {
-                    var retM = instanceType.GetMethod(found.Name);
-                    if (action.GenericArguments.Length > 0)
+                    var retM = instanceType.GetMethod(found.Name, action.ParameterTypes.Select(Type.GetType).ToArray());
+                    if (retM != null)
                     {
-                        var ts = action.GenericArguments.ToList().ConvertAll(Type.GetType).ToArray();
-                        // ReSharper disable once PossibleNullReferenceException
-                        retM = retM.MakeGenericMethod(ts);
+                        if (action.GenericArguments.Length > 0)
+                        {
+                            var ts = action.GenericArguments.ToList().ConvertAll(Type.GetType).ToArray();
+                            retM = retM.MakeGenericMethod(ts);
+                        }
+                        return retM;
                     }
-                    return retM;
                 }
             }
 

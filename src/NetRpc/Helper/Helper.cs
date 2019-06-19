@@ -106,7 +106,7 @@ namespace NetRpc
 
         public static TObject ToObject<TObject>(this byte[] bytes)
         {
-            return (TObject) bytes.ToObject();
+            return (TObject)bytes.ToObject();
         }
 
         public static object ToObject(this byte[] bytes)
@@ -165,7 +165,8 @@ namespace NetRpc
             return new ActionInfo
             {
                 GenericArguments = method.GetGenericArguments().ToList().ConvertAll(GetTypeName).ToArray(),
-                FullName = method.GetFullMethodName()
+                FullName = method.GetFullMethodName(),
+                ParameterTypes = method.GetParameters().Select(x => x.ParameterType.FullName).ToArray()
             };
         }
 

@@ -20,5 +20,10 @@ namespace Service
         {
             Console.WriteLine($"Receive: {s}");
         }
+
+        public void Call(int s)
+        {
+            Console.WriteLine($"Receive: {s}");
+        }
     }
 }
