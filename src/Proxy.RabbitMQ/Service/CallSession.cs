@@ -49,7 +49,6 @@ namespace RabbitMQ.Base
             _mainModel.BasicAck(_e.DeliveryTag, false);
             if (_clientToServiceQueue != null)
             {
-                _clientToServiceModel.QueueDelete(_clientToServiceQueue);
                 _clientToServiceModel.Close();
                 _clientToServiceModel.Dispose();
             }
