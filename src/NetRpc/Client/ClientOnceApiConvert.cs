@@ -101,22 +101,22 @@ namespace NetRpc
 
         public Task SendCancelAsync()
         {
-            return _connection.Send(new Request(RequestType.Cancel).All);
+            return _connection.SendAsync(new Request(RequestType.Cancel).All);
         }
 
         public Task SendBufferAsync(byte[] body)
         {
-            return _connection.Send(new Request(RequestType.Buffer, body).All);
+            return _connection.SendAsync(new Request(RequestType.Buffer, body).All);
         }
 
         public Task SendBufferEndAsync()
         {
-            return _connection.Send(new Request(RequestType.BufferEnd).All);
+            return _connection.SendAsync(new Request(RequestType.BufferEnd).All);
         }
 
         public Task SendCmdAsync(OnceCallParam body)
         {
-            return _connection.Send(new Request(RequestType.Cmd, body.ToBytes()).All);
+            return _connection.SendAsync(new Request(RequestType.Cmd, body.ToBytes()).All);
         }
 
         public BufferBlockStream GetRequestStream(long? length)

@@ -26,7 +26,7 @@ namespace NetRpc.RabbitMQ
 
         public event EventHandler<EventArgsT<byte[]>> Received;
 
-        public Task Send(byte[] buffer)
+        public Task SendAsync(byte[] buffer)
         {
             return Task.Run(() =>
             {

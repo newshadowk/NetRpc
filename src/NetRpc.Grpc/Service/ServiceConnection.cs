@@ -26,7 +26,7 @@ namespace NetRpc.Grpc
 
         public event EventHandler<EventArgsT<byte[]>> Received;
 
-        public async Task Send(byte[] buffer)
+        public async Task SendAsync(byte[] buffer)
         {
             using (await _sendLock.LockAsync())
                 await _responseStream.WriteAsync(new StreamBuffer { Body = ByteString.CopyFrom(buffer) });

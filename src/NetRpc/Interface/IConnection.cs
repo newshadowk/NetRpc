@@ -7,7 +7,7 @@ namespace NetRpc
     {
         event EventHandler<EventArgsT<byte[]>> Received;
 
-        Task Send(byte[] buffer);
+        Task SendAsync(byte[] buffer);
 
         void Start();
     }

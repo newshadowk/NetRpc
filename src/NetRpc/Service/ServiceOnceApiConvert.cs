@@ -60,7 +60,7 @@ namespace NetRpc
         public Task SendResultAsync(CustomResult result, ActionInfo action, object[] args)
         {
             if (result.Result is Stream s)
-                return SafeSend(Reply.FromResultStream(s.GetLength()));
+                return SafeSendAsync(Reply.FromResultStream(s.GetLength()));
 
             Reply reply;
             try
@@ -72,7 +72,7 @@ namespace NetRpc
                 return SendFaultAsync(e, action, args);
             }
 
-            return SafeSend(reply);
+            return SafeSendAsync(reply);
         }
 
         public Task SendFaultAsync(Exception body, ActionInfo action, object[] args)
@@ -96,34 +96,34 @@ namespace NetRpc
                 else
                     reply = Reply.FromFault(body);
 
-                return SafeSend(reply);
+                return SafeSendAsync(reply);
             }
             catch (Exception e)
             {
                 var se = new SerializationException($"{e.Message}");
                 FaultException<SerializationException> fse = new FaultException<SerializationException>(se);
-                return SafeSend(Reply.FromFault(fse));
+                return SafeSendAsync(Reply.FromFault(fse));
             }
         }
 
         public Task SendBufferAsync(byte[] buffer)
         {
-            return SafeSend(Reply.FromBuffer(buffer));
+            return SafeSendAsync(Reply.FromBuffer(buffer));
         }
 
         public Task SendBufferEndAsync()
         {
-            return SafeSend(Reply.FromBufferEnd());
+            return SafeSendAsync(Reply.FromBufferEnd());
         }
 
         public Task SendBufferCancelAsync()
         {
-            return SafeSend(Reply.FromBufferCancel());
+            return SafeSendAsync(Reply.FromBufferCancel());
         }
 
         public Task SendBufferFaultAsync()
         {
-            return SafeSend(Reply.FromBufferFault());
+            return SafeSendAsync(Reply.FromBufferFault());
         }
 
         public Task SendCallbackAsync(object callbackObj, ActionInfo action, object[] args)
@@ -138,7 +138,7 @@ namespace NetRpc
                 return SendFaultAsync(e, action, args);
             }
 
-            return SafeSend(reply);
+            return SafeSendAsync(reply);
         }
 
         public BufferBlockStream GetRequestStream(long? length)
@@ -146,11 +146,11 @@ namespace NetRpc
             return new BufferBlockStream(_block, length);
         }
 
-        private async Task SafeSend(Reply reply)
+        private async Task SafeSendAsync(Reply reply)
         {
             try
             {
-                await _connection.Send(reply.All);
+                await _connection.SendAsync(reply.All);
             }
             catch
             {
