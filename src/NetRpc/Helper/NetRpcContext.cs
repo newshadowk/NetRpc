@@ -24,6 +24,6 @@ namespace NetRpc
 
         public Header DefaultHeader { get; } = new Header();
 
-        public static Header ThreadHeader { get; } = GetHeader();
+        public static Header ThreadHeader => GetHeader();
     }
 }
