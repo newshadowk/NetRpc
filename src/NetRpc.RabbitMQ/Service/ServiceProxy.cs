@@ -24,8 +24,8 @@ namespace NetRpc.RabbitMQ
 
         private async void ServiceReceived(object sender, global::RabbitMQ.Base.EventArgsT<CallSession> e)
         {
-            using (var serviceOnceTransfer = new ServiceConnection(e.Value))
-                await _requestHandler.HandleAsync(serviceOnceTransfer);
+            using (var connection = new ServiceConnection(e.Value))
+                await _requestHandler.HandleAsync(connection);
         }
 
         public void UseMiddleware<TMiddleware>(params object[] args) where TMiddleware : MiddlewareBase

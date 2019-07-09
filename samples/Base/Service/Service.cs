@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using DataContract;
 using NetRpc;
+using Stream = System.IO.Stream;
 
 namespace Service
 {
@@ -22,13 +23,13 @@ namespace Service
 
         public T2 CallByGenericType<T1, T2>(T1 obj)
         {
-            Console.WriteLine($"[CallByGeneric], {obj}");
+            Console.WriteLine($"[CallByGenericType], {obj}");
             return default;
         }
 
         public CustomObj SetAndGetObj(CustomObj obj)
         {
-            var retObj = new CustomObj { Date = DateTime.Now, Name = "GetObj" };
+            var retObj = new CustomObj { Date = DateTime.Now, Name = "SetAndGetObj" };
             Console.WriteLine($"[SetAndGetObj], receive:{obj}, return:{retObj}");
             return retObj;
         }

@@ -7,7 +7,7 @@ namespace NetRpc
     {
         public string FullName { get; set; }
 
-        public string[] GenericArguments { get; set; }
+        public string[] GenericArguments { get; set; } = new string[0];
 
         public override string ToString()
         {

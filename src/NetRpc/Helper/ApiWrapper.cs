@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    internal static class ApiWrapper
+    public static class ApiWrapper
     {
-        private static object[] GetArgs(ParameterInfo[] ps, object[] psValue, Action<object> callback, CancellationToken token, BufferBlockStream stream)
+        private static object[] GetArgs(ParameterInfo[] ps, object[] psValue, Action<object> callback, CancellationToken token, Stream stream)
         {
             var psList = ps.ToList();
 
@@ -79,7 +79,7 @@ namespace NetRpc
         }
 
         /// <exception cref="TypeLoadException"></exception>
-        private static (MethodInfo method, object instance) GetMethodInfo(ActionInfo action, object[] instances)
+        public static (MethodInfo method, object instance) GetMethodInfo(ActionInfo action, object[] instances)
         {
             foreach (var o in instances)
             {
@@ -87,7 +87,7 @@ namespace NetRpc
                 if (found != null)
                     return (found, o);
             }
-            throw new TypeLoadException($"{action.FullName} not found in instances");
+            throw new MethodNotFoundException($"{action.FullName} not found in instances");
         }
 
         private static MethodInfo GetMethodInfo(ActionInfo action, object instance)

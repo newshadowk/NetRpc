@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace NetRpc
 {
@@ -11,11 +12,11 @@ namespace NetRpc
 
         public bool HasStream { get; set; }
 
-        public CustomResult(object result, long? streamLength = null)
+        public CustomResult(object result, bool hasStream, long? streamLength = null)
         {
             Result = result;
+            HasStream = hasStream;
             StreamLength = streamLength;
-            HasStream = result.HasStream();
         }
     }
 }

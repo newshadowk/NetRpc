@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 
 namespace NetRpc
@@ -19,9 +20,9 @@ namespace NetRpc
 
         public CancellationToken Token { get; }
 
-        public BufferBlockStream Stream { get; }
+        public Stream Stream { get; }
 
-        public ServiceCallParam(OnceCallParam param, Action<object> callback, CancellationToken token, BufferBlockStream stream)
+        public ServiceCallParam(OnceCallParam param, Action<object> callback, CancellationToken token, Stream stream)
         {
             Action = param.Action;
             Args = param.Args;

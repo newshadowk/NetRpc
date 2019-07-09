@@ -7,25 +7,25 @@ using System.Threading.Tasks.Dataflow;
 
 namespace NetRpc
 {
-    internal sealed class ServiceOnceApiConvert
+    internal sealed class BufferServiceOnceApiConvert : IBufferServiceOnceApiConvert
     {
         private readonly IConnection _connection;
-        private readonly CancellationTokenSource _cts;
+        private CancellationTokenSource _cts;
 
         private readonly BufferBlock<(byte[], BufferType)> _block =
-            new BufferBlock<(byte[], BufferType)>(new DataflowBlockOptions { BoundedCapacity = Helper.StreamBufferCount });
+            new BufferBlock<(byte[], BufferType)>(new DataflowBlockOptions {BoundedCapacity = Helper.StreamBufferCount});
 
         private readonly WriteOnceBlock<Request> _cmdWob = new WriteOnceBlock<Request>(null);
 
-        public ServiceOnceApiConvert(IConnection connection, CancellationTokenSource cts)
+        public BufferServiceOnceApiConvert(IConnection connection)
         {
-            _cts = cts;
             _connection = connection;
             _connection.Received += ConnectionReceived;
         }
 
-        public void Start()
+        public void Start(CancellationTokenSource cts)
         {
+            _cts = cts;
             _connection.Start();
         }
 
@@ -141,7 +141,7 @@ namespace NetRpc
             return SafeSendAsync(reply);
         }
 
-        public BufferBlockStream GetRequestStream(long? length)
+        public Stream GetRequestStream(long? length)
         {
             return new BufferBlockStream(_block, length);
         }
@@ -155,6 +155,12 @@ namespace NetRpc
             catch
             {
             }
+        }
+
+        public void Dispose()
+        {
+            _connection?.Dispose();
+            _cts?.Dispose();
         }
     }
 }

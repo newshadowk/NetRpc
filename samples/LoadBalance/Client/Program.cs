@@ -14,7 +14,7 @@ namespace Client
             var fileStream = File.Open(@"d:\4\1212.pdf", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             for (int i = 0; i < 10; i++)
             {
-                proxy.CallAsync(fileStream, j=> Console.WriteLine(j), i.ToString());
+                proxy.CallAsync(fileStream, Console.WriteLine, i.ToString());
                 Console.WriteLine($"Send {i}");
             }
 

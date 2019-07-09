@@ -32,6 +32,7 @@ namespace NetRpc
                     var edi = ExceptionDispatchInfo.Capture(e.InnerException);
                     edi.Throw();
                 }
+
                 throw;
             }
         }
@@ -56,9 +57,9 @@ namespace NetRpc
 
             //cb
             Action<object> retCallback = null;
-            var found = objs.FirstOrDefault(i => 
+            var found = objs.FirstOrDefault(i =>
                 i != null &&
-                i.GetType().IsGenericType && 
+                i.GetType().IsGenericType &&
                 i.GetType().GetGenericTypeDefinition() == typeof(Action<>));
             if (found != null)
             {
@@ -71,7 +72,7 @@ namespace NetRpc
             found = objs.FirstOrDefault(i => i is CancellationToken);
             if (found != null)
             {
-                retToken = (CancellationToken)found;
+                retToken = (CancellationToken) found;
                 objs.Remove(found);
             }
 
@@ -80,12 +81,12 @@ namespace NetRpc
             found = objs.FirstOrDefault(i => i is Stream);
             if (found != null)
             {
-                retStream = (Stream)found;
+                retStream = (Stream) found;
                 objs.Remove(found);
             }
 
             //otherArgs
             return (retCallback, retToken, retStream, objs.ToArray());
         }
-    } 
+    }
 }

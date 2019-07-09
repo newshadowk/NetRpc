@@ -28,7 +28,7 @@ namespace NetRpc
             _convert.Start();
         }
 
-        public Task<T> CallAsync(Dictionary<string, object> header, ActionInfo action, Action<object> callback, CancellationToken token, Stream stream, 
+        public Task<T> CallAsync(Dictionary<string, object> header, ActionInfo action, Action<object> callback, CancellationToken token, System.IO.Stream stream, 
             params object[] args)
         {
             var tcs = new TaskCompletionSource<T>();

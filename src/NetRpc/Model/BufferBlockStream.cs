@@ -77,7 +77,7 @@ namespace NetRpc
         }
     }
 
-    public sealed class BufferBlockStream : Stream
+    public sealed class BufferBlockStream : System.IO.Stream
     {
         private long? _length;
         private readonly BufferBlockReader _reader;

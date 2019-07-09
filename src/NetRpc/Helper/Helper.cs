@@ -19,7 +19,7 @@ namespace NetRpc
         /// </summary>
         public const int StreamBufferCount = 53;
 
-        public static async Task SendStreamAsync(Func<byte[], Task> publishBuffer, Func<Task> publishBufferEnd, Stream stream, CancellationToken token)
+        public static async Task SendStreamAsync(Func<byte[], Task> publishBuffer, Func<Task> publishBufferEnd, System.IO.Stream stream, CancellationToken token)
         {
             byte[] buffer = new byte[StreamBufferSize];
             int readCount = await stream.ReadAsync(buffer, 0, StreamBufferSize, token);
@@ -46,43 +46,50 @@ namespace NetRpc
             if (obj is null)
                 return false;
 
-            if (obj is Stream)
+            if (obj is System.IO.Stream)
                 return true;
 
             var type = obj.GetType();
             var propertyInfos = type.GetProperties();
-            return propertyInfos.Any(i => i.PropertyType == typeof(Stream));
+            return propertyInfos.Any(i => i.PropertyType == typeof(System.IO.Stream));
         }
 
-        public static bool TryGetStream(this object obj, out Stream stream)
+        public static bool TryGetStream(this object obj, out System.IO.Stream stream, out string streamName)
         {
             stream = default;
+            streamName = default;
 
             if (obj == null)
                 return false;
 
-            if (obj is Stream objS)
+            if (obj is System.IO.Stream objS)
             {
                 stream = objS;
                 return true;
             }
 
+            //stream
             var ps = obj.GetType().GetProperties();
-            var found = ps.FirstOrDefault(i => i.PropertyType == typeof(Stream));
+            var found = ps.FirstOrDefault(i => i.PropertyType == typeof(System.IO.Stream));
             if (found == null)
                 return false;
+            stream = (System.IO.Stream)found.GetValue(obj);
 
-            stream = (Stream)found.GetValue(obj);
+            //streamName
+            found = ps.FirstOrDefault(i => i.Name == "StreamName");
+            if (found != null)
+                streamName = found.GetValue(obj) as string;
+
             return true;
         }
 
-        public static object SetStream(this object obj, Stream stream)
+        public static object SetStream(this object obj, System.IO.Stream stream)
         {
             if (obj == null)
                 return stream;
 
             var ps = obj.GetType().GetProperties();
-            var found = ps.FirstOrDefault(i => i.PropertyType == typeof(Stream));
+            var found = ps.FirstOrDefault(i => i.PropertyType == typeof(System.IO.Stream));
             if (found == null)
                 return obj;
 
@@ -157,7 +164,8 @@ namespace NetRpc
 
         public static string GetFullMethodName(this MethodInfo method)
         {
-            return $"{method.DeclaringType}/{method.Name}";
+            // ReSharper disable once PossibleNullReferenceException
+            return $"{method.DeclaringType.Name}/{method.Name}";
         }
 
         public static ActionInfo GetMethodInfoDto(this MethodInfo method)
@@ -178,7 +186,7 @@ namespace NetRpc
             ex.Action = ex.Action.TrimEndString(", ");
         }
 
-        public static long? GetLength(this Stream stream)
+        public static long? GetLength(this System.IO.Stream stream)
         {
             if (stream == null)
                 return null;
@@ -232,7 +240,7 @@ namespace NetRpc
             return t.AssemblyQualifiedName;
         }
 
-        private static bool IsSystemType(Type t)
+        public static bool IsSystemType(Type t)
         {
             var sn = t.Module.ScopeName;
             return sn == "System.Private.CoreLib.dll" || sn == "CommonLanguageRuntimeLibrary";
