@@ -7,8 +7,10 @@ namespace DataContract
 {
     public interface IServiceAsync
     {
-        Task<CustomObj> Call(string p1, string p2);
+        //Task<CustomObj> Call(string p1, int p2, Guid p3, DateTime p4);
 
-        Task<ComplexStream> ComplexCallAsync(CustomObj obj, string p1, Stream stream, Action<CustomCallbackObj> cb, CancellationToken token);
+        Task<Stream> EchoStreamAsync(string p1, Stream data);
+
+        //Task<ComplexStream> ComplexCallAsync(CustomObj obj, string p1, Stream stream, Action<CustomCallbackObj> cb, CancellationToken token);
     }
 }

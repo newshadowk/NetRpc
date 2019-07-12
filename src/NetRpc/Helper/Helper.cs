@@ -19,15 +19,15 @@ namespace NetRpc
         /// </summary>
         public const int StreamBufferCount = 53;
 
-        public static async Task SendStreamAsync(Func<byte[], Task> publishBuffer, Func<Task> publishBufferEnd, System.IO.Stream stream, CancellationToken token)
+        public static async Task SendStreamAsync(Func<byte[], Task> publishBuffer, Func<Task> publishBufferEnd, Stream stream, CancellationToken token)
         {
-            byte[] buffer = new byte[StreamBufferSize];
-            int readCount = await stream.ReadAsync(buffer, 0, StreamBufferSize, token);
+            var buffer = new byte[StreamBufferSize];
+            var readCount = await stream.ReadAsync(buffer, 0, StreamBufferSize, token);
             while (readCount > 0)
             {
                 if (readCount < StreamBufferSize)
                 {
-                    byte[] tempBs = new byte[readCount];
+                    var tempBs = new byte[readCount];
                     Buffer.BlockCopy(buffer, 0, tempBs, 0, readCount);
                     await publishBuffer(tempBs);
                     await publishBufferEnd();
@@ -46,15 +46,35 @@ namespace NetRpc
             if (obj is null)
                 return false;
 
-            if (obj is System.IO.Stream)
+            if (obj is Stream)
                 return true;
 
             var type = obj.GetType();
             var propertyInfos = type.GetProperties();
-            return propertyInfos.Any(i => i.PropertyType == typeof(System.IO.Stream));
+            return propertyInfos.Any(i => i.PropertyType == typeof(Stream));
         }
 
-        public static bool TryGetStream(this object obj, out System.IO.Stream stream, out string streamName)
+        public static bool HasStream(this Type t)
+        {
+            if (t == typeof(Stream))
+                return true;
+
+            var propertyInfos = t.GetProperties();
+            return propertyInfos.Any(i => i.PropertyType == typeof(Stream));
+        }
+
+        public static Type GetTypeFromReturnTypeDefinition(Type returnTypeDefinition)
+        {
+            if (returnTypeDefinition.IsGenericType && returnTypeDefinition.GetGenericTypeDefinition() == typeof(Task<>))
+            {
+                var at = returnTypeDefinition.GetGenericArguments()[0];
+                return at;
+            }
+
+            return returnTypeDefinition;
+        }
+
+        public static bool TryGetStream(this object obj, out Stream stream, out string streamName)
         {
             stream = default;
             streamName = default;
@@ -62,7 +82,7 @@ namespace NetRpc
             if (obj == null)
                 return false;
 
-            if (obj is System.IO.Stream objS)
+            if (obj is Stream objS)
             {
                 stream = objS;
                 return true;
@@ -70,10 +90,10 @@ namespace NetRpc
 
             //stream
             var ps = obj.GetType().GetProperties();
-            var found = ps.FirstOrDefault(i => i.PropertyType == typeof(System.IO.Stream));
+            var found = ps.FirstOrDefault(i => i.PropertyType == typeof(Stream));
             if (found == null)
                 return false;
-            stream = (System.IO.Stream)found.GetValue(obj);
+            stream = (Stream) found.GetValue(obj);
 
             //streamName
             found = ps.FirstOrDefault(i => i.Name == "StreamName");
@@ -83,13 +103,13 @@ namespace NetRpc
             return true;
         }
 
-        public static object SetStream(this object obj, System.IO.Stream stream)
+        public static object SetStream(this object obj, Stream stream)
         {
             if (obj == null)
                 return stream;
 
             var ps = obj.GetType().GetProperties();
-            var found = ps.FirstOrDefault(i => i.PropertyType == typeof(System.IO.Stream));
+            var found = ps.FirstOrDefault(i => i.PropertyType == typeof(Stream));
             if (found == null)
                 return obj;
 
@@ -132,7 +152,7 @@ namespace NetRpc
 
         public static string ListToString<T>(this IEnumerable<T> list, string split)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             var toList = list as IList<T> ?? list.ToList();
             foreach (var s in toList)
             {
@@ -186,7 +206,7 @@ namespace NetRpc
             ex.Action = ex.Action.TrimEndString(", ");
         }
 
-        public static long? GetLength(this System.IO.Stream stream)
+        public static long? GetLength(this Stream stream)
         {
             if (stream == null)
                 return null;
@@ -209,8 +229,8 @@ namespace NetRpc
             var msgContent = new StringBuilder("\r\n");
             msgContent.Append(GetMsgContent(e));
 
-            List<Exception> lastE = new List<Exception>();
-            Exception currE = e.InnerException;
+            var lastE = new List<Exception>();
+            var currE = e.InnerException;
             lastE.Add(e);
             lastE.Add(currE);
             while (currE != null && !lastE.Contains(currE))
@@ -226,7 +246,7 @@ namespace NetRpc
 
         private static string GetMsgContent(Exception ee)
         {
-            string ret = ee.Message;
+            var ret = ee.Message;
             if (!string.IsNullOrEmpty(ee.StackTrace))
                 ret += "\r\n" + ee.StackTrace;
             ret += "\r\n";

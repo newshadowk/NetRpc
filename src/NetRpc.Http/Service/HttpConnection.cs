@@ -27,6 +27,8 @@ namespace NetRpc.Http
 
         public async Task SendAsync(HttpResult result)
         {
+            _context.Response.StatusCode = 200;
+            _context.Response.ContentType = "application/json; charset=utf-8";
             await _context.Response.WriteAsync(result.ToJson());
         }
 
@@ -49,7 +51,8 @@ namespace NetRpc.Http
         {
             try
             {
-                await _hub.Clients.Client(ConnectionId).Callback(CallId,callbackObj.ToJson());
+                if (ConnectionId != null)
+                    await _hub.Clients.Client(ConnectionId).Callback(CallId,callbackObj.ToJson());
             }
             catch
             {

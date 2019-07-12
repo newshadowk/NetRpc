@@ -2,9 +2,9 @@
 {
     public static class NetRpcManager
     {
-        public static ServiceProxy CreateServiceProxy(int port, string rootPath, params object[] instances)
+        public static ServiceProxy CreateServiceProxy(int port, string rootPath, bool isOpenSwagger, params object[] instances)
         {
-            return new ServiceProxy(port, rootPath, instances);
+            return new ServiceProxy(port, rootPath, isOpenSwagger, instances);
         }
     }
 }

@@ -63,6 +63,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "samples\Http\Ser
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataContract", "samples\Http\DataContract\DataContract.csproj", "{7F92CADD-B243-45F3-A3A0-C613BFC1CB32}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NSwag.Core", "src\NSwag.Core\NSwag.Core.csproj", "{A5CF4037-2A3A-4ADF-BD9B-C8C500020C8B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -141,6 +143,10 @@ Global
 		{7F92CADD-B243-45F3-A3A0-C613BFC1CB32}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F92CADD-B243-45F3-A3A0-C613BFC1CB32}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F92CADD-B243-45F3-A3A0-C613BFC1CB32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5CF4037-2A3A-4ADF-BD9B-C8C500020C8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5CF4037-2A3A-4ADF-BD9B-C8C500020C8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5CF4037-2A3A-4ADF-BD9B-C8C500020C8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5CF4037-2A3A-4ADF-BD9B-C8C500020C8B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -171,6 +177,7 @@ Global
 		{94C61A6A-26CF-4C4A-9A09-E304CB3B0265} = {A605A1E7-7065-4ED1-87D8-3C6159F33A0A}
 		{D3C0B420-356F-4FB3-8302-A90387CA88BF} = {94C61A6A-26CF-4C4A-9A09-E304CB3B0265}
 		{7F92CADD-B243-45F3-A3A0-C613BFC1CB32} = {94C61A6A-26CF-4C4A-9A09-E304CB3B0265}
+		{A5CF4037-2A3A-4ADF-BD9B-C8C500020C8B} = {1409B41E-BE51-4E8E-BC8A-0D38AFD3D3F7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9C903E86-5147-4487-B701-7548555524C0}

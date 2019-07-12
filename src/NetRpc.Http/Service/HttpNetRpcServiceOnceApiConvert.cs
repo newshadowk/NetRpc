@@ -41,8 +41,11 @@ namespace NetRpc.Http
             var header = GetHeader();
             var args = GetArgs(actionInfo);
             var param = new OnceCallParam(header, actionInfo, null, args);
-            _connection.ConnectionId = header["ConnectionId"].ToString();
-            _connection.CallId = header["CallId"].ToString();
+
+            if (header.TryGetValue("ConnectionId", out var connectionId))
+                _connection.ConnectionId = connectionId.ToString();
+            if (header.TryGetValue("CallId", out var callId))
+                _connection.CallId = callId.ToString();
             return Task.FromResult(param);
         }
 
@@ -101,7 +104,7 @@ namespace NetRpc.Http
             var rawPath = Helper.FormatPath(_context.Request.Path.Value);
             if (!string.IsNullOrEmpty(_rootPath))
             {
-                var startS = $"{_rootPath}/";
+                var startS = $"{_rootPath}/".TrimStart('/');
                 if (!rawPath.StartsWith(startS))
                     throw new HttpNotMatchedException($"Request url:'{_context.Request.Path.Value}' is start with '{startS}'");
                 rawPath = rawPath.Substring(startS.Length);
@@ -215,9 +218,19 @@ namespace NetRpc.Http
                 {
                     try
                     {
-                        ret.Add(Convert.ChangeType(values[0], p.PropertyType));
+                        if (p.PropertyType == typeof(string))
+                        {
+                            ret.Add(values[0]);
+                            continue;
+                        }
+
+                        var v = p.PropertyType.GetMethod("Parse", new[] { typeof(string) }).Invoke(null, new object[]{values[0]});
+                        ret.Add(v);
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        throw new HttpNotMatchedException($"'{p.Name}' is not valid value, {ex.Message}");
+                    }
                 }
                 else
                 {

@@ -10,7 +10,7 @@ namespace NetRpc.Http
     {
         private readonly IWebHost _host;
 
-        public ServiceProxy(int port, string hubPath, params object[] instances)
+        public ServiceProxy(int port, string hubPath, bool isOpenSwagger, params object[] instances)
         {
             const string origins = "_myAllowSpecificOrigins";
             _host = WebHost.CreateDefaultBuilder(null)
@@ -33,7 +33,7 @@ namespace NetRpc.Http
                 {
                     app.UseCors(origins);
                     app.UseSignalR(routes => { routes.MapHub<CallbackHub>(hubPath); });
-                    app.UseNetRpcHttp(instances);
+                    app.UseNetRpcHttp(isOpenSwagger, instances);
                 })
                 .Build();
         }
