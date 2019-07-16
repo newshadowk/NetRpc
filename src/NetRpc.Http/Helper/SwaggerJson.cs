@@ -4,9 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using Namotion.Reflection;
 using NJsonSchema;
 using NJsonSchema.Generation;
 using NSwag;
+using NSwag.Generation;
 
 namespace NetRpc.Http
 {
@@ -15,6 +17,7 @@ namespace NetRpc.Http
         private readonly string _apiRootPath;
         private readonly object[] _instances;
         private readonly OpenApiDocument _doc;
+        private readonly OpenApiDocumentGenerator _generator;
 
         public SwaggerJson(string apiRootPath, object[] instances)
         {
@@ -22,6 +25,9 @@ namespace NetRpc.Http
             _instances = instances;
             _doc = new OpenApiDocument();
             _doc.SchemaType = SchemaType.Swagger2;
+            var schemaResolver = new OpenApiSchemaResolver(_doc, new JsonSchemaGeneratorSettings { SchemaType = SchemaType.Swagger2 });
+            var gs = new OpenApiDocumentGeneratorSettings { Title = null, SchemaType = SchemaType.Swagger2 };
+            _generator = new OpenApiDocumentGenerator(gs, schemaResolver);
 
             //_doc.Consumes.Add("text/plain");
             //_doc.Consumes.Add("application/json");
@@ -32,20 +38,17 @@ namespace NetRpc.Http
 
         public string ToJson()
         {
-            var doc = GetOpenApiDocument();
-            return doc.ToJson();
+            Process();
+            return _doc.ToJson();
         }
 
-        public OpenApiDocument GetOpenApiDocument()
+        private void Process()
         {
             (List<Type> paramTypes, List<(Type interfaceInstance, List<MethodInfo> methods)> list) = GetMethodInfos(_instances);
 
             //model
             //merge all param to one json obj for each method.
-            paramTypes.ForEach(i => _doc.Definitions.Add(i.Name, JsonSchema.FromType(i, new JsonSchemaGeneratorSettings
-            {
-                SchemaType = SchemaType.Swagger2
-            })));
+            paramTypes.ForEach(i => _generator.CreatePrimitiveParameter(i.Name, null, i.ToContextualType()));
 
             //tag
             list.ForEach(i => _doc.Tags.Add(new OpenApiTag { Name = i.interfaceInstance.Name }));
@@ -60,19 +63,17 @@ namespace NetRpc.Http
                     var operation = new OpenApiOperation();
                     operation.Tags.Add(tagGroup.interfaceInstance.Name);
                     operation.Responses.Add("200", GetOpenApiResponse(method.ReturnType));
-                    //var param = GetOpenApiParameter(method);
-                    //operation.Parameters.Add(param);
-                    foreach (var param in method.GetParameters())
-                    {
-                        var apiParam = GetOpenApiParameter(param.Name, param.ParameterType);
-                        operation.Parameters.Add(apiParam);
-                    }
+                    var param = GetOpenApiParameter(method);
+                    operation.Parameters.Add(param);
+                    //foreach (var param in method.GetParameters())
+                    //{
+                    //    var apiParam = GetOpenApiParameter(param.Name, param.ParameterType);
+                    //    operation.Parameters.Add(apiParam);
+                    //}
 
                     _doc.Paths[key]["post"] = operation;
                 }
             }
-
-            return _doc;
         }
 
         private static (List<Type> paramTypes, List<(Type interfaceInstance, List<MethodInfo> methods)>) GetMethodInfos(object[] instances)
@@ -230,10 +231,14 @@ namespace NetRpc.Http
         private OpenApiParameter GetOpenApiParameter(MethodInfo method)
         {
             var argType = Helper.GetArgType(method);
+            var openApiParameter = _generator.CreatePrimitiveParameter(null, null, argType.ToContextualType());
+
             var p = new OpenApiParameter();
-            p.Name = "inParam";
+            p.Name = "data";
             p.Kind = OpenApiParameterKind.Body;
-            p.Schema = JsonSchema.FromType(argType, new JsonSchemaGeneratorSettings(){SchemaType = SchemaType.Swagger2});
+            p.Schema = new OpenApiParameter();
+            p.Schema.Reference = openApiParameter;
+            p.IsRequired = true;
             return p;
         }
 

@@ -26,6 +26,7 @@ namespace Service
 
             //2 use 'IApplicationBuilder.UseNetRpcHttp' to inject to your own exist service(like mvc web site).
 
+            //M1.D();
 
             var webHost = GetWebHost();
             webHost.Run();

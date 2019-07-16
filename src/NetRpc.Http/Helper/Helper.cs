@@ -59,7 +59,8 @@ namespace NetRpc.Http
 
         public static Type GetArgType(MethodInfo m)
         {
-            var t = ClassHelper.BuildType("TempType");
+            var typeName = $"{m.DeclaringType.Name}_{m.Name}";
+            var t = ClassHelper.BuildType(typeName);
             var cis = new List<ClassHelper.CustomsPropertyInfo>();
             foreach (var p in m.GetParameters())
             {

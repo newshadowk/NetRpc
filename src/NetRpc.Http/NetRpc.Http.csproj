@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NetRpc\NetRpc.csproj" />
     <ProjectReference Include="..\NSwag.Core\NSwag.Core.csproj" />
+    <ProjectReference Include="..\NSwag.Generation\NSwag.Generation.csproj" />
   </ItemGroup>
 
 </Project>

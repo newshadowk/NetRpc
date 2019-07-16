@@ -65,6 +65,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataContract", "samples\Htt
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NSwag.Core", "src\NSwag.Core\NSwag.Core.csproj", "{A5CF4037-2A3A-4ADF-BD9B-C8C500020C8B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NSwag.Generation", "src\NSwag.Generation\NSwag.Generation.csproj", "{A1ED46F1-CD25-478C-A23A-ED7951635EA8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -147,6 +149,10 @@ Global
 		{A5CF4037-2A3A-4ADF-BD9B-C8C500020C8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A5CF4037-2A3A-4ADF-BD9B-C8C500020C8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A5CF4037-2A3A-4ADF-BD9B-C8C500020C8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1ED46F1-CD25-478C-A23A-ED7951635EA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1ED46F1-CD25-478C-A23A-ED7951635EA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1ED46F1-CD25-478C-A23A-ED7951635EA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1ED46F1-CD25-478C-A23A-ED7951635EA8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -178,6 +184,7 @@ Global
 		{D3C0B420-356F-4FB3-8302-A90387CA88BF} = {94C61A6A-26CF-4C4A-9A09-E304CB3B0265}
 		{7F92CADD-B243-45F3-A3A0-C613BFC1CB32} = {94C61A6A-26CF-4C4A-9A09-E304CB3B0265}
 		{A5CF4037-2A3A-4ADF-BD9B-C8C500020C8B} = {1409B41E-BE51-4E8E-BC8A-0D38AFD3D3F7}
+		{A1ED46F1-CD25-478C-A23A-ED7951635EA8} = {1409B41E-BE51-4E8E-BC8A-0D38AFD3D3F7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9C903E86-5147-4487-B701-7548555524C0}
