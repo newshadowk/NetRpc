@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using NJsonSchema;
+using NJsonSchema.Generation;
 using NSwag;
 
 namespace NetRpc.Http
@@ -13,11 +14,20 @@ namespace NetRpc.Http
     {
         private readonly string _apiRootPath;
         private readonly object[] _instances;
+        private readonly OpenApiDocument _doc;
 
         public SwaggerJson(string apiRootPath, object[] instances)
         {
             _apiRootPath = apiRootPath;
             _instances = instances;
+            _doc = new OpenApiDocument();
+            _doc.SchemaType = SchemaType.Swagger2;
+
+            //_doc.Consumes.Add("text/plain");
+            //_doc.Consumes.Add("application/json");
+
+            //_doc.Produces.Add("text/plain");
+            //_doc.Produces.Add("application/json");
         }
 
         public string ToJson()
@@ -28,35 +38,41 @@ namespace NetRpc.Http
 
         public OpenApiDocument GetOpenApiDocument()
         {
-            OpenApiDocument doc = new OpenApiDocument();
             (List<Type> paramTypes, List<(Type interfaceInstance, List<MethodInfo> methods)> list) = GetMethodInfos(_instances);
 
             //model
-            paramTypes.ForEach(i => doc.Definitions.Add(i.Name, JsonSchema.FromType(i)));
+            //merge all param to one json obj for each method.
+            paramTypes.ForEach(i => _doc.Definitions.Add(i.Name, JsonSchema.FromType(i, new JsonSchemaGeneratorSettings
+            {
+                SchemaType = SchemaType.Swagger2
+            })));
 
             //tag
-            list.ForEach(i => doc.Tags.Add(new OpenApiTag {Name = i.interfaceInstance.Name}));
+            list.ForEach(i => _doc.Tags.Add(new OpenApiTag { Name = i.interfaceInstance.Name }));
 
             //path
             foreach (var tagGroup in list)
             {
                 foreach (var method in tagGroup.methods)
                 {
-                    string key = $"{_apiRootPath}/{tagGroup.interfaceInstance.Name}/{method.Name}";
-                    doc.Paths[key] = new OpenApiPathItem();
+                    var key = $"{_apiRootPath}/{tagGroup.interfaceInstance.Name}/{method.Name}";
+                    _doc.Paths[key] = new OpenApiPathItem();
                     var operation = new OpenApiOperation();
                     operation.Tags.Add(tagGroup.interfaceInstance.Name);
                     operation.Responses.Add("200", GetOpenApiResponse(method.ReturnType));
+                    //var param = GetOpenApiParameter(method);
+                    //operation.Parameters.Add(param);
                     foreach (var param in method.GetParameters())
                     {
-                         var apiParam = GetOpenApiParameter(param.Name, param.ParameterType, true);
-                         operation.Parameters.Add(apiParam);
+                        var apiParam = GetOpenApiParameter(param.Name, param.ParameterType);
+                        operation.Parameters.Add(apiParam);
                     }
-                    doc.Paths[key]["post"] = operation;
+
+                    _doc.Paths[key]["post"] = operation;
                 }
             }
 
-            return doc;
+            return _doc;
         }
 
         private static (List<Type> paramTypes, List<(Type interfaceInstance, List<MethodInfo> methods)>) GetMethodInfos(object[] instances)
@@ -100,53 +116,82 @@ namespace NetRpc.Http
             var ret = new List<Type>();
             foreach (var p in methodInfo.GetParameters())
             {
-                if (p.ParameterType == typeof(CancellationToken?) || p.ParameterType == typeof(CancellationToken))
-                    continue;
-
-                Type t;
-                if (p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == typeof(Action<>))
-                    t = p.ParameterType.GenericTypeArguments[0];
-                else
-                    t = p.ParameterType;
-
-                if (!NetRpc.Helper.IsSystemType(t))
-                    ret.Add(t);
+                var t = GetTypeByParamTypeRecursive(p.ParameterType);
+                ret.AddRange(t);
             }
 
             return ret;
         }
 
-        private static OpenApiResponse GetOpenApiResponse(Type type)
+        private static List<Type> GetTypeByParamTypeRecursive(Type paramType)
         {
-            var retType = NetRpc.Helper.GetTypeFromReturnTypeDefinition(type);
-            (JsonObjectType rType, OpenApiParameterKind _, string format) = GetJsonObjectTypeForParam(retType, false);
-            OpenApiResponse ret = new OpenApiResponse();
+            List<Type> ret = new List<Type>();
+            var t = GetTypeByParamType(paramType);
+            if (t != null)
+                ret.Add(t);
 
-            var hasStream = retType.HasStream();
-            if (hasStream)
-                ret.ActualResponse.Content.Add("application/octet-stream", new OpenApiMediaType {Schema = new JsonSchema {Type = rType, Format = format}});
-            else
-                ret.ActualResponse.Content.Add("application/json", new OpenApiMediaType {Schema = new JsonSchema {Type = rType, Format = format}});
+            foreach (var p in paramType.GetProperties())
+            {
+                t = GetTypeByParamType(p.PropertyType);
+
+                if (t == null)
+                    continue;
+
+                if (ret.Exists(i => i.FullName == t.FullName))
+                    continue;
+
+                var subList = GetTypeByParamTypeRecursive(t);
+                ret.Add(t);
+                ret.AddRange(subList);
+            }
+
             return ret;
         }
 
-        private static (JsonObjectType type, OpenApiParameterKind kind, string format) GetJsonObjectTypeForParam(Type type, bool isGet)
+        private static Type GetTypeByParamType(Type paramType)
         {
-            OpenApiParameterKind kind;
-            string format = null;
-            JsonObjectType rType = JsonObjectType.String;
+            if (paramType == typeof(CancellationToken?) || paramType == typeof(CancellationToken))
+                return null;
 
-            if (isGet)
-                kind = OpenApiParameterKind.Query;
+            Type t;
+            if (paramType.IsGenericType && paramType.GetGenericTypeDefinition() == typeof(Action<>))
+                t = paramType.GenericTypeArguments[0];
             else
-                kind = OpenApiParameterKind.Body;
+                t = paramType;
+
+            if (NetRpc.Helper.IsSystemType(t))
+                return null;
+
+            return t;
+        }
+
+        private static OpenApiResponse GetOpenApiResponse(Type type)
+        {
+            var retType = Helper.GetTypeFromReturnTypeDefinition(type);
+            var (rType, _, format) = GetJsonObjectTypeForParam(retType);
+            var ret = new OpenApiResponse();
+
+            var hasStream = retType.HasStream();
+            if (hasStream)
+                ret.ActualResponse.Content.Add("application/octet-stream", new OpenApiMediaType { Schema = new JsonSchema { Type = rType, Format = format } });
+            else
+                ret.ActualResponse.Content.Add("application/json", new OpenApiMediaType { Schema = new JsonSchema { Type = rType, Format = format } });
+            return ret;
+        }
+
+        private static (JsonObjectType type, OpenApiParameterKind kind, string format) GetJsonObjectTypeForParam(Type type)
+        {
+            string format = null;
+            var rType = JsonObjectType.String;
+            var kind = OpenApiParameterKind.Body;
 
             if (type == typeof(Guid))
             {
                 format = JsonFormatStrings.Guid;
                 rType = JsonObjectType.String;
             }
-            else if (type == typeof(int) ||
+            else if (type == typeof(byte) ||
+                     type == typeof(int) ||
                      type == typeof(short) ||
                      type == typeof(long) ||
                      type == typeof(uint) ||
@@ -167,6 +212,11 @@ namespace NetRpc.Http
             {
                 rType = JsonObjectType.Boolean;
             }
+            else if (type == typeof(string) ||
+                     type == typeof(char))
+            {
+                rType = JsonObjectType.String;
+            }
             else if (type == typeof(Stream))
             {
                 rType = JsonObjectType.String;
@@ -177,20 +227,37 @@ namespace NetRpc.Http
             return (rType, kind, format);
         }
 
-        private static OpenApiParameter GetOpenApiParameter(string name, Type type, bool isGet)
+        private OpenApiParameter GetOpenApiParameter(MethodInfo method)
         {
-            (JsonObjectType rType, OpenApiParameterKind kind, string format) = GetJsonObjectTypeForParam(type, isGet);
+            var argType = Helper.GetArgType(method);
+            var p = new OpenApiParameter();
+            p.Name = "inParam";
+            p.Kind = OpenApiParameterKind.Body;
+            p.Schema = JsonSchema.FromType(argType, new JsonSchemaGeneratorSettings(){SchemaType = SchemaType.Swagger2});
+            return p;
+        }
+
+        private OpenApiParameter GetOpenApiParameter(string name, Type type)
+        {
+            var (rType, kind, format) = GetJsonObjectTypeForParam(type);
+
             var p = new OpenApiParameter();
             p.Name = name;
             p.Kind = kind;
             p.IsRequired = true;
             p.Schema = new OpenApiParameter();
-            p.Schema.Type = rType;
-            p.Schema.Format = format;
-            if (type == typeof(Stream))
+
+            //Schema
+            if (_doc.Definitions.TryGetValue(type.Name, out var def))
+                p.Schema.Reference = def;
+            else
             {
-                p.Type = JsonObjectType.File;
+                p.Schema.Type = rType;
+                p.Schema.Format = format;
             }
+
+            if (type == typeof(Stream))
+                p.Type = JsonObjectType.File;
             return p;
         }
     }

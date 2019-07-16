@@ -41,39 +41,6 @@ namespace NetRpc
             await publishBufferEnd();
         }
 
-        public static bool HasStream(this object obj)
-        {
-            if (obj is null)
-                return false;
-
-            if (obj is Stream)
-                return true;
-
-            var type = obj.GetType();
-            var propertyInfos = type.GetProperties();
-            return propertyInfos.Any(i => i.PropertyType == typeof(Stream));
-        }
-
-        public static bool HasStream(this Type t)
-        {
-            if (t == typeof(Stream))
-                return true;
-
-            var propertyInfos = t.GetProperties();
-            return propertyInfos.Any(i => i.PropertyType == typeof(Stream));
-        }
-
-        public static Type GetTypeFromReturnTypeDefinition(Type returnTypeDefinition)
-        {
-            if (returnTypeDefinition.IsGenericType && returnTypeDefinition.GetGenericTypeDefinition() == typeof(Task<>))
-            {
-                var at = returnTypeDefinition.GetGenericArguments()[0];
-                return at;
-            }
-
-            return returnTypeDefinition;
-        }
-
         public static bool TryGetStream(this object obj, out Stream stream, out string streamName)
         {
             stream = default;

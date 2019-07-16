@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Reflection;
+using DataContract;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -24,9 +25,10 @@ namespace Service
             //p.Open();
 
             //2 use 'IApplicationBuilder.UseNetRpcHttp' to inject to your own exist service(like mvc web site).
+
+
             var webHost = GetWebHost();
             webHost.Run();
-            //var s = GetOpenApiDocuemnt();
 
             Console.ReadLine();
         }

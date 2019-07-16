@@ -10,10 +10,17 @@ namespace DataContract
 
         public DateTime Date { get; set; }
 
+        public CustomObj2 CustomObj2Value { get; set; }
+
         public override string ToString()
         {
             return $"{nameof(Name)}: {Name}, {nameof(Date)}: {Date}";
         }
+    }
+
+    public class CustomObj2
+    {
+        public string P1 { get; set; }
     }
 
     public class CustomCallbackObj

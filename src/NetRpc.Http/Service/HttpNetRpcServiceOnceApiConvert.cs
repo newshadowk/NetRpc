@@ -128,7 +128,7 @@ namespace NetRpc.Http
         {
             //dataObjType
             (MethodInfo method, _) = ApiWrapper.GetMethodInfo(ai, _instances);
-            var dataObjType = GetArgType(method);
+            var dataObjType = Helper.GetArgType(method);
 
             if (_context.Request.ContentType != null)
             {
@@ -141,8 +141,8 @@ namespace NetRpc.Http
                     if (data.Count == 0)
                         throw new HttpFailedException("multipart/form-data, 'data' have no data.");
 
-                    var dataObj = ToObject(data[0], dataObjType);
-                    return GetArgsFromDataObj(dataObjType, dataObj);
+                    var dataObj = Helper.ToObjectForHttp(data[0], dataObjType);
+                    return Helper.GetArgsFromDataObj(dataObjType, dataObj);
                 }
 
                 //application/json
@@ -152,92 +152,17 @@ namespace NetRpc.Http
                     using (var sr = new StreamReader(_context.Request.Body, Encoding.UTF8))
                         body = sr.ReadToEnd();
 
-                    var dataObj = ToObject(body, dataObjType);
-                    return GetArgsFromDataObj(dataObjType, dataObj);
+                    var dataObj = Helper.ToObjectForHttp(body, dataObjType);
+                    return Helper.GetArgsFromDataObj(dataObjType, dataObj);
                 }
             }
             else
             {
-                var args = GetArgsFromQuery(_context.Request.Query, dataObjType);
+                var args = Helper.GetArgsFromQuery(_context.Request.Query, dataObjType);
                 return args;
             }
 
             throw new HttpFailedException($"ContentType:'{_context.Request.ContentType}' is not supported.");
-        }
-
-        private static Type GetArgType(MethodInfo m)
-        {
-            var t = ClassHelper.BuildType("TempType");
-            var cis = new List<ClassHelper.CustomsPropertyInfo>();
-            foreach (var p in m.GetParameters())
-            {
-                if (p.ParameterType == typeof(Stream) ||
-                    p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == typeof(Action<>) ||
-                    p.ParameterType == typeof(CancellationToken))
-                    continue;
-                cis.Add(new ClassHelper.CustomsPropertyInfo(p.ParameterType, p.Name));
-            }
-            t = ClassHelper.AddProperty(t, cis);
-            if (cis.Count == 0)
-                return null;
-            return t;
-        }
-
-        private static object[] GetArgsFromDataObj(Type dataObjType, object dataObj)
-        {
-            List<object> ret = new List<object>();
-            foreach (var p in dataObjType.GetProperties())
-                ret.Add(ClassHelper.GetPropertyValue(dataObj, p.Name));
-            return ret.ToArray();
-        }
-
-        private static object ToObject(string str, Type t)
-        {
-            object dataObj;
-            try
-            {
-                dataObj = str.ToObject(t);
-            }
-            catch (Exception e)
-            {
-                throw new HttpFailedException($"{e.Message}, str:\r\n{str}");
-            }
-
-            return dataObj;
-        }
-
-        private static object[] GetArgsFromQuery(IQueryCollection query, Type dataObjType)
-        {
-            if (dataObjType == null)
-                return new object[0];
-
-            var ret = new List<object>();
-            foreach (var p in dataObjType.GetProperties())
-            {
-                if (query.TryGetValue(p.Name, out var values))
-                {
-                    try
-                    {
-                        if (p.PropertyType == typeof(string))
-                        {
-                            ret.Add(values[0]);
-                            continue;
-                        }
-
-                        var v = p.PropertyType.GetMethod("Parse", new[] { typeof(string) }).Invoke(null, new object[]{values[0]});
-                        ret.Add(v);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new HttpNotMatchedException($"'{p.Name}' is not valid value, {ex.Message}");
-                    }
-                }
-                else
-                {
-                    ret.Add(ClassHelper.GetDefault(p.PropertyType));
-                }
-            }
-            return ret.ToArray();
         }
 
         private void CallbackHubCanceled(object sender, EventArgs e)

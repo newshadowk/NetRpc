@@ -14,7 +14,6 @@ namespace NetRpc
         public event EventHandler<EventArgsT<Exception>> ExceptionInvoked;
         private readonly object LockObj = new object();
         private readonly IConnectionFactory _factory;
-        private readonly int _hearbeatInterval;
         private bool _isConnected;
         public event Func<ClientProxy<TService>, Task> Heartbeat;
         private readonly Timer _tHearbeat;
@@ -26,7 +25,6 @@ namespace NetRpc
         public ClientProxy(IConnectionFactory factory, bool isWrapFaultException, int timeoutInterval, int hearbeatInterval = 1000 * 10)
         {
             _factory = factory;
-            _hearbeatInterval = hearbeatInterval;
             var call = new Call(factory, isWrapFaultException, timeoutInterval, Context);
             ClientMethodInvoker invoker = new ClientMethodInvoker(call);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
