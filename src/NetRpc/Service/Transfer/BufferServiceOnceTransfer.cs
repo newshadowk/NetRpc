@@ -37,7 +37,7 @@ namespace NetRpc
                 return;
             }
 
-            var hasStream = ret.TryGetStream(out System.IO.Stream retStream, out string retStreamName);
+            var hasStream = ret.TryGetStream(out System.IO.Stream retStream, out _);
 
             //send result
             await _convert.SendResultAsync(new CustomResult(ret, hasStream, retStream.GetLength()), scp.Action, scp.Args);

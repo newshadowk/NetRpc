@@ -2,15 +2,22 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using NetRpc.Http.FaultContract;
 
 namespace DataContract
 {
     public interface IServiceAsync
     {
-        Task<CustomObj> Call(CustomObj p1, int p2);
+        //Task<CustomObj> Call(string p1, int p2);
 
-        //Task<Stream> EchoStreamAsync(CustomObj obj, string p1, Stream data);
+        //[SwaggerFaultContract(typeof(CustomException))]
+        //[SwaggerFaultContract(typeof(CustomException2))]
+        //Task CallByCustomExceptionAsync();
 
-        //Task<ComplexStream> ComplexCallAsync(CustomObj obj, string p1, Stream stream, Action<CustomCallbackObj> cb, CancellationToken token);
+        //Task<Stream> EchoStreamAsync(Stream stream);
+
+        //Task<ComplexStream> GetComplexStreamAsync();
+
+        Task<ComplexStream> ComplexCallAsync(CustomObj obj, string p1, Stream stream, Action<CustomCallbackObj> cb, CancellationToken token);
     }
 }

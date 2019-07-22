@@ -22,20 +22,24 @@ namespace NetRpc
         public static async Task SendStreamAsync(Func<byte[], Task> publishBuffer, Func<Task> publishBufferEnd, Stream stream, CancellationToken token)
         {
             var buffer = new byte[StreamBufferSize];
-            var readCount = await stream.ReadAsync(buffer, 0, StreamBufferSize, token);
-            while (readCount > 0)
-            {
-                if (readCount < StreamBufferSize)
-                {
-                    var tempBs = new byte[readCount];
-                    Buffer.BlockCopy(buffer, 0, tempBs, 0, readCount);
-                    await publishBuffer(tempBs);
-                    await publishBufferEnd();
-                    return;
-                }
 
-                await publishBuffer(buffer);
-                readCount = await stream.ReadAsync(buffer, 0, StreamBufferSize, token);
+            using (stream)
+            {
+                var readCount = await stream.ReadAsync(buffer, 0, StreamBufferSize, token);
+                while (readCount > 0)
+                {
+                    if (readCount < StreamBufferSize)
+                    {
+                        var tempBs = new byte[readCount];
+                        Buffer.BlockCopy(buffer, 0, tempBs, 0, readCount);
+                        await publishBuffer(tempBs);
+                        await publishBufferEnd();
+                        return;
+                    }
+
+                    await publishBuffer(buffer);
+                    readCount = await stream.ReadAsync(buffer, 0, StreamBufferSize, token);
+                }
             }
 
             await publishBufferEnd();

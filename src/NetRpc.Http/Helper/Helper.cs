@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Namotion.Reflection;
 using Newtonsoft.Json;
 using NJsonSchema;
 using NSwag;
@@ -57,19 +58,47 @@ namespace NetRpc.Http
             return returnTypeDefinition;
         }
 
-        public static Type GetArgType(MethodInfo m)
+        public static Type GetArgType(MethodInfo m, out string streamName, out TypeName action, out TypeName cancelToken)
         {
-            var typeName = $"{m.DeclaringType.Name}_{m.Name}";
+            streamName = null;
+            action = null;
+            cancelToken = null;
+
+            var typeName = $"{m.Name}Param";
             var t = ClassHelper.BuildType(typeName);
             var cis = new List<ClassHelper.CustomsPropertyInfo>();
+
             foreach (var p in m.GetParameters())
             {
-                if (p.ParameterType == typeof(Stream) ||
-                    p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == typeof(Action<>) ||
-                    p.ParameterType == typeof(CancellationToken))
+                if (p.ParameterType == typeof(Stream))
+                {
+                    streamName = p.Name;
                     continue;
+                }
+
+                if (p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == typeof(Action<>))
+                {
+                    action = new TypeName
+                    {
+                        Type = p.ParameterType,
+                        Name = p.Name
+                    };
+                    continue;
+                }
+
+                if (p.ParameterType == typeof(CancellationToken?) || p.ParameterType == typeof(CancellationToken))
+                {
+                    cancelToken = new TypeName
+                    {
+                        Type = p.ParameterType,
+                        Name = p.Name
+                    };
+                    continue;
+                }
+
                 cis.Add(new ClassHelper.CustomsPropertyInfo(p.ParameterType, p.Name));
             }
+
             t = ClassHelper.AddProperty(t, cis);
             if (cis.Count == 0)
                 return null;

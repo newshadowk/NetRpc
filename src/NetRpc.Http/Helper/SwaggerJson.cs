@@ -1,23 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Namotion.Reflection;
+using NetRpc.Http.FaultContract;
+using Newtonsoft.Json;
 using NJsonSchema;
-using NJsonSchema.Generation;
 using NSwag;
 using NSwag.Generation;
 
 namespace NetRpc.Http
 {
-    public class SwaggerJson
+    internal class SwaggerJson
     {
         private readonly string _apiRootPath;
         private readonly object[] _instances;
         private readonly OpenApiDocument _doc;
         private readonly OpenApiDocumentGenerator _generator;
+        private readonly OpenApiParameter _faultApiParam;
+        private readonly OpenApiDocumentGeneratorSettings _gSetting;
 
         public SwaggerJson(string apiRootPath, object[] instances)
         {
@@ -25,9 +27,9 @@ namespace NetRpc.Http
             _instances = instances;
             _doc = new OpenApiDocument();
             _doc.SchemaType = SchemaType.Swagger2;
-            var schemaResolver = new OpenApiSchemaResolver(_doc, new JsonSchemaGeneratorSettings { SchemaType = SchemaType.Swagger2 });
-            var gs = new OpenApiDocumentGeneratorSettings { Title = null, SchemaType = SchemaType.Swagger2 };
-            _generator = new OpenApiDocumentGenerator(gs, schemaResolver);
+            _gSetting = new OpenApiDocumentGeneratorSettings { Title = null, SchemaType = SchemaType.Swagger2 };
+            _generator = new OpenApiDocumentGenerator(_gSetting, new OpenApiSchemaResolver(_doc, _gSetting));
+            _faultApiParam = _generator.CreatePrimitiveParameter(null, null, typeof(Fault).ToContextualType());
 
             //_doc.Consumes.Add("text/plain");
             //_doc.Consumes.Add("application/json");
@@ -44,7 +46,7 @@ namespace NetRpc.Http
 
         private void Process()
         {
-            (List<Type> paramTypes, List<(Type interfaceInstance, List<MethodInfo> methods)> list) = GetMethodInfos(_instances);
+            var (paramTypes, list) = GetMethodInfos(_instances);
 
             //model
             //merge all param to one json obj for each method.
@@ -62,15 +64,9 @@ namespace NetRpc.Http
                     _doc.Paths[key] = new OpenApiPathItem();
                     var operation = new OpenApiOperation();
                     operation.Tags.Add(tagGroup.interfaceInstance.Name);
-                    operation.Responses.Add("200", GetOpenApiResponse(method.ReturnType));
-                    var param = GetOpenApiParameter(method);
-                    operation.Parameters.Add(param);
-                    //foreach (var param in method.GetParameters())
-                    //{
-                    //    var apiParam = GetOpenApiParameter(param.Name, param.ParameterType);
-                    //    operation.Parameters.Add(apiParam);
-                    //}
-
+       
+                    SetOpenApiResponses(operation.Responses, method);
+                    SetOpenApiParameters(operation, method);
                     _doc.Paths[key]["post"] = operation;
                 }
             }
@@ -117,33 +113,9 @@ namespace NetRpc.Http
             var ret = new List<Type>();
             foreach (var p in methodInfo.GetParameters())
             {
-                var t = GetTypeByParamTypeRecursive(p.ParameterType);
-                ret.AddRange(t);
-            }
-
-            return ret;
-        }
-
-        private static List<Type> GetTypeByParamTypeRecursive(Type paramType)
-        {
-            List<Type> ret = new List<Type>();
-            var t = GetTypeByParamType(paramType);
-            if (t != null)
-                ret.Add(t);
-
-            foreach (var p in paramType.GetProperties())
-            {
-                t = GetTypeByParamType(p.PropertyType);
-
-                if (t == null)
-                    continue;
-
-                if (ret.Exists(i => i.FullName == t.FullName))
-                    continue;
-
-                var subList = GetTypeByParamTypeRecursive(t);
-                ret.Add(t);
-                ret.AddRange(subList);
+                var t = GetTypeByParamType(p.ParameterType);
+                if (t != null)
+                    ret.Add(t);
             }
 
             return ret;
@@ -166,103 +138,125 @@ namespace NetRpc.Http
             return t;
         }
 
-        private static OpenApiResponse GetOpenApiResponse(Type type)
+        private void SetOpenApiResponses(IDictionary<string, OpenApiResponse> responses, MethodInfo method)
         {
-            var retType = Helper.GetTypeFromReturnTypeDefinition(type);
-            var (rType, _, format) = GetJsonObjectTypeForParam(retType);
-            var ret = new OpenApiResponse();
+            var returnType = Helper.GetTypeFromReturnTypeDefinition(method.ReturnType);
 
-            var hasStream = retType.HasStream();
+            //200
+            var res200 = new OpenApiResponse();
+            var hasStream = returnType.HasStream();
+            res200.IsNullableRaw = false;
             if (hasStream)
-                ret.ActualResponse.Content.Add("application/octet-stream", new OpenApiMediaType { Schema = new JsonSchema { Type = rType, Format = format } });
+            {
+                res200.Description = "file";
+                res200.Schema = new JsonSchema
+                {
+                    Type = JsonObjectType.File
+                };
+            }
             else
-                ret.ActualResponse.Content.Add("application/json", new OpenApiMediaType { Schema = new JsonSchema { Type = rType, Format = format } });
+            {
+                var apiP = _generator.CreatePrimitiveParameter(null, null, returnType.ToContextualType());
+                res200.Schema = new JsonSchema();
+                res200.Schema.Reference = apiP;
+            }
+
+            responses.Add("200", res200);
+
+            //400
+            var faultContractTypes = GetFaultContractTypes(method);
+            if (faultContractTypes.Count == 0)
+                return;
+
+            var res400 = new OpenApiResponse();
+            res400.IsNullableRaw = false;
+            res400.Schema = new JsonSchema();
+            res400.Schema.Reference = _faultApiParam;
+            res400.Description += "<b>Name</b> : Name of the exception.<br/><b>Details</b> : Maybe one of model below:";
+            foreach (var detailsType in faultContractTypes)
+            {
+                _generator.CreatePrimitiveParameter(null, null, detailsType.ToContextualType());
+                res400.Description += $"<br/> <b>{detailsType.Name}</b>";
+            }
+
+            responses.Add("400", res400);
+        }
+
+        private void SetOpenApiParameters(OpenApiOperation operation, MethodInfo method)
+        {
+            var argType = Helper.GetArgType(method, out var streamName, out var action, out var cancelToken);
+            if (argType != null)
+                operation.Parameters.Add(GetOpenApiParameter("data", argType, streamName != null));
+
+            if (streamName != null)
+            {
+                var p = new OpenApiParameter();
+                p.Name = streamName;
+                p.Schema = new JsonSchema();
+                p.Type = JsonObjectType.File;
+                p.Kind = OpenApiParameterKind.FormData;
+                operation.Parameters.Add(p);
+                operation.Consumes = new List<string>();
+                operation.Consumes.Add("multipart/form-data");//todo
+            }
+
+            if (action != null)
+            {
+                var actionArg = action.Type.GetGenericArguments()[0];
+                var p = GetOpenApiParameter(action.Name, actionArg);
+                p.Description = "Callback type. (Leave this field blank)";
+                p.IsRequired = false;
+                p.Schema.Default = null;
+                operation.Parameters.Add(p);
+            }
+
+            if (cancelToken != null)
+            {
+                var p = GetOpenApiParameter(cancelToken.Name, typeof(object));
+                p.Description = "CancelToken. (Leave this field blank)";
+                p.IsRequired = false;
+                p.Default = null;
+                operation.Parameters.Add(p);
+            }
+        }
+
+        private static List<Type> GetFaultContractTypes(MethodInfo method)
+        {
+            var ret = new List<Type>();
+            foreach (SwaggerFaultContractAttribute a in method.GetCustomAttributes(typeof(SwaggerFaultContractAttribute), true))
+                ret.Add(a.DetailType);
             return ret;
         }
 
-        private static (JsonObjectType type, OpenApiParameterKind kind, string format) GetJsonObjectTypeForParam(Type type)
+        private OpenApiParameter GetOpenApiParameter(string name, Type type, bool isFormData = false)
         {
-            string format = null;
-            var rType = JsonObjectType.String;
-            var kind = OpenApiParameterKind.Body;
-
-            if (type == typeof(Guid))
-            {
-                format = JsonFormatStrings.Guid;
-                rType = JsonObjectType.String;
-            }
-            else if (type == typeof(byte) ||
-                     type == typeof(int) ||
-                     type == typeof(short) ||
-                     type == typeof(long) ||
-                     type == typeof(uint) ||
-                     type == typeof(ushort) ||
-                     type == typeof(ulong))
-            {
-                format = JsonFormatStrings.Integer;
-                rType = JsonObjectType.Integer;
-            }
-            else if (type == typeof(float) ||
-                     type == typeof(double) ||
-                     type == typeof(decimal))
-            {
-                format = JsonFormatStrings.Double;
-                rType = JsonObjectType.Number;
-            }
-            else if (type == typeof(bool))
-            {
-                rType = JsonObjectType.Boolean;
-            }
-            else if (type == typeof(string) ||
-                     type == typeof(char))
-            {
-                rType = JsonObjectType.String;
-            }
-            else if (type == typeof(Stream))
-            {
-                rType = JsonObjectType.String;
-                format = JsonFormatStrings.Binary;
-                kind = OpenApiParameterKind.FormData;
-            }
-
-            return (rType, kind, format);
-        }
-
-        private OpenApiParameter GetOpenApiParameter(MethodInfo method)
-        {
-            var argType = Helper.GetArgType(method);
-            var openApiParameter = _generator.CreatePrimitiveParameter(null, null, argType.ToContextualType());
-
-            var p = new OpenApiParameter();
-            p.Name = "data";
-            p.Kind = OpenApiParameterKind.Body;
-            p.Schema = new OpenApiParameter();
-            p.Schema.Reference = openApiParameter;
-            p.IsRequired = true;
-            return p;
-        }
-
-        private OpenApiParameter GetOpenApiParameter(string name, Type type)
-        {
-            var (rType, kind, format) = GetJsonObjectTypeForParam(type);
-
             var p = new OpenApiParameter();
             p.Name = name;
-            p.Kind = kind;
-            p.IsRequired = true;
-            p.Schema = new OpenApiParameter();
 
-            //Schema
-            if (_doc.Definitions.TryGetValue(type.Name, out var def))
-                p.Schema.Reference = def;
+            if (isFormData)
+                p.Kind = OpenApiParameterKind.FormData;
             else
+                p.Kind = OpenApiParameterKind.Body;
+
+            if (NetRpc.Helper.IsSystemType(type))
             {
-                p.Schema.Type = rType;
-                p.Schema.Format = format;
+                p.Schema = JsonSchema.FromType(type, _gSetting);
+                return p;
+            }
+        
+            p.Schema = new JsonSchema();
+            var genP = _generator.CreatePrimitiveParameter(null, null, type.ToContextualType());
+            p.Schema.Reference = genP;
+
+            if (isFormData)
+            {
+                var instance = Activator.CreateInstance(type);
+                instance.SetDefaultValue();
+                var defaultJson = JsonConvert.SerializeObject(instance);
+                p.Default = defaultJson;
+                p.Description = $"Model:<b>{type.Name}</b>";
             }
 
-            if (type == typeof(Stream))
-                p.Type = JsonObjectType.File;
             return p;
         }
     }

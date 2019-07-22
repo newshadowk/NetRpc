@@ -51,7 +51,7 @@ namespace NetRpc.Http
 
         public async Task SendResultAsync(CustomResult result, ActionInfo action, object[] args)
         {
-            await _connection.SendAsync(HttpResult.FromOk(result.Result));
+            await _connection.SendAsync(Result.FromOk(result.Result));
         }
 
         public async Task SendFaultAsync(Exception body, ActionInfo action, object[] args)
@@ -64,7 +64,7 @@ namespace NetRpc.Http
                     return;
             }
 
-            await _connection.SendAsync(HttpResult.FromEx(body));
+            await _connection.SendAsync(Result.FromEx(body));
         }
 
         public async Task SendStreamAsync(Stream stream, string streamName)
@@ -128,7 +128,7 @@ namespace NetRpc.Http
         {
             //dataObjType
             (MethodInfo method, _) = ApiWrapper.GetMethodInfo(ai, _instances);
-            var dataObjType = Helper.GetArgType(method);
+            var dataObjType = Helper.GetArgType(method, out _, out _, out _);
 
             if (_context.Request.ContentType != null)
             {

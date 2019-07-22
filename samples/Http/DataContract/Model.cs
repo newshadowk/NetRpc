@@ -1,26 +1,43 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.Serialization;
+using NetRpc.Http.FaultContract;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace DataContract
 {
     public class CustomObj
     {
-        public string Name { get; set; }
+        public NameEnum Name { get; set; }
 
         public DateTime Date { get; set; }
 
-        public CustomObj2 CustomObj2Value { get; set; }
+        public InnerObj InnerObj { get; set; } = new InnerObj();
 
         public override string ToString()
         {
-            return $"{nameof(Name)}: {Name}, {nameof(Date)}: {Date}";
+            return $"{nameof(Name)}: {Name}, {nameof(Date)}: {Date}, {nameof(InnerObj)}: {InnerObj}";
         }
     }
 
-    public class CustomObj2
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum NameEnum
     {
+        John,
+        Mary
+    }
+
+    public class InnerObj
+    {
+        public CustomObj CustomObj { get; set; }
+
         public string P1 { get; set; }
+
+        public override string ToString()
+        {
+            return $"{nameof(P1)}: {P1}";
+        }
     }
 
     public class CustomCallbackObj
@@ -52,6 +69,17 @@ namespace DataContract
         }
 
         protected CustomException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
+    }
+
+    public class CustomException2 : Exception
+    {
+        public CustomException2()
+        {
+        }
+
+        protected CustomException2(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }

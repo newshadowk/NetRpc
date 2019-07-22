@@ -25,11 +25,17 @@ namespace NetRpc.Http
 
         public string CallId { get; set; }
 
-        public async Task SendAsync(HttpResult result)
+        public async Task SendAsync(Result result)
         {
-            _context.Response.StatusCode = 200;
             _context.Response.ContentType = "application/json; charset=utf-8";
-            await _context.Response.WriteAsync(result.ToJson());
+            if (result.IsSuccessful)
+            {
+                _context.Response.StatusCode = 200;
+                await _context.Response.WriteAsync(result.Ret.ToJson());
+                return;
+            }
+            _context.Response.StatusCode = 400;
+            await _context.Response.WriteAsync(result.ToFault().ToJson());
         }
 
         public async Task SendAsync(Stream stream, string streamName)
