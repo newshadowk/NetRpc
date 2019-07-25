@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.OpenApi.Writers;
 
 namespace NetRpc.Http
 {
@@ -27,7 +28,7 @@ namespace NetRpc.Http
             _swaggerFilePath = $"{swaggerRootPath}/swagger.json";
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(HttpContext context, INetRpcSwaggerProvider netRpcSwaggerProvider)
         {
             var requestPath = context.Request.Path;
 
@@ -50,9 +51,14 @@ namespace NetRpc.Http
                         context.Response.StatusCode = 200;
                         _html = await reader.ReadToEndAsync();
                     }
-                    var sj = new SwaggerJson(_apiRootApi, _instances);
-                    _json = sj.ToJson();
-                    _html = _html.Replace("{url}", _swaggerFilePath);
+                    var doc = netRpcSwaggerProvider.GetSwagger(_apiRootApi, _instances);
+                    using (var textWriter = new StringWriter())
+                    {
+                        var jsonWriter = new OpenApiJsonWriter(textWriter);
+                        doc.SerializeAsV3(jsonWriter);
+                        _json = textWriter.ToString();
+                        _html = _html.Replace("{url}", _swaggerFilePath);
+                    }
                 }
                 
                 await context.Response.WriteAsync(_html);

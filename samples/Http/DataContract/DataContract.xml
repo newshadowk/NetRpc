@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>DataContract</name>
+    </assembly>
+    <members>
+        <member name="M:DataContract.IServiceAsync.Call(System.String,System.Int32)">
+            <summary>
+            IServiceAsync Call
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:DataContract.IServiceAsync.ComplexCallAsync(DataContract.CustomObj,System.String,System.IO.Stream,System.Action{DataContract.CustomCallbackObj},System.Threading.CancellationToken)">
+            <summary>
+            IServiceAsync ComplexCallAsync
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:DataContract.CustomObj">
+            <summary>
+            a CustomObj
+            </summary>
+        </member>
+        <member name="P:DataContract.CustomObj.Name">
+            <summary>
+            a Name
+            </summary>
+        </member>
+        <member name="P:DataContract.CustomObj.Date">
+            <summary>
+            a Date
+            </summary>
+        </member>
+    </members>
+</doc>

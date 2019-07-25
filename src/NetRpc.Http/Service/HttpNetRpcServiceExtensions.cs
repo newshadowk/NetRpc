@@ -2,12 +2,31 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Newtonsoft.Json.Serialization;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace NetRpc.Http
 {
     public static class HttpNetRpcServiceExtensions
     {
+        public static IServiceCollection AddNetRpcSwagger(this IServiceCollection services)
+        {
+            services.Configure<MvcJsonOptions>(c =>
+            {
+                if (c.SerializerSettings.ContractResolver is DefaultContractResolver r)
+                    r.IgnoreSerializableInterface = true;
+            });
+            services.AddSwaggerGen(c =>
+            {
+                c.IncludeXmlComments(@"C:\G2\NetRpc_swagger\samples\Http\DataContract\DataContract.xml");
+            });
+            services.AddTransient<INetRpcSwaggerProvider, NetRpcSwaggerProvider>();
+            return services;
+        }
+
         public static IApplicationBuilder UseNetRpcHttp(this IApplicationBuilder app, params object[] instances)
         {
             app.UseNetRpcHttp(null, null, false, instances);

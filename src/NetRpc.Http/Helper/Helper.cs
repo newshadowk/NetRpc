@@ -6,15 +6,15 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Namotion.Reflection;
 using Newtonsoft.Json;
-using NJsonSchema;
-using NSwag;
 
 namespace NetRpc.Http
 {
     internal static class Helper
     {
+        public const string ConnectionIdName = "_connectionId";
+        public const string CallIdName = "_callId";
+
         public static object ToObject(this string str, Type t)
         {
             if (string.IsNullOrEmpty(str))
@@ -83,6 +83,10 @@ namespace NetRpc.Http
                         Type = p.ParameterType,
                         Name = p.Name
                     };
+
+                    //connectionId callId
+                    cis.Add(new ClassHelper.CustomsPropertyInfo(typeof(string), ConnectionIdName));
+                    cis.Add(new ClassHelper.CustomsPropertyInfo(typeof(string), CallIdName));
                     continue;
                 }
 

@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Primitives;
 
 namespace NetRpc.Http
 {
@@ -20,7 +18,8 @@ namespace NetRpc.Http
         private readonly object[] _instances;
         private CancellationTokenSource _cts;
 
-        public HttpNetRpcServiceOnceApiConvert(HttpContext context, string rootPath, bool ignoreWhenNotMatched, IHubContext<CallbackHub, ICallback> hub, object[] instances)
+        public HttpNetRpcServiceOnceApiConvert(HttpContext context, string rootPath, bool ignoreWhenNotMatched, IHubContext<CallbackHub, ICallback> hub,
+            object[] instances)
         {
             _context = context;
             _connection = new HttpConnection(context, hub);
@@ -41,11 +40,6 @@ namespace NetRpc.Http
             var header = GetHeader();
             var args = GetArgs(actionInfo);
             var param = new OnceCallParam(header, actionInfo, null, args);
-
-            if (header.TryGetValue("ConnectionId", out var connectionId))
-                _connection.ConnectionId = connectionId.ToString();
-            if (header.TryGetValue("CallId", out var callId))
-                _connection.CallId = callId.ToString();
             return Task.FromResult(param);
         }
 
@@ -85,7 +79,7 @@ namespace NetRpc.Http
 
             if (_context.Request.Form.Files.Count > 0)
             {
-                IFormFile formFile = _context.Request.Form.Files[0];
+                var formFile = _context.Request.Form.Files[0];
                 return formFile.OpenReadStream();
             }
 
@@ -119,7 +113,7 @@ namespace NetRpc.Http
         private Dictionary<string, object> GetHeader()
         {
             var ret = new Dictionary<string, object>();
-            foreach (KeyValuePair<string, StringValues> pair in _context.Request.Headers)
+            foreach (var pair in _context.Request.Headers)
                 ret.Add(pair.Key, pair.Value);
             return ret;
         }
@@ -127,7 +121,7 @@ namespace NetRpc.Http
         private object[] GetArgs(ActionInfo ai)
         {
             //dataObjType
-            (MethodInfo method, _) = ApiWrapper.GetMethodInfo(ai, _instances);
+            var (method, _) = ApiWrapper.GetMethodInfo(ai, _instances);
             var dataObjType = Helper.GetArgType(method, out _, out _, out _);
 
             if (_context.Request.ContentType != null)
@@ -142,6 +136,7 @@ namespace NetRpc.Http
                         throw new HttpFailedException("multipart/form-data, 'data' have no data.");
 
                     var dataObj = Helper.ToObjectForHttp(data[0], dataObjType);
+                    (_connection.ConnectionId, _connection.CallId) = GetConnectionIdCallId(dataObj);
                     return Helper.GetArgsFromDataObj(dataObjType, dataObj);
                 }
 
@@ -153,13 +148,13 @@ namespace NetRpc.Http
                         body = sr.ReadToEnd();
 
                     var dataObj = Helper.ToObjectForHttp(body, dataObjType);
+                    (_connection.ConnectionId, _connection.CallId) = GetConnectionIdCallId(dataObj);
                     return Helper.GetArgsFromDataObj(dataObjType, dataObj);
                 }
             }
             else
             {
-                var args = Helper.GetArgsFromQuery(_context.Request.Query, dataObjType);
-                return args;
+                return Helper.GetArgsFromQuery(_context.Request.Query, dataObjType);
             }
 
             throw new HttpFailedException($"ContentType:'{_context.Request.ContentType}' is not supported.");
@@ -168,6 +163,21 @@ namespace NetRpc.Http
         private void CallbackHubCanceled(object sender, EventArgs e)
         {
             _cts.Cancel();
+        }
+
+        private static object GetValue(object obj, string propertyName)
+        {
+            var pi = obj.GetType().GetProperty(propertyName);
+            if (pi == null)
+                return null;
+            return pi.GetValue(obj);
+        }
+
+        private static (string connectionId, string callId) GetConnectionIdCallId(object dataObj)
+        {
+            var connectionId = (string) GetValue(dataObj, Helper.ConnectionIdName);
+            var callId = (string) GetValue(dataObj, Helper.CallIdName);
+            return (connectionId, callId);
         }
     }
 }

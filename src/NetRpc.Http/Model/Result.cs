@@ -1,5 +1,4 @@
 ﻿using System;
-using Namotion.Reflection;
 
 namespace NetRpc.Http
 {

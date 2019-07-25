@@ -8,8 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.6" />
+    <PackageReference Include="Microsoft.OpenApi" Version="1.1.3" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-    <PackageReference Include="NSwag.Generation" Version="13.0.4" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,8 +17,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="SwaggerUi3\dialog.css" />
+    <None Remove="SwaggerUi3\dialog.js" />
+    <None Remove="SwaggerUi3\dialog\session.js" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\NetRpc.Http.FaultContract\NetRpc.Http.FaultContract.csproj" />
     <ProjectReference Include="..\NetRpc\NetRpc.csproj" />
+    <ProjectReference Include="..\Swashbuckle.AspNetCore.SwaggerGen\Swashbuckle.AspNetCore.SwaggerGen.csproj" />
+    <ProjectReference Include="..\Swashbuckle.AspNetCore.Swagger\Swashbuckle.AspNetCore.Swagger.csproj" />
   </ItemGroup>
 
 </Project>

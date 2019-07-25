@@ -7,10 +7,19 @@ using Newtonsoft.Json.Converters;
 
 namespace DataContract
 {
+    /// <summary>
+    /// a CustomObj
+    /// </summary>
     public class CustomObj
     {
+        /// <summary>
+        /// a Name
+        /// </summary>
         public NameEnum Name { get; set; }
 
+        /// <summary>
+        /// a Date
+        /// </summary>
         public DateTime Date { get; set; }
 
         public InnerObj InnerObj { get; set; } = new InnerObj();

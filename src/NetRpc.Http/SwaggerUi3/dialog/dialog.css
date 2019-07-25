@@ -1,0 +1,33 @@
+#showBtn {
+    bottom: 410px;
+    left: 10px;
+    position: fixed;
+    width: 50px;
+}
+
+#viewDialog {
+    background-color: #fff;
+    border-radius: 5px;
+    bottom: 10px;
+    box-shadow: 0 0 5px #000;
+    height: 400px;
+    left: 10px;
+    position: fixed;
+    width: 500px;
+    z-index: 999;
+}
+
+.viewTextarea {
+    border: none;
+    height: calc(100% - 40px);
+    outline: none;
+    resize: none;
+    width: 100%;
+}
+
+button {
+    height: 30px;
+    width: 100%;
+}
+
+.viewHide { display: none; }

@@ -1,18 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Reflection;
+using System.Runtime.Serialization;
 using DataContract;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using NetRpc.Http;
-using Newtonsoft.Json;
-using NJsonSchema;
-using NSwag;
+using Newtonsoft.Json.Serialization;
 
 namespace Service
 {
@@ -43,8 +37,16 @@ namespace Service
             //var serializeObject2 = JsonConvert.SerializeObject(o, new JsonSerializerSettings() { DefaultValueHandling = DefaultValueHandling. });
             //var serializeObject3 = JsonConvert.SerializeObject(o, new JsonSerializerSettings() { DefaultValueHandling = DefaultValueHandling.Include });
 
-            var jsonSchema = JsonSchema.FromType(typeof(CustomObj));
             //var json = jsonSchema.
+
+            var r = new DefaultContractResolver();
+            //r.IgnoreSerializableAttribute = true;
+            r.IgnoreSerializableInterface = true;
+            var resolveContract = r.ResolveContract(typeof(Exception));
+
+            //JsonObjectContract resolveContract2 = (JsonObjectContract)r.ResolveContract(typeof(Exception));
+
+
 
             var webHost = GetWebHost();
             webHost.Run();
@@ -54,8 +56,8 @@ namespace Service
 
         static IWebHost GetWebHost()
         {
-            string origins = "_myAllowSpecificOrigins";
-            string swaggerRootPath = "/s";
+            var origins = "_myAllowSpecificOrigins";
+            var swaggerRootPath = "/s";
 
             return WebHost.CreateDefaultBuilder(null)
                 .ConfigureKestrel(options => { options.ListenAnyIP(5000); })
@@ -73,6 +75,7 @@ namespace Service
                     });
                     services.AddSignalR();
                     services.AddDirectoryBrowser();
+                    services.AddNetRpcSwagger();
                 })
                 .Configure(app =>
                 {
@@ -90,10 +93,22 @@ namespace Service
         private C1 c1;
     }
 
+    [Serializable]
+    public class C3 : Exception
+    {
+   
+    }
+
+    [Serializable]
+    public class C2 
+    {
+        
+    }
+
     public class C1
     {
         public string P1 { get; set; }
 
-        public string P2 { get;  }
+        public string P2 { get; }
     }
 }

@@ -1,60 +1,66 @@
 ﻿<!-- HTML for static distribution bundle build -->
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8">
     <title>Swagger UI</title>
-    <link rel="stylesheet" type="text/css" href="./swagger-ui.css" >
-    <link rel="icon" type="image/png" href="./favicon-32x32.png" sizes="32x32" />
-    <link rel="icon" type="image/png" href="./favicon-16x16.png" sizes="16x16" />
+    <link rel="stylesheet" type="text/css" href="./swagger-ui.css">
+    <link rel="icon" type="image/png" href="./favicon-32x32.png" sizes="32x32"/>
+    <link rel="icon" type="image/png" href="./favicon-16x16.png" sizes="16x16"/>
+    <link rel="stylesheet" href="./dialog/dialog.css"/>
+    <script src="./dialog/signalr.js"></script>
     <style>
-      html
-      {
-        box-sizing: border-box;
-        overflow: -moz-scrollbars-vertical;
-        overflow-y: scroll;
-      }
+        html {
+            box-sizing: border-box;
+            overflow: -moz-scrollbars-vertical;
+            overflow-y: scroll;
+        }
 
-      *,
-      *:before,
-      *:after
-      {
-        box-sizing: inherit;
-      }
+        *,
+        *:before,
+        *:after { box-sizing: inherit; }
 
-      body
-      {
-        margin:0;
-        background: #fafafa;
-      }
+        body {
+            background: #fafafa;
+            margin: 0;
+        }
     </style>
-  </head>
+</head>
 
-  <body>
-    <div id="swagger-ui"></div>
+<body>
+<!-- viewDialog -->
+<button id="showBtn">Panel</button>
+<div id="viewDialog" class="viewHide">
+    <textarea class="viewTextarea"></textarea>
+    <button class="cancelBtn">Cancel</button>
+</div>
+<script src="./dialog/dialog.js"></script>
+<!-- viewDialog end-->
 
-    <script src="./swagger-ui-bundle.js"> </script>
-    <script src="./swagger-ui-standalone-preset.js"> </script>
-    <script>
+<div id="swagger-ui"></div>
+<div id="sdf"></div>
+<script src="./swagger-ui-bundle.js"></script>
+<script src="./swagger-ui-standalone-preset.js"></script>
+<script>
     window.onload = function() {
-      // Begin Swagger UI call region
-      const ui = SwaggerUIBundle({
-        url: "{url}",
-        dom_id: '#swagger-ui',
-        deepLinking: true,
-        presets: [
-          SwaggerUIBundle.presets.apis,
-          SwaggerUIStandalonePreset
-        ],
-        plugins: [
-          SwaggerUIBundle.plugins.DownloadUrl
-        ],
-        layout: "StandaloneLayout"
-      });
-      // End Swagger UI call region
+        // Begin Swagger UI call region
+        const ui = SwaggerUIBundle({
+            url: "{url}",
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            presets: [
+                SwaggerUIBundle.presets.apis,
+                SwaggerUIStandalonePreset
+            ],
+            plugins: [
+                SwaggerUIBundle.plugins.DownloadUrl
+            ],
+            layout: "StandaloneLayout"
+        });
+        // End Swagger UI call region
 
-      window.ui = ui;
+        window.ui = ui;
     }
-  </script>
-  </body>
+</script>
+</body>
 </html>
