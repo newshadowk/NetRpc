@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetRpc;
 using NetRpc.Grpc;

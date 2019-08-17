@@ -219,8 +219,8 @@ services.AddNetRpcServiceContract<Service>(ContractLifeTime.Scoped);
 | :-----           | :--- | :---------- |
 | Header           | Dictionary\<string object> | Header sent from client. |
 | Target           | object                     | Service instance of invoked action.|
-| InstanceMethodInfo | InstanceMethodInfo           | Current invoked method.  |
-| InterfaceMethodInfo | InterfaceMethodInfo     | Current invoked interface method.  |
+| InstanceMethodInfo | MethodInfo               | Current invoked method.  |
+| InterfaceMethodInfo | MethodInfo              | Current invoked interface method.  |
 | ActionInfo       | ActionInfo                 | Warpped info of current invoked method.  |
 | Args             | object[]                   | Args of invoked action.  |
 | ServiceProvider  | IServiceProvider           | ServiceProvider of invoked action.  |
@@ -394,11 +394,27 @@ var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("l
 clientProxy.Heartbeat += async s => s.Proxy.Hearbeat();
 clientProxy.StartHeartbeat(true);
 ```
+## Options support realtime update
+Normally four options below support realtime update, if options has changed, will reset underlying service use the new options, do not need restart process to take options effect.
+* GrpcServiceOptions
+* GrpcClientOptions
+* RabbitMQServiceOptions
+* RabbitMQClientOptions
+
+Note: only for DI mode:
+```c#
+services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50001));
+```
+
 # [Http] NetRpc.Http
 NetRpc.Http provide:
 * **Webapi** for call.
-* **Swagger** for view api and test.
+* **Swagger** for display and test api.
 * **SignalR** for callback and cancel during method invoking.
+
+Note: if contract do not have callback and cancel, you do not need add **SignalR** to services.
+
+
 
 ![Alt text](nrpc_http.png)
 
@@ -513,7 +529,7 @@ Also should use **response code** define summary, it will display in swagger.
 /// <response code="701">return the pain text.</response>
 Task CallByResponseTextExceptionAsync();
 ```
-## [Http] Stream
+## [Http] StreamName
 Normally stream of return value will map to filestream, if you define **StreamName** property, will set to file name to client.
 ```c#
 //stream of return value
