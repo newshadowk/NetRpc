@@ -13,6 +13,7 @@ namespace RabbitMQ.Base
         private readonly IModel _clientToServiceModel;
         private readonly string _serviceToClientQueue;
         private string _clientToServiceQueue;
+        private bool _disposed;
 
         public event EventHandler<EventArgsT<byte[]>> Received;
 
@@ -46,6 +47,9 @@ namespace RabbitMQ.Base
 
         public void Dispose()
         {
+            if (_disposed)
+                return;
+            _disposed = true;
             _mainModel.BasicAck(_e.DeliveryTag, false);
             if (_clientToServiceQueue != null)
             {

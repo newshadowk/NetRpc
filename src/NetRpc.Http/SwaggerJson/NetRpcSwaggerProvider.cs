@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
-using NetRpc.Http.FaultContract;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace NetRpc.Http
@@ -18,7 +21,7 @@ namespace NetRpc.Http
         private readonly SwaggerGeneratorOptions _options;
         private readonly SchemaRepository _schemaRepository;
         private readonly OpenApiDocument _doc;
-
+            
         public NetRpcSwaggerProvider(ISchemaGenerator schemaGenerator, IOptions<SwaggerGeneratorOptions> optionsAccessor)
         {
             _schemaRepository = new SchemaRepository();
@@ -27,12 +30,12 @@ namespace NetRpc.Http
             _doc = new OpenApiDocument();
         }
 
-        private void Process(string apiRootPath, object[] instances)
+        private void Process(string apiRootPath, IEnumerable<Type> instanceTypes)
         {
-            var list = GetMethodInfos(instances);
+            var list = GetInterfaceMethodInfos(instanceTypes);
 
             //tag
-            list.ForEach(i => _doc.Tags.Add(new OpenApiTag { Name = i.interfaceInstance.Name }));
+            list.ForEach(i => _doc.Tags.Add(new OpenApiTag {Name = i.interfaceInstance.Name}));
 
             //path
             _doc.Paths = new OpenApiPaths();
@@ -40,12 +43,14 @@ namespace NetRpc.Http
             {
                 foreach (var method in tagGroup.methods)
                 {
+                    var argType = Helper.GetArgType(method, out var streamName, out var action, out var cancelToken);
+
                     //Operation
                     var operation = new OpenApiOperation
                     {
                         Tags = GenerateTags(tagGroup.interfaceInstance.Name),
-                        RequestBody = GenerateRequestBody(method, out var action, out var cancelToken),
-                        Responses = GenerateResponses(method),
+                        RequestBody = GenerateRequestBody(argType, streamName),
+                        Responses = GenerateResponses(method, cancelToken != null)
                     };
 
                     //Summary
@@ -67,26 +72,19 @@ namespace NetRpc.Http
                 Schemas = _schemaRepository.Schemas
             };
         }
-   
-        private static List<(Type interfaceInstance, List<MethodInfo> methods)> GetMethodInfos(object[] instances)
+
+        private static List<(Type interfaceInstance, List<MethodInfo> methods)> GetInterfaceMethodInfos(IEnumerable<Type> instanceTypes)
         {
             var list = new List<(Type interfaceInstance, List<MethodInfo> methods)>();
-
-            foreach (var i in instances)
-            {
-                foreach (var m in GetMethodInfos(i))
-                {
-                    list.Add((m.interfaceInstance, m.methods));
-                }
-            }
-
+            foreach (var i in instanceTypes)
+            foreach (var m in GetInterfaceMethodInfos(i))
+                list.Add((m.interfaceInstance, m.methods));
             return list;
         }
 
-        private static List<(Type interfaceInstance, List<MethodInfo> methods)> GetMethodInfos(object instance)
+        private static List<(Type interfaceInstance, List<MethodInfo> methods)> GetInterfaceMethodInfos(Type instanceType)
         {
             var ret = new List<(Type interfaceInstance, List<MethodInfo> methods)>();
-            var instanceType = instance.GetType();
             foreach (var item in instanceType.GetInterfaces())
                 ret.Add((item, item.GetMethods().ToList()));
             return ret;
@@ -94,13 +92,12 @@ namespace NetRpc.Http
 
         private static List<OpenApiTag> GenerateTags(string tagName)
         {
-            return new List<OpenApiTag>{ new OpenApiTag { Name = tagName }};
+            return new List<OpenApiTag> {new OpenApiTag {Name = tagName}};
         }
 
-        private OpenApiResponses GenerateResponses(MethodInfo method)
+        private OpenApiResponses GenerateResponses(MethodInfo method, bool hasCancel)
         {
-            OpenApiResponses ret = new OpenApiResponses();
-
+            var ret = new OpenApiResponses();
             var returnType = Helper.GetTypeFromReturnTypeDefinition(method.ReturnType);
 
             //200
@@ -109,14 +106,14 @@ namespace NetRpc.Http
             if (hasStream)
             {
                 res200.Description = "file";
-                res200.Content.Add("application/json", new OpenApiMediaType()
+                res200.Content.Add("application/json", new OpenApiMediaType
                 {
                     Schema = GenerateSchema(typeof(IFormFile))
                 });
             }
             else
             {
-                res200.Content.Add("application/json", new OpenApiMediaType()
+                res200.Content.Add("application/json", new OpenApiMediaType
                 {
                     Schema = GenerateSchema(returnType)
                 });
@@ -124,43 +121,32 @@ namespace NetRpc.Http
 
             ret.Add("200", res200);
 
-            //400
-            var faultContractTypes = GetFaultContractTypes(method);
-            if (faultContractTypes.Count == 0)
+            //600
+            if (hasCancel)
+                ret.Add(ConstValue.CancelStatusCode.ToString(), new OpenApiResponse {Description = "A task was canceled."});
+
+            //exception  
+            var resTypes = method.GetProducesResponseTypes();
+            if (resTypes.Count == 0)
                 return ret;
 
-            var res400 = new OpenApiResponse();
-            res400.Content.Add("application/json", new OpenApiMediaType
+            foreach (var fault in resTypes)
             {
-                Schema = GenerateSchema(typeof(Fault))
-            });
+                var res = new OpenApiResponse();
+                res.Content.Add("application/json", new OpenApiMediaType
+                {
+                    Schema = GenerateSchema(fault.DetailType)
+                });
 
-            res400.Description += "<b>Name</b> : Name of the exception.<br/><b>Details</b> : Maybe one of model below:";
-            foreach (var detailsType in faultContractTypes)
-            {
-                GenerateSchema(detailsType);
-                res400.Description += $"<br/> <b>{detailsType.Name}</b>";
+                ret.Add(fault.StatusCode.ToString(), res);
             }
 
-            ret.Add("400", res400);
             return ret;
         }
 
-        private static List<Type> GetFaultContractTypes(MethodInfo method)
-        {
-            var ret = new List<Type>();
-            foreach (SwaggerFaultContractAttribute a in method.GetCustomAttributes(typeof(SwaggerFaultContractAttribute), true))
-                ret.Add(a.DetailType);
-            return ret;
-        }
-
-        private OpenApiRequestBody GenerateRequestBody(MethodInfo method, out TypeName action, out TypeName cancelToken)
+        private OpenApiRequestBody GenerateRequestBody(Type argType, string streamName)
         {
             var body = new OpenApiRequestBody();
-
-            var argType = Helper.GetArgType(method, out var streamName, out var outAction, out var outCancelToken);
-            action = outAction;
-            cancelToken = outCancelToken;
 
             if (argType != null)
             {
@@ -188,7 +174,7 @@ namespace NetRpc.Http
             if (oldDes == null)
                 oldDes = "";
 
-            string append = "";
+            var append = "";
             if (action != null)
                 append += $"[Callback]{action.Type.GetGenericArguments()[0].Name} {action.Name}, ";
 
@@ -212,7 +198,7 @@ namespace NetRpc.Http
             var openApiSchema = new OpenApiSchema
             {
                 Type = "object",
-                Properties = properties,
+                Properties = properties
             };
 
             body.Content.Add("multipart/form-data", new OpenApiMediaType
@@ -220,7 +206,7 @@ namespace NetRpc.Http
                 Schema = openApiSchema,
                 Encoding = openApiSchema.Properties.ToDictionary(
                     entry => entry.Key,
-                    entry => new OpenApiEncoding { Style = ParameterStyle.Form }
+                    entry => new OpenApiEncoding {Style = ParameterStyle.Form}
                 )
             });
         }
@@ -233,9 +219,9 @@ namespace NetRpc.Http
             });
         }
 
-        public OpenApiDocument GetSwagger(string apiRootPath, object[] instances)
+        public OpenApiDocument GetSwagger(string apiRootPath, IEnumerable<Type> instanceTypes)
         {
-            Process(apiRootPath, instances);
+            Process(apiRootPath, instanceTypes);
             return _doc;
         }
 

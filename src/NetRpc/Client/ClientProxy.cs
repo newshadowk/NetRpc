@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Timer = System.Timers.Timer;
 
 namespace NetRpc
@@ -22,15 +23,21 @@ namespace NetRpc
 
         public TService Proxy { get; }
 
-        public ClientProxy(IConnectionFactory factory, bool isWrapFaultException, int timeoutInterval, int hearbeatInterval = 1000 * 10)
+        public ClientProxy(IConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options)
         {
             _factory = factory;
-            var call = new Call(factory, isWrapFaultException, timeoutInterval, Context);
+            var call = new Call(factory, options.CurrentValue.IsWrapFaultException, options.CurrentValue.TimeoutInterval, Context);
             ClientMethodInvoker invoker = new ClientMethodInvoker(call);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
             ((SimpleDispatchProxyAsync)(object)Proxy).ExceptionInvoked += ProxyExceptionInvoked;
-            _tHearbeat = new Timer(hearbeatInterval);
+            _tHearbeat = new Timer(options.CurrentValue.HearbeatInterval);
             _tHearbeat.Elapsed += THearbeatElapsed;
+
+            options.OnChange(i =>
+            {
+                call.Config(i.IsWrapFaultException, i.TimeoutInterval);
+                _tHearbeat.Interval = i.HearbeatInterval;
+            });
         }
 
         private void ProxyExceptionInvoked(object sender, EventArgsT<Exception> e)

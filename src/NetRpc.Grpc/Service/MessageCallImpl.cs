@@ -1,28 +1,23 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Base;
 
 namespace NetRpc.Grpc
 {
-    public sealed class MessageCallImpl : MessageCall.MessageCallBase
+    internal sealed class MessageCallImpl : MessageCall.MessageCallBase
     {
-        private readonly MiddlewareRegister _middlewareRegister = new MiddlewareRegister();
         private readonly RequestHandler _requestHandler;
 
-        public MessageCallImpl(object[] instances)
+        public MessageCallImpl(IServiceProvider serviceProvider)
         {
-            _requestHandler = new RequestHandler(_middlewareRegister, instances);
-        }
-
-        public void UseMiddleware<TMiddleware>(params object[] args) where TMiddleware : MiddlewareBase
-        {
-            _middlewareRegister.UseMiddleware<TMiddleware>(args);
+            _requestHandler = new RequestHandler(serviceProvider);
         }
 
         public override async Task DuplexStreamingServerMethod(IAsyncStreamReader<StreamBuffer> requestStream, IServerStreamWriter<StreamBuffer> responseStream,
             ServerCallContext context)
         {
-            using (var connection = new ServiceConnection(requestStream, responseStream))
+            using (var connection = new GrpcServiceConnection(requestStream, responseStream))
                 await _requestHandler.HandleAsync(connection);
         }
     }

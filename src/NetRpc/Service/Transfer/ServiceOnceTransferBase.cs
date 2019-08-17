@@ -5,27 +5,27 @@ namespace NetRpc
 {
     internal abstract class ServiceOnceTransferBase
     {
-        private readonly IServiceOnceApiConvert _convert;
+        protected readonly IServiceOnceApiConvert Convert;
         private readonly CancellationTokenSource _serviceCts = new CancellationTokenSource();
 
         protected ServiceOnceTransferBase(IServiceOnceApiConvert convert)
         {
-            _convert = convert;
+            Convert = convert;
         }
 
         public void Start()
         {
-            _convert.Start(_serviceCts);
+            Convert.Start(_serviceCts);
         }
 
         public abstract Task HandleRequestAsync();
 
         protected async Task<ServiceCallParam> GetServiceCallParamAsync()
         {
-            var onceCallParam = await _convert.GetOnceCallParamAsync();
-            var stream = _convert.GetRequestStream(onceCallParam.StreamLength);
+            var onceCallParam = await Convert.GetOnceCallParamAsync();
+            var stream = Convert.GetRequestStream(onceCallParam.StreamLength);
             ServiceCallParam serviceCallParam = new ServiceCallParam(onceCallParam,
-                async i => await _convert.SendCallbackAsync(i, onceCallParam.Action, onceCallParam.Args),
+                async i => await Convert.SendCallbackAsync(i),
                 _serviceCts.Token, stream);
             return serviceCallParam;
         }

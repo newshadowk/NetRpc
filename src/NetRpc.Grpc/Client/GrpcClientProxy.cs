@@ -1,11 +1,13 @@
 ﻿using System;
 using Grpc.Core;
+using Microsoft.Extensions.Options;
 
 namespace NetRpc.Grpc
 {
     public sealed class GrpcClientProxy<TService> : ClientProxy<TService>
     {
-        public GrpcClientProxy(IConnectionFactory factory, bool isWrapFaultException, int timeoutInterval, int hearbeatInterval) : base(factory, isWrapFaultException, timeoutInterval, hearbeatInterval)
+        public GrpcClientProxy(IConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options) 
+            : base(factory, options)
         {
             ExceptionInvoked += GrpcClientProxy_ExceptionInvoked;
         }

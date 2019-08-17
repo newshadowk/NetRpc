@@ -1,34 +1,31 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
 
 namespace NetRpc.Http
 {
     public class HttpNetRpcMiddleware
     {
         private readonly Microsoft.AspNetCore.Http.RequestDelegate _next;
-        private readonly string _rootPath;
-        private readonly RequestHandler _requestHandler;
-        private readonly bool _ignoreWhenNotMatched;
 
-        public HttpNetRpcMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, string rootPath, RequestHandler requestHandler, bool ignoreWhenNotMatched = false)
+        public HttpNetRpcMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next)
         {
             _next = next;
-            _rootPath = rootPath;
-            _requestHandler = requestHandler;
-            _ignoreWhenNotMatched = ignoreWhenNotMatched;
         }
 
-        public async Task Invoke(HttpContext httpContext, IHubContext<CallbackHub, ICallback> hub)
+        public async Task Invoke(HttpContext httpContext, IOptionsSnapshot<ContractOptions> contractOptions, IHubContext<CallbackHub, ICallback>
+            hub, IOptionsSnapshot<HttpServiceOptions> httpOptions, RequestHandler requestHandler)
         {
             bool notMatched;
-            using (var convert = new HttpNetRpcServiceOnceApiConvert(httpContext, _rootPath, _ignoreWhenNotMatched, hub, _requestHandler.Instances))
+            using (var convert = new NetRpcHttpServiceOnceApiConvert(contractOptions.Value.Contracts, httpContext,
+                httpOptions.Value.ApiRootPath, httpOptions.Value.IgnoreWhenNotMatched, hub, httpOptions.Value.IsClearStackTrace))
             {
-                await _requestHandler.HandleAsync(convert);
+                await requestHandler.HandleHttpAsync(convert);
                 notMatched = convert.NotMatched;
             }
 
-            if (_ignoreWhenNotMatched && notMatched)
+            if (httpOptions.Value.IgnoreWhenNotMatched && notMatched)
                 await _next(httpContext);
         }
     }

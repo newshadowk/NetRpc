@@ -3,18 +3,13 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
+using NetRpc.Http;
 using TestHelper;
 
 namespace Service
 {
     public class ServiceAsync : IServiceAsync
     {
-        /// <summary>
-        /// ServiceAsync Call
-        /// </summary>
-        /// <param name="p1"></param>
-        /// <param name="p2"></param>
-        /// <returns></returns>
         public async Task<CustomObj> Call(string p1, int p2)
         {
             var retObj = new CustomObj {Date = DateTime.Now, Name = NameEnum.John};
@@ -25,7 +20,12 @@ namespace Service
         public async Task CallByCustomExceptionAsync()
         {
             Console.WriteLine("[CallByCustomExceptionAsync]...");
-            throw new CustomException {P1 = "123", P2 = "abc"};
+            throw new CustomException { P1 = "123", P2 = "abc" };
+        }
+
+        public async Task CallByResponseTextExceptionAsync()
+        {
+            throw new ResponseTextException("this is customs text.", 701);
         }
 
         public async Task<Stream> EchoStreamAsync(Stream stream)
@@ -49,11 +49,11 @@ namespace Service
         {
             Console.WriteLine($"[ComplexCallAsync]...receive:{obj}, p1:{p1}, streamLength:{stream.Length}");
 
-            for (var i = 1; i <= 3; i++)
+            for (var i = 1; i <= 10; i++)
             {
                 Console.Write($"{i}, ");
                 cb(new CustomCallbackObj {Progress = i});
-                await Task.Delay(100, token);
+                await Task.Delay(1000, token);
             }
 
             var ret = new ComplexStream

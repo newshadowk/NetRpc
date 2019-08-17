@@ -10,13 +10,13 @@ namespace RabbitMQ.Base
         public event EventHandler<EventArgs> RecoverySucceeded;
         private IConnection _connection;
         private readonly ConnectionFactory _factory;
-        private readonly string _rpcQueueName;
+        private readonly string _rpcQueue;
         private readonly int _prefetchCount;
         public ServiceInner Inner { get; private set; }
-        public Service(ConnectionFactory factory, string rpcQueueName, int prefetchCount)
+        public Service(ConnectionFactory factory, string rpcQueue, int prefetchCount)
         {
             _factory = factory;
-            _rpcQueueName = rpcQueueName;
+            _rpcQueue = rpcQueue;
             _prefetchCount = prefetchCount;
         }
 
@@ -48,7 +48,7 @@ namespace RabbitMQ.Base
         private void ResetService()
         {
             Inner?.Dispose();
-            Inner = new ServiceInner(_connection, _rpcQueueName, _prefetchCount);
+            Inner = new ServiceInner(_connection, _rpcQueue, _prefetchCount);
             Inner.CreateChannel();
             Inner.Received += InnerReceived;
         }
@@ -60,8 +60,8 @@ namespace RabbitMQ.Base
 
         public void Dispose()
         {
-            _connection.Close();
-            _connection.Dispose();
+            _connection?.Close();
+            _connection?.Dispose();
         }
 
         private void OnConnectionShutdown(ShutdownEventArgs e)

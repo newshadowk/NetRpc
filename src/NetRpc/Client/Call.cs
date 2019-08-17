@@ -8,8 +8,8 @@ namespace NetRpc
     internal sealed class Call : ICall
     {
         private readonly IConnectionFactory _factory;
-        private readonly bool _isWrapFaultException;
-        private readonly int _timeoutInterval;
+        private volatile bool _isWrapFaultException;
+        private volatile int _timeoutInterval;
         private readonly NetRpcContext _context;
 
         public Call(IConnectionFactory factory, bool isWrapFaultException, int timeoutInterval, NetRpcContext context)
@@ -18,6 +18,12 @@ namespace NetRpc
             _isWrapFaultException = isWrapFaultException;
             _timeoutInterval = timeoutInterval;
             _context = context;
+        }
+
+        public void Config(bool isWrapFaultException, int timeoutInterval)
+        {
+            _isWrapFaultException = isWrapFaultException;
+            _timeoutInterval = timeoutInterval;
         }
 
         public async Task<T> CallAsync<T>(ActionInfo action, Action<object> callback, CancellationToken token, Stream stream, params object[] args)

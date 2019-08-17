@@ -2,42 +2,37 @@
 using System.IO;
 using System.Threading.Tasks;
 using DataContract;
+using NetRpc.RabbitMQ;
+using Helper = TestHelper.Helper;
 
 namespace Service
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            TestHelper.Helper.OpenRabbitMQService(new Service());
+            var host = NetRpcManager.CreateHost(Helper.GetMQOptions(),
+                null,
+                typeof(ServiceAsync));
+
             Console.WriteLine("Service Opened.");
-            Console.Read();
+            await host.StartAsync();
         }
     }
 
-    internal class Service : IService
+    internal class ServiceAsync : IService
     {
-        //public async Task CallAsync(string s)
-        //{
-        //    Console.WriteLine($"Receive: {s}, start.");
-        //    for (int i = 0; i < 10; i++)
-        //    {
-        //        await Task.Delay(1000);
-        //        Console.Write($"{i}, ");
-        //    }
-        //    Console.WriteLine($"end.");
-        //}
-
-        public async Task CallAsync(Stream s, Action<int> cb, string s1)
+        public async Task CallAsync(Action<int> cb, string s1)
         {
             Console.WriteLine($"Receive: {s1}, start.");
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
                 await Task.Delay(1000);
                 cb(i);
                 Console.Write($"{i}, ");
             }
-            Console.WriteLine($"end.");
+
+            Console.WriteLine("end.");
         }
     }
 }

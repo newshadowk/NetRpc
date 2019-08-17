@@ -20,12 +20,12 @@ namespace NetRpc
         public BufferServiceOnceApiConvert(IConnection connection)
         {
             _connection = connection;
-            _connection.Received += ConnectionReceived;
         }
 
         public void Start(CancellationTokenSource cts)
         {
             _cts = cts;
+            _connection.Received += ConnectionReceived;
             _connection.Start();
         }
 
@@ -57,7 +57,7 @@ namespace NetRpc
             return r.Body.ToObject<OnceCallParam>();
         }
 
-        public Task SendResultAsync(CustomResult result, ActionInfo action, object[] args)
+        public Task SendResultAsync(CustomResult result, RpcContext context)
         {
             if (result.Result is Stream s)
                 return SafeSendAsync(Reply.FromResultStream(s.GetLength()));
@@ -69,13 +69,13 @@ namespace NetRpc
             }
             catch (Exception e)
             {
-                return SendFaultAsync(e, action, args);
+                return SendFaultAsync(e, context);
             }
 
             return SafeSendAsync(reply);
         }
 
-        public Task SendFaultAsync(Exception body, ActionInfo action, object[] args)
+        public Task SendFaultAsync(Exception body, RpcContext context)
         {
             try
             {
@@ -85,12 +85,12 @@ namespace NetRpc
                 {
                     var gt = typeof(FaultException<>).MakeGenericType(body.GetType());
                     var fe = (FaultException) Activator.CreateInstance(gt, body);
-                    fe.AppendMethodInfo(action, args);
+                    fe.AppendMethodInfo(context.ActionInfo, context.Args);
                     reply = Reply.FromFault(fe);
                 }
                 else if (bodyFe != null)
                 {
-                    bodyFe.AppendMethodInfo(action, args);
+                    bodyFe.AppendMethodInfo(context.ActionInfo, context.Args);
                     reply = Reply.FromFault(bodyFe);
                 }
                 else
@@ -126,7 +126,7 @@ namespace NetRpc
             return SafeSendAsync(Reply.FromBufferFault());
         }
 
-        public Task SendCallbackAsync(object callbackObj, ActionInfo action, object[] args)
+        public Task SendCallbackAsync(object callbackObj)
         {
             Reply reply;
             try
@@ -135,7 +135,7 @@ namespace NetRpc
             }
             catch (Exception e)
             {
-                return SendFaultAsync(e, action, args);
+                return SendFaultAsync(e, null);
             }
 
             return SafeSendAsync(reply);

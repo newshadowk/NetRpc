@@ -1,46 +1,64 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace NetRpc.Http
 {
-    internal class Result<T> : Result
-    {
-        public new T Ret 
-        {
-            get => (T)base.Ret;
-            set => base.Ret = value;
-        }
-    }
+    //internal class Result<T> : Result
+    //{
+    //    public new T Ret 
+    //    {
+    //        get => (T)base.Ret;
+    //        set => base.Ret = value;
+    //    }
+    //}
 
     internal class Result
     {
-        public bool IsSuccessful { get; set; }
+        public int StatusCode { get; set; }
 
         public object Ret { get; set; }
 
-        public static Result<Exception> FromEx(Exception ex)
+        public Result(object ret, int statusCode)
         {
-            return new Result<Exception> { Ret = ex };
+            StatusCode = statusCode;
+            Ret = ret;
         }
 
-        public static Result<T> FromOk<T>(T ret)
+        public Result(object ret)
         {
-            return new Result<T> { Ret = ret, IsSuccessful = true };
+            StatusCode = 200;
+            Ret = ret;
         }
 
-        public Fault ToFault()
-        {
-            var ex = (Exception)Ret;
-            Fault fault = new Fault();
-            fault.Name = ex.GetType().Name;  //there will be issue, when exception name is reduplicate in different namespace.
-            fault.Details = ex;
-            return fault;
-        }
+        //public static Result FromEx(Exception ex, int statusCode)
+        //{
+        //    if (ex.GetType().IsEqualsOrSubclassOf(typeof(OperationCanceledException)))
+        //        return new Result<Exception> {Ret = ex, Type = ResultType.Canceled};
+        //    return new Result<Exception> { Ret = ex, Type = ResultType.Fault};
+        //}
+
+        //public static Result FromOk<T>(T ret)
+        //{
+        //    return new Result<T> { Ret = ret, Type = ResultType.Ok};
+        //}
+
+        //public Fault ToFault(bool isClearStackTrace)
+        //{
+        //    var ex = (Exception)Ret;
+        //    if (isClearStackTrace)
+        //        ex.SetStackTrace(new StackTrace());
+                 
+        //    Fault fault = new Fault();
+        //    fault.Name = ex.GetType().Name;  //there will be issue, when exception name is reduplicate in different namespace.
+        //    fault.Details = ex;
+        //    return fault;
+        //}
     }
 
-    internal class Fault
-    {
-        public string Name { get; set; }
-
-        public object Details { get; set; }
-    }
+    //internal enum ResultType
+    //{
+    //    Ok,
+    //    Canceled,
+    //    Fault
+    //}
 }

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\NetRpc.Http.FaultContract\NetRpc.Http.FaultContract.csproj" />
+    <ProjectReference Include="..\..\..\src\NetRpc.Http.Contract\NetRpc.Http.Contract.csproj" />
   </ItemGroup>
 
 </Project>

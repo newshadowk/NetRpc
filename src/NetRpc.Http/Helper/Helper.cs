@@ -12,9 +12,6 @@ namespace NetRpc.Http
 {
     internal static class Helper
     {
-        public const string ConnectionIdName = "_connectionId";
-        public const string CallIdName = "_callId";
-
         public static object ToObject(this string str, Type t)
         {
             if (string.IsNullOrEmpty(str))
@@ -85,8 +82,8 @@ namespace NetRpc.Http
                     };
 
                     //connectionId callId
-                    cis.Add(new ClassHelper.CustomsPropertyInfo(typeof(string), ConnectionIdName));
-                    cis.Add(new ClassHelper.CustomsPropertyInfo(typeof(string), CallIdName));
+                    cis.Add(new ClassHelper.CustomsPropertyInfo(typeof(string), ConstValue.ConnectionIdName));
+                    cis.Add(new ClassHelper.CustomsPropertyInfo(typeof(string), ConstValue.CallIdName));
                     continue;
                 }
 
@@ -164,6 +161,58 @@ namespace NetRpc.Http
                 }
             }
             return ret.ToArray();
+        }
+
+        public static bool IsEqualsOrSubclassOf(this Type t, Type c)
+        {
+            return t == c || t.IsSubclassOf(c);
+        }
+
+        public static List<string> GetCommentsXmlPaths()
+        {
+            var ret = new List<string>();
+            var root = GetAssemblyPath();
+            foreach (var file in Directory.GetFiles(root))
+            {
+                if (string.Equals(Path.GetExtension(file), ".xml", StringComparison.OrdinalIgnoreCase))
+                {
+                    var dll = GetFullPathWithoutExtension(file) + ".dll";
+                    var exe = GetFullPathWithoutExtension(file) + ".exe";
+                    if (File.Exists(dll) || File.Exists(exe))
+                        ret.Add(file);
+                }
+            }
+
+            return ret;
+        }
+
+        public static string GetFullPathWithoutExtension(string s)
+        {
+            var dir = Path.GetDirectoryName(s);
+            if (dir == null)
+                dir = "";
+            var name = Path.GetFileNameWithoutExtension(s);
+            if (name == null)
+                name = "";
+            return Path.Combine(dir, name);
+        }
+
+        public static string GetAssemblyPath()
+        {
+            var assembly = Assembly.GetEntryAssembly();
+            if (assembly == null)
+                assembly = Assembly.GetExecutingAssembly();
+
+            var path = assembly.CodeBase;
+            path = path.Substring(8, path.Length - 8);
+            path = Path.GetDirectoryName(path);
+            return path;
+        }
+
+        public static List<NetRpcProducesResponseTypeAttribute> GetProducesResponseTypes(this MethodInfo method)
+        {
+            return method.GetCustomAttributes(typeof(NetRpcProducesResponseTypeAttribute), true).ToList()
+                .ConvertAll(i => (NetRpcProducesResponseTypeAttribute) i);
         }
     }
 }

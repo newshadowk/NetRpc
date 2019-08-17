@@ -1,5 +1,20 @@
 # NetRpc
-NetRpc is a light weight rpc engine base on **RabbitMQ** or **Grpc** targeting .NET Standard 2.0.  It use the simple interface to call each other, contains the load balance mode.
+NetRpc is a light weight rpc engine base on **RabbitMQ**, **Grpc**, **Http** targeting .NET Standard 2.0.  It use the simple interface to call each other, 
+provide callback/cancel during invoking, so especially suitable for handle **long call**.
+
+
+## Overall
+NetRpc provide **RabbitMQ**/**Grpc**/**Http** Channels to connect, each one has different advantages.
+* **RabbitMQ** provide load balance, queue feature.
+* **Grpc** use http2, provide all http2 advantages.
+* **Http** use webapi, also provide swagger interface.
+
+All channels use uniform contract interface, so easily to switch channel without modify service implement.
+
+![Alt text](all.png)
+
+## RabbitMQ/Grpc
+Http pls go to [NetRpc Http document](samples/Http).
 
 ![Alt text](nrpc.png)
 
@@ -10,9 +25,10 @@ class Program
 {
     static void Main(string[] args)
     {
-        var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy(new ServerPort("0.0.0.0", 50001, ServerCredentials.Insecure), new Service());
-        service.Open();
-        Console.Read();
+        var o = new GrpcServiceOptions();
+        o.AddPort("0.0.0.0", 50001);
+        var host = NetRpc.Grpc.NetRpcManager.CreateHost(o, null, typeof(Service));
+        await host.StartAsync();
     }
 }
 
@@ -30,8 +46,8 @@ class Program
 {
     static void Main(string[] args)
     {
-        var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
-        proxy.Call("hello world!");
+        var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure));
+        p.Proxy.Call("hello world.");
         Console.Read();
     }
 }
@@ -46,24 +62,30 @@ public interface IService
 ## Swithch RabbitMQ/Grpc
 * **NetRpc.RabbitMQ.NetRpcManager** for **RabbitMQ**.
 * **NetRpc.Grpc.NetRpcManager** for **Grpc**.
-
+## Initialize by DI
+There has two ways to initialize service and client, See DI sample below:
 ```c#
-//create RabbitMQ servcie
-var p = new MQParam(host, virtualHost, rpcQueue, port, user, password, prefetchCount);
-var service = NetRpc.RabbitMQ.NetRpcManager.CreateServiceProxy(p, instances);
-
-//create Grpc servcie
-var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy(new ServerPort("0.0.0.0", 50001, ServerCredentials.Insecure), instances);
+//service
+var host = new HostBuilder()
+    .ConfigureServices((context, services) =>
+    {
+        services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50001));
+        services.AddNetRpcServiceContract<Service>();
+    })
+    .Build();
 ```
 ```c#
-//create RabbitMQ client
-var p = new MQParam(host, virtualHost, rpcQueue, port, user, password, prefetchCount);
-var client = NetRpc.RabbitMQ.NetRpcManager.CreateClientProxy<IService>(p)
-
-//create Grpc client
-var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
+//client
+var host = new HostBuilder()
+    .ConfigureServices((context, services) =>
+    {
+        services.AddHostedService<GrpcHostedService>();
+        services.AddNetRpcGrpcClient<IService>(i =>
+            i.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
+    })
+    .Build();
 ```
-
+Other way is **NetRpcManager**.
 ## Serialization
 NetRpc base on **BinaryFormatter**, make sure all interface model mark as **[Serializable]**.
 ```c#
@@ -86,7 +108,7 @@ public class ComplexStream
     public string OtherInfo { get; set; }
 }
 ```
-## Supported interface type
+## <span id="jump">Supported interface type</span>
 ```c#
 //Sync
 public interface IService
@@ -176,7 +198,7 @@ public void TestHeader()
 }
 ```
 * **DefaultHeader**  
-On the client side, when **DefaultHeader** items count > 0, **ThreadHeader** will get the value of **DefaultHeader** when call the remote. This feature is usefull when you wan to transfer a sessionId to service.
+On the client side, when **DefaultHeader** items count > 0, **ThreadHeader** will get the value of **DefaultHeader** when call the remote. This feature is usefull when you want to transfer a sessionId to service.
 ```c#
 //client
 var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
@@ -185,22 +207,34 @@ client.Context.DefaultHeader.CopyFrom(new Dictionary<string, object> {{"SessionI
 //will tranfer the header of SessionId to service.
 client.Proxy.Call();
 ```
-## ApiContext
-**Midderware** or **Filter** can access **ApiContext**, it is
+## ContractLifeTime
+```c#
+//The same instance for each request.
+services.AddNetRpcServiceContract<Service>(ContractLifeTime.Singleton);
 
-| Property | Type | Description |
-| :-----   | :--- | :---------- |
-| Header   | Dictionary\<string object> | Header sent from client. |
-| Target   | object                     | Service instance of invoked action.|
-| Action   | MethodInfo                 | Current invoked action.|
-| Args     | object[]                   | Args of invoked action.|
+//create new instance for each request. 
+services.AddNetRpcServiceContract<Service>(ContractLifeTime.Scoped);
+```
+## RpcContext
+**Midderware** or **Filter** can access **RpcContext**, it is
+
+| Property         | Type | Description |
+| :-----           | :--- | :---------- |
+| Header           | Dictionary\<string object> | Header sent from client. |
+| Target           | object                     | Service instance of invoked action.|
+| InstanceMethodInfo | InstanceMethodInfo           | Current invoked method.  |
+| InterfaceMethodInfo | InterfaceMethodInfo     | Current invoked interface method.  |
+| ActionInfo       | ActionInfo                 | Warpped info of current invoked method.  |
+| Args             | object[]                   | Args of invoked action.  |
+| ServiceProvider  | IServiceProvider           | ServiceProvider of invoked action.  |
+| Result           | object                     | Result of invoked action.|
 ## Filter
 Filter is common function like MVC. 
 ```c#
 //service
 public class TestFilter : NetRpcFilterAttribute
 {
-    public override Task InvokeAsync(ApiContext context)
+    public override Task InvokeAsync(RpcContext context)
     {
         Console.Write($"context:{context}");
         return Task.CompletedTask;
@@ -216,25 +250,29 @@ internal class Service : IService
     }
 }
 ```
-## Middleware
-Middleware is common function like MVC. 
+## NetRpc Middleware
+The way use **NetRpc Middleware** and use **MVC Middleware** is same, the only difference is use **RpcContext** instead of **HttpContext**.  
+Support DI Type and ctor args.
 ```c#
 //servcie
-var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy(new ServerPort("0.0.0.0", 50001, ServerCredentials.Insecure), instances);
-serviceProxy.UseMiddleware<TestGlobalExceptionMiddleware>("testArg1");
+var mOpt = new MiddlewareOptions();
+mOpt.UseMiddleware<TestGlobalExceptionMiddleware>("arg1value");
 
-public class TestGlobalExceptionMiddleware : MiddlewareBase
+public class TestGlobalExceptionMiddleware
 {
-    public TestGlobalExceptionMiddleware(RequestDelegate next, string arg1) : base(next)
+    private readonly RequestDelegate _next;
+
+    public TestGlobalExceptionMiddleware(RequestDelegate next, string arg1, DIType diType)
     {
-        Console.WriteLine($"[testArg1] {arg1}");
+        _next = next;
+        Console.WriteLine($"{arg1}");
     }
 
-    public override async Task InvokeAsync(MiddlewareContext context)
+    public async Task InvokeAsync(RpcContext context, DIType diType)
     {
         try
         {
-            await Next(context);
+            await _next(context);
         }
         catch (Exception e)
         {
@@ -257,7 +295,7 @@ FaultException is usefull when you want to get the exactly **StackTrace** info.
 | Property | Type | Description |
 | :-----   | :--- | :---------- |
 | Detail   | Exception | Threw exception, will save the orginal **StackTrace** when Exception via remote transfer. |
-| Action   | string | Invoked action info. |
+| Action   | string | Invoked action name and args, if many actions split by '\|'.
 
 ```c#
 //service
@@ -370,5 +408,7 @@ CreateClientProxy<TService>(Channel channel, int timeoutInterval = 1200000)
 ```
 ## Samples
 * [Hello World](samples/HelloWorld)
-* [Base](samples/Base)
+* [Api](samples/Api)
+* [Http](samples/Http)
 * [LoadBalance](samples/LoadBalance)
+* [InitializeByDI](samples/InitializeByDI)

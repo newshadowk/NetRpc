@@ -1,16 +1,18 @@
 ﻿using System;
+using System.Threading.Tasks;
 using DataContract;
-using Grpc.Core;
+using NetRpc.Grpc;
 
 namespace Service
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy(new ServerPort("0.0.0.0", 50001, ServerCredentials.Insecure), new Service());
-            service.Open();
-            Console.Read();
+            var o = new GrpcServiceOptions();
+            o.AddPort("0.0.0.0", 50001);
+            var host = NetRpcManager.CreateHost(o, null, typeof(Service));
+            await host.StartAsync();
         }
     }
 

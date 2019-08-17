@@ -15,7 +15,7 @@ cancelBtn.addEventListener("click",
 
 function addText(str) {
     let textarea = document.querySelector(".viewTextarea");
-    textarea.value = str;
+    textarea.value += str + "\r\n";
 }
 
 function addEvent(cb) {

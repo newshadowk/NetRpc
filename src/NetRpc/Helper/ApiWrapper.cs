@@ -70,46 +70,56 @@ namespace NetRpc
         }
 
         /// <exception cref="TypeLoadException"></exception>
-        public static ApiContext Convert(ServiceCallParam scp, object[] instances)
+        public static RpcContext Convert(ServiceCallParam scp, object[] instances, IServiceProvider serviceProvider)
         {
-            (MethodInfo method, object instance) = GetMethodInfo(scp.Action, instances);
-            var ps = method.GetParameters();
+            (MethodInfo instanceMethodInfo, MethodInfo interfaceMethodInfo, object instance) = GetMethodInfo(scp.Action, instances);
+            var ps = interfaceMethodInfo.GetParameters();
             var args = GetArgs(ps, scp.Args, scp.Callback, scp.Token, scp.Stream);
-            return new ApiContext(scp.Header, instance, method, args);
+            return new RpcContext(scp.Header, instance, instanceMethodInfo, interfaceMethodInfo, scp.Action, args, serviceProvider);
         }
 
         /// <exception cref="TypeLoadException"></exception>
-        public static (MethodInfo method, object instance) GetMethodInfo(ActionInfo action, object[] instances)
+        public static (MethodInfo instanceMethodInfo, MethodInfo interfaceMethodInfo, object instance) GetMethodInfo(ActionInfo action, object[] instances)
         {
             foreach (var o in instances)
             {
-                var found = GetMethodInfo(action, o);
-                if (found != null)
-                    return (found, o);
+                var found = GetMethodInfo(action, o.GetType());
+                if (found != default)
+                    return (found.instanceMethodInfo, found.interfaceMethodInfo, o);
             }
             throw new MethodNotFoundException($"{action.FullName} not found in instances");
         }
 
-        private static MethodInfo GetMethodInfo(ActionInfo action, object instance)
+        public static (MethodInfo instanceMethodInfo, MethodInfo interfaceMethodInfo) GetMethodInfo(ActionInfo action, Type[] instanceTypes)
         {
-            var instanceType = instance.GetType();
+            foreach (var t in instanceTypes)
+            {
+                var found = GetMethodInfo(action, t);
+                if (found != default)
+                    return found;
+            }
+            throw new MethodNotFoundException($"{action.FullName} not found in instanceTypes");
+        }
+
+        private static (MethodInfo instanceMethodInfo, MethodInfo interfaceMethodInfo) GetMethodInfo(ActionInfo action, Type instanceType)
+        {
             foreach (var item in instanceType.GetInterfaces())
             {
-                var found = item.GetMethods().FirstOrDefault(i => i.GetFullMethodName() == action.FullName);
-                if (found != null)
+                var interfaceMethodInfo = item.GetMethods().FirstOrDefault(i => i.GetFullMethodName() == action.FullName);
+                if (interfaceMethodInfo != null)
                 {
-                    var retM = instanceType.GetMethod(found.Name);
+                    var instanceMethodInfo = instanceType.GetMethod(interfaceMethodInfo.Name);
                     if (action.GenericArguments.Length > 0)
                     {
                         var ts = action.GenericArguments.ToList().ConvertAll(Type.GetType).ToArray();
                         // ReSharper disable once PossibleNullReferenceException
-                        retM = retM.MakeGenericMethod(ts);
+                        instanceMethodInfo = instanceMethodInfo.MakeGenericMethod(ts);
                     }
-                    return retM;
+                    return (instanceMethodInfo, interfaceMethodInfo);
                 }
             }
 
-            return null;
+            return default;
         }
     }
 }

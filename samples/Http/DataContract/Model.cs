@@ -1,7 +1,7 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Runtime.Serialization;
-using NetRpc.Http.FaultContract;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -21,6 +21,9 @@ namespace DataContract
         /// a Date
         /// </summary>
         public DateTime Date { get; set; }
+
+        [DefaultValue("This defalut value of P1")]
+        public string P1 { get; set; }
 
         public InnerObj InnerObj { get; set; } = new InnerObj();
 
@@ -61,6 +64,9 @@ namespace DataContract
         public string StreamName { get; set; }
     }
 
+    /// <summary>
+    /// summary of CustomException
+    /// </summary>
     public class CustomException : Exception
     {
         public string P1 { get; set; }

@@ -3,6 +3,8 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
 
 namespace NetRpc.Http
@@ -10,68 +12,83 @@ namespace NetRpc.Http
     public class SwaggerUiIndexMiddleware
     {
         private readonly Microsoft.AspNetCore.Http.RequestDelegate _next;
-        private readonly string _apiRootApi;
-        private readonly string _swaggerRootPath;
-        private readonly string _swaggerFilePath;
-        private readonly object[] _instances;
-        private readonly string _resourcePath;
         private volatile string _json;
         private volatile string _html;
 
-        public SwaggerUiIndexMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, string apiRootApi, string swaggerRootPath, object[] instances)
+        public SwaggerUiIndexMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next)
         {
             _next = next;
-            _apiRootApi = apiRootApi;
-            _swaggerRootPath = swaggerRootPath.Trim('/');
-            _resourcePath = "NetRpc.Http.SwaggerUi3.index.html";
-            _instances = instances;
-            _swaggerFilePath = $"{swaggerRootPath}/swagger.json";
         }
 
-        public async Task Invoke(HttpContext context, INetRpcSwaggerProvider netRpcSwaggerProvider)
+        public async Task Invoke(HttpContext context, INetRpcSwaggerProvider netRpcSwaggerProvider, 
+            IOptionsSnapshot<HttpServiceOptions> httpServiceOptions, IOptionsSnapshot<ContractOptions> contractOptions)
         {
+            var apiRootApi = httpServiceOptions.Value.ApiRootPath;
+            var swaggerRootPath = httpServiceOptions.Value.ApiRootPath + "/swagger";
+            var swaggerFilePath = $"{swaggerRootPath}/swagger.json";
+
             var requestPath = context.Request.Path;
 
             // api/swagger
-            if (requestPath.HasValue &&
-                string.Equals(requestPath.Value.Trim('/'), _swaggerRootPath.Trim('/'), StringComparison.OrdinalIgnoreCase))
+            if (IsUrl(requestPath, swaggerRootPath))
             {
-                context.Response.Redirect($"/{_swaggerRootPath}/index.html");
+                context.Response.Redirect($"{swaggerRootPath}/index.html");
             }
             // api/swagger/index.html
-            else if (requestPath.HasValue &&
-                string.Equals(requestPath.Value.Trim('/'), $"{_swaggerRootPath}/index.html", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrl(requestPath, $"{swaggerRootPath}/index.html"))
             {
                 //if (_html == null)
                 {
-                    var stream = typeof(SwaggerUiIndexMiddleware).GetTypeInfo().Assembly.GetManifestResourceStream(_resourcePath);
-                    using (var reader = new StreamReader(stream))
-                    {
-                        context.Response.Headers["Content-Type"] = "text/html; charset=utf-8";
-                        context.Response.StatusCode = 200;
-                        _html = await reader.ReadToEndAsync();
-                    }
-                    var doc = netRpcSwaggerProvider.GetSwagger(_apiRootApi, _instances);
-                    using (var textWriter = new StringWriter())
-                    {
-                        var jsonWriter = new OpenApiJsonWriter(textWriter);
-                        doc.SerializeAsV3(jsonWriter);
-                        _json = textWriter.ToString();
-                        _html = _html.Replace("{url}", _swaggerFilePath);
-                    }
+                    _html = await ReadStringAsync(".index.html");
+                    _html = _html.Replace("{url}", swaggerFilePath);
+
+                    OpenApiDocument doc = netRpcSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.Contracts);
+                    _json = ToJson(doc);
                 }
-                
+
+                context.Response.Headers["Content-Type"] = "text/html; charset=utf-8";
+                context.Response.StatusCode = 200;
                 await context.Response.WriteAsync(_html);
             }
             // api/swagger/swagger.json
-            else if (requestPath.HasValue &&
-                     string.Equals(requestPath.Value.Trim('/'), _swaggerFilePath.Trim('/'), StringComparison.OrdinalIgnoreCase))
+            else if (IsUrl(requestPath, swaggerFilePath))
             {
                 await context.Response.WriteAsync(_json);
+            }
+            //api/swagger/dialog/session.js
+            else if (IsUrl(requestPath, $"{swaggerRootPath}/dialog/session.js"))
+            {
+                var sessionJs = await ReadStringAsync(".dialog.session.js");
+                sessionJs = sessionJs.Replace("{hubUrl}", "/callback");
+                await context.Response.WriteAsync(sessionJs);
             }
             else
             {
                 await _next(context);
+            }
+        }
+
+        private static bool IsUrl(PathString path, string url)
+        {
+            return path.HasValue &&
+                   string.Equals(path.Value.Trim('/'), url.Trim('/'), StringComparison.OrdinalIgnoreCase);
+        }
+        
+        private static async Task<string> ReadStringAsync(string resourcePath)
+        {
+            var stream = typeof(SwaggerUiIndexMiddleware).GetTypeInfo().Assembly.GetManifestResourceStream($"{ConstValue.SwaggerUi3Base}{resourcePath}");
+            // ReSharper disable once AssignNullToNotNullAttribute
+            using (var reader = new StreamReader(stream))
+                return await reader.ReadToEndAsync();
+        }
+
+        public static string ToJson(OpenApiDocument doc)
+        {
+            using (var textWriter = new StringWriter())
+            {
+                var jsonWriter = new OpenApiJsonWriter(textWriter);
+                doc.SerializeAsV3(jsonWriter);
+                return textWriter.ToString();
             }
         }
     }

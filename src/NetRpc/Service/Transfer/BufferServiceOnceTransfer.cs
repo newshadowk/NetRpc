@@ -7,48 +7,52 @@ namespace NetRpc
     {
         private readonly IBufferServiceOnceApiConvert _convert;
         private readonly object[] _instances;
-        private readonly MiddlewareRegister _middlewareRegister;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly MiddlewareBuilder _middlewareBuilder;
 
-        public BufferServiceOnceTransfer(IBufferServiceOnceApiConvert convert, MiddlewareRegister middlewareRegister, object[] instances) : base(convert)
+        public BufferServiceOnceTransfer(object[] instances, IServiceProvider serviceProvider, IBufferServiceOnceApiConvert convert,
+            MiddlewareBuilder middlewareBuilder) : base(convert)
         {
-            _convert = convert;
             _instances = instances;
-            _middlewareRegister = middlewareRegister;
+            _serviceProvider = serviceProvider;
+            _convert = (IBufferServiceOnceApiConvert) Convert;
+            _middlewareBuilder = middlewareBuilder;
         }
 
         public override async Task HandleRequestAsync()
         {
-            ServiceCallParam scp = null;
             object ret;
+            RpcContext rpcContext = null;
+            ServiceCallParam scp;
 
             try
             {
                 scp = await GetServiceCallParamAsync();
-                var apiContext = ApiWrapper.Convert(scp, _instances);
-                ret = await _middlewareRegister.InvokeAsync(new MiddlewareContext(apiContext));
+                rpcContext = ApiWrapper.Convert(scp, _instances, _serviceProvider);
+                ret = await _middlewareBuilder.InvokeAsync(rpcContext);
             }
             catch (Exception e)
             {
                 //send fault
-                if (scp == null)
-                    await _convert.SendFaultAsync(e, null, null);
-                else
-                    await _convert.SendFaultAsync(e, scp.Action, scp.Args);
+                await _convert.SendFaultAsync(e, rpcContext);
                 return;
             }
 
-            var hasStream = ret.TryGetStream(out System.IO.Stream retStream, out _);
+            var hasStream = ret.TryGetStream(out var retStream, out _);
 
             //send result
-            await _convert.SendResultAsync(new CustomResult(ret, hasStream, retStream.GetLength()), scp.Action, scp.Args);
+            await _convert.SendResultAsync(new CustomResult(ret, hasStream, retStream.GetLength()), rpcContext);
 
             //send stream
             if (hasStream)
             {
                 try
                 {
-                    await Helper.SendStreamAsync(i => _convert.SendBufferAsync(i), () =>
-                        _convert.SendBufferEndAsync(), retStream, scp.Token);
+                    using (retStream)
+                    {
+                        await Helper.SendStreamAsync(i => _convert.SendBufferAsync(i), () =>
+                            _convert.SendBufferEndAsync(), retStream, scp.Token);
+                    }
                 }
                 catch (TaskCanceledException)
                 {

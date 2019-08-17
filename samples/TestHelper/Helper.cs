@@ -1,29 +1,23 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using NetRpc.RabbitMQ;
 using System.Reflection;
 using System.Text;
-using Grpc.Core;
+using NetRpc.Grpc;
 
 namespace TestHelper
 {
     public static class Helper
     {
-        public static ServiceProxy OpenRabbitMQService(params object[] instances)
+        public static GrpcServiceOptions GetGrpcServiceOptions()
         {
-            var service = NetRpcManager.CreateServiceProxy(GetMQParam(), instances);
-            service.Open();
-            return service;
+            GrpcServiceOptions opt = new GrpcServiceOptions();
+            opt.AddPort("0.0.0.0", 50001);
+            return opt;
         }
 
-        public static NetRpc.Grpc.ServiceProxy OpenGrpcService(params object[] instances)
-        {
-            var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy(new ServerPort("0.0.0.0", 50001, ServerCredentials.Insecure), instances);
-            service.Open();
-            return service;
-        }
-
-        public static MQParam GetMQParam()
+        public static MQOptions GetMQOptions()
         {
             //config your RabbitMQ parameters before run
             string user = "testuser";
@@ -33,8 +27,23 @@ namespace TestHelper
             int port = 5672;
             string rpcQueue = "rpc_test";
             int prefetchCount = 2;
-            var p = new MQParam(host, virtualHost, rpcQueue, port, user, password, prefetchCount);
+            var p = new MQOptions(host, virtualHost, rpcQueue, port, user, password, prefetchCount);
             return p;
+        }
+
+        public static Action<MQOptions> MQOptionsConfigure()
+        {
+            var opt = GetMQOptions();
+            return i =>
+            {
+                i.User = opt.User;
+                i.Password = opt.Password;
+                i.Host = opt.Host;
+                i.VirtualHost = opt.VirtualHost;
+                i.Port = opt.Port;
+                i.RpcQueue = opt.RpcQueue;
+                i.PrefetchCount = opt.PrefetchCount;
+            };
         }
 
         public static string GetTestFilePath()

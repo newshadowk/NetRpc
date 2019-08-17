@@ -1,30 +1,36 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Grpc.Core;
 
 namespace Grpc.Base
 {
-    public sealed class Service
+    public sealed class Service : IDisposable
     {
-        private readonly List<ServerPort> _ports;
-        private readonly MessageCall.MessageCallBase _messageCall;
+        private readonly Server _server;
+        private volatile bool _disposed;
 
         public Service(List<ServerPort> ports, MessageCall.MessageCallBase messageCall)
         {
-            _ports = ports;
-            _messageCall = messageCall;
+            _server = new Server
+            {
+                Services = { MessageCall.BindService(messageCall) }
+            };
+
+            foreach (var port in ports)
+                _server.Ports.Add(port);
         }
 
         public void Open()
         {
-            Server server = new Server
-            {
-                Services = {MessageCall.BindService(_messageCall)}
-            };
+            _server.Start();
+        }
 
-            foreach (var port in _ports)
-                server.Ports.Add(port);
-
-            server.Start();
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+            _server.KillAsync().Wait();
+            _disposed = true;
         }
     }
 }

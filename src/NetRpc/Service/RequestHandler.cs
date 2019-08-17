@@ -1,36 +1,47 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace NetRpc
 {
     public sealed class RequestHandler
     {
-        public object[] Instances { get; }
+        private readonly IServiceProvider _serviceProvider;
+        private readonly MiddlewareBuilder _middlewareBuilder;
 
-        private readonly MiddlewareRegister _middlewareRegister;
-
-        public RequestHandler(MiddlewareRegister middlewareRegister, params object[] instances)
+        public RequestHandler(IServiceProvider serviceProvider)
         {
-            Instances = instances;
-            _middlewareRegister = middlewareRegister;
+            _serviceProvider = serviceProvider;
+            var middlewareOptions = _serviceProvider.GetService<IOptions<MiddlewareOptions>>().Value;
+            _middlewareBuilder = new MiddlewareBuilder(middlewareOptions, serviceProvider);
         }
 
         public async Task HandleAsync(IConnection connection)
         {
-            await HandleAsync(new BufferServiceOnceApiConvert(connection));
+            var contractOptions = _serviceProvider.GetRequiredService<IOptions<ContractOptions>>();
+
+            using (var scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                var convert = new BufferServiceOnceApiConvert(connection);
+                var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
+                var onceTransfer = new BufferServiceOnceTransfer(instances, scope.ServiceProvider, convert, _middlewareBuilder);
+                onceTransfer.Start();
+                await onceTransfer.HandleRequestAsync();
+            }
         }
 
-        public async Task HandleAsync(IBufferServiceOnceApiConvert convert)
+        public async Task HandleHttpAsync(IHttpServiceOnceApiConvert convert)
         {
-            var t = new BufferServiceOnceTransfer(convert, _middlewareRegister, Instances);
-            t.Start();
-            await t.HandleRequestAsync();
-        }
+            var contractOptions = _serviceProvider.GetRequiredService<IOptions<ContractOptions>>();
 
-        public async Task HandleAsync(IHttpServiceOnceApiConvert convert)
-        {
-            var t = new HttpServiceOnceTransfer(convert, _middlewareRegister, Instances);
-            t.Start();
-            await t.HandleRequestAsync();
+            using (var scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
+                var onceTransfer = new HttpServiceOnceTransfer(instances, scope.ServiceProvider, convert, _middlewareBuilder);
+                onceTransfer.Start();
+                await onceTransfer.HandleRequestAsync();
+            }
         }
     }
 }

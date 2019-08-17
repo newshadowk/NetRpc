@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,11 +15,13 @@ namespace NetRpc.Http
     {
         private readonly HttpContext _context;
         private readonly IHubContext<CallbackHub, ICallback> _hub;
+        private readonly bool _isClearStackTrace;
 
-        public HttpConnection(HttpContext context, IHubContext<CallbackHub, ICallback> hub)
+        public HttpConnection(HttpContext context, IHubContext<CallbackHub, ICallback> hub, bool isClearStackTrace)
         {
             _context = context;
             _hub = hub;
+            _isClearStackTrace = isClearStackTrace;
         }
 
         public string ConnectionId { get; set; }
@@ -28,14 +31,8 @@ namespace NetRpc.Http
         public async Task SendAsync(Result result)
         {
             _context.Response.ContentType = "application/json; charset=utf-8";
-            if (result.IsSuccessful)
-            {
-                _context.Response.StatusCode = 200;
-                await _context.Response.WriteAsync(result.Ret.ToJson());
-                return;
-            }
-            _context.Response.StatusCode = 400;
-            await _context.Response.WriteAsync(result.ToFault().ToJson());
+            _context.Response.StatusCode = result.StatusCode;
+            await _context.Response.WriteAsync(result.Ret.ToJson());
         }
 
         public async Task SendAsync(Stream stream, string streamName)

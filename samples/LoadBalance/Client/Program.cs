@@ -10,15 +10,14 @@ namespace Client
     {
         static void Main(string[] args)
         {
-            var proxy = NetRpcManager.CreateClientProxy<IService>(Helper.GetMQParam()).Proxy;
-            var fileStream = File.Open(@"d:\4\1212.pdf", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            var proxy = NetRpcManager.CreateClientProxy<IService>(Helper.GetMQOptions()).Proxy;
             for (int i = 0; i < 10; i++)
             {
-                proxy.CallAsync(fileStream, Console.WriteLine, i.ToString());
+                proxy.CallAsync(Console.WriteLine, i.ToString());
                 Console.WriteLine($"Send {i}");
             }
 
-            Console.WriteLine($"Send end");
+            Console.WriteLine("Send end");
             Console.Read();
         }
     }

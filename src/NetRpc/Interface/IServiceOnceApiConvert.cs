@@ -27,11 +27,11 @@ namespace NetRpc
 
         Task<OnceCallParam> GetOnceCallParamAsync();
 
-        Task SendResultAsync(CustomResult result, ActionInfo action, object[] args);
+        Task SendResultAsync(CustomResult result, RpcContext context);
 
-        Task SendFaultAsync(Exception body, ActionInfo action, object[] args);
+        Task SendFaultAsync(Exception body, RpcContext context);
 
-        Task SendCallbackAsync(object callbackObj, ActionInfo action, object[] args);
+        Task SendCallbackAsync(object callbackObj);
 
         Stream GetRequestStream(long? length);
     }

@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Net;
-using System.Net.Sockets;
+using System.Threading;
 using Grpc.Core;
 
 namespace Grpc.Base
 {
     public sealed class Client : IDisposable
     {
-        private readonly string _ip;
-        private readonly int _port;
-        private Channel _channel;
+        private readonly Channel _channel;
+        private volatile bool _disposed;
 
         public MessageCall.MessageCallClient CallClient { get; private set; }
 
@@ -25,7 +23,10 @@ namespace Grpc.Base
 
         public void Dispose()
         {
+            if (_disposed)
+                return;
             _channel?.ShutdownAsync().Wait();
+            _disposed = true;
         }
     }
 }
