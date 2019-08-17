@@ -282,7 +282,8 @@ public class TestGlobalExceptionMiddleware
 ```
 ## Load Balance
 Only for RabbitMQ.  
-When run multiple service instances, ther service will auto apply the load balance, this function is base on the **RabbitMQ**.
+When run multiple service instances, ther service will auto apply the load balance, this function is base on the RabbitMQ.  
+**MQOptions.PrefetchCount**: The service will acquire more messages, up to the PrefetchCount limit, defalut value is 1.
 ## FaultException\<T>
 When create **ClientProxy** that can pass **isWrapFaultException**, if true will wrap Exception to **FaultExcetpion\<Exception>**.  
 FaultException is usefull when you want to get the exactly **StackTrace** info.  
