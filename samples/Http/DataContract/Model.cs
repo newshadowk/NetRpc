@@ -61,7 +61,7 @@ namespace DataContract
     {
         public Stream Stream { get; set; }
 
-        public string StreamName { get; set; }
+        public string StreamName { get; set; } //the property will map to file name.
     }
 
     /// <summary>

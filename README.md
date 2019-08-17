@@ -14,10 +14,7 @@ All channels use uniform contract interface, so easily to switch channel without
 ![Alt text](all.png)
 
 ## RabbitMQ/Grpc
-Http pls go to [NetRpc Http document](samples/Http).
-
 ![Alt text](nrpc.png)
-
 ## Hello world!
 ```c#
 //service
@@ -108,7 +105,7 @@ public class ComplexStream
     public string OtherInfo { get; set; }
 }
 ```
-## <span id="jump">Supported interface type</span>
+## Supported interface type
 ```c#
 //Sync
 public interface IService
@@ -396,6 +393,137 @@ According to **Heartbeat** is successfull or faild, **Connected** or **DisConnec
 var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure), 10*1000).Proxy;
 clientProxy.Heartbeat += async s => s.Proxy.Hearbeat();
 clientProxy.StartHeartbeat(true);
+```
+# [Http] NetRpc.Http
+NetRpc.Http provide:
+* **Webapi** for call.
+* **Swagger** for view api and test.
+* **SignalR** for callback and cancel during method invoking.
+
+![Alt text](nrpc_http.png)
+
+## [Http] Create Host
+* Use **NetRpcManager** create host:
+```c#
+//service
+var webHost = NetRpcManager.CreateHost(
+    8080,
+    "/callback",
+    true,
+    new HttpServiceOptions { ApiRootPath = "/api"}, 
+    null,
+    typeof(ServiceAsync));
+await webHost.RunAsync();
+```
+* Use DI to create NetRpcHttp service, also could create NetRpcHttp service base on exist MVC servcie.
+```c#
+//regist services
+services.AddSignalR();         // add SignalR service if need cancel/callback support
+services.AddNetRpcSwagger();   // add Swgger service
+services.AddNetRpcHttp(i =>    // add RpcHttp service
+{
+    i.ApiRootPath = "/api";
+    i.IgnoreWhenNotMatched = false;
+    i.IsClearStackTrace = false;
+}, i =>
+{
+    i.UseMiddleware<MyNetRpcMiddleware>();   // define NetRpc Middleware
+});
+services.AddNetRpcServiceContract(instanceTypes); // add Contracts
+```
+```c#
+//use components
+app.UseSignalR(routes => { routes.MapHub<CallbackHub>(hubPath); });   // define CallbackHub if need cancel/callback support
+app.UseNetRpcSwagger();   // use NetRpcSwagger middleware
+app.UseNetRpcHttp();      // use NetRpcHttp middleware
+```
+## [Http] Swagger
+Use [Swashbuckle.AspNetCore.Swagger](https://github.com/domaindrivendev/Swashbuckle.AspNetCore) to implement swagger feature.
+
+Add codes below to enabled swagger function.
+```c#
+services.AddNetRpcSwagger();   // add Swgger service
+...
+app.UseNetRpcSwagger();        // use NetRpcSwagger middleware
+```
+The demo show how to call a method with callback and cancel:
+![Alt text](swagger.png)
+
+If define Callback Action\<T> and CancelToken supported, need set **\_connectionId** and **_callId** when request.
+OperationCanceledException will receive respones with statuscode 600.  
+
+![Alt text](callback.png)
+
+Also support summary on model or method.
+## [Http] Callback and Cancel
+Contract define the **Action\<T>** and **CancellationToken** to enable this feature.
+```c#
+Task CallAsync(Action<int> cb, CancellationToken token);
+```
+Client code belows show how to get connectionId, how to receive callback, how to cancel a method.
+```javascript
+//client js side
+var connection = new signalR.HubConnectionBuilder().withUrl("{hubUrl}").build();
+
+//GetConnectionId function
+connection.start().then(function () {
+    addText("signalR connected!");
+    connection.invoke("GetConnectionId").then((cid) => {
+        addText("GetConnectionId, _connectionId:" + cid);
+    });
+}).catch(function (err) {
+    return console.error(err.toString());
+});
+
+//Callback
+connection.on("Callback", function (callId, data) {
+    addText("callback, callId:" + callId + ", data:" + data);
+});
+
+//Cancel
+document.getElementById("cancelBtn").addEventListener("click", function (event) {
+    connection.invoke("Cancel").catch(function (err) {
+        return console.error(err.toString());
+    });
+
+    event.preventDefault();
+});
+```
+## [Http] NetRpcProducesResponseType
+If contract has **Exception** defined, should use **NetRpcProducesResponseType** to define **statuscode**, 
+use **response code** to define summary(will display in Swagger), 
+otherwise NetRpc will use statuscode **400** to define all Exception by default.
+```c#
+/// <response code="400">CustomException error.</response>
+/// <response code="401">CustomException2 error</response>
+[NetRpcProducesResponseType(typeof(CustomException), 400)]
+[NetRpcProducesResponseType(typeof(CustomException2), 401)]
+Task CallByCustomExceptionAsync();
+```
+## [Http] ResponseTextException
+ResponseTextException define pain text response with statucode.
+```c#
+public async Task CallByResponseTextExceptionAsync()
+{
+    throw new ResponseTextException("this is customs text. statucode is 701.", 701);
+}
+````
+Also should use **response code** define summary, it will display in swagger.
+```c#
+/// <response code="701">return the pain text.</response>
+Task CallByResponseTextExceptionAsync();
+```
+## [Http] Stream
+Normally stream of return value will map to filestream, if you define **StreamName** property, will set to file name to client.
+```c#
+//stream of return value
+Task<ComplexStream> GetComplexStreamAsync();
+...
+public class ComplexStream
+{
+    public Stream Stream { get; set; }
+    public string StreamName { get; set; }  //the property will map to file name.
+}
 ```
 ## Others
 * An interface args can only contains one **Action**, one **Stream**, same as return value.
