@@ -56,9 +56,10 @@ public interface IService
     void Call(string s);
 }
 ```
-## Swithch RabbitMQ/Grpc
+## Swithch RabbitMQ/Grpc/Http
 * **NetRpc.RabbitMQ.NetRpcManager** for **RabbitMQ**.
 * **NetRpc.Grpc.NetRpcManager** for **Grpc**.
+* **NetRpc.Http.NetRpcManager** for **Http**.
 ## Initialize by DI
 There has two ways to initialize service and client, See DI sample below:
 ```c#
@@ -412,14 +413,14 @@ NetRpc.Http provide:
 * **Swagger** for display and test api.
 * **SignalR** for callback and cancel during method invoking.
 
-Note: if contract do not have callback and cancel, you do not need add **SignalR** to services.
-
-
+Note:  
+* if contract do not have callback and cancel, you do not need add **SignalR** to services
+* **Mvc** is not necessary.
 
 ![Alt text](nrpc_http.png)
 
 ## [Http] Create Host
-* Use **NetRpcManager** create host:
+Use **NetRpcManager** create host:
 ```c#
 //service
 var webHost = NetRpcManager.CreateHost(
@@ -431,7 +432,7 @@ var webHost = NetRpcManager.CreateHost(
     typeof(ServiceAsync));
 await webHost.RunAsync();
 ```
-* Use DI to create NetRpcHttp service, also could create NetRpcHttp service base on exist MVC servcie.
+Use DI to create NetRpcHttp service, also could create NetRpcHttp service base on exist MVC servcie.
 ```c#
 //regist services
 services.AddSignalR();         // add SignalR service if need cancel/callback support
@@ -454,8 +455,7 @@ app.UseNetRpcSwagger();   // use NetRpcSwagger middleware
 app.UseNetRpcHttp();      // use NetRpcHttp middleware
 ```
 ## [Http] Swagger
-Use [Swashbuckle.AspNetCore.Swagger](https://github.com/domaindrivendev/Swashbuckle.AspNetCore) to implement swagger feature.
-
+Use [Swashbuckle.AspNetCore.Swagger](https://github.com/domaindrivendev/Swashbuckle.AspNetCore) to implement swagger feature.  
 Add codes below to enabled swagger function.
 ```c#
 services.AddNetRpcSwagger();   // add Swgger service
