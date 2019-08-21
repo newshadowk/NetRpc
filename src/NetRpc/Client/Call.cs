@@ -7,12 +7,12 @@ namespace NetRpc
 {
     internal sealed class Call : ICall
     {
-        private readonly IConnectionFactory _factory;
+        private readonly IClientConnectionFactory _factory;
         private volatile bool _isWrapFaultException;
         private volatile int _timeoutInterval;
         private readonly NetRpcContext _context;
 
-        public Call(IConnectionFactory factory, bool isWrapFaultException, int timeoutInterval, NetRpcContext context)
+        public Call(IClientConnectionFactory factory, bool isWrapFaultException, int timeoutInterval, NetRpcContext context)
         {
             _factory = factory;
             _isWrapFaultException = isWrapFaultException;

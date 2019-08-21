@@ -2,8 +2,8 @@
 
 namespace NetRpc
 {
-    public interface IConnectionFactory : IDisposable
+    public interface IClientConnectionFactory : IDisposable
     {
-        IConnection Create();
+        IClientConnection Create();
     }
 }

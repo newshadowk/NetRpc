@@ -10,8 +10,8 @@ namespace NetRpc.Grpc
             Action<MiddlewareOptions> middlewareConfigureOptions = null)
         {
             services.Configure(grpcServiceConfigureOptions);
-            services.AddHostedService<GrpcServiceProxy>();
             services.AddNetRpcService(middlewareConfigureOptions);
+            services.AddHostedService<GrpcServiceProxy>();
             return services;
         }
 

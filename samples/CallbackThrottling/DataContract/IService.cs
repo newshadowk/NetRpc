@@ -5,6 +5,6 @@ namespace DataContract
 {
     public interface IService
     {
-        Task Call(string s);
+        Task Call(Action<int> cb);
     }
 }

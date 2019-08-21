@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\NetRpc.Http.Contract\NetRpc.Http.Contract.csproj" />
+    <ProjectReference Include="..\..\..\src\NetRpc.Contract\NetRpc.Contract.csproj" />
   </ItemGroup>
 
 </Project>

@@ -59,8 +59,7 @@ namespace NetRpc
             Action<object> retCallback = null;
             var found = objs.FirstOrDefault(i =>
                 i != null &&
-                i.GetType().IsGenericType &&
-                i.GetType().GetGenericTypeDefinition() == typeof(Action<>));
+                i.GetType().IsActionT());
             if (found != null)
             {
                 retCallback = ActionHelper.ConvertAction(found);

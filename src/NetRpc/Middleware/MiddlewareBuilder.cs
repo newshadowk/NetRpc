@@ -23,6 +23,13 @@ namespace NetRpc
         {
             Items.Add((type, args));
         }
+
+        public void UseCallbackThrottling(int callbackThrottlingInterval)
+        {
+            if (callbackThrottlingInterval <= 0)
+                return;
+            Items.Add((typeof(CallbackThrottlingMiddleware), new object[]{ callbackThrottlingInterval }));
+        }
     }
 
     public class MiddlewareBuilder
@@ -187,7 +194,7 @@ namespace NetRpc
 
         public async Task InvokeAsync(RpcContext context)
         {
-            var filters = context.InstanceMethodInfo.GetCustomAttributes(typeof(NetRpcFilterAttribute), true);
+            var filters = context.InstanceMethodInfo.GetCustomAttributes<NetRpcFilterAttribute>(true);
             foreach (NetRpcFilterAttribute f in filters)
                 await f.InvokeAsync(context);
             NetRpcContext.ThreadHeader.CopyFrom(context.Header);

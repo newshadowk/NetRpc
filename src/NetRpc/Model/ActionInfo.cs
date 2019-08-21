@@ -9,6 +9,8 @@ namespace NetRpc
 
         public string[] GenericArguments { get; set; } = new string[0];
 
+        public bool IsPost { get; set; }
+
         public override string ToString()
         {
             return $"{FullName}<{GenericArguments.ListToString(",")}>";

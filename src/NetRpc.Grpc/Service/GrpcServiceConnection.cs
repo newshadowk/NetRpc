@@ -7,7 +7,7 @@ using Grpc.Base;
 
 namespace NetRpc.Grpc
 {
-    internal sealed class GrpcServiceConnection : IConnection
+    internal sealed class GrpcServiceConnection : IServiceConnection
     {
         private readonly AsyncLock _sendLock = new AsyncLock();
         private readonly IAsyncStreamReader<StreamBuffer> _requestStream;

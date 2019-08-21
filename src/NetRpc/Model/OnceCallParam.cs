@@ -12,14 +12,17 @@ namespace NetRpc
 
         public long? StreamLength { get; set; }
 
+        public byte[] PostStream { get; set; }
+
         public Dictionary<string, object> Header { get; set; }
 
-        public OnceCallParam(Dictionary<string, object> header, ActionInfo action, long? streamLength, object[] args)
+        public OnceCallParam(Dictionary<string, object> header, ActionInfo action, byte[] postStream, long? streamLength, object[] args)
         {
             Action = action;
             Args = args;
             Header = header;
             StreamLength = streamLength;
+            PostStream = postStream;
         }
 
         public override string ToString()

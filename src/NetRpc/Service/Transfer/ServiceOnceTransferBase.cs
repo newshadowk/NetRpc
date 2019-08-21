@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NetRpc
@@ -22,12 +23,28 @@ namespace NetRpc
 
         protected async Task<ServiceCallParam> GetServiceCallParamAsync()
         {
+            //onceCallParam
             var onceCallParam = await Convert.GetOnceCallParamAsync();
-            var stream = Convert.GetRequestStream(onceCallParam.StreamLength);
-            ServiceCallParam serviceCallParam = new ServiceCallParam(onceCallParam,
+
+            //stream
+            Stream stream;
+            if (onceCallParam.Action.IsPost)
+                stream = BytesToStream(onceCallParam.PostStream);
+            else
+                stream = Convert.GetRequestStream(onceCallParam.StreamLength);
+
+            //serviceCallParam
+            return new ServiceCallParam(onceCallParam,
                 async i => await Convert.SendCallbackAsync(i),
                 _serviceCts.Token, stream);
-            return serviceCallParam;
+        }
+
+        private static Stream BytesToStream(byte[] bytes)
+        {
+            if (bytes == null)
+                return null;
+            Stream stream = new MemoryStream(bytes);
+            return stream;
         }
     }
 }

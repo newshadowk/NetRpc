@@ -2,8 +2,10 @@
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using NetRpc;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using IConnection = RabbitMQ.Client.IConnection;
 
 namespace RabbitMQ.Base
 {
@@ -33,8 +35,16 @@ namespace RabbitMQ.Base
             consumer.Received += ConsumerReceived;
         }
 
-        public async Task Send(byte[] buffer)
+        public async Task Send(byte[] buffer, bool isPost)
         {
+            if (isPost)
+            {
+                var p = _model.CreateBasicProperties();
+                _model.BasicPublish("", _rpcQueue, p, buffer);
+                OnReceived(new EventArgsT<byte[]>(NullReply.All));
+                return;
+            }
+
             if (isFirstSend)
             {
                 var p = _model.CreateBasicProperties();

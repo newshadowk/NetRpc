@@ -49,11 +49,11 @@ namespace NetRpc
 
         public static IServiceCollection AddNetRpcClient<TClientConnectionFactoryImplementation, TService>(this IServiceCollection services,
             Action<NetRpcClientOption> configureOptions)
-            where TClientConnectionFactoryImplementation : class, IConnectionFactory
+            where TClientConnectionFactoryImplementation : class, IClientConnectionFactory
         {
             if (configureOptions != null)
                 services.Configure(configureOptions);
-            services.AddSingleton<IConnectionFactory, TClientConnectionFactoryImplementation>();
+            services.AddSingleton<IClientConnectionFactory, TClientConnectionFactoryImplementation>();
             services.AddSingleton<ClientProxy<TService>>();
             return services;
         }

@@ -9,15 +9,15 @@ namespace NetRpc
 {
     internal sealed class BufferServiceOnceApiConvert : IBufferServiceOnceApiConvert
     {
-        private readonly IConnection _connection;
+        private readonly IServiceConnection _connection;
         private CancellationTokenSource _cts;
 
         private readonly BufferBlock<(byte[], BufferType)> _block =
             new BufferBlock<(byte[], BufferType)>(new DataflowBlockOptions {BoundedCapacity = Helper.StreamBufferCount});
 
-        private readonly WriteOnceBlock<Request> _cmdWob = new WriteOnceBlock<Request>(null);
+        private readonly WriteOnceBlock<Request> _cmdReq = new WriteOnceBlock<Request>(null);
 
-        public BufferServiceOnceApiConvert(IConnection connection)
+        public BufferServiceOnceApiConvert(IServiceConnection connection)
         {
             _connection = connection;
         }
@@ -35,7 +35,7 @@ namespace NetRpc
             switch (r.Type)
             {
                 case RequestType.Cmd:
-                    _cmdWob.Post(new Request(e.Value));
+                    _cmdReq.Post(new Request(e.Value));
                     break;
                 case RequestType.Buffer:
                     _block.SendAsync((r.Body, BufferType.Buffer)).Wait();
@@ -53,7 +53,7 @@ namespace NetRpc
 
         public async Task<OnceCallParam> GetOnceCallParamAsync()
         {
-            var r = await _cmdWob.ReceiveAsync();
+            var r = await _cmdReq.ReceiveAsync();
             return r.Body.ToObject<OnceCallParam>();
         }
 

@@ -7,7 +7,7 @@ namespace NetRpc
 {
     internal sealed class ClientOnceApiConvert
     {
-        private readonly IConnection _connection;
+        private readonly IClientConnection _connection;
 
         private readonly BufferBlock<(byte[], BufferType)> _block =
             new BufferBlock<(byte[], BufferType)>(new DataflowBlockOptions {BoundedCapacity = Helper.StreamBufferCount});
@@ -18,7 +18,7 @@ namespace NetRpc
         public event EventHandler<EventArgsT<object>> Callback;
         public event EventHandler<EventArgsT<object>> Fault;
 
-        public ClientOnceApiConvert(IConnection connection)
+        public ClientOnceApiConvert(IClientConnection connection)
         {
             _connection = connection;
             _connection.Received += ConnectionReceived;
@@ -42,7 +42,6 @@ namespace NetRpc
                         OnFaultSerializationException();
                     break;
                 }
-
                 case ReplyType.CustomResult:
                 {
                     if (TryToObject(r.Body, out CustomResult body))
@@ -53,32 +52,27 @@ namespace NetRpc
                     }
                     else
                         OnFaultSerializationException();
-
                     break;
                 }
-
                 case ReplyType.Callback:
                 {
-                    if (TryToObject(r.Body, out object body))
+                    if (TryToObject(r.Body, out var body))
                         OnCallback(new EventArgsT<object>(body));
                     else
                         OnFaultSerializationException();
                     break;
                 }
-
                 case ReplyType.Fault:
                 {
-                    if (TryToObject(r.Body, out object body))
+                    if (TryToObject(r.Body, out var body))
                     {
                         OnFault(new EventArgsT<object>(body));
                         OnEnd();
                     }
                     else
                         OnFaultSerializationException();
-
                     break;
                 }
-
                 case ReplyType.Buffer:
                     _block.SendAsync((r.Body, BufferType.Buffer)).Wait();
                     break;
@@ -114,9 +108,9 @@ namespace NetRpc
             return _connection.SendAsync(new Request(RequestType.BufferEnd).All);
         }
 
-        public Task SendCmdAsync(OnceCallParam body)
+        public Task SendCmdAsync(OnceCallParam body, bool isPost)
         {
-            return _connection.SendAsync(new Request(RequestType.Cmd, body.ToBytes()).All);
+            return _connection.SendAsync(new Request(RequestType.Cmd, body.ToBytes()).All, isPost);
         }
 
         public BufferBlockStream GetRequestStream(long? length)
@@ -165,7 +159,7 @@ namespace NetRpc
 
         private static bool TryToObject<T>(byte[] body, out T obj)
         {
-            if (TryToObject(body, out object obj2))
+            if (TryToObject(body, out var obj2))
             {
                 obj = (T) obj2;
                 return true;

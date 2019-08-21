@@ -46,7 +46,7 @@ namespace NetRpc.Http
 
         public static Type GetTypeFromReturnTypeDefinition(Type returnTypeDefinition)
         {
-            if (returnTypeDefinition.IsGenericType && returnTypeDefinition.GetGenericTypeDefinition() == typeof(Task<>))
+            if (returnTypeDefinition.IsTaskT())
             {
                 var at = returnTypeDefinition.GetGenericArguments()[0];
                 return at;
@@ -73,7 +73,7 @@ namespace NetRpc.Http
                     continue;
                 }
 
-                if (p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == typeof(Action<>))
+                if (p.ParameterType.IsActionT())
                 {
                     action = new TypeName
                     {
@@ -207,12 +207,6 @@ namespace NetRpc.Http
             path = path.Substring(8, path.Length - 8);
             path = Path.GetDirectoryName(path);
             return path;
-        }
-
-        public static List<NetRpcProducesResponseTypeAttribute> GetProducesResponseTypes(this MethodInfo method)
-        {
-            return method.GetCustomAttributes(typeof(NetRpcProducesResponseTypeAttribute), true).ToList()
-                .ConvertAll(i => (NetRpcProducesResponseTypeAttribute) i);
         }
     }
 }

@@ -4,7 +4,7 @@ using RabbitMQ.Base;
 
 namespace NetRpc.RabbitMQ
 {
-    internal class RabbitMQServiceConnection : IConnection
+    internal class RabbitMQServiceConnection : IServiceConnection
     {
         private readonly CallSession _callSession;
 

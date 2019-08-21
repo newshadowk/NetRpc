@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using NetRpc.Http;
+using NetRpc;
 
 namespace DataContract
 {

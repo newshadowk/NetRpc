@@ -10,15 +10,16 @@ namespace NetRpc.Grpc
     internal sealed class GrpcServiceProxy : IHostedService
     {
         private Service _service;
+        private readonly MessageCallImpl _messageCallImpl;
 
         public GrpcServiceProxy(IOptionsMonitor<GrpcServiceOptions> options, IServiceProvider serviceProvider)
         {
-            var messageCallImpl = new MessageCallImpl(serviceProvider);
-            _service = new Service(options.CurrentValue.Ports, messageCallImpl);
+            _messageCallImpl = new MessageCallImpl(serviceProvider);
+            _service = new Service(options.CurrentValue.Ports, _messageCallImpl);
             options.OnChange(i =>
             {
                 _service?.Dispose();
-                _service = new Service(i.Ports, messageCallImpl);
+                _service = new Service(i.Ports, _messageCallImpl);
                 _service.Open();
             });
         }
@@ -31,8 +32,25 @@ namespace NetRpc.Grpc
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
+            Console.WriteLine("_service.Dispose()");
+
             _service.Dispose();
-            return Task.CompletedTask;
+
+
+            return Task.Run(() =>
+            {
+                while (_messageCallImpl.IsHanding)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        Console.WriteLine("IsCancellationRequested");
+                    break;
+                    }
+
+                    Thread.Sleep(1000);
+                    Console.WriteLine("IsHanding?");
+                }
+            }, cancellationToken);
         }
     }
 }

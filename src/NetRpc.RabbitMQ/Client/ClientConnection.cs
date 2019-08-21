@@ -4,7 +4,7 @@ using RabbitMQ.Base;
 
 namespace NetRpc.RabbitMQ
 {
-    public class ClientConnection : IConnection
+    public class ClientConnection : IClientConnection
     {
         private readonly RabbitMQOnceCall _call;
 
@@ -26,9 +26,9 @@ namespace NetRpc.RabbitMQ
 
         public event EventHandler<EventArgsT<byte[]>> Received;
 
-        public Task SendAsync(byte[] buffer)
+        public Task SendAsync(byte[] buffer, bool isPost)
         {
-            return _call.Send(buffer);
+            return _call.Send(buffer, isPost);
         }
 
         public void Start()

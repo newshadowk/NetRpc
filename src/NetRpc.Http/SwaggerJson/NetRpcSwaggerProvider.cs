@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -21,7 +17,7 @@ namespace NetRpc.Http
         private readonly SwaggerGeneratorOptions _options;
         private readonly SchemaRepository _schemaRepository;
         private readonly OpenApiDocument _doc;
-            
+
         public NetRpcSwaggerProvider(ISchemaGenerator schemaGenerator, IOptions<SwaggerGeneratorOptions> optionsAccessor)
         {
             _schemaRepository = new SchemaRepository();
@@ -32,10 +28,10 @@ namespace NetRpc.Http
 
         private void Process(string apiRootPath, IEnumerable<Type> instanceTypes)
         {
-            var list = GetInterfaceMethodInfos(instanceTypes);
+            var list = GetContractMethodInfos(instanceTypes);
 
             //tag
-            list.ForEach(i => _doc.Tags.Add(new OpenApiTag {Name = i.interfaceInstance.Name}));
+            list.ForEach(i => _doc.Tags.Add(new OpenApiTag {Name = i.contractInstance.Name}));
 
             //path
             _doc.Paths = new OpenApiPaths();
@@ -48,7 +44,7 @@ namespace NetRpc.Http
                     //Operation
                     var operation = new OpenApiOperation
                     {
-                        Tags = GenerateTags(tagGroup.interfaceInstance.Name),
+                        Tags = GenerateTags(tagGroup.contractInstance.Name),
                         RequestBody = GenerateRequestBody(argType, streamName),
                         Responses = GenerateResponses(method, cancelToken != null)
                     };
@@ -62,7 +58,7 @@ namespace NetRpc.Http
                     //Path
                     var openApiPathItem = new OpenApiPathItem();
                     openApiPathItem.AddOperation(OperationType.Post, operation);
-                    var key = $"{apiRootPath}/{tagGroup.interfaceInstance.Name}/{method.Name}";
+                    var key = $"{apiRootPath}/{tagGroup.contractInstance.Name}/{method.Name}";
                     _doc.Paths.Add(key, openApiPathItem);
                 }
             }
@@ -73,18 +69,18 @@ namespace NetRpc.Http
             };
         }
 
-        private static List<(Type interfaceInstance, List<MethodInfo> methods)> GetInterfaceMethodInfos(IEnumerable<Type> instanceTypes)
+        private static List<(Type contractInstance, List<MethodInfo> methods)> GetContractMethodInfos(IEnumerable<Type> instanceTypes)
         {
-            var list = new List<(Type interfaceInstance, List<MethodInfo> methods)>();
+            var list = new List<(Type contractInstance, List<MethodInfo> methods)>();
             foreach (var i in instanceTypes)
-            foreach (var m in GetInterfaceMethodInfos(i))
-                list.Add((m.interfaceInstance, m.methods));
+            foreach (var m in GetContractMethodInfos(i))
+                list.Add((m.contractInstance, m.methods));
             return list;
         }
 
-        private static List<(Type interfaceInstance, List<MethodInfo> methods)> GetInterfaceMethodInfos(Type instanceType)
+        private static List<(Type contractInstance, List<MethodInfo> methods)> GetContractMethodInfos(Type instanceType)
         {
-            var ret = new List<(Type interfaceInstance, List<MethodInfo> methods)>();
+            var ret = new List<(Type contractInstance, List<MethodInfo> methods)>();
             foreach (var item in instanceType.GetInterfaces())
                 ret.Add((item, item.GetMethods().ToList()));
             return ret;
@@ -126,8 +122,8 @@ namespace NetRpc.Http
                 ret.Add(ConstValue.CancelStatusCode.ToString(), new OpenApiResponse {Description = "A task was canceled."});
 
             //exception  
-            var resTypes = method.GetProducesResponseTypes();
-            if (resTypes.Count == 0)
+            var resTypes = method.GetCustomAttributes<NetRpcProducesResponseTypeAttribute>(true).ToList();
+            if (!resTypes.Any())
                 return ret;
 
             foreach (var fault in resTypes)

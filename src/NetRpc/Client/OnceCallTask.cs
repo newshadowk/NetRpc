@@ -12,10 +12,10 @@ namespace NetRpc
         private readonly CancellationTokenSource _timeOutCts = new CancellationTokenSource();
         private CancellationTokenRegistration? _reg;
         private readonly ClientOnceApiConvert _convert;
-        private readonly IConnection _connection;
+        private readonly IClientConnection _connection;
         private readonly bool _isWrapFaultException;
 
-        public OnceCall(IConnection connection, bool isWrapFaultException, int timeoutInterval)
+        public OnceCall(IClientConnection connection, bool isWrapFaultException, int timeoutInterval)
         {
             _connection = connection;
             _isWrapFaultException = isWrapFaultException;
@@ -28,7 +28,7 @@ namespace NetRpc
             _convert.Start();
         }
 
-        public Task<T> CallAsync(Dictionary<string, object> header, ActionInfo action, Action<object> callback, CancellationToken token, System.IO.Stream stream, 
+        public Task<T> CallAsync(Dictionary<string, object> header, ActionInfo action, Action<object> callback, CancellationToken token, Stream stream, 
             params object[] args)
         {
             var tcs = new TaskCompletionSource<T>();
@@ -71,14 +71,15 @@ namespace NetRpc
                 try
                 {
                     //Send cmd
-                    OnceCallParam p = new OnceCallParam(header, action, stream.GetLength(), args);
+                    var postStream = action.IsPost ? StreamToBytes(stream) : null;
+                    OnceCallParam p = new OnceCallParam(header, action, postStream, stream.GetLength(), args);
                     if (token.IsCancellationRequested)
                     {
                         SetCancel(tcs);
                         return;
                     }
 
-                    await _convert.SendCmdAsync(p);
+                    await _convert.SendCmdAsync(p, p.Action.IsPost);
                     _reg = token.Register(async () =>
                     {
                         try
@@ -144,6 +145,16 @@ namespace NetRpc
             _reg?.Dispose();
             _timeOutCts.Cancel();
             tcs.TrySetResult((T)result);
+        }
+
+        private static byte[] StreamToBytes(Stream stream)
+        {
+            if (stream == null)
+                return null;
+
+            var bytes = new byte[stream.Length];
+            stream.Read(bytes, 0, bytes.Length);
+            return bytes;
         }
     }
 }

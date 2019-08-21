@@ -26,7 +26,12 @@ namespace Service
 
     internal class Service : IService
     {
-        public void Call(string s)
+        public Task Call2(string s, Action<int> cb)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task Call(string s)
         {
             Console.WriteLine($"Receive: {s}");
         }

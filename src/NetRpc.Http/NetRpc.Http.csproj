@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NetRpc.Http.Contract\NetRpc.Http.Contract.csproj" />
+    <ProjectReference Include="..\NetRpc.Contract\NetRpc.Contract.csproj" />
     <ProjectReference Include="..\NetRpc\NetRpc.csproj" />
   </ItemGroup>
 

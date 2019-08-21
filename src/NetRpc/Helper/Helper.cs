@@ -161,7 +161,8 @@ namespace NetRpc
             return new ActionInfo
             {
                 GenericArguments = method.GetGenericArguments().ToList().ConvertAll(GetTypeName).ToArray(),
-                FullName = method.GetFullMethodName()
+                FullName = method.GetFullMethodName(),
+                IsPost = method.GetCustomAttributes<NetRpcPostAttribute>(true).Any()
             };
         }
 
@@ -172,6 +173,21 @@ namespace NetRpc
 
             ex.Action += $"{action}, {args.ListToString(", ")}";
             ex.Action = ex.Action.TrimEndString(", ");
+        }
+
+        public static bool IsActionT(this Type t)
+        {
+            return t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Action<>);
+        }
+
+        public static bool IsCancellationToken(this Type t)
+        {
+            return t == typeof(CancellationToken?) || t == typeof(CancellationToken);
+        }
+
+        public static bool IsTaskT(this Type t)
+        {
+            return t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Task<>);
         }
 
         public static long? GetLength(this Stream stream)

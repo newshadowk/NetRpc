@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace NetRpc.Grpc
 {
-    public sealed class GrpcClientConnectionFactory : IConnectionFactory
+    public sealed class GrpcClientConnectionFactory : IClientConnectionFactory
     {
         private Client _client;
 
@@ -26,7 +26,7 @@ namespace NetRpc.Grpc
             _client?.Dispose();
         }
 
-        public IConnection Create()
+        public IClientConnection Create()
         {
             return new GrpcClientConnection(_client);
         }

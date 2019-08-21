@@ -17,12 +17,12 @@ namespace NetRpc
             var dic = new Dictionary<int, object>();
 
             //Action<>
-            var found = psList.FirstOrDefault(i => i.ParameterType.IsGenericType && i.ParameterType.GetGenericTypeDefinition() == typeof(Action<>));
+            var found = psList.FirstOrDefault(i => i.ParameterType.IsActionT());
             if (found != null)
                 dic.Add(psList.IndexOf(found), ActionHelper.ConvertAction(callback, found.ParameterType.GetGenericArguments()[0]));
 
             //CancellationToken
-            found = psList.FirstOrDefault(i => i.ParameterType == typeof(CancellationToken?) || i.ParameterType == typeof(CancellationToken));
+            found = psList.FirstOrDefault(i => i.ParameterType.IsCancellationToken());
             if (found != null)
                 dic.Add(psList.IndexOf(found), token);
 
@@ -72,25 +72,37 @@ namespace NetRpc
         /// <exception cref="TypeLoadException"></exception>
         public static RpcContext Convert(ServiceCallParam scp, object[] instances, IServiceProvider serviceProvider)
         {
-            (MethodInfo instanceMethodInfo, MethodInfo interfaceMethodInfo, object instance) = GetMethodInfo(scp.Action, instances);
-            var ps = interfaceMethodInfo.GetParameters();
+            (MethodInfo instanceMethodInfo, MethodInfo contractMethodInfo, object instance) = GetMethodInfo(scp.Action, instances);
+            var ps = contractMethodInfo.GetParameters();
             var args = GetArgs(ps, scp.Args, scp.Callback, scp.Token, scp.Stream);
-            return new RpcContext(scp.Header, instance, instanceMethodInfo, interfaceMethodInfo, scp.Action, args, serviceProvider);
+            return new RpcContext
+            {
+                Callback = scp.Callback,
+                ActionInfo = scp.Action,
+                Args = args,
+                ContractMethodInfo = contractMethodInfo,
+                InstanceMethodInfo = instanceMethodInfo,
+                ServiceProvider = serviceProvider,
+                Header = scp.Header,
+                Stream = scp.Stream,
+                Target = instance,
+                Token = scp.Token
+            };
         }
 
         /// <exception cref="TypeLoadException"></exception>
-        public static (MethodInfo instanceMethodInfo, MethodInfo interfaceMethodInfo, object instance) GetMethodInfo(ActionInfo action, object[] instances)
+        public static (MethodInfo instanceMethodInfo, MethodInfo contractMethodInfo, object instance) GetMethodInfo(ActionInfo action, object[] instances)
         {
             foreach (var o in instances)
             {
                 var found = GetMethodInfo(action, o.GetType());
                 if (found != default)
-                    return (found.instanceMethodInfo, found.interfaceMethodInfo, o);
+                    return (found.contractMethodInfo, found.contractMethodInfo, o);
             }
             throw new MethodNotFoundException($"{action.FullName} not found in instances");
         }
 
-        public static (MethodInfo instanceMethodInfo, MethodInfo interfaceMethodInfo) GetMethodInfo(ActionInfo action, Type[] instanceTypes)
+        public static (MethodInfo instanceMethodInfo, MethodInfo contractMethodInfo) GetMethodInfo(ActionInfo action, Type[] instanceTypes)
         {
             foreach (var t in instanceTypes)
             {
@@ -101,21 +113,21 @@ namespace NetRpc
             throw new MethodNotFoundException($"{action.FullName} not found in instanceTypes");
         }
 
-        private static (MethodInfo instanceMethodInfo, MethodInfo interfaceMethodInfo) GetMethodInfo(ActionInfo action, Type instanceType)
+        private static (MethodInfo instanceMethodInfo, MethodInfo contractMethodInfo) GetMethodInfo(ActionInfo action, Type instanceType)
         {
             foreach (var item in instanceType.GetInterfaces())
             {
-                var interfaceMethodInfo = item.GetMethods().FirstOrDefault(i => i.GetFullMethodName() == action.FullName);
-                if (interfaceMethodInfo != null)
+                var contractMethodInfo = item.GetMethods().FirstOrDefault(i => i.GetFullMethodName() == action.FullName);
+                if (contractMethodInfo != null)
                 {
-                    var instanceMethodInfo = instanceType.GetMethod(interfaceMethodInfo.Name);
+                    var instanceMethodInfo = instanceType.GetMethod(contractMethodInfo.Name);
                     if (action.GenericArguments.Length > 0)
                     {
                         var ts = action.GenericArguments.ToList().ConvertAll(Type.GetType).ToArray();
                         // ReSharper disable once PossibleNullReferenceException
                         instanceMethodInfo = instanceMethodInfo.MakeGenericMethod(ts);
                     }
-                    return (instanceMethodInfo, interfaceMethodInfo);
+                    return (instanceMethodInfo, contractMethodInfo);
                 }
             }
 

@@ -7,9 +7,9 @@ provide callback/cancel during invoking, so especially suitable for handle **lon
 NetRpc provide **RabbitMQ**/**Grpc**/**Http** Channels to connect, each one has different advantages.
 * **RabbitMQ** provide load balance, queue feature.
 * **Grpc** use http2, provide all http2 advantages.
-* **Http** use webapi, also provide swagger interface.
+* **Http** use webapi, also provide swagger api.
 
-All channels use uniform contract interface, so easily to switch channel without modify service implement.
+All channels use uniform contract, so easily to switch channel without modify service implement.
 
 ![Alt text](all.png)
 
@@ -17,7 +17,7 @@ All channels use uniform contract interface, so easily to switch channel without
 ![Alt text](nrpc.png)
 ## Hello world!
 ```c#
-//service
+//service side
 class Program
 {
     static void Main(string[] args)
@@ -38,7 +38,7 @@ internal class Service : IService
 }
 ```
 ```c#
-//client
+//client side
 class Program
 {
     static void Main(string[] args)
@@ -63,7 +63,7 @@ public interface IService
 ## Initialize by DI
 There has two ways to initialize service and client, See DI sample below:
 ```c#
-//service
+//service side
 var host = new HostBuilder()
     .ConfigureServices((context, services) =>
     {
@@ -73,7 +73,7 @@ var host = new HostBuilder()
     .Build();
 ```
 ```c#
-//client
+//client side
 var host = new HostBuilder()
     .ConfigureServices((context, services) =>
     {
@@ -85,7 +85,7 @@ var host = new HostBuilder()
 ```
 Other way is **NetRpcManager**.
 ## Serialization
-NetRpc base on **BinaryFormatter**, make sure all interface model mark as **[Serializable]**.
+NetRpc base on **BinaryFormatter**, make sure all contract model mark as **[Serializable]**.
 ```c#
 [Serializable]
 public class CustomObj
@@ -106,36 +106,7 @@ public class ComplexStream
     public string OtherInfo { get; set; }
 }
 ```
-## Supported interface type
-```c#
-//Sync
-public interface IService
-{
-    void FilterAndHeader();
-
-    T2 CallByGenericType<T1, T2>(T1 obj);
-
-    CustomObj SetAndGetObj(CustomObj obj);
-
-    void CallByCallBack(Action<CustomCallbackObj> cb);
-
-    /// <exception cref="NotImplementedException"></exception>
-    void CallBySystemException();
-
-    /// <exception cref="CustomException"></exception>>
-    void CallByCustomException();
-
-    Stream GetStream();
-
-    void SetStream(Stream data);
-
-    Stream EchoStream(Stream data);
-
-    ComplexStream GetComplexStream();
-
-    ComplexStream ComplexCall(CustomObj obj, Stream data, Action<CustomCallbackObj> cb);
-}
-```
+## Supported contract type
 ```c#
 //Async
 public interface IServiceAsync
@@ -168,13 +139,16 @@ public interface IServiceAsync
 }
 ```
 ## Sync/Async
-NetRpc could use the both Sync/Async ways to defines the interface.
+NetRpc could use the both Sync/Async ways to defines the contract.
 ```c#
-void SetObj(CustomObj obj);
-Task SetObjAsync(CustomObj obj);
+void Call();
+Task CallAsync();
+
+int GetValue();
+Task<int> GetValueAsync();
 ```
 ## GenericType
-Make sure the genericType in interface is mark as **[Serializable]**.
+Make sure the genericType in contract is mark as **[Serializable]**.
 ```c#
 Task<T2> CallByGenericTypeAsync<T1, T2>(T1 obj);
 ```
@@ -183,13 +157,13 @@ Header is a type of **Dictionary<string, object>** object, mark sure your object
 * **ThreadHeader**  
 Before call action, client set the **ThreadHeader** which mark as **[ThreadStatic]** that guarantee muti-threads don`t influence each other.
 ```c#
-//client
+//client side
 NetRpc.NetRpcContext.ThreadHeader.CopyFrom(new Dictionary<string, object> { { "k1", "header value" } });
 _proxy.TestHeader();
 ```
 Service can receive the header object which client sent.
 ```c#
-//service
+//service side
 public void TestHeader()
 {
     var h = NetRpcContext.ThreadHeader.Clone();
@@ -198,7 +172,7 @@ public void TestHeader()
 * **DefaultHeader**  
 On the client side, when **DefaultHeader** items count > 0, **ThreadHeader** will get the value of **DefaultHeader** when call the remote. This feature is usefull when you want to transfer a sessionId to service.
 ```c#
-//client
+//client side
 var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
 //set the DefaultHeader with SessionId
 client.Context.DefaultHeader.CopyFrom(new Dictionary<string, object> {{"SessionId", 1}});
@@ -221,15 +195,18 @@ services.AddNetRpcServiceContract<Service>(ContractLifeTime.Scoped);
 | Header           | Dictionary\<string object> | Header sent from client. |
 | Target           | object                     | Service instance of invoked action.|
 | InstanceMethodInfo | MethodInfo               | Current invoked method.  |
-| InterfaceMethodInfo | MethodInfo              | Current invoked interface method.  |
+| ContractMethodInfo | MethodInfo               | Current invoked contract method.  |
 | ActionInfo       | ActionInfo                 | Warpped info of current invoked method.  |
 | Args             | object[]                   | Args of invoked action.  |
+| Callback         | Action\<object>            | Callback of invoked action.  |
+| Token            | CancellationToken          | CancellationToken of invoked action.  |
+| Stream           | Stream                     | Stream of invoked action.  |
 | ServiceProvider  | IServiceProvider           | ServiceProvider of invoked action.  |
 | Result           | object                     | Result of invoked action.|
 ## Filter
 Filter is common function like MVC. 
 ```c#
-//service
+//service side
 public class TestFilter : NetRpcFilterAttribute
 {
     public override Task InvokeAsync(RpcContext context)
@@ -297,7 +274,7 @@ FaultException is usefull when you want to get the exactly **StackTrace** info.
 | Action   | string | Invoked action name and args, if many actions split by '\|'.
 
 ```c#
-//service
+//service side
 internal class ServiceAsync : IServiceAsync
 {
     public Task CallBySystemExceptionAsync()
@@ -307,7 +284,7 @@ internal class ServiceAsync : IServiceAsync
 }
 ```
 ```c#
-//client
+//client side
 var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure), isWrapFaultException:true).Proxy;
 try
 {
@@ -344,6 +321,58 @@ Task CallByCancelAsync(CancellationToken token);
 ```c#
 Task CallByCallBackAsync(Action<CustomCallbackObj> cb);
 ```
+
+Built-in **CallbackThrottlingMiddleware** is useful when callback is progress, normally progress do not need callback every time to client, also for saving network resources.
+```c#
+//service side
+middlewareOptions.UseCallbackThrottling(1000);  //limit to one call per second
+...
+public async Task Call(Action<int> cb)
+{
+    for (int i = 0; i <= 20; i++)
+    {
+        await Task.Delay(100);
+        cb.Invoke(i);
+        Console.WriteLine($"Send callback: {i}");
+    }
+}
+```
+```c#
+//client side
+await proxy.Call(i => Console.WriteLine($"receive callback: {i}"));
+```
+```c
+//service sent 20 callbacks by interval 100ms.
+Send callback: 0
+Send callback: 1
+Send callback: 2
+Send callback: 3
+Send callback: 4
+Send callback: 5
+Send callback: 6
+Send callback: 7
+Send callback: 8
+Send callback: 9
+Send callback: 10
+Send callback: 11
+Send callback: 12
+Send callback: 13
+Send callback: 14
+Send callback: 15
+Send callback: 16
+Send callback: 17
+Send callback: 18
+Send callback: 19
+Send callback: 20      //at the end will force send last callback
+
+//----------------------------------------------------
+
+//client only received 4 callbacks by interval 1000ms
+receive callback: 0
+receive callback: 8
+receive callback: 17
+receive callback: 20   //will receive last callback.
+```
 ## Stream
 ```c#
 Task<Stream> GetStreamAsync();
@@ -362,19 +391,26 @@ public class ComplexStream
     public string OtherInfo { get; set; }
 }
 ```
-## Muti interfaces bind to one port
-Client should use the **ClientConnectionFactory** manage the connection, that use one connection apply to muti interfaces.
+## NetRpcPostAttribute
+Only for RabbitMQ channel, means post way to call, after sent message to rabbitMQ then return immediately, consumer will consum messages in queue asynchronous.  
+Post method define has some limits, no callback Action, no cancelToken, no return value.
 ```c#
-//service
+[NetRpcPost]
+Task PostAsync(string s1, Stream stream);
+```
+## Multi contracts bind to one port
+Client should use the **ClientConnectionFactory** manage the connection, that use one connection apply to muti contracts.
+```c#
+//service side
 var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy(new ServerPort("0.0.0.0", 50001, ServerCredentials.Insecure), new Servcie1(), new Service2());
 ```
 ```c#
-//client
+//client side
 var factory = new NetRpc.Grpc.ClientConnectionFactory("localhost", 50001);
 _proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService1>(factory).Proxy;
 _proxyAsync = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService2>(factory).Proxy;
 ```
-## Event
+## Client Event
 **ClientProxy** has events:  
 * **ExceptionInvoked** it usefull when you want to log the exception when call.  
 * **Heartbeat** see topic below.  
@@ -410,12 +446,13 @@ services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50001));
 
 # [Http] NetRpc.Http
 NetRpc.Http provide:
-* **Webapi** for call.
+* **Webapi** for call api.
 * **Swagger** for display and test api.
 * **SignalR** for callback and cancel during method invoking.
 
-Note:  
-* if contract do not have callback and cancel, you do not need add **SignalR** to services
+Note:
+* If contract do not have callback and cancel, you do not need add **SignalR** to services.
+* **Swagger** is not necessary.
 * **Mvc** is not necessary.
 
 ![Alt text](nrpc_http.png)
@@ -423,7 +460,7 @@ Note:
 ## [Http] Create Host
 Use **NetRpcManager** create host:
 ```c#
-//service
+//service side
 var webHost = NetRpcManager.CreateHost(
     8080,
     "/callback",
@@ -542,8 +579,14 @@ public class ComplexStream
     public string StreamName { get; set; }  //the property will map to file name.
 }
 ```
+## [Http] DefaultValue
+Set DefaultValue to contract, will effect to swagger.
+```c#
+[DefaultValue("This defalut value of P1")]
+public string P1 { get; set; }
+```
 ## Others
-* An interface args can only contains one **Action**, one **Stream**, same as return value.
+* An contract args can only contains one **Action**, one **Stream**, same as return value.
 ```c#
 ComplexStream Call(Stream data, Action<CustomCallbackObj> cb);
 ```
@@ -552,8 +595,9 @@ ComplexStream Call(Stream data, Action<CustomCallbackObj> cb);
 CreateClientProxy<TService>(Channel channel, int timeoutInterval = 1200000)
 ```
 ## Samples
-* [Hello World](samples/HelloWorld)
-* [Api](samples/Api)
-* [Http](samples/Http)
-* [LoadBalance](samples/LoadBalance)
-* [InitializeByDI](samples/InitializeByDI)
+* [Hello World](samples/HelloWorld) Quick start.
+* [Api](samples/Api) Contains most of features.
+* [Http](samples/Http) Http webapi and swagger api.
+* [LoadBalance](samples/LoadBalance) RabbitMQ load balance and post way to call.
+* [InitializeByDI](samples/InitializeByDI) Use DI to create a client or servcie and how to DI a http channel to exist MVC service.
+* [CallbackThrottling](samples/CallbackThrottling) It useful when callback is progress.

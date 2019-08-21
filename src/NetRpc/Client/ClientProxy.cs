@@ -14,7 +14,7 @@ namespace NetRpc
         public event EventHandler DisConnected;
         public event EventHandler<EventArgsT<Exception>> ExceptionInvoked;
         private readonly object LockObj = new object();
-        private readonly IConnectionFactory _factory;
+        private readonly IClientConnectionFactory _factory;
         private bool _isConnected;
         public event Func<ClientProxy<TService>, Task> Heartbeat;
         private readonly Timer _tHearbeat;
@@ -23,7 +23,7 @@ namespace NetRpc
 
         public TService Proxy { get; }
 
-        public ClientProxy(IConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options)
+        public ClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options)
         {
             _factory = factory;
             var call = new Call(factory, options.CurrentValue.IsWrapFaultException, options.CurrentValue.TimeoutInterval, Context);

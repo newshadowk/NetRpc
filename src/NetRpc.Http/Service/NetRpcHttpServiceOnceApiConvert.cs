@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,7 +41,7 @@ namespace NetRpc.Http
             var actionInfo = GetActionInfo();
             var header = GetHeader();
             var args = GetArgs(actionInfo);
-            var param = new OnceCallParam(header, actionInfo, null, args);
+            var param = new OnceCallParam(header, actionInfo, null, null, args);
             return Task.FromResult(param);
         }
 
@@ -67,7 +69,7 @@ namespace NetRpc.Http
                 return _connection.SendAsync(new Result(textEx.Text, textEx.StatusCode));
 
             //customs Exception
-            var t = context.InterfaceMethodInfo.GetProducesResponseTypes().Find(i => body.GetType() == i.DetailType);
+            var t = context.ContractMethodInfo.GetCustomAttributes<NetRpcProducesResponseTypeAttribute>(true).FirstOrDefault(i => body.GetType() == i.DetailType);
             if (t != null)
                 return _connection.SendAsync(new Result(body, t.StatusCode));
 
@@ -136,7 +138,7 @@ namespace NetRpc.Http
         {
             //dataObjType
             var method = ApiWrapper.GetMethodInfo(ai, _contractTypes.ToArray());
-            var dataObjType = Helper.GetArgType(method.interfaceMethodInfo, out _, out _, out _);
+            var dataObjType = Helper.GetArgType(method.contractMethodInfo, out _, out _, out _);
 
             if (_context.Request.ContentType != null)
             {

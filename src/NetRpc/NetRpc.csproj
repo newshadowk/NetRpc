@@ -16,4 +16,8 @@
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\NetRpc.Contract\NetRpc.Contract.csproj" />
+  </ItemGroup>
+
 </Project>

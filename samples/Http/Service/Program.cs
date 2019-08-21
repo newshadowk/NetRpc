@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
+using NetRpc;
 using NetRpc.Http;
 
 namespace Service
@@ -13,7 +15,7 @@ namespace Service
                 5000,
                 "/callback",
                 true,
-                new HttpServiceOptions { ApiRootPath = "/api"}, 
+                new HttpServiceOptions { ApiRootPath = "/api" },
                 null,
                 typeof(ServiceAsync));
             await webHost.RunAsync();

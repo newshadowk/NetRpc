@@ -23,16 +23,24 @@ namespace NetRpc
         {
             object ret;
             RpcContext rpcContext = null;
-            ServiceCallParam scp;
+            ServiceCallParam scp = null;
 
             try
             {
                 scp = await GetServiceCallParamAsync();
                 rpcContext = ApiWrapper.Convert(scp, _instances, _serviceProvider);
                 ret = await _middlewareBuilder.InvokeAsync(rpcContext);
+
+                //if Post, do not need send back to client.
+                if (scp.Action.IsPost)
+                    return;
             }
             catch (Exception e)
             {
+                //if Post, do not need send back to client.
+                if (scp != null && scp.Action.IsPost)
+                    return;
+
                 //send fault
                 await _convert.SendFaultAsync(e, rpcContext);
                 return;

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
+using NetRpc;
 using NetRpc.Grpc;
 
 namespace Service
@@ -18,7 +20,7 @@ namespace Service
 
     internal class Service : IService
     {
-        public void Call(string s)
+        public async Task Call(string s)
         {
             Console.WriteLine($"Receive: {s}");
         }

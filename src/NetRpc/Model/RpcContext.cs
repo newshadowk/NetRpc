@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NetRpc
@@ -9,20 +12,68 @@ namespace NetRpc
     public class RpcContext
     {
         private object _result;
+        private CancellationToken _token;
+        private Stream _stream;
 
-        public IServiceProvider ServiceProvider { get; }
+        public IServiceProvider ServiceProvider { get; set; }
 
-        public Dictionary<string, object> Header { get; }
+        public Dictionary<string, object> Header { get; set; }
 
-        public object Target { get; }
+        public object Target { get; set; }
 
-        public MethodInfo InstanceMethodInfo { get; }
+        public MethodInfo InstanceMethodInfo { get; set; }
 
-        public MethodInfo InterfaceMethodInfo { get; }
+        public MethodInfo ContractMethodInfo { get; set; }
 
-        public object[] Args { get; }
+        public Action<object> Callback
+        {
+            get
+            {
+                var found = Args?.FirstOrDefault(i => i.GetType().IsActionT());
+                if (found == null)
+                    return null;
+                return ActionHelper.ConvertAction(found);
+            }
+            set
+            {
+                if (Args == null)
+                    return;
 
-        public ActionInfo ActionInfo { get; }
+                for (int i = 0; i < Args.Length; i++)
+                {
+                    var t = Args[i].GetType();
+                    if (t.IsActionT())
+                    {
+                        Args[i] = ActionHelper.ConvertAction(value, t.GetGenericArguments()[0]);
+                        return;
+                    }
+                }
+            }
+        }
+
+        public CancellationToken Token
+        {
+            get => _token;
+            set
+            {
+                _token = value;
+                ResetToken();
+            }
+        }
+
+        public Stream Stream
+        {
+            get => _stream;
+            set
+            {
+                _stream = value;
+                ResetStream();
+            }
+        }
+
+        public object[] Args { get; set; }
+
+        public ActionInfo ActionInfo { get; set; }
 
         public object Result
         {
@@ -35,15 +86,28 @@ namespace NetRpc
             }
         }
 
-        public RpcContext(Dictionary<string, object> header, object target, MethodInfo instanceMethodInfo, MethodInfo interfaceMethodInfo, ActionInfo actionInfo, object[] args, IServiceProvider serviceProvider)
+        private void ResetToken()
         {
-            Header = header;
-            Target = target;
-            InstanceMethodInfo = instanceMethodInfo;
-            Args = args;
-            ServiceProvider = serviceProvider;
-            InterfaceMethodInfo = interfaceMethodInfo;
-            ActionInfo = actionInfo;
+            if (Args == null)
+                return;
+
+            for (int i = 0; i < Args.Length; i++)
+            {
+                if (Args[i].GetType().IsCancellationToken())
+                    Args[i] = Token;
+            }
+        }
+
+        private void ResetStream()
+        {
+            if (Args == null)
+                return;
+
+            for (int i = 0; i < Args.Length; i++)
+            {
+                if (Args[i].GetType() == typeof(Stream))
+                    Args[i] = Stream;
+            }
         }
 
         public override string ToString()

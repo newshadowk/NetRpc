@@ -3,17 +3,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using RabbitMQ.Client;
 using RabbitMQ.Base;
 
 namespace NetRpc.RabbitMQ
 {
     public sealed class RabbitMQServiceProxy : IHostedService
     {
-        public event EventHandler<ShutdownEventArgs> ConnectionShutdown;
-        public event EventHandler<EventArgs> RecoverySucceeded;
         private RequestHandler _requestHandler;
         private Service _service;
+        private volatile int _handlingCount;
 
         public RabbitMQServiceProxy(IOptionsMonitor<RabbitMQServiceOptions> mqOptions, IServiceProvider serviceProvider)
         {
@@ -31,42 +29,28 @@ namespace NetRpc.RabbitMQ
             {
                 _service.Dispose();
                 _service.Received -= ServiceReceived;
-                _service.RecoverySucceeded -= ConnectRecoverySucceeded;
-                _service.ConnectionShutdown -= ConnectConnectionShutdown;
             }
 
             _service = new Service(opt.CreateConnectionFactory(), opt.RpcQueue, opt.PrefetchCount);
             _requestHandler = new RequestHandler(serviceProvider);
             _service.Received += ServiceReceived;
-            _service.RecoverySucceeded += ConnectRecoverySucceeded;
-            _service.ConnectionShutdown += ConnectConnectionShutdown;
         }
 
         private async void ServiceReceived(object sender, global::RabbitMQ.Base.EventArgsT<CallSession> e)
         {
-            using (var connection = new RabbitMQServiceConnection(e.Value))
-                await _requestHandler.HandleAsync(connection);
+            Interlocked.Increment(ref _handlingCount);
+            try
+            {
+                using (var connection = new RabbitMQServiceConnection(e.Value))
+                    await _requestHandler.HandleAsync(connection);
+            }
+            finally
+            {
+                Interlocked.Decrement(ref _handlingCount);
+            }
         }
 
-        private void ConnectConnectionShutdown(object sender, ShutdownEventArgs e)
-        {
-            OnConnectionShutdown(e);
-        }
-
-        private void ConnectRecoverySucceeded(object sender, EventArgs e)
-        {
-            OnRecoverySucceeded();
-        }
-
-        private void OnConnectionShutdown(ShutdownEventArgs e)
-        {
-            ConnectionShutdown?.Invoke(this, e);
-        }
-
-        private void OnRecoverySucceeded()
-        {
-            RecoverySucceeded?.Invoke(this, EventArgs.Empty);
-        }
+        private bool IsHanding => _handlingCount > 0;
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
@@ -77,7 +61,17 @@ namespace NetRpc.RabbitMQ
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _service?.Dispose();
-            return Task.CompletedTask;
+
+            return Task.Run(() =>
+            {
+                while (IsHanding)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        break;
+
+                    Thread.Sleep(1000);
+                }
+            }, cancellationToken);
         }
     }
 }

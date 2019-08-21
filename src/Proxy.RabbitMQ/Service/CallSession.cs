@@ -14,12 +14,14 @@ namespace RabbitMQ.Base
         private readonly string _serviceToClientQueue;
         private string _clientToServiceQueue;
         private bool _disposed;
+        private readonly bool _isPost;
 
         public event EventHandler<EventArgsT<byte[]>> Received;
 
         public CallSession(IConnection connection, IModel mainModel, BasicDeliverEventArgs e)
         {
             _clientToServiceModel = connection.CreateModel();
+            _isPost = e.BasicProperties.ReplyTo == null;
             _serviceToClientQueue = e.BasicProperties.ReplyTo;
             _mainModel = mainModel;
             _e = e;
@@ -27,15 +29,18 @@ namespace RabbitMQ.Base
 
         public void Start()
         {
-            _clientToServiceQueue = _clientToServiceModel.QueueDeclare().QueueName;
-            var replyConsumer = new EventingBasicConsumer(_clientToServiceModel);
-            replyConsumer.Received += (s, e) =>
+            if (!_isPost)
             {
-                OnReceived(new EventArgsT<byte[]>(e.Body));
-            };
+                _clientToServiceQueue = _clientToServiceModel.QueueDeclare().QueueName;
+                var replyConsumer = new EventingBasicConsumer(_clientToServiceModel);
+                replyConsumer.Received += (s, e) =>
+                {
+                    OnReceived(new EventArgsT<byte[]>(e.Body));
+                };
 
-            _clientToServiceModel.BasicConsume(_clientToServiceQueue, true, replyConsumer);
-            Send(Encoding.UTF8.GetBytes(_clientToServiceQueue));
+                _clientToServiceModel.BasicConsume(_clientToServiceQueue, true, replyConsumer);
+                Send(Encoding.UTF8.GetBytes(_clientToServiceQueue));
+            }
 
             OnReceived(new EventArgsT<byte[]>(_e.Body));
         }

@@ -11,8 +11,8 @@ namespace NetRpc.RabbitMQ
         {
             if (rabbitMQServiceConfigureOptions != null)
                 services.Configure(rabbitMQServiceConfigureOptions);
-            services.AddHostedService<RabbitMQServiceProxy>();
             services.AddNetRpcService(middlewareConfigureOptions);
+            services.AddHostedService<RabbitMQServiceProxy>();
             return services;
         }
 

@@ -17,7 +17,7 @@ namespace NetRpc
             _middlewareBuilder = new MiddlewareBuilder(middlewareOptions, serviceProvider);
         }
 
-        public async Task HandleAsync(IConnection connection)
+        public async Task HandleAsync(IServiceConnection connection)
         {
             var contractOptions = _serviceProvider.GetRequiredService<IOptions<ContractOptions>>();
 

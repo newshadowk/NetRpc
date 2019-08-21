@@ -8,7 +8,7 @@ using Client = Grpc.Base.Client;
 
 namespace NetRpc.Grpc
 {
-    public class GrpcClientConnection : IConnection
+    public class GrpcClientConnection : IClientConnection
     {
         private readonly Client _client;
         private AsyncDuplexStreamingCall<StreamBuffer, StreamBuffer> _api;
@@ -31,7 +31,7 @@ namespace NetRpc.Grpc
 
         public event EventHandler<EventArgsT<byte[]>> Received;
 
-        public async Task SendAsync(byte[] buffer)
+        public async Task SendAsync(byte[] buffer, bool isPost = false)
         {
             await _api.RequestStream.WriteAsync(new StreamBuffer { Body = ByteString.CopyFrom(buffer) });
         }

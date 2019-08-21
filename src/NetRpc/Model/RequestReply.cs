@@ -2,6 +2,11 @@
 
 namespace NetRpc
 {
+    public static class NullReply
+    {
+        public static byte[] All { get; } = Reply.FromResult(new CustomResult(null, false)).All;
+    }
+
     internal class Message
     {
         private const int TypeSize = 1;

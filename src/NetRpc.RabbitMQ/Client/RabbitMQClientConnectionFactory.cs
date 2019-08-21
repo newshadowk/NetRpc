@@ -2,7 +2,7 @@
 
 namespace NetRpc.RabbitMQ
 {
-    public class RabbitMQClientConnectionFactory : IConnectionFactory
+    public class RabbitMQClientConnectionFactory : IClientConnectionFactory
     {
         private global::RabbitMQ.Client.IConnection _connection;
         private MQOptions _options;
@@ -28,7 +28,7 @@ namespace NetRpc.RabbitMQ
             _connection?.Dispose();
         }
 
-        public IConnection Create()
+        public IClientConnection Create()
         {
             lock (_lockObj)
                 return new ClientConnection(_connection, _options.RpcQueue);
