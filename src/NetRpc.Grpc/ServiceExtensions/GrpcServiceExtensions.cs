@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace NetRpc.Grpc
 {
@@ -21,7 +22,7 @@ namespace NetRpc.Grpc
         {
             if (grpcClientChannelConfigureOptions != null)
                 services.Configure(grpcClientChannelConfigureOptions);
-            services.AddSingleton<GrpcClientProxy<TService>>();
+            services.TryAddSingleton<GrpcClientProxy<TService>>();
             services.AddNetRpcClient<GrpcClientConnectionFactory, TService>(clientConfigureOptions);
             return services;
         }

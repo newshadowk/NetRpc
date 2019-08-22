@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Serialization;
@@ -23,15 +24,16 @@ namespace NetRpc.Http
             var paths = Helper.GetCommentsXmlPaths();
             paths.ForEach(path => services.AddSwaggerGen(i => i.IncludeXmlComments(path)));
 
-            services.AddTransient<INetRpcSwaggerProvider, NetRpcSwaggerProvider>();
+            services.TryAddTransient<INetRpcSwaggerProvider, NetRpcSwaggerProvider>();
             return services;
         }
 
         public static IServiceCollection AddNetRpcHttp(this IServiceCollection services, Action<HttpServiceOptions> httpServiceConfigureOptions = null,
             Action<MiddlewareOptions> middlewareConfigureOptions = null)
         {
-            services.Configure(httpServiceConfigureOptions);
-            services.AddSingleton<RequestHandler>();
+            if (httpServiceConfigureOptions != null)
+                services.Configure(httpServiceConfigureOptions);
+            services.TryAddSingleton<RequestHandler>();
             services.AddNetRpcService(middlewareConfigureOptions);
             return services;
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace NetRpc
 {
@@ -10,7 +11,7 @@ namespace NetRpc
         {
             if (middlewareConfigureOptions != null)
                 services.Configure(middlewareConfigureOptions);
-            services.AddSingleton<MiddlewareBuilder>();
+            services.TryAddSingleton<MiddlewareBuilder>();
             return services;
         }
 
@@ -21,10 +22,10 @@ namespace NetRpc
             switch (contractLifeTime)
             {
                 case ContractLifeTime.Singleton:
-                    services.AddSingleton(implementationType);
+                    services.TryAddSingleton(implementationType);
                     break;
                 case ContractLifeTime.Scoped:
-                    services.AddScoped(implementationType);
+                    services.TryAddScoped(implementationType);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(contractLifeTime), contractLifeTime, null);
@@ -53,8 +54,8 @@ namespace NetRpc
         {
             if (configureOptions != null)
                 services.Configure(configureOptions);
-            services.AddSingleton<IClientConnectionFactory, TClientConnectionFactoryImplementation>();
-            services.AddSingleton<ClientProxy<TService>>();
+            services.TryAddSingleton<IClientConnectionFactory, TClientConnectionFactoryImplementation>();
+            services.TryAddSingleton<ClientProxy<TService>>();
             return services;
         }
 
