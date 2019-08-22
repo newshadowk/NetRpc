@@ -451,7 +451,6 @@ NetRpc.Http provide:
 * **SignalR** for callback and cancel during method invoking.
 
 Note:
-* If contract do not have callback and cancel, you do not need add **SignalR** to services.
 * **Swagger** is not necessary.
 * **Mvc** is not necessary.
 
@@ -473,7 +472,7 @@ await webHost.RunAsync();
 Use DI to create NetRpcHttp service, also could create NetRpcHttp service base on exist MVC servcie.
 ```c#
 //regist services
-services.AddSignalR();         // add SignalR service if need cancel/callback support
+services.AddSignalR();         // add SignalR service
 services.AddNetRpcSwagger();   // add Swgger service
 services.AddNetRpcHttp(i =>    // add RpcHttp service
 {
@@ -488,7 +487,7 @@ services.AddNetRpcServiceContract(instanceTypes); // add Contracts
 ```
 ```c#
 //use components
-app.UseSignalR(routes => { routes.MapHub<CallbackHub>(hubPath); });   // define CallbackHub if need cancel/callback support
+app.UseSignalR(routes => { routes.MapHub<CallbackHub>(hubPath); });   // define CallbackHub
 app.UseNetRpcSwagger();   // use NetRpcSwagger middleware
 app.UseNetRpcHttp();      // use NetRpcHttp middleware
 ```
