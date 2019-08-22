@@ -21,7 +21,6 @@ namespace NetRpc.Grpc
 
         public void Dispose()
         {
-            _requestStream?.Dispose();
         }
 
         public event EventHandler<EventArgsT<byte[]>> Received;
