@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <SignAssembly>true</SignAssembly>
     <DelaySign>false</DelaySign>
+    <Description>NetRpc is a light weight rpc engine base on RabbitMQ, Grpc, Http targeting .NET Standard 2.0. especially suitable for handle long call.</Description>
   </PropertyGroup>
 
   <ItemGroup>

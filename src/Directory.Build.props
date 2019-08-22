@@ -1,17 +1,15 @@
 ﻿<Project>
   <PropertyGroup>
     <Authors>ShadowK</Authors>
-    <Version>2.0.1</Version>
-    <Description>NetRpc is a light weight rpc engine base on RabbitMQ, Grpc, Http targeting .NET Standard 2.0. Provide callback/cancel during invoking, so especially suitable for handle long call.</Description>
+    <Version>2.0.2</Version>
     <PackageProjectUrl>https://github.com/newshadowk/NetRpc</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <RepositoryUrl>https://github.com/newshadowk/NetRpc</RepositoryUrl>
-     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <LangVersion>latest</LangVersion>
     <AssemblyOriginatorKeyFile>../NetRpc.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
 </Project>
-
-
-

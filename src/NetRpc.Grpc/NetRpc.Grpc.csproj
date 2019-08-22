@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <SignAssembly>true</SignAssembly>
     <DelaySign>false</DelaySign>
+    <Description>Provide Grpc channel implementation for NetRpc.</Description>
   </PropertyGroup>
 
   <ItemGroup>

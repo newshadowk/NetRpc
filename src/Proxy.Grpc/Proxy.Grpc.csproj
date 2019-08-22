@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <SignAssembly>true</SignAssembly>
     <DelaySign>false</DelaySign>
+    <Description>Provide Api proxy for Grpc.</Description>
   </PropertyGroup>
 
 

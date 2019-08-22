@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>NetRpc.snk</AssemblyOriginatorKeyFile>
+    <Description>Provide Http channel implementation for NetRpc.</Description>
   </PropertyGroup>
 
   <ItemGroup>
