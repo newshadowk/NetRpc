@@ -29,7 +29,15 @@ namespace NetRpc.Http
                     services.AddSignalR();
                     if (isSwagger)
                         services.AddNetRpcSwagger();
-                    services.AddNetRpcHttp(null, i =>
+                    services.AddNetRpcHttp(i =>
+                    {
+                        if (httpServiceOptions != null)
+                        {
+                            i.ApiRootPath = httpServiceOptions.ApiRootPath;
+                            i.IgnoreWhenNotMatched = httpServiceOptions.IgnoreWhenNotMatched;
+                            i.IsClearStackTrace = httpServiceOptions.IsClearStackTrace;
+                        }
+                    }, i =>
                     {
                         if (middlewareOptions != null)
                             i.Items = middlewareOptions.Items;
