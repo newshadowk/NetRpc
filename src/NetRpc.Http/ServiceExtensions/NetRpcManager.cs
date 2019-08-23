@@ -26,6 +26,7 @@ namespace NetRpc.Http
                                 .AllowCredentials();
                         });
                     });
+
                     services.AddSignalR();
                     if (isSwagger)
                         services.AddNetRpcSwagger();
@@ -36,6 +37,7 @@ namespace NetRpc.Http
                             i.ApiRootPath = httpServiceOptions.ApiRootPath;
                             i.IgnoreWhenNotMatched = httpServiceOptions.IgnoreWhenNotMatched;
                             i.IsClearStackTrace = httpServiceOptions.IsClearStackTrace;
+                            i.SupportCallbackAndCancel = httpServiceOptions.SupportCallbackAndCancel;
                         }
                     });
                     services.AddNetRpcMiddleware(i =>

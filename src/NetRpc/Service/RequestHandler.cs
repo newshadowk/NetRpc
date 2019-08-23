@@ -24,7 +24,7 @@ namespace NetRpc
             using (var scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
                 var convert = new BufferServiceOnceApiConvert(connection);
-                var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
+                var instances = scope.ServiceProvider.GetIContractInstances(contractOptions.Value);
                 var onceTransfer = new BufferServiceOnceTransfer(instances, scope.ServiceProvider, convert, _middlewareBuilder);
                 onceTransfer.Start();
                 await onceTransfer.HandleRequestAsync();
@@ -37,7 +37,7 @@ namespace NetRpc
 
             using (var scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
-                var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
+                var instances = scope.ServiceProvider.GetIContractInstances(contractOptions.Value);
                 var onceTransfer = new HttpServiceOnceTransfer(instances, scope.ServiceProvider, convert, _middlewareBuilder);
                 onceTransfer.Start();
                 await onceTransfer.HandleRequestAsync();

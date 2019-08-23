@@ -55,7 +55,7 @@ namespace NetRpc.Http
             return returnTypeDefinition;
         }
 
-        public static Type GetArgType(MethodInfo m, out string streamName, out TypeName action, out TypeName cancelToken)
+        public static Type GetArgType(MethodInfo m, bool supportCallbackAndCancel, out string streamName, out TypeName action, out TypeName cancelToken)
         {
             streamName = null;
             action = null;
@@ -72,9 +72,13 @@ namespace NetRpc.Http
                     streamName = p.Name;
                     continue;
                 }
-
+            
+                //callback
                 if (p.ParameterType.IsActionT())
                 {
+                    if (!supportCallbackAndCancel)
+                        continue;
+
                     action = new TypeName
                     {
                         Type = p.ParameterType,
@@ -87,8 +91,12 @@ namespace NetRpc.Http
                     continue;
                 }
 
+                //cancel
                 if (p.ParameterType == typeof(CancellationToken?) || p.ParameterType == typeof(CancellationToken))
                 {
+                    if (!supportCallbackAndCancel)
+                        continue;
+
                     cancelToken = new TypeName
                     {
                         Type = p.ParameterType,
@@ -207,6 +215,39 @@ namespace NetRpc.Http
             path = path.Substring(8, path.Length - 8);
             path = Path.GetDirectoryName(path);
             return path;
+        }
+
+        /// <summary>
+        /// CallAsync => Call.
+        /// </summary>
+        public static string FormatMethodName(List<MethodInfo> allMethodInfos, string methodName)
+        {
+            if (methodName.EndsWith("Async"))
+            {
+                var trimName = methodName.TrimEndString(5);
+                if (!allMethodInfos.Exists(i => i.Name == trimName))
+                    return trimName;
+            }
+
+            return methodName;
+        }
+
+        /// <summary>
+        /// Call => CallAsync.
+        /// </summary>
+        public static string UnFormatMethodName(List<MethodInfo> allMethodInfos, string methodName)
+        {
+            if (allMethodInfos.Exists(i => i.Name == methodName))
+                return methodName;
+
+            if (!methodName.EndsWith("Async"))
+            {
+                var addName = methodName + "Async";
+                if (allMethodInfos.Exists(i => i.Name == addName))
+                    return addName;
+            }
+
+            return methodName;
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
@@ -22,8 +23,7 @@ namespace NetRpc.Http
             });
 
             var paths = Helper.GetCommentsXmlPaths();
-            paths.ForEach(path => services.AddSwaggerGen(i => i.IncludeXmlComments(path)));
-
+            services.AddSwaggerGen(i => paths.ForEach(path => i.IncludeXmlComments(path)));
             services.TryAddTransient<INetRpcSwaggerProvider, NetRpcSwaggerProvider>();
             return services;
         }

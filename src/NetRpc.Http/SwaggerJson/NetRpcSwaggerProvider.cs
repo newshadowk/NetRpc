@@ -17,16 +17,19 @@ namespace NetRpc.Http
         private readonly SwaggerGeneratorOptions _options;
         private readonly SchemaRepository _schemaRepository;
         private readonly OpenApiDocument _doc;
+        private volatile bool _supportCallbackAndCancel;
 
-        public NetRpcSwaggerProvider(ISchemaGenerator schemaGenerator, IOptions<SwaggerGeneratorOptions> optionsAccessor)
+        public NetRpcSwaggerProvider(ISchemaGenerator schemaGenerator, IOptionsMonitor<HttpServiceOptions> httpServiceOptions, IOptions<SwaggerGeneratorOptions> optionsAccessor)
         {
             _schemaRepository = new SchemaRepository();
             _schemaGenerator = schemaGenerator;
             _options = optionsAccessor.Value;
             _doc = new OpenApiDocument();
+            _supportCallbackAndCancel = httpServiceOptions.CurrentValue.SupportCallbackAndCancel;
+            httpServiceOptions.OnChange(i => _supportCallbackAndCancel = i.SupportCallbackAndCancel);
         }
 
-        private void Process(string apiRootPath, IEnumerable<Type> instanceTypes)
+        private void Process(string apiRootPath, bool supportCallbackAndCancel, IEnumerable<Type> instanceTypes)
         {
             var list = GetContractMethodInfos(instanceTypes);
 
@@ -39,7 +42,7 @@ namespace NetRpc.Http
             {
                 foreach (var method in tagGroup.methods)
                 {
-                    var argType = Helper.GetArgType(method, out var streamName, out var action, out var cancelToken);
+                    var argType = Helper.GetArgType(method, supportCallbackAndCancel, out var streamName, out var action, out var cancelToken);
 
                     //Operation
                     var operation = new OpenApiOperation
@@ -53,12 +56,13 @@ namespace NetRpc.Http
                     var filterContext = new OperationFilterContext(new ApiDescription(), _schemaGenerator, _schemaRepository, method);
                     foreach (var filter in _options.OperationFilters)
                         filter.Apply(operation, filterContext);
-                    operation.Summary = AppendSummaryByCallbackAndCancel(operation.Summary, action, cancelToken);
+                    if (supportCallbackAndCancel)
+                        operation.Summary = AppendSummaryByCallbackAndCancel(operation.Summary, action, cancelToken);
 
                     //Path
                     var openApiPathItem = new OpenApiPathItem();
                     openApiPathItem.AddOperation(OperationType.Post, operation);
-                    var key = $"{apiRootPath}/{tagGroup.contractInstance.Name}/{method.Name}";
+                    var key = $"{apiRootPath}/{tagGroup.contractInstance.Name}/{Helper.FormatMethodName(tagGroup.methods, method.Name)}";
                     _doc.Paths.Add(key, openApiPathItem);
                 }
             }
@@ -78,10 +82,10 @@ namespace NetRpc.Http
             return list;
         }
 
-        private static List<(Type contractInstance, List<MethodInfo> methods)> GetContractMethodInfos(Type instanceType)
+        private static List<(Type contractInstance, List<MethodInfo> methods)> GetContractMethodInfos(Type instanceTypes)
         {
             var ret = new List<(Type contractInstance, List<MethodInfo> methods)>();
-            foreach (var item in instanceType.GetInterfaces())
+            foreach (var item in instanceTypes.GetInterfaces())
                 ret.Add((item, item.GetMethods().ToList()));
             return ret;
         }
@@ -179,8 +183,11 @@ namespace NetRpc.Http
 
             append.TrimEndString("");
 
-            if (append != "")
+            if (append != "" && oldDes != "")
                 return $"{oldDes}, {append}";
+
+            if (append != "" && oldDes == "")
+                return $"{append}";
 
             return oldDes;
         }
@@ -188,8 +195,17 @@ namespace NetRpc.Http
         private void GenerateRequestBodyByForm(OpenApiRequestBody body, params TypeName[] typeNames)
         {
             var properties = new Dictionary<string, OpenApiSchema>();
-            foreach (var typeName in typeNames)
-                properties.Add(typeName.Name, GenerateSchema(typeName.Type));
+            try
+            {
+                foreach (var typeName in typeNames)
+                    properties.Add(typeName.Name, GenerateSchema(typeName.Type));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+  
 
             var openApiSchema = new OpenApiSchema
             {
@@ -217,7 +233,7 @@ namespace NetRpc.Http
 
         public OpenApiDocument GetSwagger(string apiRootPath, IEnumerable<Type> instanceTypes)
         {
-            Process(apiRootPath, instanceTypes);
+            Process(apiRootPath, _supportCallbackAndCancel, instanceTypes);
             return _doc;
         }
 

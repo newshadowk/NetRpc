@@ -5,6 +5,6 @@ namespace NetRpc
 {
     public class ContractOptions
     {
-        public List<Type> Contracts { get; } = new List<Type>();
+        public List<Type> InstanceTypes { get; } = new List<Type>();
     }
 }

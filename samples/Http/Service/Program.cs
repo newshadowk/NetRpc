@@ -15,7 +15,7 @@ namespace Service
                 5000,
                 "/callback",
                 true,
-                new HttpServiceOptions { ApiRootPath = "/api" },
+                new HttpServiceOptions { ApiRootPath = "/api"},
                 null,
                 typeof(ServiceAsync));
             await webHost.RunAsync();

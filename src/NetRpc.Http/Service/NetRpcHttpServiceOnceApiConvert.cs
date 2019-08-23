@@ -13,21 +13,23 @@ namespace NetRpc.Http
 {
     internal sealed class NetRpcHttpServiceOnceApiConvert : IHttpServiceOnceApiConvert
     {
-        private readonly List<Type> _contractTypes;
+        private readonly List<Type> _instanceTypes;
         private readonly HttpContext _context;
         private readonly HttpConnection _connection;
         private readonly string _rootPath;
         private readonly bool _ignoreWhenNotMatched;
+        private readonly bool _supportCallbackAndCancel;
         private CancellationTokenSource _cts;
 
-        public NetRpcHttpServiceOnceApiConvert(List<Type> contractTypes, HttpContext context, string rootPath, bool ignoreWhenNotMatched, 
+        public NetRpcHttpServiceOnceApiConvert(List<Type> instanceTypes, HttpContext context, string rootPath, bool ignoreWhenNotMatched, bool supportCallbackAndCancel,
             IHubContext<CallbackHub, ICallback> hub, bool isClearStackTrace)
         {
-            _contractTypes = contractTypes;
+            _instanceTypes = instanceTypes;
             _context = context;
             _connection = new HttpConnection(context, hub, isClearStackTrace);
             _rootPath = rootPath;
             _ignoreWhenNotMatched = ignoreWhenNotMatched;
+            _supportCallbackAndCancel = supportCallbackAndCancel;
             CallbackHub.Canceled += CallbackHubCanceled;
         }
 
@@ -120,9 +122,20 @@ namespace NetRpc.Http
                 rawPath = rawPath.Substring(startS.Length);
             }
 
+            var rawPathSplit = rawPath.Split('/');
+            var contractTypeName = rawPathSplit[0];
+            var methodName = rawPathSplit[1];
+
+            //Call => CallAsync
+            var contractType = FindContractType(_instanceTypes, contractTypeName);
+            if (contractType == null)
+                throw new HttpFailedException($"contractTypeName:{contractTypeName} is not found.");
+            var unFormatMethodName = Helper.UnFormatMethodName(contractType.GetMethods().ToList(), methodName);
+            var fullName = $"{contractTypeName}/{unFormatMethodName}";
+
             return new ActionInfo
             {
-                FullName = rawPath
+                FullName = fullName
             };
         }
 
@@ -137,8 +150,8 @@ namespace NetRpc.Http
         private object[] GetArgs(ActionInfo ai)
         {
             //dataObjType
-            var method = ApiWrapper.GetMethodInfo(ai, _contractTypes.ToArray());
-            var dataObjType = Helper.GetArgType(method.contractMethodInfo, out _, out _, out _);
+            var method = ApiWrapper.GetMethodInfo(ai, _instanceTypes.ToArray());
+            var dataObjType = Helper.GetArgType(method.contractMethodInfo, _supportCallbackAndCancel, out _, out _, out _);
 
             if (_context.Request.ContentType != null)
             {
@@ -194,6 +207,17 @@ namespace NetRpc.Http
             var connectionId = (string) GetValue(dataObj, ConstValue.ConnectionIdName);
             var callId = (string) GetValue(dataObj, ConstValue.CallIdName);
             return (connectionId, callId);
+        }
+
+        private static Type FindContractType(List<Type> instanceTypes, string contractTypeName)
+        {
+            foreach (var instanceType in instanceTypes)
+            foreach (var item in instanceType.GetInterfaces())
+            {
+                if (item.Name == contractTypeName)
+                    return item;
+            }
+            return null;
         }
     }
 }

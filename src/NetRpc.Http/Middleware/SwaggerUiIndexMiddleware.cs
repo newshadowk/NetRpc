@@ -37,12 +37,14 @@ namespace NetRpc.Http
             // api/swagger/index.html
             else if (IsUrl(requestPath, $"{swaggerRootPath}/index.html"))
             {
-                //if (_html == null)
+#if !DEBUG
+                if (_html == null)
+#endif
                 {
                     _html = await ReadStringAsync(".index.html");
                     _html = _html.Replace("{url}", swaggerFilePath);
 
-                    OpenApiDocument doc = netRpcSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.Contracts);
+                    OpenApiDocument doc = netRpcSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.InstanceTypes);
                     _json = ToJson(doc);
                 }
 

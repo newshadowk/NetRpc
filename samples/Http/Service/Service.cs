@@ -10,11 +10,16 @@ namespace Service
 {
     public class ServiceAsync : IServiceAsync
     {
-        public async Task<CustomObj> Call(string p1, int p2)
+        public async Task<CustomObj> CallAsync(string p1, int p2)
         {
             var retObj = new CustomObj {Date = DateTime.Now, Name = NameEnum.John};
             Console.WriteLine($"[Call]...receive:{p1}, {p2}, return:{retObj}");
             return retObj;
+        }
+
+        public Task<CustomObj> Call(string p1, int p2)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task CallByCustomExceptionAsync()

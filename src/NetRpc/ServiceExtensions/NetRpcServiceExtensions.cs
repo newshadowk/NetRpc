@@ -16,7 +16,7 @@ namespace NetRpc
         public static IServiceCollection AddNetRpcServiceContract(this IServiceCollection services, Type implementationType,
             ContractLifeTime contractLifeTime = ContractLifeTime.Singleton)
         {
-            services.Configure<ContractOptions>(i => i.Contracts.Add(implementationType));
+            services.Configure<ContractOptions>(i => i.InstanceTypes.Add(implementationType));
             switch (contractLifeTime)
             {
                 case ContractLifeTime.Singleton:
@@ -70,9 +70,9 @@ namespace NetRpc
             return services;
         }
 
-        public static object[] GetContractInstances(this IServiceProvider serviceProvider, ContractOptions options)
+        public static object[] GetIContractInstances(this IServiceProvider serviceProvider, ContractOptions options)
         {
-            return options.Contracts.ConvertAll(serviceProvider.GetRequiredService).ToArray();
+            return options.InstanceTypes.ConvertAll(serviceProvider.GetRequiredService).ToArray();
         }
     }
 }

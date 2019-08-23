@@ -12,7 +12,8 @@ namespace DataContract
         /// summary of Call
         /// </summary>
         /// <response code="201">Returns the newly created item</response>
-        //[ProducesResponseType(typeof(string), 201)]
+        Task<CustomObj> CallAsync(string p1, int p2);
+
         Task<CustomObj> Call(string p1, int p2);
 
         /// <summary>
@@ -37,9 +38,6 @@ namespace DataContract
         /// </summary>
         Task<ComplexStream> GetComplexStreamAsync();
 
-        /// <summary>
-        /// summary of ComplexCallAsync
-        /// </summary>
         Task<ComplexStream> ComplexCallAsync(CustomObj obj, string p1, Stream stream, Action<CustomCallbackObj> cb, CancellationToken token);
     }
 }

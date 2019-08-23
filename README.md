@@ -508,6 +508,28 @@ OperationCanceledException will receive respones with statuscode 600.
 ![Alt text](callback.png)
 
 Also support summary on model or method.
+## HttpServiceOptions
+```c#
+/// <summary>
+/// Api root path, like '/api', default value is null.
+/// </summary>
+public string ApiRootPath { get; set; }
+
+/// <summary>
+/// If pass StackTrace to client, default value is false.
+/// </summary>
+public bool IsClearStackTrace { get; set; }
+
+/// <summary>
+/// Set true will pass to next middleware when not match the method, default value is false.
+/// </summary>
+public bool IgnoreWhenNotMatched { get; set; }
+
+/// <summary>
+/// If support callback/cancel, default value is true.
+/// </summary>
+public bool SupportCallbackAndCancel { get; set; } = true;
+```
 ## [Http] Callback and Cancel
 Contract define the **Action\<T>** and **CancellationToken** to enable this feature.
 ```c#
