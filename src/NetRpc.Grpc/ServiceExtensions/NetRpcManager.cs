@@ -17,12 +17,12 @@ namespace NetRpc.Grpc
                         {
                             if (grpcServiceOptions != null)
                                 i.Ports = grpcServiceOptions.Ports;
-                        },
-                        i =>
-                        {
-                            if (middlewareOptions != null)
-                                i.Items = middlewareOptions.Items;
                         });
+                    services.AddNetRpcMiddleware(i =>
+                    {
+                        if (middlewareOptions != null)
+                            i.Items = middlewareOptions.Items;
+                    });
                     services.AddNetRpcServiceContract(instanceTypes);
                 })
                 .Build();

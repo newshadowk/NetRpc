@@ -5,13 +5,10 @@ namespace NetRpc.RabbitMQ
 {
     public static class NetRpcRabbitMQServiceExtensions
     {
-        public static IServiceCollection AddNetRpcRabbitMQService(this IServiceCollection services, 
-            Action<RabbitMQServiceOptions> rabbitMQServiceConfigureOptions = null, 
-            Action<MiddlewareOptions> middlewareConfigureOptions = null)
+        public static IServiceCollection AddNetRpcRabbitMQService(this IServiceCollection services, Action<RabbitMQServiceOptions> rabbitMQServiceConfigureOptions = null)
         {
             if (rabbitMQServiceConfigureOptions != null)
                 services.Configure(rabbitMQServiceConfigureOptions);
-            services.AddNetRpcService(middlewareConfigureOptions);
             services.AddHostedService<RabbitMQServiceProxy>();
             return services;
         }

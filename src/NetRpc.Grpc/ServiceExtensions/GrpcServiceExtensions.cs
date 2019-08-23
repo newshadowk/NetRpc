@@ -6,12 +6,10 @@ namespace NetRpc.Grpc
 {
     public static class GrpcServiceExtensions
     {
-        public static IServiceCollection AddNetRpcGrpcService(this IServiceCollection services, 
-            Action<GrpcServiceOptions> grpcServiceConfigureOptions, 
-            Action<MiddlewareOptions> middlewareConfigureOptions = null)
+        public static IServiceCollection AddNetRpcGrpcService(this IServiceCollection services, Action<GrpcServiceOptions> grpcServiceConfigureOptions)
         {
             services.Configure(grpcServiceConfigureOptions);
-            services.AddNetRpcService(middlewareConfigureOptions);
+            services.AddNetRpcService();
             services.AddHostedService<GrpcServiceProxy>();
             return services;
         }

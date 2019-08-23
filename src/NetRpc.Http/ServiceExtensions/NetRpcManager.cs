@@ -37,7 +37,8 @@ namespace NetRpc.Http
                             i.IgnoreWhenNotMatched = httpServiceOptions.IgnoreWhenNotMatched;
                             i.IsClearStackTrace = httpServiceOptions.IsClearStackTrace;
                         }
-                    }, i =>
+                    });
+                    services.AddNetRpcMiddleware(i =>
                     {
                         if (middlewareOptions != null)
                             i.Items = middlewareOptions.Items;

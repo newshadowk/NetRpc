@@ -80,9 +80,9 @@ namespace Client
 
         private static void Test_CallByGeneric()
         {
-            var obj = new CustomObj {Date = DateTime.Now, Name = "test"};
+            var obj = new CustomObj { Date = DateTime.Now, Name = "test" };
             Console.Write($"[CallByGeneric], send:{obj}, receive:");
-            var ret = _proxy.CallByGenericType<CustomObj, int>(obj);
+            var ret = _proxy.CallByGenericType<int, int>(1);
             Console.WriteLine($"{ret}");
         }
 
@@ -208,7 +208,7 @@ namespace Client
 
         private static async Task Test_CallByGenericAsync()
         {
-            var obj = new CustomObj {Date = DateTime.Now, Name = "test"};
+            var obj = new CustomObj { Date = DateTime.Now, Name = "test" };
             Console.Write($"[CallByGenericAsync], send:{obj}, ");
             var ret = await _proxyAsync.CallByGenericAsync<CustomObj, int>(obj);
             Console.WriteLine($"receive:{ret}");

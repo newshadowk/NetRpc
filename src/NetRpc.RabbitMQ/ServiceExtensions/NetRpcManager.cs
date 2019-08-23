@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace NetRpc.RabbitMQ
@@ -15,12 +14,12 @@ namespace NetRpc.RabbitMQ
                         {
                             if (mqOptions != null)
                                 i.Value = mqOptions;
-                        },
-                        i =>
-                        {
-                            if (middlewareOptions != null)
-                                i.Items = middlewareOptions.Items;
                         });
+                    services.AddNetRpcMiddleware(i =>
+                    {
+                        if (middlewareOptions != null)
+                            i.Items = middlewareOptions.Items;
+                    });
                     services.AddNetRpcServiceContract(instanceTypes);
                 })
                 .Build();

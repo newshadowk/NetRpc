@@ -7,10 +7,8 @@ namespace NetRpc
 {
     public static class NetRpcServiceExtensions
     {
-        public static IServiceCollection AddNetRpcService(this IServiceCollection services, Action<MiddlewareOptions> middlewareConfigureOptions = null)
+        public static IServiceCollection AddNetRpcService(this IServiceCollection services)
         {
-            if (middlewareConfigureOptions != null)
-                services.Configure(middlewareConfigureOptions);
             services.TryAddSingleton<MiddlewareBuilder>();
             return services;
         }
@@ -56,6 +54,19 @@ namespace NetRpc
                 services.Configure(configureOptions);
             services.TryAddSingleton<IClientConnectionFactory, TClientConnectionFactoryImplementation>();
             services.TryAddSingleton<ClientProxy<TService>>();
+            return services;
+        }
+
+        public static IServiceCollection AddCallbackThrottling(this IServiceCollection services, int callbackThrottlingInterval)
+        {
+            services.Configure<MiddlewareOptions>(i =>i.UseCallbackThrottling(callbackThrottlingInterval));
+            return services;
+        }
+
+        public static IServiceCollection AddNetRpcMiddleware(this IServiceCollection services, Action<MiddlewareOptions> configureOptions)
+        {
+            if (configureOptions != null)
+                services.Configure(configureOptions);
             return services;
         }
 

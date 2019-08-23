@@ -37,7 +37,7 @@ namespace Service
         public void CallByCallBack(Action<CustomCallbackObj> cb)
         {
             Console.Write("[CallByCallBack]...");
-            for (int i = 1; i <= 30; i++)
+            for (int i = 1; i <= 3; i++)
             {
                 Console.Write($"{i}, ");
                 cb(new CustomCallbackObj {Progress = i});

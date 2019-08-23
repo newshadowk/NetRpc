@@ -28,13 +28,11 @@ namespace NetRpc.Http
             return services;
         }
 
-        public static IServiceCollection AddNetRpcHttp(this IServiceCollection services, Action<HttpServiceOptions> httpServiceConfigureOptions = null,
-            Action<MiddlewareOptions> middlewareConfigureOptions = null)
+        public static IServiceCollection AddNetRpcHttp(this IServiceCollection services, Action<HttpServiceOptions> httpServiceConfigureOptions = null)
         {
             if (httpServiceConfigureOptions != null)
                 services.Configure(httpServiceConfigureOptions);
             services.TryAddSingleton<RequestHandler>();
-            services.AddNetRpcService(middlewareConfigureOptions);
             return services;
         }
 

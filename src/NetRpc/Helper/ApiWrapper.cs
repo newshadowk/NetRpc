@@ -97,7 +97,7 @@ namespace NetRpc
             {
                 var found = GetMethodInfo(action, o.GetType());
                 if (found != default)
-                    return (found.contractMethodInfo, found.contractMethodInfo, o);
+                    return (found.instanceMethodInfo, found.contractMethodInfo, o);
             }
             throw new MethodNotFoundException($"{action.FullName} not found in instances");
         }
