@@ -230,8 +230,7 @@ The way use **NetRpc Middleware** and use **MVC Middleware** is same, the only d
 Support DI Type and ctor args.
 ```c#
 //servcie
-var mOpt = new MiddlewareOptions();
-mOpt.UseMiddleware<TestGlobalExceptionMiddleware>("arg1value");
+services.AddNetRpcMiddleware(i => i.UseMiddleware<TestGlobalExceptionMiddleware>("arg1value"));
 
 public class TestGlobalExceptionMiddleware
 {
@@ -325,7 +324,9 @@ Task CallByCallBackAsync(Action<CustomCallbackObj> cb);
 Built-in **CallbackThrottlingMiddleware** is useful when callback is progress, normally progress do not need callback every time to client, also for saving network resources.
 ```c#
 //service side
-middlewareOptions.UseCallbackThrottling(1000);  //limit to one call per second
+services.AddNetRpcMiddleware(i => i.UseCallbackThrottling(1000)); //limit to one call per second
+//or this:
+services.AddCallbackThrottling(1000);
 ...
 public async Task Call(Action<int> cb)
 {
@@ -479,10 +480,8 @@ services.AddNetRpcHttp(i =>    // add RpcHttp service
     i.ApiRootPath = "/api";
     i.IgnoreWhenNotMatched = false;
     i.IsClearStackTrace = false;
-}, i =>
-{
-    i.UseMiddleware<MyNetRpcMiddleware>();   // define NetRpc Middleware
 });
+services.AddNetRpcMiddleware(i => i.UseMiddleware<MyNetRpcMiddleware>());  // define NetRpc Middleware
 services.AddNetRpcServiceContract(instanceTypes); // add Contracts
 ```
 ```c#
@@ -493,6 +492,7 @@ app.UseNetRpcHttp();      // use NetRpcHttp middleware
 ```
 ## [Http] Swagger
 Use [Swashbuckle.AspNetCore.Swagger](https://github.com/domaindrivendev/Swashbuckle.AspNetCore) to implement swagger feature.  
+Note: swagger need add Http channel, swagger api path is **[HttpServiceOptions.ApiRootPath]/swagger**, if apiRootPath is "api", should like http://localhost:5000/api/swagger, if apiRootPath is null, should like http://localhost:5000/swagger.  
 Add codes below to enabled swagger function.
 ```c#
 services.AddNetRpcSwagger();   // add Swgger service
