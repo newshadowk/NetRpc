@@ -230,7 +230,7 @@ namespace NetRpc.Http
         private ActionInfo GetActionInfo(string requestPath)
         {
             foreach (var contract in _contracts)
-            foreach (var methodInfo in contract.ContractType.GetMethods())
+            foreach (var methodInfo in contract.ContractType.GetInterfaceMethods())
             {
                 if (requestPath == ClientHelper.GetActionPath(contract.ContractType, methodInfo))
                 {

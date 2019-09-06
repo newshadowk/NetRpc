@@ -78,7 +78,7 @@ namespace NetRpc.Http
         {
             var list = new List<(Type contractType, List<MethodInfo> methods)>();
             foreach (var contract in contracts)
-                list.Add((contract.ContractType, contract.ContractType.GetMethods().ToList()));
+                list.Add((contract.ContractType, contract.ContractType.GetInterfaceMethods().ToList()));
             return list;
         }
 

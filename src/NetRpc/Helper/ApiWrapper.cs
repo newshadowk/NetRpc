@@ -117,7 +117,7 @@ namespace NetRpc
 
         private static (MethodInfo instanceMethodInfo, MethodInfo contractMethodInfo) GetMethodInfo(ActionInfo action, Contract contract)
         {
-            var contractMethodInfo = contract.ContractType.GetMethods().FirstOrDefault(i => i.ToFullMethodName() == action.FullName);
+            var contractMethodInfo = contract.ContractType.GetInterfaceMethods().FirstOrDefault(i => i.ToFullMethodName() == action.FullName);
             if (contractMethodInfo != null)
             {
                 var instanceMethodInfo = (contract.InstanceType ?? contract.ContractType).GetMethod(contractMethodInfo.Name);
@@ -132,6 +132,23 @@ namespace NetRpc
             }
 
             return default;
+        }
+
+        public static IEnumerable<MethodInfo> GetInterfaceMethods(this Type type)
+        {
+            foreach (var method in type.GetMethods(BindingFlags.Instance | BindingFlags.Static |
+                                                   BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
+            {
+                yield return method;
+            }
+
+            foreach (var i in type.GetInterfaces())
+            {
+                foreach (var method in GetInterfaceMethods(i))
+                {
+                    yield return method;
+                }
+            }
         }
     }
 }
