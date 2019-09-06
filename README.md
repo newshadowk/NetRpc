@@ -451,7 +451,7 @@ Gateway has many advantages:
 * Provide access authority.
 * ...
 
-![Alt text](images\all2.png)
+![Alt text](images/all2.png)
 
 The code blow show how to Receive message from RabbitMQ channel client and send to Grpc channel service.
 ```c#
@@ -478,7 +478,7 @@ Note:
 * **Swagger** is not necessary.
 * **Mvc** is not necessary.
 
-![Alt text](images\nrpc_http.png)
+![Alt text](images/nrpc_http.png)
 
 ## [Http] Create Host
 Use **NetRpcManager** create host:
@@ -532,12 +532,12 @@ services.AddNetRpcSwagger();   // add Swgger service
 app.UseNetRpcSwagger();        // use NetRpcSwagger middleware
 ```
 The demo show how to call a method with callback and cancel:
-![Alt text](images\swagger.png)
+![Alt text](images/swagger.png)
 
 If define Callback Action\<T> and CancelToken supported, need set **\_connectionId** and **_callId** when request.
 OperationCanceledException will receive respones with statuscode 600.  
 
-![Alt text](images\callback.png)
+![Alt text](images/callback.png)
 
 Also support summary on model or method.
 ## HttpServiceOptions
