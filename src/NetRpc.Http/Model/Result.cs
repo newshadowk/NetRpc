@@ -1,7 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-
-namespace NetRpc.Http
+﻿namespace NetRpc.Http
 {
     internal class Result
     {

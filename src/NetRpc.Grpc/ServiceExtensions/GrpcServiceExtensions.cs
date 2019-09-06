@@ -19,8 +19,8 @@ namespace NetRpc.Grpc
             Action<NetRpcClientOption> clientConfigureOptions = null)
         {
             services.AddNetRpcGrpcClient<TService>(grpcClientConfigureOptions, clientConfigureOptions);
-            services.AddNetRpcContractSingleton(typeof(TService), 
-                p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))).Proxy);
+            services.AddNetRpcContractSingleton(typeof(TService),
+                p => ((ClientProxy<TService>) p.GetService(typeof(ClientProxy<TService>))).Proxy);
             return services;
         }
 

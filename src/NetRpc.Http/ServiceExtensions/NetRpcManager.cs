@@ -7,7 +7,7 @@ namespace NetRpc.Http
 {
     public static class NetRpcManager
     {
-        public static IWebHost CreateHost(int port, string hubPath, bool isSwagger, HttpServiceOptions httpServiceOptions, MiddlewareOptions middlewareOptions, 
+        public static IWebHost CreateHost(int port, string hubPath, bool isSwagger, HttpServiceOptions httpServiceOptions, MiddlewareOptions middlewareOptions,
             params Contract[] contracts)
         {
             return WebHost.CreateDefaultBuilder(null)
@@ -44,7 +44,7 @@ namespace NetRpc.Http
                             i.AllowAnyMethod();
                             i.AllowCredentials();
                         }
-                        );
+                    );
                     app.UseSignalR(routes => { routes.MapHub<CallbackHub>(hubPath); });
                     if (isSwagger)
                         app.UseNetRpcSwagger();

@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Primitives;
 using NetRpc.Http.Client;
 
 namespace NetRpc.Http
@@ -106,7 +105,7 @@ namespace NetRpc.Http
                 if (t != null)
                     return _connection.SendAsync(new Result(body.GetExceptionContent(), t.StatusCode));
             }
-           
+
             //default Exception
             return _connection.SendAsync(new Result(body.GetExceptionContent(), ClientConstValue.DefaultExceptionStatusCode));
         }
@@ -206,7 +205,7 @@ namespace NetRpc.Http
         private void CallbackHubCanceled(object sender, string e)
         {
             if (_connection.CallId == e || string.IsNullOrEmpty(e))
-               _cts.Cancel();
+                _cts.Cancel();
         }
 
         private static object GetValue(object obj, string propertyName)

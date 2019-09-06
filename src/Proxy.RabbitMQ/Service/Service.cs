@@ -13,6 +13,7 @@ namespace RabbitMQ.Base
         private readonly string _rpcQueue;
         private readonly int _prefetchCount;
         public ServiceInner Inner { get; private set; }
+
         public Service(ConnectionFactory factory, string rpcQueue, int prefetchCount)
         {
             _factory = factory;

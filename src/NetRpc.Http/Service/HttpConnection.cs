@@ -1,7 +1,5 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -33,7 +31,7 @@ namespace NetRpc.Http
             try
             {
                 if (ConnectionId != null)
-                    await _hub.Clients.Client(ConnectionId).Callback(CallId,callbackObj.ToJson());
+                    await _hub.Clients.Client(ConnectionId).Callback(CallId, callbackObj.ToJson());
             }
             catch
             {
@@ -61,7 +59,7 @@ namespace NetRpc.Http
 #pragma warning disable 4014
             executor.ExecuteAsync(actionContext, fRet);
 #pragma warning restore 4014
-            
+
             return Task.CompletedTask;
         }
 

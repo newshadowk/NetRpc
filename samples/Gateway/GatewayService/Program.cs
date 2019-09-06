@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NetRpc;
 using NetRpc.Grpc;
 using NetRpc.Http;
 using NetRpc.RabbitMQ;
+using Helper = TestHelper.Helper;
 
 namespace Service
 {
@@ -60,7 +60,7 @@ namespace Service
                 .ConfigureServices((context, services) =>
                 {
                     //set single target by DI.
-                    services.AddNetRpcRabbitMQService(i => i.Value = TestHelper.Helper.GetMQOptions());
+                    services.AddNetRpcRabbitMQService(i => i.Value = Helper.GetMQOptions());
 
                     services.AddNetRpcGrpcGateway<IService>(o => o.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
                     services.AddNetRpcGrpcGateway<IService2>();
@@ -81,7 +81,7 @@ namespace Service
             var host = new HostBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddNetRpcGrpcService(i =>i.AddPort("0.0.0.0", 50000));
+                    services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50000));
                     services.AddNetRpcGrpcGateway<IService>(o => o.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
                     services.AddNetRpcGrpcGateway<IService2>();
                 })

@@ -20,7 +20,7 @@ namespace NetRpc.Http
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, INetRpcSwaggerProvider netRpcSwaggerProvider, 
+        public async Task Invoke(HttpContext context, INetRpcSwaggerProvider netRpcSwaggerProvider,
             IOptionsSnapshot<HttpServiceOptions> httpServiceOptions, IOptionsSnapshot<ContractOptions> contractOptions)
         {
             var apiRootApi = httpServiceOptions.Value.ApiRootPath;
@@ -44,7 +44,7 @@ namespace NetRpc.Http
                     _html = await ReadStringAsync(".index.html");
                     _html = _html.Replace("{url}", swaggerFilePath);
 
-                    OpenApiDocument doc = netRpcSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.Contracts);
+                    var doc = netRpcSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.Contracts);
                     _json = ToJson(doc);
                 }
 
@@ -75,7 +75,7 @@ namespace NetRpc.Http
             return path.HasValue &&
                    string.Equals(path.Value.Trim('/'), url.Trim('/'), StringComparison.OrdinalIgnoreCase);
         }
-        
+
         private static async Task<string> ReadStringAsync(string resourcePath)
         {
             var stream = typeof(SwaggerUiIndexMiddleware).GetTypeInfo().Assembly.GetManifestResourceStream($"{ConstValue.SwaggerUi3Base}{resourcePath}");

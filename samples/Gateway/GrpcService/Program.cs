@@ -6,6 +6,7 @@ using DataContract;
 using Microsoft.Extensions.Hosting;
 using NetRpc;
 using NetRpc.Grpc;
+using Helper = TestHelper.Helper;
 
 namespace Service
 {
@@ -16,10 +17,7 @@ namespace Service
             var host = new HostBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddNetRpcGrpcService(i =>
-                    {
-                        i.AddPort("0.0.0.0", 50001);
-                    });
+                    services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50001); });
 
                     services.AddNetRpcContractSingleton<IService, Service>();
                     services.AddNetRpcContractSingleton<IService2, Service2>();
@@ -46,17 +44,18 @@ namespace Service
 
         public async Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Action<CustomCallbackObj> cb, CancellationToken token)
         {
-            Console.Write($"[ComplexCallAsync]...Received length:{data.Length}, {TestHelper.Helper.ReadStr(data)}, ");
-            for (int i = 1; i <= 3; i++)
+            Console.Write($"[ComplexCallAsync]...Received length:{data.Length}, {Helper.ReadStr(data)}, ");
+            for (var i = 1; i <= 3; i++)
             {
                 Console.Write($"{i}, ");
-                cb(new CustomCallbackObj { Progress = i });
+                cb(new CustomCallbackObj {Progress = i});
                 await Task.Delay(100, token);
             }
+
             Console.WriteLine("...Send TestFile.txt");
             return new ComplexStream
             {
-                Stream = File.Open(TestHelper.Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
+                Stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
                 OtherInfo = "this is other info"
             };
         }

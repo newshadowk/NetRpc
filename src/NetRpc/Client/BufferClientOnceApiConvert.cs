@@ -14,6 +14,7 @@ namespace NetRpc
 
         private readonly BufferBlock<(byte[], BufferType)> _block =
             new BufferBlock<(byte[], BufferType)>(new DataflowBlockOptions {BoundedCapacity = Helper.StreamBufferCount});
+
         private BufferBlockStream _stream;
 
         public event EventHandler<EventArgsT<object>> ResultStream;
@@ -97,6 +98,7 @@ namespace NetRpc
                     }
                     else
                         OnFaultSerializationException();
+
                     break;
                 }
                 case ReplyType.Callback:
@@ -116,6 +118,7 @@ namespace NetRpc
                     }
                     else
                         OnFaultSerializationException();
+
                     break;
                 }
                 case ReplyType.Buffer:

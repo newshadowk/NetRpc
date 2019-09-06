@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
+using TestHelper;
 
 namespace Service
 {
@@ -10,14 +11,14 @@ namespace Service
     {
         public async Task<T2> CallByGenericAsync<T1, T2>(T1 obj)
         {
-            var ret = new CustomObj { Date = DateTime.Now, Name = "CallByGenericAsync" };
+            var ret = new CustomObj {Date = DateTime.Now, Name = "CallByGenericAsync"};
             Console.WriteLine($"[CallByGenericAsync], receive:{obj}");
             return default;
         }
 
         public async Task<CustomObj> SetAndGetObj(CustomObj obj)
         {
-            var ret = new CustomObj { Date = DateTime.Now, Name = "SetAndGetObj" };
+            var ret = new CustomObj {Date = DateTime.Now, Name = "SetAndGetObj"};
             Console.WriteLine($"[SetAndGetObj], receive:{obj}, return:{ret}");
             return ret;
         }
@@ -25,10 +26,10 @@ namespace Service
         public async Task CallByCallBackAsync(Action<CustomCallbackObj> cb)
         {
             Console.Write("[CallByCallBackAsync]...");
-            for (int i = 1; i <= 3; i++)
+            for (var i = 1; i <= 3; i++)
             {
                 Console.Write($"{i}, ");
-                cb(new CustomCallbackObj { Progress = i });
+                cb(new CustomCallbackObj {Progress = i});
                 await Task.Delay(100);
             }
 
@@ -52,23 +53,23 @@ namespace Service
             Console.WriteLine("[CallBySystemExceptionAsync]...throw NotImplementedException");
             throw new NotImplementedException();
         }
-        
+
         public async Task<Stream> GetStreamAsync()
         {
             Console.WriteLine("[GetStreamAsync]...Send TestFile.txt");
-            var stream = File.Open(TestHelper.Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             return stream;
         }
 
         public async Task SetStreamAsync(Stream data)
         {
-            Console.WriteLine($"[SetStreamAsync]...length:{data.Length}, {TestHelper.Helper.ReadStr(data)}");
+            Console.WriteLine($"[SetStreamAsync]...length:{data.Length}, {Helper.ReadStr(data)}");
         }
 
         public async Task<Stream> EchoStreamAsync(Stream data)
         {
-            Console.WriteLine($"[EchoStreamAsync]...Received length:{data.Length}, {TestHelper.Helper.ReadStr(data)}...Send TestFile.txt");
-            var stream = File.Open(TestHelper.Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            Console.WriteLine($"[EchoStreamAsync]...Received length:{data.Length}, {Helper.ReadStr(data)}...Send TestFile.txt");
+            var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             return stream;
         }
 
@@ -77,24 +78,25 @@ namespace Service
             Console.WriteLine("[GetComplexStreamAsync]...Send TestFile.txt...this is other info");
             return new ComplexStream
             {
-                Stream = File.Open(TestHelper.Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
+                Stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
                 OtherInfo = "this is other info"
             };
         }
 
         public async Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Action<CustomCallbackObj> cb, CancellationToken token)
         {
-            Console.Write($"[ComplexCallAsync]...Received length:{data.Length}, {TestHelper.Helper.ReadStr(data)}, ");
-            for (int i = 1; i <= 3; i++)
+            Console.Write($"[ComplexCallAsync]...Received length:{data.Length}, {Helper.ReadStr(data)}, ");
+            for (var i = 1; i <= 3; i++)
             {
                 Console.Write($"{i}, ");
-                cb(new CustomCallbackObj { Progress = i });
+                cb(new CustomCallbackObj {Progress = i});
                 await Task.Delay(100, token);
             }
+
             Console.WriteLine("...Send TestFile.txt");
             return new ComplexStream
             {
-                Stream = File.Open(TestHelper.Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
+                Stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
                 OtherInfo = "this is other info"
             };
         }

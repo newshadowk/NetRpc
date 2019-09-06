@@ -7,7 +7,7 @@ namespace System.Reflection
     {
         private IMethodInvoker _invoker;
 
-        public event EventHandler<EventArgsT<Exception>> ExceptionInvoked; 
+        public event EventHandler<EventArgsT<Exception>> ExceptionInvoked;
 
         private void SetParams(IMethodInvoker invoker)
         {
@@ -17,8 +17,8 @@ namespace System.Reflection
         public static T Create<T>(IMethodInvoker invoker)
         {
             object proxy = Create<T, SimpleDispatchProxyAsync>();
-            ((SimpleDispatchProxyAsync)proxy).SetParams(invoker);
-            return (T)proxy;
+            ((SimpleDispatchProxyAsync) proxy).SetParams(invoker);
+            return (T) proxy;
         }
 
         public override object Invoke(MethodInfo method, object[] args)

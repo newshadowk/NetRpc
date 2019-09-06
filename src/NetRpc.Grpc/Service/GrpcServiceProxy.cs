@@ -23,7 +23,7 @@ namespace NetRpc.Grpc
                 _service.Open();
             });
         }
-  
+
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _service.Open();
@@ -44,7 +44,7 @@ namespace NetRpc.Grpc
                     if (cancellationToken.IsCancellationRequested)
                     {
                         Console.WriteLine("IsCancellationRequested");
-                    break;
+                        break;
                     }
 
                     Thread.Sleep(1000);

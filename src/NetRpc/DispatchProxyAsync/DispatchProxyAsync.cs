@@ -7,7 +7,7 @@ namespace System.Reflection
     {
         public static T Create<T, TProxy>() where TProxy : DispatchProxyAsync
         {
-            return (T)CreateProxyInstance(typeof(TProxy), typeof(T));
+            return (T) CreateProxyInstance(typeof(TProxy), typeof(T));
         }
 
         public abstract object Invoke(MethodInfo method, object[] args);

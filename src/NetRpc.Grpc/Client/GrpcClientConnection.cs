@@ -2,9 +2,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Protobuf;
-using Grpc.Core;
 using Grpc.Base;
-using Client = Grpc.Base.Client;
+using Grpc.Core;
 
 namespace NetRpc.Grpc
 {
@@ -33,10 +32,12 @@ namespace NetRpc.Grpc
 
         public async Task SendAsync(byte[] buffer, bool isPost = false)
         {
-            await _api.RequestStream.WriteAsync(new StreamBuffer { Body = ByteString.CopyFrom(buffer) });
+            await _api.RequestStream.WriteAsync(new StreamBuffer {Body = ByteString.CopyFrom(buffer)});
         }
 
+#pragma warning disable 1998
         public async Task StartAsync()
+#pragma warning restore 1998
         {
             _api = _client.CallClient.DuplexStreamingServerMethod();
 #pragma warning disable 4014

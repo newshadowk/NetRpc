@@ -13,7 +13,7 @@ namespace Grpc.Base
         {
             _server = new Server
             {
-                Services = { MessageCall.BindService(messageCall) }
+                Services = {MessageCall.BindService(messageCall)}
             };
 
             foreach (var port in ports)

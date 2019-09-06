@@ -39,7 +39,7 @@ namespace NetRpc
                 if (Args == null)
                     return;
 
-                for (int i = 0; i < Args.Length; i++)
+                for (var i = 0; i < Args.Length; i++)
                 {
                     var t = Args[i].GetType();
                     if (t.IsActionT())
@@ -91,7 +91,7 @@ namespace NetRpc
             if (Args == null)
                 return;
 
-            for (int i = 0; i < Args.Length; i++)
+            for (var i = 0; i < Args.Length; i++)
             {
                 if (Args[i].GetType().IsCancellationToken())
                     Args[i] = Token;
@@ -103,7 +103,7 @@ namespace NetRpc
             if (Args == null)
                 return;
 
-            for (int i = 0; i < Args.Length; i++)
+            for (var i = 0; i < Args.Length; i++)
             {
                 if (Args[i].GetType().IsSubclassOf(typeof(Stream)))
                     Args[i] = Stream;
@@ -117,7 +117,7 @@ namespace NetRpc
 
         private static string ListToStringForDisplay(Array list, string split)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             sb.Append("[Count:" + list.Length + "]");
             sb.Append(split);
@@ -133,8 +133,8 @@ namespace NetRpc
 
         public static string DicToStringForDisplay(Dictionary<string, object> header)
         {
-            string s = "";
-            foreach (KeyValuePair<string, object> p in header)
+            var s = "";
+            foreach (var p in header)
                 s += $"{p.Key}:{p.Value}, ";
             return s;
         }

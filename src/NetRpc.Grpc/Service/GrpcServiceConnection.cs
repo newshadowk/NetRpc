@@ -2,8 +2,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Protobuf;
-using Grpc.Core;
 using Grpc.Base;
+using Grpc.Core;
 
 namespace NetRpc.Grpc
 {
@@ -28,7 +28,7 @@ namespace NetRpc.Grpc
         public async Task SendAsync(byte[] buffer)
         {
             using (await _sendLock.LockAsync())
-                await _responseStream.WriteAsync(new StreamBuffer { Body = ByteString.CopyFrom(buffer) });
+                await _responseStream.WriteAsync(new StreamBuffer {Body = ByteString.CopyFrom(buffer)});
         }
 
         public Task StartAsync()

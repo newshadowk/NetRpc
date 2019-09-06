@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Timers;
 using Microsoft.Extensions.Options;
-using Timer = System.Timers.Timer;
 
 namespace NetRpc
 {
@@ -27,9 +27,9 @@ namespace NetRpc
         {
             _factory = factory;
             var call = new Call(typeof(TService), factory, options.CurrentValue.TimeoutInterval, Context);
-            ClientMethodInvoker invoker = new ClientMethodInvoker(call);
+            var invoker = new ClientMethodInvoker(call);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
-            ((SimpleDispatchProxyAsync)(object)Proxy).ExceptionInvoked += ProxyExceptionInvoked;
+            ((SimpleDispatchProxyAsync) (object) Proxy).ExceptionInvoked += ProxyExceptionInvoked;
             _tHearbeat = new Timer(options.CurrentValue.HearbeatInterval);
             _tHearbeat.Elapsed += THearbeatElapsed;
 
@@ -40,7 +40,7 @@ namespace NetRpc
             });
         }
 
-        public ClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options) 
+        public ClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options)
             : this(new OnceCallFactory(factory), options)
         {
         }
@@ -50,7 +50,7 @@ namespace NetRpc
             OnExceptionInvoked(e);
         }
 
-        private void THearbeatElapsed(object sender, System.Timers.ElapsedEventArgs e)
+        private void THearbeatElapsed(object sender, ElapsedEventArgs e)
         {
             DoHeartbeat();
         }

@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using DataContract;
 using NetRpc;
-using Stream = System.IO.Stream;
+using Helper = TestHelper.Helper;
 
 namespace Service
 {
@@ -29,7 +29,7 @@ namespace Service
 
         public CustomObj SetAndGetObj(CustomObj obj)
         {
-            var retObj = new CustomObj { Date = DateTime.Now, Name = "SetAndGetObj" };
+            var retObj = new CustomObj {Date = DateTime.Now, Name = "SetAndGetObj"};
             Console.WriteLine($"[SetAndGetObj], receive:{obj}, return:{retObj}");
             return retObj;
         }
@@ -37,7 +37,7 @@ namespace Service
         public void CallByCallBack(Action<CustomCallbackObj> cb)
         {
             Console.Write("[CallByCallBack]...");
-            for (int i = 1; i <= 3; i++)
+            for (var i = 1; i <= 3; i++)
             {
                 Console.Write($"{i}, ");
                 cb(new CustomCallbackObj {Progress = i});
@@ -62,19 +62,19 @@ namespace Service
         public Stream GetStream()
         {
             Console.WriteLine("[GetStream]...Send TestFile.txt");
-            var stream = File.Open(TestHelper.Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             return stream;
         }
 
         public void SetStream(Stream data)
         {
-            Console.WriteLine($"[SetStream]...length:{data.Length}, {TestHelper.Helper.ReadStr(data)}");
+            Console.WriteLine($"[SetStream]...length:{data.Length}, {Helper.ReadStr(data)}");
         }
 
         public Stream EchoStream(Stream data)
         {
-            Console.WriteLine($"[EchoStream]...Received length:{data.Length}, {TestHelper.Helper.ReadStr(data)}...Send TestFile.txt");
-            var stream = File.Open(TestHelper.Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            Console.WriteLine($"[EchoStream]...Received length:{data.Length}, {Helper.ReadStr(data)}...Send TestFile.txt");
+            var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             return stream;
         }
 
@@ -83,24 +83,25 @@ namespace Service
             Console.WriteLine("[GetComplexStream]...Send TestFile.txt...this is other info");
             return new ComplexStream
             {
-                Stream = File.Open(TestHelper.Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
+                Stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
                 OtherInfo = "this is other info"
             };
         }
 
         public ComplexStream ComplexCall(CustomObj obj, Stream data, Action<CustomCallbackObj> cb)
         {
-            Console.Write($"[ComplexCall]...Received length:{data.Length}, {TestHelper.Helper.ReadStr(data)}, ");
-            for (int i = 1; i <= 3; i++)
+            Console.Write($"[ComplexCall]...Received length:{data.Length}, {Helper.ReadStr(data)}, ");
+            for (var i = 1; i <= 3; i++)
             {
                 Console.Write($"{i}, ");
-                cb(new CustomCallbackObj { Progress = i });
+                cb(new CustomCallbackObj {Progress = i});
                 Task.Delay(100).Wait();
             }
+
             Console.WriteLine("...Send TestFile.txt");
             return new ComplexStream
             {
-                Stream = File.Open(TestHelper.Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
+                Stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
                 OtherInfo = "this is other info"
             };
         }

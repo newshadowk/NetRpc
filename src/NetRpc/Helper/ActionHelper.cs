@@ -7,18 +7,19 @@ namespace NetRpc
     {
         public static bool Retry(Func<bool> func, int count, int intervalMs)
         {
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 if (func())
                     return true;
                 Thread.Sleep(intervalMs);
             }
+
             return false;
         }
 
         public static Action<object> ConvertAction(object action)
         {
-            var a = (Delegate)action;
+            var a = (Delegate) action;
             if (a == null)
                 return null;
             return o => a.DynamicInvoke(o);
@@ -29,7 +30,7 @@ namespace NetRpc
             if (action == null)
                 return null;
 
-            ActionProxy ap = new ActionProxy(action);
+            var ap = new ActionProxy(action);
             var makeGenericType = typeof(Action<>).MakeGenericType(type);
             // ReSharper disable once PossibleNullReferenceException
             var methodInfo = typeof(ActionProxy).GetMethod("Invoke").MakeGenericMethod(type);

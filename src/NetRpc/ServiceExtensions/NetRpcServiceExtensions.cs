@@ -20,7 +20,8 @@ namespace NetRpc
             return services;
         }
 
-        public static IServiceCollection AddNetRpcContractSingleton(this IServiceCollection services, Type serviceType, Func<IServiceProvider, object> implementationFactory)
+        public static IServiceCollection AddNetRpcContractSingleton(this IServiceCollection services, Type serviceType,
+            Func<IServiceProvider, object> implementationFactory)
         {
             services.Configure<ContractOptions>(i => i.Contracts.Add(new Contract(serviceType, null)));
             services.TryAddSingleton(serviceType, implementationFactory);

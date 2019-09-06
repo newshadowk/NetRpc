@@ -15,7 +15,7 @@ namespace Client
             for (var i = 0; i < 10; i++)
             {
                 var i1 = i;
-                Task.Run(async() =>
+                Task.Run(async () =>
                 {
                     Console.WriteLine($"Send {i1}");
                     await proxy.CallAsync(Console.WriteLine, i1.ToString());

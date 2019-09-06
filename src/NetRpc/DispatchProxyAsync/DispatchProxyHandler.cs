@@ -1,8 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection.Emit;
@@ -14,10 +10,6 @@ namespace System.Reflection
 {
     public class DispatchProxyHandler
     {
-        public DispatchProxyHandler()
-        {
-        }
-
         public object InvokeHandle(object[] args)
         {
             return AsyncDispatchProxyGenerator.Invoke(args);
@@ -92,7 +84,7 @@ namespace System.Reflection
             Debug.Assert(baseType != null);
             Debug.Assert(interfaceType != null);
 
-            Type proxiedType = GetProxyType(baseType, interfaceType);
+            var proxiedType = GetProxyType(baseType, interfaceType);
             return Activator.CreateInstance(proxiedType, new DispatchProxyHandler());
         }
 
@@ -123,7 +115,7 @@ namespace System.Reflection
         {
             // Parameter validation is deferred until the point we need to create the proxy.
             // This prevents unnecessary overhead revalidating cached proxy types.
-            TypeInfo baseTypeInfo = baseType.GetTypeInfo();
+            var baseTypeInfo = baseType.GetTypeInfo();
 
             // The interface type must be an interface, not a class
             if (!interfaceType.GetTypeInfo().IsInterface)
@@ -152,14 +144,14 @@ namespace System.Reflection
             }
 
             // Create a type that derives from 'baseType' provided by caller
-            ProxyBuilder pb = s_proxyAssembly.CreateProxy("generatedProxy", baseType);
+            var pb = s_proxyAssembly.CreateProxy("generatedProxy", baseType);
 
-            foreach (Type t in interfaceType.GetTypeInfo().ImplementedInterfaces)
+            foreach (var t in interfaceType.GetTypeInfo().ImplementedInterfaces)
                 pb.AddInterfaceImpl(t);
 
             pb.AddInterfaceImpl(interfaceType);
 
-            Type generatedProxyType = pb.CreateType();
+            var generatedProxyType = pb.CreateType();
             return generatedProxyType;
         }
 
@@ -177,10 +169,10 @@ namespace System.Reflection
 
         private static ProxyMethodResolverContext Resolve(object[] args)
         {
-            PackedArgs packed = new PackedArgs(args);
-            MethodBase method = s_proxyAssembly.ResolveMethodToken(packed.DeclaringType, packed.MethodToken);
+            var packed = new PackedArgs(args);
+            var method = s_proxyAssembly.ResolveMethodToken(packed.DeclaringType, packed.MethodToken);
             if (method.IsGenericMethodDefinition)
-                method = ((MethodInfo)method).MakeGenericMethod(packed.GenericTypes);
+                method = ((MethodInfo) method).MakeGenericMethod(packed.GenericTypes);
 
             return new ProxyMethodResolverContext(packed, method);
         }
@@ -195,7 +187,7 @@ namespace System.Reflection
             {
                 Debug.Assert(s_dispatchProxyInvokeMethod != null);
                 returnValue = s_dispatchProxyInvokeMethod.Invoke(context.Packed.DispatchProxy,
-                                                                       new object[] { context.Method, context.Packed.Args });
+                    new object[] {context.Method, context.Packed.Args});
                 context.Packed.ReturnValue = returnValue;
             }
             catch (TargetInvocationException tie)
@@ -214,8 +206,8 @@ namespace System.Reflection
             try
             {
                 Debug.Assert(s_dispatchProxyInvokeAsyncMethod != null);
-                await (Task)s_dispatchProxyInvokeAsyncMethod.Invoke(context.Packed.DispatchProxy,
-                                                                       new object[] { context.Method, context.Packed.Args });
+                await (Task) s_dispatchProxyInvokeAsyncMethod.Invoke(context.Packed.DispatchProxy,
+                    new object[] {context.Method, context.Packed.Args});
             }
             catch (TargetInvocationException tie)
             {
@@ -228,19 +220,20 @@ namespace System.Reflection
             var context = Resolve(args);
 
             // Call (protected Task<T> method) NetCoreStackDispatchProxy.InvokeAsync<T>()
-            T returnValue = default(T);
+            T returnValue = default;
             try
             {
                 Debug.Assert(s_dispatchProxyInvokeAsyncTMethod != null);
                 var genericmethod = s_dispatchProxyInvokeAsyncTMethod.MakeGenericMethod(typeof(T));
-                returnValue = await (Task<T>)genericmethod.Invoke(context.Packed.DispatchProxy,
-                                                                       new object[] { context.Method, context.Packed.Args });
+                returnValue = await (Task<T>) genericmethod.Invoke(context.Packed.DispatchProxy,
+                    new object[] {context.Method, context.Packed.Args});
                 context.Packed.ReturnValue = returnValue;
             }
             catch (TargetInvocationException tie)
             {
                 ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
             }
+
             return returnValue;
         }
 
@@ -253,36 +246,67 @@ namespace System.Reflection
             internal const int GenericTypesPosition = 4;
             internal const int ReturnValuePosition = 5;
 
-            internal static readonly Type[] PackedTypes = new Type[] { typeof(object), typeof(Type), typeof(int), typeof(object[]), typeof(Type[]), typeof(object) };
+            internal static readonly Type[] PackedTypes = {typeof(object), typeof(Type), typeof(int), typeof(object[]), typeof(Type[]), typeof(object)};
 
-            private object[] _args;
-            internal PackedArgs() : this(new object[PackedTypes.Length]) { }
-            internal PackedArgs(object[] args) { _args = args; }
+            private readonly object[] _args;
 
-            internal DispatchProxyAsync DispatchProxy { get { return (DispatchProxyAsync)_args[DispatchProxyPosition]; } }
-            internal Type DeclaringType { get { return (Type)_args[DeclaringTypePosition]; } }
-            internal int MethodToken { get { return (int)_args[MethodTokenPosition]; } }
-            internal object[] Args { get { return (object[])_args[ArgsPosition]; } }
-            internal Type[] GenericTypes { get { return (Type[])_args[GenericTypesPosition]; } }
-            internal object ReturnValue { /*get { return args[ReturnValuePosition]; }*/ set { _args[ReturnValuePosition] = value; } }
+            internal PackedArgs() : this(new object[PackedTypes.Length])
+            {
+            }
+
+            internal PackedArgs(object[] args)
+            {
+                _args = args;
+            }
+
+            internal DispatchProxyAsync DispatchProxy
+            {
+                get { return (DispatchProxyAsync) _args[DispatchProxyPosition]; }
+            }
+
+            internal Type DeclaringType
+            {
+                get { return (Type) _args[DeclaringTypePosition]; }
+            }
+
+            internal int MethodToken
+            {
+                get { return (int) _args[MethodTokenPosition]; }
+            }
+
+            internal object[] Args
+            {
+                get { return (object[]) _args[ArgsPosition]; }
+            }
+
+            internal Type[] GenericTypes
+            {
+                get { return (Type[]) _args[GenericTypesPosition]; }
+            }
+
+            internal object ReturnValue
+            {
+                /*get { return args[ReturnValuePosition]; }*/
+                set { _args[ReturnValuePosition] = value; }
+            }
         }
 
         private class ProxyAssembly
         {
-            public AssemblyBuilder _ab;
-            private ModuleBuilder _mb;
-            private int _typeId = 0;
+            public readonly AssemblyBuilder _ab;
+            private readonly ModuleBuilder _mb;
+            private int _typeId;
 
             // Maintain a MethodBase-->int, int-->MethodBase mapping to permit generated code
             // to pass methods by token
-            private Dictionary<MethodBase, int> _methodToToken = new Dictionary<MethodBase, int>();
-            private List<MethodBase> _methodsByToken = new List<MethodBase>();
-            private HashSet<string> _ignoresAccessAssemblyNames = new HashSet<string>();
+            private readonly Dictionary<MethodBase, int> _methodToToken = new Dictionary<MethodBase, int>();
+            private readonly List<MethodBase> _methodsByToken = new List<MethodBase>();
+            private readonly HashSet<string> _ignoresAccessAssemblyNames = new HashSet<string>();
             private ConstructorInfo _ignoresAccessChecksToAttributeConstructor;
 
             public ProxyAssembly()
             {
-                AssemblyBuilderAccess access = AssemblyBuilderAccess.Run;
+                var access = AssemblyBuilderAccess.Run;
                 var assemblyName = new AssemblyName("ProxyBuilder2");
                 assemblyName.Version = new Version(1, 0, 0);
                 _ab = AssemblyBuilder.DefineDynamicAssembly(assemblyName, access);
@@ -298,17 +322,18 @@ namespace System.Reflection
                 {
                     if (_ignoresAccessChecksToAttributeConstructor == null)
                     {
-                        TypeInfo attributeTypeInfo = GenerateTypeInfoOfIgnoresAccessChecksToAttribute();
+                        var attributeTypeInfo = GenerateTypeInfoOfIgnoresAccessChecksToAttribute();
                         _ignoresAccessChecksToAttributeConstructor = attributeTypeInfo.DeclaredConstructors.Single();
                     }
 
                     return _ignoresAccessChecksToAttributeConstructor;
                 }
             }
+
             public ProxyBuilder CreateProxy(string name, Type proxyBaseType)
             {
-                int nextId = Interlocked.Increment(ref _typeId);
-                TypeBuilder tb = _mb.DefineType(name + "_" + nextId, TypeAttributes.Public, proxyBaseType);
+                var nextId = Interlocked.Increment(ref _typeId);
+                var tb = _mb.DefineType(name + "_" + nextId, TypeAttributes.Public, proxyBaseType);
                 return new ProxyBuilder(this, tb, proxyBaseType);
             }
 
@@ -321,23 +346,23 @@ namespace System.Reflection
             // This method returns the TypeInfo of the generated attribute.
             private TypeInfo GenerateTypeInfoOfIgnoresAccessChecksToAttribute()
             {
-                TypeBuilder attributeTypeBuilder =
+                var attributeTypeBuilder =
                     _mb.DefineType("System.Runtime.CompilerServices.IgnoresAccessChecksToAttribute",
-                                   TypeAttributes.Public | TypeAttributes.Class,
-                                   typeof(Attribute));
+                        TypeAttributes.Public | TypeAttributes.Class,
+                        typeof(Attribute));
 
                 // Create backing field as:
                 // private string assemblyName;
-                FieldBuilder assemblyNameField =
-                    attributeTypeBuilder.DefineField("assemblyName", typeof(String), FieldAttributes.Private);
+                var assemblyNameField =
+                    attributeTypeBuilder.DefineField("assemblyName", typeof(string), FieldAttributes.Private);
 
                 // Create ctor as:
                 // public IgnoresAccessChecksToAttribute(string)
-                ConstructorBuilder constructorBuilder = attributeTypeBuilder.DefineConstructor(MethodAttributes.Public,
-                                                             CallingConventions.HasThis,
-                                                             new Type[] { assemblyNameField.FieldType });
+                var constructorBuilder = attributeTypeBuilder.DefineConstructor(MethodAttributes.Public,
+                    CallingConventions.HasThis,
+                    new[] {assemblyNameField.FieldType});
 
-                ILGenerator il = constructorBuilder.GetILGenerator();
+                var il = constructorBuilder.GetILGenerator();
 
                 // Create ctor body as:
                 // this.assemblyName = {ctor parameter 0}
@@ -350,19 +375,19 @@ namespace System.Reflection
 
                 // Define property as:
                 // public string AssemblyName {get { return this.assemblyName; } }
-                PropertyBuilder getterPropertyBuilder = attributeTypeBuilder.DefineProperty(
-                                                       "AssemblyName",
-                                                       PropertyAttributes.None,
-                                                       CallingConventions.HasThis,
-                                                       returnType: typeof(String),
-                                                       parameterTypes: null);
+                var getterPropertyBuilder = attributeTypeBuilder.DefineProperty(
+                    "AssemblyName",
+                    PropertyAttributes.None,
+                    CallingConventions.HasThis,
+                    returnType: typeof(string),
+                    parameterTypes: null);
 
-                MethodBuilder getterMethodBuilder = attributeTypeBuilder.DefineMethod(
-                                                       "get_AssemblyName",
-                                                       MethodAttributes.Public,
-                                                       CallingConventions.HasThis,
-                                                       returnType: typeof(String),
-                                                       parameterTypes: null);
+                var getterMethodBuilder = attributeTypeBuilder.DefineMethod(
+                    "get_AssemblyName",
+                    MethodAttributes.Public,
+                    CallingConventions.HasThis,
+                    returnType: typeof(string),
+                    parameterTypes: null);
 
                 // Generate body:
                 // return this.assemblyName;
@@ -373,25 +398,25 @@ namespace System.Reflection
 
                 // Generate the AttributeUsage attribute for this attribute type:
                 // [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-                TypeInfo attributeUsageTypeInfo = typeof(AttributeUsageAttribute).GetTypeInfo();
+                var attributeUsageTypeInfo = typeof(AttributeUsageAttribute).GetTypeInfo();
 
                 // Find the ctor that takes only AttributeTargets
-                ConstructorInfo attributeUsageConstructorInfo =
+                var attributeUsageConstructorInfo =
                     attributeUsageTypeInfo.DeclaredConstructors
                         .Single(c => c.GetParameters().Count() == 1 &&
                                      c.GetParameters()[0].ParameterType == typeof(AttributeTargets));
 
                 // Find the property to set AllowMultiple
-                PropertyInfo allowMultipleProperty =
+                var allowMultipleProperty =
                     attributeUsageTypeInfo.DeclaredProperties
-                        .Single(f => String.Equals(f.Name, "AllowMultiple"));
+                        .Single(f => string.Equals(f.Name, "AllowMultiple"));
 
                 // Create a builder to construct the instance via the ctor and property
-                CustomAttributeBuilder customAttributeBuilder =
+                var customAttributeBuilder =
                     new CustomAttributeBuilder(attributeUsageConstructorInfo,
-                                                new object[] { AttributeTargets.Assembly },
-                                                new PropertyInfo[] { allowMultipleProperty },
-                                                new object[] { true });
+                        new object[] {AttributeTargets.Assembly},
+                        new[] {allowMultipleProperty},
+                        new object[] {true});
 
                 // Attach this attribute instance to the newly defined attribute type
                 attributeTypeBuilder.SetCustomAttribute(customAttributeBuilder);
@@ -407,9 +432,9 @@ namespace System.Reflection
             {
                 // Add this assembly level attribute:
                 // [assembly: System.Runtime.CompilerServices.IgnoresAccessChecksToAttribute(assemblyName)]
-                ConstructorInfo attributeConstructor = IgnoresAccessChecksAttributeConstructor;
-                CustomAttributeBuilder customAttributeBuilder =
-                    new CustomAttributeBuilder(attributeConstructor, new object[] { assemblyName });
+                var attributeConstructor = IgnoresAccessChecksAttributeConstructor;
+                var customAttributeBuilder =
+                    new CustomAttributeBuilder(attributeConstructor, new object[] {assemblyName});
                 _ab.SetCustomAttribute(customAttributeBuilder);
             }
 
@@ -418,10 +443,10 @@ namespace System.Reflection
             // allows access from the dynamic assembly.
             internal void EnsureTypeIsVisible(Type type)
             {
-                TypeInfo typeInfo = type.GetTypeInfo();
+                var typeInfo = type.GetTypeInfo();
                 if (!typeInfo.IsVisible)
                 {
-                    string assemblyName = typeInfo.Assembly.GetName().Name;
+                    var assemblyName = typeInfo.Assembly.GetName().Name;
                     if (!_ignoresAccessAssemblyNames.Contains(assemblyName))
                     {
                         GenerateInstanceOfIgnoresAccessChecksToAttribute(assemblyName);
@@ -455,10 +480,10 @@ namespace System.Reflection
             private static readonly MethodInfo s_delegateInvokeAsync = typeof(DispatchProxyHandler).GetMethod("InvokeAsyncHandle");
             private static readonly MethodInfo s_delegateinvokeAsyncT = typeof(DispatchProxyHandler).GetMethod("InvokeAsyncHandleT");
 
-            private ProxyAssembly _assembly;
-            private TypeBuilder _tb;
-            private Type _proxyBaseType;
-            private List<FieldBuilder> _fields;
+            private readonly ProxyAssembly _assembly;
+            private readonly TypeBuilder _tb;
+            private readonly Type _proxyBaseType;
+            private readonly List<FieldBuilder> _fields;
 
             internal ProxyBuilder(ProxyAssembly assembly, TypeBuilder tb, Type proxyBaseType)
             {
@@ -479,29 +504,30 @@ namespace System.Reflection
                         return true;
                     current = current.GetTypeInfo().BaseType;
                 }
+
                 return false;
             }
 
             private void Complete()
             {
-                Type[] args = new Type[_fields.Count];
-                for (int i = 0; i < args.Length; i++)
+                var args = new Type[_fields.Count];
+                for (var i = 0; i < args.Length; i++)
                 {
                     args[i] = _fields[i].FieldType;
                 }
 
-                ConstructorBuilder cb = _tb.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, args);
-                ILGenerator il = cb.GetILGenerator();
+                var cb = _tb.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, args);
+                var il = cb.GetILGenerator();
 
                 // chained ctor call
-                ConstructorInfo baseCtor = _proxyBaseType.GetTypeInfo().DeclaredConstructors.SingleOrDefault(c => c.IsPublic && c.GetParameters().Length == 0);
+                var baseCtor = _proxyBaseType.GetTypeInfo().DeclaredConstructors.SingleOrDefault(c => c.IsPublic && c.GetParameters().Length == 0);
                 Debug.Assert(baseCtor != null);
 
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Call, baseCtor);
 
                 // store all the fields
-                for (int i = 0; i < args.Length; i++)
+                for (var i = 0; i < args.Length; i++)
                 {
                     il.Emit(OpCodes.Ldarg_0);
                     il.Emit(OpCodes.Ldarg, i + 1);
@@ -513,7 +539,7 @@ namespace System.Reflection
 
             internal Type CreateType()
             {
-                this.Complete();
+                Complete();
                 return _tb.CreateTypeInfo().AsType();
             }
 
@@ -527,7 +553,7 @@ namespace System.Reflection
 
                 // AccessorMethods -> Metadata mappings.
                 var propertyMap = new Dictionary<MethodInfo, PropertyAccessorInfo>(MethodInfoEqualityComparer.Instance);
-                foreach (PropertyInfo pi in iface.GetRuntimeProperties())
+                foreach (var pi in iface.GetRuntimeProperties())
                 {
                     var ai = new PropertyAccessorInfo(pi.GetMethod, pi.SetMethod);
                     if (pi.GetMethod != null)
@@ -537,7 +563,7 @@ namespace System.Reflection
                 }
 
                 var eventMap = new Dictionary<MethodInfo, EventAccessorInfo>(MethodInfoEqualityComparer.Instance);
-                foreach (EventInfo ei in iface.GetRuntimeEvents())
+                foreach (var ei in iface.GetRuntimeEvents())
                 {
                     var ai = new EventAccessorInfo(ei.AddMethod, ei.RemoveMethod, ei.RaiseMethod);
                     if (ei.AddMethod != null)
@@ -548,9 +574,9 @@ namespace System.Reflection
                         eventMap[ei.RaiseMethod] = ai;
                 }
 
-                foreach (MethodInfo mi in iface.GetRuntimeMethods())
+                foreach (var mi in iface.GetRuntimeMethods())
                 {
-                    MethodBuilder mdb = AddMethodImpl(mi);
+                    var mdb = AddMethodImpl(mi);
                     PropertyAccessorInfo associatedProperty;
                     if (propertyMap.TryGetValue(mi, out associatedProperty))
                     {
@@ -572,20 +598,20 @@ namespace System.Reflection
                     }
                 }
 
-                foreach (PropertyInfo pi in iface.GetRuntimeProperties())
+                foreach (var pi in iface.GetRuntimeProperties())
                 {
-                    PropertyAccessorInfo ai = propertyMap[pi.GetMethod ?? pi.SetMethod];
-                    PropertyBuilder pb = _tb.DefineProperty(pi.Name, pi.Attributes, pi.PropertyType, pi.GetIndexParameters().Select(p => p.ParameterType).ToArray());
+                    var ai = propertyMap[pi.GetMethod ?? pi.SetMethod];
+                    var pb = _tb.DefineProperty(pi.Name, pi.Attributes, pi.PropertyType, pi.GetIndexParameters().Select(p => p.ParameterType).ToArray());
                     if (ai.GetMethodBuilder != null)
                         pb.SetGetMethod(ai.GetMethodBuilder);
                     if (ai.SetMethodBuilder != null)
                         pb.SetSetMethod(ai.SetMethodBuilder);
                 }
 
-                foreach (EventInfo ei in iface.GetRuntimeEvents())
+                foreach (var ei in iface.GetRuntimeEvents())
                 {
-                    EventAccessorInfo ai = eventMap[ei.AddMethod ?? ei.RemoveMethod];
-                    EventBuilder eb = _tb.DefineEvent(ei.Name, ei.Attributes, ei.EventHandlerType);
+                    var ai = eventMap[ei.AddMethod ?? ei.RemoveMethod];
+                    var eb = _tb.DefineEvent(ei.Name, ei.Attributes, ei.EventHandlerType);
                     if (ai.AddMethodBuilder != null)
                         eb.SetAddOnMethod(ai.AddMethodBuilder);
                     if (ai.RemoveMethodBuilder != null)
@@ -597,33 +623,35 @@ namespace System.Reflection
 
             private MethodBuilder AddMethodImpl(MethodInfo mi)
             {
-                ParameterInfo[] parameters = mi.GetParameters();
-                Type[] paramTypes = ParamTypes(parameters, false);
+                var parameters = mi.GetParameters();
+                var paramTypes = ParamTypes(parameters, false);
 
-                MethodBuilder mdb = _tb.DefineMethod(mi.Name, MethodAttributes.Public | MethodAttributes.Virtual, mi.ReturnType, paramTypes);
+                var mdb = _tb.DefineMethod(mi.Name, MethodAttributes.Public | MethodAttributes.Virtual, mi.ReturnType, paramTypes);
                 if (mi.ContainsGenericParameters)
                 {
-                    Type[] ts = mi.GetGenericArguments();
-                    string[] ss = new string[ts.Length];
-                    for (int i = 0; i < ts.Length; i++)
+                    var ts = mi.GetGenericArguments();
+                    var ss = new string[ts.Length];
+                    for (var i = 0; i < ts.Length; i++)
                     {
                         ss[i] = ts[i].Name;
                     }
-                    GenericTypeParameterBuilder[] genericParameters = mdb.DefineGenericParameters(ss);
-                    for (int i = 0; i < genericParameters.Length; i++)
+
+                    var genericParameters = mdb.DefineGenericParameters(ss);
+                    for (var i = 0; i < genericParameters.Length; i++)
                     {
                         genericParameters[i].SetGenericParameterAttributes(ts[i].GetTypeInfo().GenericParameterAttributes);
                     }
                 }
-                ILGenerator il = mdb.GetILGenerator();
 
-                ParametersArray args = new ParametersArray(il, paramTypes);
+                var il = mdb.GetILGenerator();
+
+                var args = new ParametersArray(il, paramTypes);
 
                 // object[] args = new object[paramCount];
                 il.Emit(OpCodes.Nop);
-                GenericArray<object> argsArr = new GenericArray<object>(il, ParamTypes(parameters, true).Length);
+                var argsArr = new GenericArray<object>(il, ParamTypes(parameters, true).Length);
 
-                for (int i = 0; i < parameters.Length; i++)
+                for (var i = 0; i < parameters.Length; i++)
                 {
                     // args[i] = argi;
                     if (!parameters[i].IsOut)
@@ -635,7 +663,7 @@ namespace System.Reflection
                 }
 
                 // object[] packed = new object[PackedArgs.PackedTypes.Length];
-                GenericArray<object> packedArr = new GenericArray<object>(il, PackedArgs.PackedTypes.Length);
+                var packedArr = new GenericArray<object>(il, PackedArgs.PackedTypes.Length);
 
                 // packed[PackedArgs.DispatchProxyPosition] = this;
                 packedArr.BeginSet(PackedArgs.DispatchProxyPosition);
@@ -643,7 +671,7 @@ namespace System.Reflection
                 packedArr.EndSet(typeof(DispatchProxyAsync));
 
                 // packed[PackedArgs.DeclaringTypePosition] = typeof(iface);
-                MethodInfo Type_GetTypeFromHandle = typeof(Type).GetRuntimeMethod("GetTypeFromHandle", new Type[] { typeof(RuntimeTypeHandle) });
+                var Type_GetTypeFromHandle = typeof(Type).GetRuntimeMethod("GetTypeFromHandle", new[] {typeof(RuntimeTypeHandle)});
                 int methodToken;
                 Type declaringType;
                 _assembly.GetTokenForMethod(mi, out declaringType, out methodToken);
@@ -655,7 +683,7 @@ namespace System.Reflection
                 // packed[PackedArgs.MethodTokenPosition] = iface method token;
                 packedArr.BeginSet(PackedArgs.MethodTokenPosition);
                 il.Emit(OpCodes.Ldc_I4, methodToken);
-                packedArr.EndSet(typeof(Int32));
+                packedArr.EndSet(typeof(int));
 
                 // packed[PackedArgs.ArgsPosition] = args;
                 packedArr.BeginSet(PackedArgs.ArgsPosition);
@@ -666,20 +694,21 @@ namespace System.Reflection
                 if (mi.ContainsGenericParameters)
                 {
                     packedArr.BeginSet(PackedArgs.GenericTypesPosition);
-                    Type[] genericTypes = mi.GetGenericArguments();
-                    GenericArray<Type> typeArr = new GenericArray<Type>(il, genericTypes.Length);
-                    for (int i = 0; i < genericTypes.Length; ++i)
+                    var genericTypes = mi.GetGenericArguments();
+                    var typeArr = new GenericArray<Type>(il, genericTypes.Length);
+                    for (var i = 0; i < genericTypes.Length; ++i)
                     {
                         typeArr.BeginSet(i);
                         il.Emit(OpCodes.Ldtoken, genericTypes[i]);
                         il.Emit(OpCodes.Call, Type_GetTypeFromHandle);
                         typeArr.EndSet(typeof(Type));
                     }
+
                     typeArr.Load();
                     packedArr.EndSet(typeof(Type[]));
                 }
 
-                for (int i = 0; i < parameters.Length; i++)
+                for (var i = 0; i < parameters.Length; i++)
                 {
                     if (parameters[i].ParameterType.IsByRef)
                     {
@@ -689,11 +718,12 @@ namespace System.Reflection
                     }
                 }
 
-                MethodInfo invokeMethod = s_delegateInvoke;
+                var invokeMethod = s_delegateInvoke;
                 if (mi.ReturnType == typeof(Task))
                 {
                     invokeMethod = s_delegateInvokeAsync;
                 }
+
                 if (IsGenericTask(mi.ReturnType))
                 {
                     var returnTypes = mi.ReturnType.GetGenericArguments();
@@ -722,13 +752,14 @@ namespace System.Reflection
 
             private static Type[] ParamTypes(ParameterInfo[] parms, bool noByRef)
             {
-                Type[] types = new Type[parms.Length];
-                for (int i = 0; i < parms.Length; i++)
+                var types = new Type[parms.Length];
+                for (var i = 0; i < parms.Length; i++)
                 {
                     types[i] = parms[i].ParameterType;
                     if (noByRef && types[i].IsByRef)
                         types[i] = types[i].GetElementType();
                 }
+
                 return types;
             }
 
@@ -738,123 +769,126 @@ namespace System.Reflection
             private static int GetTypeCode(Type type)
             {
                 if (type == null)
-                    return 0;   // TypeCode.Empty;
+                    return 0; // TypeCode.Empty;
 
-                if (type == typeof(Boolean))
-                    return 3;   // TypeCode.Boolean;
+                if (type == typeof(bool))
+                    return 3; // TypeCode.Boolean;
 
-                if (type == typeof(Char))
-                    return 4;   // TypeCode.Char;
+                if (type == typeof(char))
+                    return 4; // TypeCode.Char;
 
-                if (type == typeof(SByte))
-                    return 5;   // TypeCode.SByte;
+                if (type == typeof(sbyte))
+                    return 5; // TypeCode.SByte;
 
-                if (type == typeof(Byte))
-                    return 6;   // TypeCode.Byte;
+                if (type == typeof(byte))
+                    return 6; // TypeCode.Byte;
 
-                if (type == typeof(Int16))
-                    return 7;   // TypeCode.Int16;
+                if (type == typeof(short))
+                    return 7; // TypeCode.Int16;
 
-                if (type == typeof(UInt16))
-                    return 8;   // TypeCode.UInt16;
+                if (type == typeof(ushort))
+                    return 8; // TypeCode.UInt16;
 
-                if (type == typeof(Int32))
-                    return 9;   // TypeCode.Int32;
+                if (type == typeof(int))
+                    return 9; // TypeCode.Int32;
 
-                if (type == typeof(UInt32))
-                    return 10;  // TypeCode.UInt32;
+                if (type == typeof(uint))
+                    return 10; // TypeCode.UInt32;
 
-                if (type == typeof(Int64))
-                    return 11;  // TypeCode.Int64;
+                if (type == typeof(long))
+                    return 11; // TypeCode.Int64;
 
-                if (type == typeof(UInt64))
-                    return 12;  // TypeCode.UInt64;
+                if (type == typeof(ulong))
+                    return 12; // TypeCode.UInt64;
 
-                if (type == typeof(Single))
-                    return 13;  // TypeCode.Single;
+                if (type == typeof(float))
+                    return 13; // TypeCode.Single;
 
-                if (type == typeof(Double))
-                    return 14;  // TypeCode.Double;
+                if (type == typeof(double))
+                    return 14; // TypeCode.Double;
 
-                if (type == typeof(Decimal))
-                    return 15;  // TypeCode.Decimal;
+                if (type == typeof(decimal))
+                    return 15; // TypeCode.Decimal;
 
                 if (type == typeof(DateTime))
-                    return 16;  // TypeCode.DateTime;
+                    return 16; // TypeCode.DateTime;
 
-                if (type == typeof(String))
-                    return 18;  // TypeCode.String;
+                if (type == typeof(string))
+                    return 18; // TypeCode.String;
 
                 if (type.GetTypeInfo().IsEnum)
                     return GetTypeCode(Enum.GetUnderlyingType(type));
 
-                return 1;   // TypeCode.Object;
+                return 1; // TypeCode.Object;
             }
 
-            private static OpCode[] s_convOpCodes = new OpCode[] {
-                OpCodes.Nop,//Empty = 0,
-                OpCodes.Nop,//Object = 1,
-                OpCodes.Nop,//DBNull = 2,
-                OpCodes.Conv_I1,//Boolean = 3,
-                OpCodes.Conv_I2,//Char = 4,
-                OpCodes.Conv_I1,//SByte = 5,
-                OpCodes.Conv_U1,//Byte = 6,
-                OpCodes.Conv_I2,//Int16 = 7,
-                OpCodes.Conv_U2,//UInt16 = 8,
-                OpCodes.Conv_I4,//Int32 = 9,
-                OpCodes.Conv_U4,//UInt32 = 10,
-                OpCodes.Conv_I8,//Int64 = 11,
-                OpCodes.Conv_U8,//UInt64 = 12,
-                OpCodes.Conv_R4,//Single = 13,
-                OpCodes.Conv_R8,//Double = 14,
-                OpCodes.Nop,//Decimal = 15,
-                OpCodes.Nop,//DateTime = 16,
-                OpCodes.Nop,//17
-                OpCodes.Nop,//String = 18,
+            private static readonly OpCode[] s_convOpCodes =
+            {
+                OpCodes.Nop, //Empty = 0,
+                OpCodes.Nop, //Object = 1,
+                OpCodes.Nop, //DBNull = 2,
+                OpCodes.Conv_I1, //Boolean = 3,
+                OpCodes.Conv_I2, //Char = 4,
+                OpCodes.Conv_I1, //SByte = 5,
+                OpCodes.Conv_U1, //Byte = 6,
+                OpCodes.Conv_I2, //Int16 = 7,
+                OpCodes.Conv_U2, //UInt16 = 8,
+                OpCodes.Conv_I4, //Int32 = 9,
+                OpCodes.Conv_U4, //UInt32 = 10,
+                OpCodes.Conv_I8, //Int64 = 11,
+                OpCodes.Conv_U8, //UInt64 = 12,
+                OpCodes.Conv_R4, //Single = 13,
+                OpCodes.Conv_R8, //Double = 14,
+                OpCodes.Nop, //Decimal = 15,
+                OpCodes.Nop, //DateTime = 16,
+                OpCodes.Nop, //17
+                OpCodes.Nop //String = 18,
             };
 
-            private static OpCode[] s_ldindOpCodes = new OpCode[] {
-                OpCodes.Nop,//Empty = 0,
-                OpCodes.Nop,//Object = 1,
-                OpCodes.Nop,//DBNull = 2,
-                OpCodes.Ldind_I1,//Boolean = 3,
-                OpCodes.Ldind_I2,//Char = 4,
-                OpCodes.Ldind_I1,//SByte = 5,
-                OpCodes.Ldind_U1,//Byte = 6,
-                OpCodes.Ldind_I2,//Int16 = 7,
-                OpCodes.Ldind_U2,//UInt16 = 8,
-                OpCodes.Ldind_I4,//Int32 = 9,
-                OpCodes.Ldind_U4,//UInt32 = 10,
-                OpCodes.Ldind_I8,//Int64 = 11,
-                OpCodes.Ldind_I8,//UInt64 = 12,
-                OpCodes.Ldind_R4,//Single = 13,
-                OpCodes.Ldind_R8,//Double = 14,
-                OpCodes.Nop,//Decimal = 15,
-                OpCodes.Nop,//DateTime = 16,
-                OpCodes.Nop,//17
-                OpCodes.Ldind_Ref,//String = 18,
+            private static readonly OpCode[] s_ldindOpCodes =
+            {
+                OpCodes.Nop, //Empty = 0,
+                OpCodes.Nop, //Object = 1,
+                OpCodes.Nop, //DBNull = 2,
+                OpCodes.Ldind_I1, //Boolean = 3,
+                OpCodes.Ldind_I2, //Char = 4,
+                OpCodes.Ldind_I1, //SByte = 5,
+                OpCodes.Ldind_U1, //Byte = 6,
+                OpCodes.Ldind_I2, //Int16 = 7,
+                OpCodes.Ldind_U2, //UInt16 = 8,
+                OpCodes.Ldind_I4, //Int32 = 9,
+                OpCodes.Ldind_U4, //UInt32 = 10,
+                OpCodes.Ldind_I8, //Int64 = 11,
+                OpCodes.Ldind_I8, //UInt64 = 12,
+                OpCodes.Ldind_R4, //Single = 13,
+                OpCodes.Ldind_R8, //Double = 14,
+                OpCodes.Nop, //Decimal = 15,
+                OpCodes.Nop, //DateTime = 16,
+                OpCodes.Nop, //17
+                OpCodes.Ldind_Ref //String = 18,
             };
 
-            private static OpCode[] s_stindOpCodes = new OpCode[] {
-                OpCodes.Nop,//Empty = 0,
-                OpCodes.Nop,//Object = 1,
-                OpCodes.Nop,//DBNull = 2,
-                OpCodes.Stind_I1,//Boolean = 3,
-                OpCodes.Stind_I2,//Char = 4,
-                OpCodes.Stind_I1,//SByte = 5,
-                OpCodes.Stind_I1,//Byte = 6,
-                OpCodes.Stind_I2,//Int16 = 7,
-                OpCodes.Stind_I2,//UInt16 = 8,
-                OpCodes.Stind_I4,//Int32 = 9,
-                OpCodes.Stind_I4,//UInt32 = 10,
-                OpCodes.Stind_I8,//Int64 = 11,
-                OpCodes.Stind_I8,//UInt64 = 12,
-                OpCodes.Stind_R4,//Single = 13,
-                OpCodes.Stind_R8,//Double = 14,
-                OpCodes.Nop,//Decimal = 15,
-                OpCodes.Nop,//DateTime = 16,
-                OpCodes.Nop,//17
-                OpCodes.Stind_Ref,//String = 18,
+            private static readonly OpCode[] s_stindOpCodes =
+            {
+                OpCodes.Nop, //Empty = 0,
+                OpCodes.Nop, //Object = 1,
+                OpCodes.Nop, //DBNull = 2,
+                OpCodes.Stind_I1, //Boolean = 3,
+                OpCodes.Stind_I2, //Char = 4,
+                OpCodes.Stind_I1, //SByte = 5,
+                OpCodes.Stind_I1, //Byte = 6,
+                OpCodes.Stind_I2, //Int16 = 7,
+                OpCodes.Stind_I2, //UInt16 = 8,
+                OpCodes.Stind_I4, //Int32 = 9,
+                OpCodes.Stind_I4, //UInt32 = 10,
+                OpCodes.Stind_I8, //Int64 = 11,
+                OpCodes.Stind_I8, //UInt64 = 12,
+                OpCodes.Stind_R4, //Single = 13,
+                OpCodes.Stind_R8, //Double = 14,
+                OpCodes.Nop, //Decimal = 15,
+                OpCodes.Nop, //DateTime = 16,
+                OpCodes.Nop, //17
+                OpCodes.Stind_Ref //String = 18,
             };
 
             private static void Convert(ILGenerator il, Type source, Type target, bool isAddress)
@@ -863,22 +897,23 @@ namespace System.Reflection
                 if (target == source)
                     return;
 
-                TypeInfo sourceTypeInfo = source.GetTypeInfo();
-                TypeInfo targetTypeInfo = target.GetTypeInfo();
+                var sourceTypeInfo = source.GetTypeInfo();
+                var targetTypeInfo = target.GetTypeInfo();
 
                 if (source.IsByRef)
                 {
                     Debug.Assert(!isAddress);
-                    Type argType = source.GetElementType();
+                    var argType = source.GetElementType();
                     Ldind(il, argType);
                     Convert(il, argType, target, isAddress);
                     return;
                 }
+
                 if (targetTypeInfo.IsValueType)
                 {
                     if (sourceTypeInfo.IsValueType)
                     {
-                        OpCode opCode = s_convOpCodes[GetTypeCode(target)];
+                        var opCode = s_convOpCodes[GetTypeCode(target)];
                         Debug.Assert(!opCode.Equals(OpCodes.Nop));
                         il.Emit(opCode);
                     }
@@ -915,7 +950,7 @@ namespace System.Reflection
 
             private static void Ldind(ILGenerator il, Type type)
             {
-                OpCode opCode = s_ldindOpCodes[GetTypeCode(type)];
+                var opCode = s_ldindOpCodes[GetTypeCode(type)];
                 if (!opCode.Equals(OpCodes.Nop))
                 {
                     il.Emit(opCode);
@@ -928,7 +963,7 @@ namespace System.Reflection
 
             private static void Stind(ILGenerator il, Type type)
             {
-                OpCode opCode = s_stindOpCodes[GetTypeCode(type)];
+                var opCode = s_stindOpCodes[GetTypeCode(type)];
                 if (!opCode.Equals(OpCodes.Nop))
                 {
                     il.Emit(opCode);
@@ -941,8 +976,9 @@ namespace System.Reflection
 
             private class ParametersArray
             {
-                private ILGenerator _il;
-                private Type[] _paramTypes;
+                private readonly ILGenerator _il;
+                private readonly Type[] _paramTypes;
+
                 internal ParametersArray(ILGenerator il, Type[] paramTypes)
                 {
                     _il = il;
@@ -962,7 +998,7 @@ namespace System.Reflection
                 internal void EndSet(int i, Type stackType)
                 {
                     Debug.Assert(_paramTypes[i].IsByRef);
-                    Type argType = _paramTypes[i].GetElementType();
+                    var argType = _paramTypes[i].GetElementType();
                     Convert(_il, stackType, argType, false);
                     Stind(_il, argType);
                 }
@@ -970,8 +1006,9 @@ namespace System.Reflection
 
             private class GenericArray<T>
             {
-                private ILGenerator _il;
-                private LocalBuilder _lb;
+                private readonly ILGenerator _il;
+                private readonly LocalBuilder _lb;
+
                 internal GenericArray(ILGenerator il, int len)
                 {
                     _il = il;
@@ -1042,16 +1079,18 @@ namespace System.Reflection
             {
                 public static readonly MethodInfoEqualityComparer Instance = new MethodInfoEqualityComparer();
 
-                private MethodInfoEqualityComparer() { }
+                private MethodInfoEqualityComparer()
+                {
+                }
 
-                public sealed override bool Equals(MethodInfo left, MethodInfo right)
+                public override bool Equals(MethodInfo left, MethodInfo right)
                 {
                     if (ReferenceEquals(left, right))
                         return true;
 
                     if (left == null)
                         return right == null;
-                    else if (right == null)
+                    if (right == null)
                         return false;
 
                     // This assembly should work in netstandard1.3,
@@ -1072,23 +1111,23 @@ namespace System.Reflection
                     if (left.Name != right.Name)
                         return false;
 
-                    Type[] leftGenericParameters = left.GetGenericArguments();
-                    Type[] rightGenericParameters = right.GetGenericArguments();
+                    var leftGenericParameters = left.GetGenericArguments();
+                    var rightGenericParameters = right.GetGenericArguments();
                     if (leftGenericParameters.Length != rightGenericParameters.Length)
                         return false;
 
-                    for (int i = 0; i < leftGenericParameters.Length; i++)
+                    for (var i = 0; i < leftGenericParameters.Length; i++)
                     {
                         if (!Equals(leftGenericParameters[i], rightGenericParameters[i]))
                             return false;
                     }
 
-                    ParameterInfo[] leftParameters = left.GetParameters();
-                    ParameterInfo[] rightParameters = right.GetParameters();
+                    var leftParameters = left.GetParameters();
+                    var rightParameters = right.GetParameters();
                     if (leftParameters.Length != rightParameters.Length)
                         return false;
 
-                    for (int i = 0; i < leftParameters.Length; i++)
+                    for (var i = 0; i < leftParameters.Length; i++)
                     {
                         if (!Equals(leftParameters[i].ParameterType, rightParameters[i].ParameterType))
                             return false;
@@ -1097,14 +1136,14 @@ namespace System.Reflection
                     return true;
                 }
 
-                public sealed override int GetHashCode(MethodInfo obj)
+                public override int GetHashCode(MethodInfo obj)
                 {
                     if (obj == null)
                         return 0;
 
-                    int hashCode = obj.DeclaringType.GetHashCode();
+                    var hashCode = obj.DeclaringType.GetHashCode();
                     hashCode ^= obj.Name.GetHashCode();
-                    foreach (ParameterInfo parameter in obj.GetParameters())
+                    foreach (var parameter in obj.GetParameters())
                     {
                         hashCode ^= parameter.ParameterType.GetHashCode();
                     }

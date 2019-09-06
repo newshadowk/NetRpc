@@ -28,7 +28,7 @@ namespace NetRpc
         {
             if (callbackThrottlingInterval <= 0)
                 return;
-            Items.Add((typeof(CallbackThrottlingMiddleware), new object[]{ callbackThrottlingInterval }));
+            Items.Add((typeof(CallbackThrottlingMiddleware), new object[] {callbackThrottlingInterval}));
         }
     }
 
@@ -36,14 +36,17 @@ namespace NetRpc
     {
         internal const string InvokeMethodName = "Invoke";
         internal const string InvokeAsyncMethodName = "InvokeAsync";
-        private static readonly MethodInfo GetServiceInfo = typeof(MiddlewareBuilder).GetMethod(nameof(GetService), BindingFlags.NonPublic | BindingFlags.Static);
+
+        private static readonly MethodInfo GetServiceInfo =
+            typeof(MiddlewareBuilder).GetMethod(nameof(GetService), BindingFlags.NonPublic | BindingFlags.Static);
+
         private RequestDelegate _requestDelegate;
         private readonly object _lockRequestDelegate = new object();
         private readonly IList<Func<RequestDelegate, RequestDelegate>> _components = new List<Func<RequestDelegate, RequestDelegate>>();
 
         public MiddlewareBuilder(MiddlewareOptions options, IServiceProvider serviceProvider)
         {
-            _components.Add(CreateMiddleware(serviceProvider, typeof(MethodInvokeMiddleware), new object[]{}));
+            _components.Add(CreateMiddleware(serviceProvider, typeof(MethodInvokeMiddleware), new object[] { }));
             options.Items.ForEach(i => _components.Add(CreateMiddleware(serviceProvider, i.Type, i.args)));
         }
 
@@ -142,7 +145,7 @@ namespace NetRpc
 
             var methodArguments = new Expression[parameters.Length];
             methodArguments[0] = middlewareContextArg;
-            for (int i = 1; i < parameters.Length; i++)
+            for (var i = 1; i < parameters.Length; i++)
             {
                 var parameterType = parameters[i].ParameterType;
                 if (parameterType.IsByRef)
@@ -195,7 +198,7 @@ namespace NetRpc
         public async Task InvokeAsync(RpcContext context)
         {
             var filters = context.InstanceMethodInfo.GetCustomAttributes<NetRpcFilterAttribute>(true);
-            foreach (NetRpcFilterAttribute f in filters)
+            foreach (var f in filters)
                 await f.InvokeAsync(context);
             NetRpcContext.ThreadHeader.CopyFrom(context.Header);
 
@@ -212,6 +215,7 @@ namespace NetRpc
                     var edi = ExceptionDispatchInfo.Capture(e.InnerException);
                     edi.Throw();
                 }
+
                 throw;
             }
 

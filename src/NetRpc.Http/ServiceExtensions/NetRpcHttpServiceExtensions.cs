@@ -42,7 +42,7 @@ namespace NetRpc.Http
         {
             services.AddNetRpcHttpClient<TService>(httpClientConfigureOptions, clientConfigureOptions);
             services.AddNetRpcContractSingleton(typeof(TService),
-                p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))).Proxy);
+                p => ((ClientProxy<TService>) p.GetService(typeof(ClientProxy<TService>))).Proxy);
             return services;
         }
 

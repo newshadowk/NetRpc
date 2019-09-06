@@ -5,7 +5,6 @@ using System.Threading.Tasks.Dataflow;
 using NetRpc;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using IConnection = RabbitMQ.Client.IConnection;
 
 namespace RabbitMQ.Base
 {

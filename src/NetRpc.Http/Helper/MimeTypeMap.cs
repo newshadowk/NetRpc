@@ -10,10 +10,10 @@ namespace NetRpc.Http
 
         private static IDictionary<string, string> BuildMappings()
         {
-            var mappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
-
+            var mappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
                 #region Big freaking list of mime types
-            
+
                 // maps both ways,
                 // extension -> mime type
                 //   and
@@ -65,7 +65,7 @@ namespace NetRpc.Http
                 {".air", "application/vnd.adobe.air-application-installer-package+zip"},
                 {".amc", "application/mpeg"},
                 {".anx", "application/annodex"},
-                {".apk", "application/vnd.android.package-archive" },
+                {".apk", "application/vnd.android.package-archive"},
                 {".application", "application/x-ms-application"},
                 {".art", "image/x-jg"},
                 {".asa", "application/xml"},
@@ -155,7 +155,7 @@ namespace NetRpc.Http
                 {".dwf", "drawing/x-dwf"},
                 {".dwg", "application/acad"},
                 {".dwp", "application/octet-stream"},
-                {".dxf", "application/x-dxf" },
+                {".dxf", "application/x-dxf"},
                 {".dxr", "application/x-director"},
                 {".eml", "message/rfc822"},
                 {".emz", "application/octet-stream"},
@@ -442,7 +442,7 @@ namespace NetRpc.Http
                 {".rqy", "text/x-ms-rqy"},
                 {".rtf", "application/rtf"},
                 {".rtx", "text/richtext"},
-                {".rvt", "application/octet-stream" },
+                {".rvt", "application/octet-stream"},
                 {".ruleset", "application/xml"},
                 {".s", "text/plain"},
                 {".safariextz", "application/x-safari-safariextz"},
@@ -464,7 +464,7 @@ namespace NetRpc.Http
                 {".sit", "application/x-stuffit"},
                 {".sitemap", "application/xml"},
                 {".skin", "application/xml"},
-                {".skp", "application/x-koan" },
+                {".skp", "application/x-koan"},
                 {".sldm", "application/vnd.ms-powerpoint.slide.macroEnabled.12"},
                 {".sldx", "application/vnd.openxmlformats-officedocument.presentationml.slide"},
                 {".slk", "application/vnd.ms-excel"},
@@ -623,7 +623,7 @@ namespace NetRpc.Http
                 {".xltx", "application/vnd.openxmlformats-officedocument.spreadsheetml.template"},
                 {".xlw", "application/vnd.ms-excel"},
                 {".xml", "text/xml"},
-                {".xmp", "application/octet-stream" },
+                {".xmp", "application/octet-stream"},
                 {".xmta", "application/xml"},
                 {".xof", "x-world/x-vrml"},
                 {".XOML", "text/plain"},
@@ -659,7 +659,7 @@ namespace NetRpc.Http
                 {"application/x-x509-ca-cert", ".cer"},
                 {"application/x-zip-compressed", ".zip"},
                 {"application/xhtml+xml", ".xhtml"},
-                {"application/xml", ".xml"},  // anomoly, .xml -> text/xml, but application/xml -> many thingss, but all are xml, so safest is .xml
+                {"application/xml", ".xml"}, // anomoly, .xml -> text/xml, but application/xml -> many thingss, but all are xml, so safest is .xml
                 {"audio/aac", ".AAC"},
                 {"audio/aiff", ".aiff"},
                 {"audio/basic", ".snd"},
@@ -673,7 +673,9 @@ namespace NetRpc.Http
                 {"image/jpeg", ".jpg"},
                 {"image/pict", ".pic"},
                 {"image/png", ".png"}, //Defined in [RFC-2045], [RFC-2048]
-                {"image/x-png", ".png"}, //See https://www.w3.org/TR/PNG/#A-Media-type :"It is recommended that implementations also recognize the media type "image/x-png"."
+                {
+                    "image/x-png", ".png"
+                }, //See https://www.w3.org/TR/PNG/#A-Media-type :"It is recommended that implementations also recognize the media type "image/x-png"."
                 {"image/tiff", ".tiff"},
                 {"image/x-macpaint", ".mac"},
                 {"image/x-quicktime", ".qti"},
@@ -694,8 +696,7 @@ namespace NetRpc.Http
                 {"x-world/x-vrml", ".xof"},
 
                 #endregion
-
-                };
+            };
 
             var cache = mappings.ToList(); // need ToList() to avoid modifying while still enumerating
 
@@ -746,14 +747,13 @@ namespace NetRpc.Http
             {
                 return extension;
             }
+
             if (throwErrorIfNotFound)
             {
                 throw new ArgumentException("Requested mime type is not registered: " + mimeType);
             }
-            else
-            {
-                return string.Empty;
-            }
+
+            return string.Empty;
         }
     }
 }

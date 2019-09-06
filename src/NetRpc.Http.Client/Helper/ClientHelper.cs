@@ -19,43 +19,6 @@ namespace NetRpc.Http.Client
             return JsonConvert.DeserializeObject(str, t);
         }
 
-        public static async Task RetryAsync(Task task, CancellationToken token, Action<string, Exception> log, int retryCount = 2, int retryIntervalMs = 1000)
-        {
-            var currentRetry = 0;
-            while (true)
-            {
-                try
-                {
-                    await task;
-                    return;
-                }
-                catch (TaskCanceledException)
-                {
-                    log("RetryTask, TaskCanceledException catched, return.", null);
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    log("RetryTask,", ex);
-                    if (currentRetry >= retryCount)
-                        throw;
-                }
-
-                if (token.IsCancellationRequested)
-                {
-                    log("RetryTask, token.IsCancellationRequested, return.", null);
-                    return;
-                }
-
-                currentRetry++;
-
-                log($"{currentRetry}/{retryCount} times, wait {retryIntervalMs / 1000} seconds to retry... ", null);
-                // ReSharper disable once MethodSupportsCancellation
-                Task.Delay(retryIntervalMs, token).Wait();
-                log($"{currentRetry}/{retryCount} times, retry", null);
-            }
-        }
-
         public static Type GetArgType(MethodInfo m, bool supportCallbackAndCancel, out string streamName, out TypeName action, out TypeName cancelToken)
         {
             streamName = null;
@@ -66,7 +29,7 @@ namespace NetRpc.Http.Client
             var t = ClassHelper.BuildType(typeName);
             var cis = new List<ClassHelper.CustomsPropertyInfo>();
 
-            bool addedCallId = false;
+            var addedCallId = false;
             foreach (var p in m.GetParameters())
             {
                 if (p.ParameterType == typeof(Stream))

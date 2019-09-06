@@ -29,10 +29,11 @@ namespace Client
             clientProxy.ExceptionInvoked += (s, e) => Console.WriteLine("[event] ExceptionInvoked");
 
             //Heartbeat
-            clientProxy.Heartbeat += async s =>
+            clientProxy.Heartbeat += s =>
             {
                 Console.WriteLine("[event] Heartbeat");
                 s.Proxy.Hearbeat();
+                return Task.CompletedTask;
             };
             clientProxy.StartHeartbeat(true);
 
@@ -44,7 +45,7 @@ namespace Client
             //Grpc
             Console.WriteLine("\r\n--- [Grpc]  ---");
             var grpcF = new GrpcClientConnectionFactoryOptions(
-                new GrpcClientOptions { Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure) });
+                new GrpcClientOptions {Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure)});
             _proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(grpcF).Proxy;
             _proxyAsync = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IServiceAsync>(grpcF).Proxy;
             RunTest();
@@ -80,7 +81,7 @@ namespace Client
 
         private static void Test_CallByGeneric()
         {
-            var obj = new CustomObj { Date = DateTime.Now, Name = "test" };
+            var obj = new CustomObj {Date = DateTime.Now, Name = "test"};
             Console.Write($"[CallByGeneric], send:{obj}, receive:");
             var ret = _proxy.CallByGenericType<int, int>(1);
             Console.WriteLine($"{ret}");
@@ -208,7 +209,7 @@ namespace Client
 
         private static async Task Test_CallByGenericAsync()
         {
-            var obj = new CustomObj { Date = DateTime.Now, Name = "test" };
+            var obj = new CustomObj {Date = DateTime.Now, Name = "test"};
             Console.Write($"[CallByGenericAsync], send:{obj}, ");
             var ret = await _proxyAsync.CallByGenericAsync<CustomObj, int>(obj);
             Console.WriteLine($"receive:{ret}");

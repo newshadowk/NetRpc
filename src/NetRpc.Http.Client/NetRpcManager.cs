@@ -1,5 +1,4 @@
-﻿
-namespace NetRpc.Http.Client
+﻿namespace NetRpc.Http.Client
 {
     public static class NetRpcManager
     {

@@ -1,4 +1,3 @@
-
 using System;
 using System.Linq;
 using System.Linq.Expressions;
@@ -25,7 +24,7 @@ namespace NetRpc
         /// <returns>An activated object of type instanceType</returns>
         public static object CreateInstance(IServiceProvider provider, Type instanceType, params object[] parameters)
         {
-            int bestLength = -1;
+            var bestLength = -1;
             var seenPreferred = false;
 
             ConstructorMatcher bestMatcher = null;
@@ -66,7 +65,8 @@ namespace NetRpc
 
             if (bestMatcher == null)
             {
-                var message = $"A suitable constructor for type '{instanceType}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.";
+                var message =
+                    $"A suitable constructor for type '{instanceType}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.";
                 throw new InvalidOperationException(message);
             }
 
@@ -87,7 +87,7 @@ namespace NetRpc
         /// </returns>
         public static ObjectFactory CreateFactory(Type instanceType, Type[] argumentTypes)
         {
-            FindApplicableConstructor(instanceType, argumentTypes, out ConstructorInfo constructor, out int?[] parameterMap);
+            FindApplicableConstructor(instanceType, argumentTypes, out var constructor, out var parameterMap);
 
             var provider = Expression.Parameter(typeof(IServiceProvider), "provider");
             var argumentArray = Expression.Parameter(typeof(object[]), "argumentArray");
@@ -109,7 +109,7 @@ namespace NetRpc
         /// <returns>An activated object of type T</returns>
         public static T CreateInstance<T>(IServiceProvider provider, params object[] parameters)
         {
-            return (T)CreateInstance(provider, typeof(T), parameters);
+            return (T) CreateInstance(provider, typeof(T), parameters);
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace NetRpc
         /// <returns>The resolved service or created instance</returns>
         public static T GetServiceOrCreateInstance<T>(IServiceProvider provider)
         {
-            return (T)GetServiceOrCreateInstance(provider, typeof(T));
+            return (T) GetServiceOrCreateInstance(provider, typeof(T));
         }
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace NetRpc
 
         private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
         {
-            var mc = (MethodCallExpression)expr.Body;
+            var mc = (MethodCallExpression) expr.Body;
             return mc.Method;
         }
 
@@ -148,6 +148,7 @@ namespace NetRpc
                 var message = $"Unable to resolve service for type '{type}' while attempting to activate '{requiredBy}'.";
                 throw new InvalidOperationException(message);
             }
+
             return service;
         }
 
@@ -172,10 +173,13 @@ namespace NetRpc
                 }
                 else
                 {
-                    var parameterTypeExpression = new Expression[] { serviceProvider,
+                    var parameterTypeExpression = new[]
+                    {
+                        serviceProvider,
                         Expression.Constant(parameterType, typeof(Type)),
                         Expression.Constant(constructor.DeclaringType, typeof(Type)),
-                        Expression.Constant(hasDefaultValue) };
+                        Expression.Constant(hasDefaultValue)
+                    };
                     constructorArguments[i] = Expression.Call(GetServiceInfo, parameterTypeExpression);
                 }
 
@@ -205,7 +209,8 @@ namespace NetRpc
             if (!TryFindPreferredConstructor(instanceType, argumentTypes, ref matchingConstructor, ref parameterMap) &&
                 !TryFindMatchingConstructor(instanceType, argumentTypes, ref matchingConstructor, ref parameterMap))
             {
-                var message = $"A suitable constructor for type '{instanceType}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.";
+                var message =
+                    $"A suitable constructor for type '{instanceType}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.";
                 throw new InvalidOperationException(message);
             }
         }
@@ -224,11 +229,12 @@ namespace NetRpc
                     continue;
                 }
 
-                if (TryCreateParameterMap(constructor.GetParameters(), argumentTypes, out int?[] tempParameterMap))
+                if (TryCreateParameterMap(constructor.GetParameters(), argumentTypes, out var tempParameterMap))
                 {
                     if (matchingConstructor != null)
                     {
-                        throw new InvalidOperationException($"Multiple constructors accepting all given argument types have been found in type '{instanceType}'. There should only be one applicable constructor.");
+                        throw new InvalidOperationException(
+                            $"Multiple constructors accepting all given argument types have been found in type '{instanceType}'. There should only be one applicable constructor.");
                     }
 
                     matchingConstructor = constructor;
@@ -261,7 +267,7 @@ namespace NetRpc
                         ThrowMultipleCtorsMarkedWithAttributeException();
                     }
 
-                    if (!TryCreateParameterMap(constructor.GetParameters(), argumentTypes, out int?[] tempParameterMap))
+                    if (!TryCreateParameterMap(constructor.GetParameters(), argumentTypes, out var tempParameterMap))
                     {
                         ThrowMarkedCtorDoesNotTakeAllProvidedArguments();
                     }
@@ -359,6 +365,7 @@ namespace NetRpc
                         return -1;
                     }
                 }
+
                 return applyExactLength;
             }
 
@@ -373,12 +380,11 @@ namespace NetRpc
                         {
                             if (!ParameterDefaultValue.TryGetDefaultValue(_parameters[index], out var defaultValue))
                             {
-                                throw new InvalidOperationException($"Unable to resolve service for type '{_parameters[index].ParameterType}' while attempting to activate '{_constructor.DeclaringType}'.");
+                                throw new InvalidOperationException(
+                                    $"Unable to resolve service for type '{_parameters[index].ParameterType}' while attempting to activate '{_constructor.DeclaringType}'.");
                             }
-                            else
-                            {
-                                _parameterValues[index] = defaultValue;
-                            }
+
+                            _parameterValues[index] = defaultValue;
                         }
                         else
                         {
@@ -411,7 +417,8 @@ namespace NetRpc
 
         private static void ThrowMarkedCtorDoesNotTakeAllProvidedArguments()
         {
-            throw new InvalidOperationException($"Constructor marked with {nameof(ActivatorUtilitiesConstructorAttribute)} does not accept all given argument types.");
+            throw new InvalidOperationException(
+                $"Constructor marked with {nameof(ActivatorUtilitiesConstructorAttribute)} does not accept all given argument types.");
         }
     }
 
@@ -455,7 +462,7 @@ namespace NetRpc
                 if (defaultValue != null &&
                     parameter.ParameterType.IsGenericType &&
                     parameter.ParameterType.GetGenericTypeDefinition() == _nullable
-                    )
+                )
                 {
                     var underlyingType = Nullable.GetUnderlyingType(parameter.ParameterType);
                     if (underlyingType != null && underlyingType.IsEnum)

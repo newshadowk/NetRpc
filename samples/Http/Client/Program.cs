@@ -15,7 +15,7 @@ namespace Client
 
         static async Task Main(string[] args)
         {
-            _proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(new HttpClientOptions()
+            _proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(new HttpClientOptions
             {
                 SignalRHubUrl = "http://localhost:5000/callback",
                 ApiUrl = "http://localhost:5000/api"
@@ -40,7 +40,7 @@ namespace Client
         private static async Task Test_CallByCancelAsync()
         {
             Console.Write("[CallByCancelAsync]...");
-            CancellationTokenSource cts = new CancellationTokenSource();
+            var cts = new CancellationTokenSource();
             cts.CancelAfter(2000);
             try
             {
@@ -99,9 +99,9 @@ namespace Client
             using (var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 Console.Write("[ComplexCallAsync]...Send TestFile.txt...");
-                
+
                 var complexStream = await _proxyAsync.ComplexCallAsync(
-                    new CustomObj { Date = DateTime.Now, Name = NameEnum.John },
+                    new CustomObj {Date = DateTime.Now, Name = NameEnum.John},
                     "123",
                     stream,
                     i => Console.Write(", " + i.Progress),

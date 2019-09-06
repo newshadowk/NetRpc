@@ -30,7 +30,7 @@ namespace NetRpc
 
             All = bytes;
         }
-        
+
         public Message(int type, byte[] body)
         {
             Type = type;

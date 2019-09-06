@@ -10,7 +10,7 @@ namespace NetRpc
         public Contract()
         {
         }
-   
+
         public Contract(Type contractType, Type instanceType)
         {
             ContractType = contractType;

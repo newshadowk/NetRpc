@@ -67,7 +67,7 @@ namespace NetRpc.Http.Client
         public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodInfo methodInfo, Stream stream, bool isPost, CancellationToken token)
         {
             var postType = ClientHelper.GetArgType(methodInfo, true, out var streamName, out _callBackAction, out var outToken);
-            
+
             var postObj = GetPostObj(postType, _callBackAction != null || outToken != null, callParam.Args);
             var actionPath = ClientHelper.GetActionPath(_contactType, methodInfo);
             var reqUrl = $"{_apiUrl}/{actionPath}";
@@ -108,7 +108,7 @@ namespace NetRpc.Http.Client
 
             //fault
             TryThrowFault(methodInfo, res);
-          
+
             //return stream
             if (realRetT.HasStream())
             {
@@ -152,11 +152,11 @@ namespace NetRpc.Http.Client
                 throw CreateException(found.DetailType, res.Content);
 
             var textAttrs = methodInfo.GetCustomAttributes<ResponseTextAttribute>(true);
-            var found2 = textAttrs.FirstOrDefault(i => i.StatusCode == (int)res.StatusCode);
+            var found2 = textAttrs.FirstOrDefault(i => i.StatusCode == (int) res.StatusCode);
             if (found2 != null)
                 throw new ResponseTextException(res.Content, (int) res.StatusCode);
 
-            if ((int)res.StatusCode == ClientConstValue.DefaultExceptionStatusCode)
+            if ((int) res.StatusCode == ClientConstValue.DefaultExceptionStatusCode)
                 throw CreateException(typeof(Exception), res.Content);
         }
 
@@ -206,14 +206,19 @@ namespace NetRpc.Http.Client
             Exception ex;
             try
             {
-                ex = (Exception)Activator.CreateInstance(exType, msg);
+                ex = (Exception) Activator.CreateInstance(exType, msg);
             }
             catch
             {
-                ex = (Exception)Activator.CreateInstance(exType);
+                ex = (Exception) Activator.CreateInstance(exType);
             }
-            
+
             return Helper.WarpException(ex);
+        }
+
+        private void OnFault(EventArgsT<object> e)
+        {
+            Fault?.Invoke(this, e);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Service
         public TestGlobalExceptionMiddleware(RequestDelegate next)
         {
             _next = next;
-            Console.WriteLine($"[testArg1]");
+            Console.WriteLine("[testArg1]");
         }
 
         public async Task InvokeAsync(RpcContext context)

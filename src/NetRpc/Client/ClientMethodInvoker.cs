@@ -19,7 +19,7 @@ namespace NetRpc
 
         public object Invoke(MethodInfo targetMethod, object[] args)
         {
-            (Action<object> callback, CancellationToken token, Stream stream, object[] otherArgs) = GetArgs(args);
+            var (callback, token, stream, otherArgs) = GetArgs(args);
             token.ThrowIfCancellationRequested();
             try
             {
@@ -39,14 +39,14 @@ namespace NetRpc
 
         public Task InvokeAsync(MethodInfo targetMethod, object[] args)
         {
-            (Action<object> callback, CancellationToken token, Stream stream, object[] otherArgs) = GetArgs(args);
+            var (callback, token, stream, otherArgs) = GetArgs(args);
             token.ThrowIfCancellationRequested();
             return _call.CallAsync<object>(targetMethod, callback, token, stream, otherArgs);
         }
 
         public Task<T> InvokeAsyncT<T>(MethodInfo targetMethod, object[] args)
         {
-            (Action<object> callback, CancellationToken token, Stream stream, object[] otherArgs) = GetArgs(args);
+            var (callback, token, stream, otherArgs) = GetArgs(args);
             token.ThrowIfCancellationRequested();
             return _call.CallAsync<T>(targetMethod, callback, token, stream, otherArgs);
         }

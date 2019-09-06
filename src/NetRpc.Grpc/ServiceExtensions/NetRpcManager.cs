@@ -12,10 +12,10 @@ namespace NetRpc.Grpc
                 .ConfigureServices((context, services) =>
                 {
                     services.AddNetRpcGrpcService(i =>
-                        {
-                            if (grpcServiceOptions != null)
-                                i.Ports = grpcServiceOptions.Ports;
-                        });
+                    {
+                        if (grpcServiceOptions != null)
+                            i.Ports = grpcServiceOptions.Ports;
+                    });
                     services.AddNetRpcMiddleware(i =>
                     {
                         if (middlewareOptions != null)
@@ -35,7 +35,7 @@ namespace NetRpc.Grpc
             return CreateClientProxy<TService>(opt, timeoutInterval, hearbeatInterval);
         }
 
-        public static ClientProxy<TService> CreateClientProxy<TService>(GrpcClientConnectionFactoryOptions options, int timeoutInterval = 1200000, 
+        public static ClientProxy<TService> CreateClientProxy<TService>(GrpcClientConnectionFactoryOptions options, int timeoutInterval = 1200000,
             int hearbeatInterval = 10000)
         {
             return new GrpcClientProxy<TService>(options.Factory,

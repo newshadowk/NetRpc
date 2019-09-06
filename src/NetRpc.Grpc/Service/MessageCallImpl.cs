@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Grpc.Core;
 using Grpc.Base;
+using Grpc.Core;
 
 namespace NetRpc.Grpc
 {

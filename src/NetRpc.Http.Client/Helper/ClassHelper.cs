@@ -13,6 +13,7 @@ namespace NetRpc.Http.Client
             {
                 return Activator.CreateInstance(type);
             }
+
             return null;
         }
 
@@ -36,7 +37,7 @@ namespace NetRpc.Http.Client
         public static T InvokeMethod<T>(object classInstance, string methodName, params object[] args)
         {
             // ReSharper disable once PossibleNullReferenceException
-            return (T)classInstance.GetType().GetMethod(methodName).Invoke(classInstance, args);
+            return (T) classInstance.GetType().GetMethod(methodName).Invoke(classInstance, args);
         }
 
         public static object InvokeMethod(object classInstance, string methodName, params object[] args)
@@ -54,12 +55,12 @@ namespace NetRpc.Http.Client
 
             if (propertyValue == DBNull.Value || propertyValue == null)
             {
-                type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance, new object[] { null });
+                type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance, new object[] {null});
             }
             else
             {
                 type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance,
-                    new[] { Convert.ChangeType(propertyValue, tgtProperty.PropertyType) });
+                    new[] {Convert.ChangeType(propertyValue, tgtProperty.PropertyType)});
             }
         }
 
@@ -172,7 +173,7 @@ namespace NetRpc.Http.Client
                 var setPropertyMethodNameBuilder = myTypeBuilder.DefineMethod(cpi.SetPropertyMethodName,
                     getSetAttr,
                     null,
-                    new[] { cpi.Type });
+                    new[] {cpi.Type});
 
                 var setPropertyMethodNameBuilderGenerator = setPropertyMethodNameBuilder.GetILGenerator();
                 setPropertyMethodNameBuilderGenerator.Emit(OpCodes.Ldarg_0);

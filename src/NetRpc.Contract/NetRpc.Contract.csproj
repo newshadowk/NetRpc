@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Contract Attribute define for NetRpc.</Description>
     <RootNamespace>NetRpc</RootNamespace>
+    <SignAssembly>true</SignAssembly>
   </PropertyGroup>
 
 </Project>

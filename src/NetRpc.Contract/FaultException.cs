@@ -8,7 +8,7 @@ namespace NetRpc
     {
         public new T Detail
         {
-            get => (T)base.Detail;
+            get => (T) base.Detail;
             set => base.Detail = value;
         }
 

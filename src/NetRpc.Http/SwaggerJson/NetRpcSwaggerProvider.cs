@@ -20,7 +20,8 @@ namespace NetRpc.Http
         private readonly OpenApiDocument _doc;
         private volatile bool _supportCallbackAndCancel;
 
-        public NetRpcSwaggerProvider(ISchemaGenerator schemaGenerator, IOptionsMonitor<HttpServiceOptions> httpServiceOptions, IOptions<SwaggerGeneratorOptions> optionsAccessor)
+        public NetRpcSwaggerProvider(ISchemaGenerator schemaGenerator, IOptionsMonitor<HttpServiceOptions> httpServiceOptions,
+            IOptions<SwaggerGeneratorOptions> optionsAccessor)
         {
             _schemaRepository = new SchemaRepository();
             _schemaGenerator = schemaGenerator;

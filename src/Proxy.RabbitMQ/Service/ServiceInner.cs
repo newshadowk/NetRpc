@@ -24,7 +24,7 @@ namespace RabbitMQ.Base
             _mainModel = _connect.CreateModel();
             _mainModel.QueueDeclare(_rpcQueueName, false, false, true, null);
             var consumer = new EventingBasicConsumer(_mainModel);
-            _mainModel.BasicQos(0, (ushort)_prefetchCount, true);
+            _mainModel.BasicQos(0, (ushort) _prefetchCount, true);
             _mainModel.BasicConsume(_rpcQueueName, false, consumer);
             consumer.Received += ConsumerReceived;
         }

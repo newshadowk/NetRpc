@@ -28,10 +28,7 @@ namespace NetRpc.RabbitMQ
 
         public Task SendAsync(byte[] buffer)
         {
-            return Task.Run(() =>
-            {
-                _callSession.Send(buffer);
-            });
+            return Task.Run(() => { _callSession.Send(buffer); });
         }
 
         public Task StartAsync()

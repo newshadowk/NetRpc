@@ -25,7 +25,7 @@ namespace NetRpc
             await _convert.StartAsync();
         }
 
-        public Task<T> CallAsync(Dictionary<string, object> header, MethodInfo methodInfo, Action<object> callback, CancellationToken token, Stream stream, 
+        public Task<T> CallAsync(Dictionary<string, object> header, MethodInfo methodInfo, Action<object> callback, CancellationToken token, Stream stream,
             params object[] args)
         {
             var action = methodInfo.ToActionInfo();
@@ -33,31 +33,19 @@ namespace NetRpc
             var tcs = new TaskCompletionSource<T>();
             var t = Task.Run(async () =>
             {
-                _convert.ResultStream += (s, e) =>
-                {
-                    SetStreamResult(tcs, e.Value);
-                };
+                _convert.ResultStream += (s, e) => { SetStreamResult(tcs, e.Value); };
 
-                _convert.Result += (s, e) =>
-                {
-                    SetResult(tcs, e.Value);
-                };
+                _convert.Result += (s, e) => { SetResult(tcs, e.Value); };
 
-                _convert.Callback += (s, e) =>
-                {
-                    callback.Invoke(e.Value);
-                };
+                _convert.Callback += (s, e) => { callback.Invoke(e.Value); };
 
-                _convert.Fault += (s, e) =>
-                {
-                    SetFault(tcs, e.Value);
-                };
+                _convert.Fault += (s, e) => { SetFault(tcs, e.Value); };
 
                 try
                 {
                     //Send cmd
                     var postStream = action.IsPost ? stream.StreamToBytes() : null;
-                    OnceCallParam p = new OnceCallParam(header, action, postStream, stream.GetLength(), args);
+                    var p = new OnceCallParam(header, action, postStream, stream.GetLength(), args);
                     if (token.IsCancellationRequested)
                     {
                         SetCancel(tcs);
@@ -130,7 +118,7 @@ namespace NetRpc
             _reg?.Dispose();
             _timeOutCts.Cancel();
             _convert.Dispose();
-            tcs.TrySetException((Exception)result);
+            tcs.TrySetException((Exception) result);
         }
 
         private void SetResult(TaskCompletionSource<T> tcs, object result)
@@ -138,7 +126,7 @@ namespace NetRpc
             _reg?.Dispose();
             _timeOutCts.Cancel();
             _convert.Dispose();
-            tcs.TrySetResult((T)result);
+            tcs.TrySetResult((T) result);
         }
     }
 }

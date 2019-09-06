@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using NetRpc.Http.Client;
-using Newtonsoft.Json;
 
 namespace NetRpc.Http
 {
@@ -38,7 +34,7 @@ namespace NetRpc.Http
 
         public static object[] GetArgsFromDataObj(Type dataObjType, object dataObj)
         {
-            List<object> ret = new List<object>();
+            var ret = new List<object>();
             if (dataObjType == null)
                 return ret.ToArray();
             foreach (var p in dataObjType.GetProperties())
@@ -64,7 +60,8 @@ namespace NetRpc.Http
                             continue;
                         }
 
-                        var v = p.PropertyType.GetMethod("Parse", new[] { typeof(string) }).Invoke(null, new object[] { values[0] });
+                        // ReSharper disable once PossibleNullReferenceException
+                        var v = p.PropertyType.GetMethod("Parse", new[] {typeof(string)}).Invoke(null, new object[] {values[0]});
                         ret.Add(v);
                     }
                     catch (Exception ex)
@@ -77,6 +74,7 @@ namespace NetRpc.Http
                     ret.Add(ClassHelper.GetDefault(p.PropertyType));
                 }
             }
+
             return ret.ToArray();
         }
 

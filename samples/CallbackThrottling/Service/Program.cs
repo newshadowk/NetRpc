@@ -23,7 +23,7 @@ namespace Service
     {
         public async Task Call(Action<int> cb)
         {
-            for (int i = 0; i <= 20; i++)
+            for (var i = 0; i <= 20; i++)
             {
                 await Task.Delay(100);
                 cb.Invoke(i);

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    internal sealed class ServiceOnceTransfer 
+    internal sealed class ServiceOnceTransfer
     {
         private readonly IServiceOnceApiConvert _convert;
         private readonly List<Instance> _instances;

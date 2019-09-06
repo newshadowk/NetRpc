@@ -20,7 +20,7 @@ namespace Service
         public async Task CallByCustomExceptionAsync()
         {
             Console.WriteLine("[CallByCustomExceptionAsync]...");
-            throw new CustomException { P1 = "123", P2 = "abc" };
+            throw new CustomException {P1 = "123", P2 = "abc"};
         }
 
         public async Task CallByDefaultExceptionAsync()

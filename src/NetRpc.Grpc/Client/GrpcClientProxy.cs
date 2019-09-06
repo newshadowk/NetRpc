@@ -6,7 +6,7 @@ namespace NetRpc.Grpc
 {
     public sealed class GrpcClientProxy<TService> : ClientProxy<TService>
     {
-        public GrpcClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options) 
+        public GrpcClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options)
             : base(factory, options)
         {
             ExceptionInvoked += GrpcClientProxy_ExceptionInvoked;

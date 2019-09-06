@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using RabbitMQ.Base;
+using RabbitMQ.Client;
 
 namespace NetRpc.RabbitMQ
 {
@@ -8,7 +9,7 @@ namespace NetRpc.RabbitMQ
     {
         private readonly RabbitMQOnceCall _call;
 
-        public RabbitMQClientConnection(global::RabbitMQ.Client.IConnection connect, string rpcQueue)
+        public RabbitMQClientConnection(IConnection connect, string rpcQueue)
         {
             _call = new RabbitMQOnceCall(connect, rpcQueue);
             _call.Received += CallReceived;

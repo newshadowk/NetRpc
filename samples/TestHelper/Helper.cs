@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using NetRpc.RabbitMQ;
 using System.Reflection;
 using System.Text;
 using NetRpc.Grpc;
+using NetRpc.RabbitMQ;
 
 namespace TestHelper
 {
@@ -12,7 +12,7 @@ namespace TestHelper
     {
         public static GrpcServiceOptions GetGrpcServiceOptions()
         {
-            GrpcServiceOptions opt = new GrpcServiceOptions();
+            var opt = new GrpcServiceOptions();
             opt.AddPort("0.0.0.0", 50001);
             return opt;
         }
@@ -20,13 +20,13 @@ namespace TestHelper
         public static MQOptions GetMQOptions()
         {
             //config your RabbitMQ parameters before run
-            string user = "testuser";
-            string password = "1";
-            string host = "test7";
-            string virtualHost = "testvh";
-            int port = 5672;
-            string rpcQueue = "rpc_test";
-            int prefetchCount = 2;
+            var user = "testuser";
+            var password = "1";
+            var host = "test7";
+            var virtualHost = "testvh";
+            var port = 5672;
+            var rpcQueue = "rpc_test";
+            var prefetchCount = 2;
             var p = new MQOptions(host, virtualHost, rpcQueue, port, user, password, prefetchCount);
             return p;
         }
@@ -57,7 +57,7 @@ namespace TestHelper
         public static string ReadStr(Stream stream)
         {
             const int size = 81920;
-            byte[] bs = new byte[size];
+            var bs = new byte[size];
             var readCount = stream.Read(bs, 0, size);
             var list = bs.ToList();
             list.RemoveRange(readCount, list.Count - readCount);

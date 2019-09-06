@@ -1,10 +1,11 @@
 ﻿using Microsoft.Extensions.Options;
+using RabbitMQ.Client;
 
 namespace NetRpc.RabbitMQ
 {
     public class RabbitMQClientConnectionFactory : IClientConnectionFactory
     {
-        private global::RabbitMQ.Client.IConnection _connection;
+        private IConnection _connection;
         private MQOptions _options;
         private readonly object _lockObj = new object();
 

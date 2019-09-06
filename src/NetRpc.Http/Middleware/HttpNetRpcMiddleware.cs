@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 
@@ -14,7 +14,8 @@ namespace NetRpc.Http
             _next = next;
         }
 
-        public async Task Invoke(HttpContext httpContext, IOptionsSnapshot<ContractOptions> contractOptions, IHubContext<CallbackHub, ICallback> hub, IOptionsSnapshot<HttpServiceOptions> httpOptions, RequestHandler requestHandler)
+        public async Task Invoke(HttpContext httpContext, IOptionsSnapshot<ContractOptions> contractOptions, IHubContext<CallbackHub, ICallback> hub,
+            IOptionsSnapshot<HttpServiceOptions> httpOptions, RequestHandler requestHandler)
         {
             bool notMatched;
             using (var convert = new HttpServiceOnceApiConvert(contractOptions.Value.Contracts, httpContext,

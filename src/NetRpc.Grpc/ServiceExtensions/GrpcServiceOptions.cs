@@ -10,8 +10,8 @@ namespace NetRpc.Grpc
         public void AddPort(string host, int port, string sslPublicKey, string sslPrivateKey)
         {
             var keyPair = new KeyCertificatePair(sslPublicKey, sslPrivateKey);
-            var sslCredentials = new SslServerCredentials(new List<KeyCertificatePair> { keyPair });
-            ServerPort serverPort = new ServerPort(host, port, sslCredentials);
+            var sslCredentials = new SslServerCredentials(new List<KeyCertificatePair> {keyPair});
+            var serverPort = new ServerPort(host, port, sslCredentials);
             Ports.Add(serverPort);
         }
 
