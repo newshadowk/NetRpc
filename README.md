@@ -52,11 +52,11 @@ NetRpc provide **RabbitMQ**/**Grpc**/**Http** Channels to connect, each one has 
 
 All channels use uniform contract, so easily to switch channel without modify service implementation.
 
-![Alt text](images\all1.png)
+![Alt text](images/all1.png)
 
 ## RabbitMQ/Grpc
 There is message channel for RabbitMQ and Grpc, Http pls see topic blow.
-![Alt text](images\nrpc.png)
+![Alt text](images/nrpc.png)
 
 ## Swithch RabbitMQ/Grpc/Http
 * **NetRpc.RabbitMQ.NetRpcManager** for **RabbitMQ**.
