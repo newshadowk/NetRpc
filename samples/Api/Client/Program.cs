@@ -23,7 +23,7 @@ namespace Client
             //RabbitMQ
             Console.WriteLine("---  [RabbitMQ]  ---");
             var mqF = new RabbitMQClientConnectionFactoryOptions(Helper.GetMQOptions());
-            var clientProxy = NetRpcManager.CreateClientProxy<IService>(mqF, false);
+            var clientProxy = NetRpcManager.CreateClientProxy<IService>(mqF);
             clientProxy.Connected += (s, e) => Console.WriteLine("[event] Connected");
             clientProxy.DisConnected += (s, e) => Console.WriteLine("[event] DisConnected");
             clientProxy.ExceptionInvoked += (s, e) => Console.WriteLine("[event] ExceptionInvoked");
@@ -37,7 +37,7 @@ namespace Client
             clientProxy.StartHeartbeat(true);
 
             _proxy = clientProxy.Proxy;
-            _proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(mqF, false).Proxy;
+            _proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(mqF).Proxy;
             RunTest();
             RunTestAsync().Wait();
 
@@ -255,10 +255,6 @@ namespace Client
             {
                 Console.WriteLine($"catch FaultException<NotImplementedException> {e}");
             }
-            catch (NotImplementedException)
-            {
-                Console.WriteLine("catch NotImplementedException");
-            }
         }
 
         private static async Task Test_CallByCustomExceptionAsync()
@@ -271,10 +267,6 @@ namespace Client
             catch (FaultException<CustomException>)
             {
                 Console.WriteLine("catch FaultException<CustomException>");
-            }
-            catch (CustomException)
-            {
-                Console.WriteLine("catch CustomException");
             }
         }
 

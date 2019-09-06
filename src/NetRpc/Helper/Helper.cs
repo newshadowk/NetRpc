@@ -85,39 +85,6 @@ namespace NetRpc
             return obj;
         }
 
-        public static byte[] ToBytes(this object obj)
-        {
-            if (obj == default)
-                return default;
-
-            using (var stream = new MemoryStream())
-            {
-                var formatter = new BinaryFormatter();
-                formatter.Serialize(stream, obj);
-                stream.Flush();
-                return stream.ToArray();
-            }
-        }
-
-        public static TObject ToObject<TObject>(this byte[] bytes)
-        {
-            return (TObject) bytes.ToObject();
-        }
-
-        public static object ToObject(this byte[] bytes)
-        {
-            if (bytes == default)
-                return default;
-
-            using (var stream = new MemoryStream(bytes, 0, bytes.Length, false))
-            {
-                var formatter = new BinaryFormatter();
-                var data = formatter.Deserialize(stream);
-                stream.Flush();
-                return data;
-            }
-        }
-
         public static string ListToString<T>(this IEnumerable<T> list, string split)
         {
             var sb = new StringBuilder();
@@ -150,19 +117,19 @@ namespace NetRpc
             return s.Substring(0, s.Length - delLength);
         }
 
-        public static string GetFullMethodName(this MethodInfo method)
+        public static string ToFullMethodName(this MethodInfo method)
         {
             // ReSharper disable once PossibleNullReferenceException
             return $"{method.DeclaringType.Name}/{method.Name}";
         }
 
-        public static ActionInfo GetMethodInfoDto(this MethodInfo method)
+        public static ActionInfo ToActionInfo(this MethodInfo method)
         {
             return new ActionInfo
             {
                 GenericArguments = method.GetGenericArguments().ToList().ConvertAll(GetTypeName).ToArray(),
-                FullName = method.GetFullMethodName(),
-                IsPost = method.GetCustomAttributes<NetRpcPostAttribute>(true).Any()
+                FullName = method.ToFullMethodName(),
+                IsPost = method.GetCustomAttribute<MQPostAttribute>(true) != null
             };
         }
 
@@ -205,38 +172,6 @@ namespace NetRpc
             }
         }
 
-        public static string ExceptionToString(Exception e)
-        {
-            if (e == null)
-                return "";
-
-            var msgContent = new StringBuilder("\r\n");
-            msgContent.Append(GetMsgContent(e));
-
-            var lastE = new List<Exception>();
-            var currE = e.InnerException;
-            lastE.Add(e);
-            lastE.Add(currE);
-            while (currE != null && !lastE.Contains(currE))
-            {
-                msgContent.Append("\r\n[InnerException]\r\n");
-                msgContent.Append(GetMsgContent(e.InnerException));
-                currE = currE.InnerException;
-                lastE.Add(currE);
-            }
-
-            return msgContent.ToString();
-        }
-
-        private static string GetMsgContent(Exception ee)
-        {
-            var ret = ee.Message;
-            if (!string.IsNullOrEmpty(ee.StackTrace))
-                ret += "\r\n" + ee.StackTrace;
-            ret += "\r\n";
-            return ret;
-        }
-
         private static string GetTypeName(Type t)
         {
             if (IsSystemType(t))
@@ -248,6 +183,75 @@ namespace NetRpc
         {
             var sn = t.Module.ScopeName;
             return sn == "System.Private.CoreLib.dll" || sn == "CommonLanguageRuntimeLibrary";
+        }
+
+        public static byte[] ToBytes(this object obj)
+        {
+            if (obj == default)
+                return default;
+
+            using (var stream = new MemoryStream())
+            {
+                var formatter = new BinaryFormatter();
+                formatter.Serialize(stream, obj);
+                stream.Flush();
+                return stream.ToArray();
+            }
+        }
+
+        public static T ToObject<T>(this byte[] bytes)
+        {
+            return (T) bytes.ToObject();
+        }
+
+        public static object ToObject(this byte[] bytes)
+        {
+            if (bytes == default)
+                return default;
+
+            using (var stream = new MemoryStream(bytes, 0, bytes.Length, false))
+            {
+                var formatter = new BinaryFormatter();
+                var data = formatter.Deserialize(stream);
+                stream.Flush();
+                return data;
+            }
+        }
+
+        public static byte[] StreamToBytes(this Stream stream)
+        {
+            if (stream == null)
+                return null;
+
+            var bytes = new byte[stream.Length];
+            stream.Read(bytes, 0, bytes.Length);
+            return bytes;
+        }
+
+        public static Exception WarpException(Exception ex, RpcContext context = null)
+        {
+            var bodyFe = ex as FaultException;
+
+            //normally Exception
+            if (bodyFe == null && !(ex is OperationCanceledException))
+            {
+                var gt = typeof(FaultException<>).MakeGenericType(ex.GetType());
+                var fe = (FaultException) Activator.CreateInstance(gt, ex);
+                if (context != null)
+                    fe.AppendMethodInfo(context.ActionInfo, context.Args);
+                return fe;
+            }
+
+            //FaultException
+            if (bodyFe != null)
+            {
+                if (context != null)
+                    bodyFe.AppendMethodInfo(context.ActionInfo, context.Args);
+                return bodyFe;
+            }
+
+            //OperationCanceledException
+            return ex;
         }
     }
 }

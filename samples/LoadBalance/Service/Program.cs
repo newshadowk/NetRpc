@@ -1,11 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using DataContract;
+using NetRpc;
 using NetRpc.RabbitMQ;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 using Helper = TestHelper.Helper;
 
 namespace Service
@@ -16,7 +14,7 @@ namespace Service
         {
             var host = NetRpcManager.CreateHost(Helper.GetMQOptions(),
                 null,
-                typeof(ServiceAsync));
+                new Contract<IServiceAsync, ServiceAsync>());
 
             Console.WriteLine("Service Opened.");
             await host.StartAsync();
@@ -25,7 +23,7 @@ namespace Service
         }
     }
 
-    internal class ServiceAsync : IService
+    internal class ServiceAsync : IServiceAsync
     {
         public async Task CallAsync(Action<int> cb, string s1)
         {
@@ -48,6 +46,7 @@ namespace Service
                 await Task.Delay(1000);
                 Console.Write($"{i}, ");
             }
+
             Console.WriteLine("end");
         }
     }

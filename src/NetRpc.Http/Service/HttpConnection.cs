@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging.Abstractions;
+using NetRpc.Http.Client;
 
 namespace NetRpc.Http
 {
@@ -15,40 +17,16 @@ namespace NetRpc.Http
     {
         private readonly HttpContext _context;
         private readonly IHubContext<CallbackHub, ICallback> _hub;
-        private readonly bool _isClearStackTrace;
 
-        public HttpConnection(HttpContext context, IHubContext<CallbackHub, ICallback> hub, bool isClearStackTrace)
+        public HttpConnection(HttpContext context, IHubContext<CallbackHub, ICallback> hub)
         {
             _context = context;
             _hub = hub;
-            _isClearStackTrace = isClearStackTrace;
         }
 
         public string ConnectionId { get; set; }
 
         public string CallId { get; set; }
-
-        public async Task SendAsync(Result result)
-        {
-            _context.Response.ContentType = "application/json; charset=utf-8";
-            _context.Response.StatusCode = result.StatusCode;
-            await _context.Response.WriteAsync(result.Ret.ToJson());
-        }
-
-        public async Task SendAsync(Stream stream, string streamName)
-        {
-            var emptyActionDescriptor = new ActionDescriptor();
-            var routeData = _context.GetRouteData() ?? new RouteData();
-            var actionContext = new ActionContext(_context, routeData, emptyActionDescriptor);
-
-            var result = new FileStreamResult(stream, MimeTypeMap.GetMimeType(Path.GetExtension(streamName)))
-            {
-                FileDownloadName = streamName
-            };
-
-            var executor = new FileStreamResultExecutor(NullLoggerFactory.Instance);
-            await executor.ExecuteAsync(actionContext, result);
-        }
 
         public async Task CallBack(object callbackObj)
         {
@@ -60,6 +38,38 @@ namespace NetRpc.Http
             catch
             {
             }
+        }
+
+        public Task SendWithStreamAsync(CustomResult result, Stream stream, string streamName)
+        {
+            var emptyActionDescriptor = new ActionDescriptor();
+            var routeData = _context.GetRouteData() ?? new RouteData();
+            var actionContext = new ActionContext(_context, routeData, emptyActionDescriptor);
+
+            var fRet = new FileStreamResult(stream, MimeTypeMap.GetMimeType(Path.GetExtension(streamName)))
+            {
+                FileDownloadName = streamName
+            };
+
+            if (!(result.Result is Stream))
+            {
+                var json = result.ToJson();
+                _context.Response.Headers.Add(ClientConstValue.CustomResultHeaderKey, json);
+            }
+
+            var executor = new FileStreamResultExecutor(NullLoggerFactory.Instance);
+#pragma warning disable 4014
+            executor.ExecuteAsync(actionContext, fRet);
+#pragma warning restore 4014
+            
+            return Task.CompletedTask;
+        }
+
+        public async Task SendAsync(Result result)
+        {
+            _context.Response.ContentType = "application/json; charset=utf-8";
+            _context.Response.StatusCode = result.StatusCode;
+            await _context.Response.WriteAsync(result.Ret.ToJson() ?? "");
         }
     }
 }

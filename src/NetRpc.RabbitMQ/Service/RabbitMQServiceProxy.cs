@@ -13,7 +13,7 @@ namespace NetRpc.RabbitMQ
         private Service _service;
         private volatile int _handlingCount;
 
-        public RabbitMQServiceProxy(IOptionsMonitor<RabbitMQServiceOptions> mqOptions, IServiceProvider serviceProvider)
+        public RabbitMQServiceProxy(IOptionsMonitor<RabbitMqServiceOptions> mqOptions, IServiceProvider serviceProvider)
         {
             Reset(mqOptions.CurrentValue.Value, serviceProvider);
             mqOptions.OnChange(i =>

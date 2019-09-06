@@ -18,8 +18,9 @@ connection.on("Callback", function (callId, data) {
 });
 
 //Cancel
+//arg0 is callId, if set "" means cancel all methods.
 document.getElementById("cancelBtn").addEventListener("click", function (event) {
-    connection.invoke("Cancel").catch(function (err) {
+    connection.invoke("Cancel", "").catch(function (err) {
         return console.error(err.toString());
     });
 

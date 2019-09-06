@@ -3,11 +3,11 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using NetRpc.Http.Client;
 using Newtonsoft.Json.Serialization;
 
 namespace NetRpc.Http
@@ -33,6 +33,16 @@ namespace NetRpc.Http
             if (httpServiceConfigureOptions != null)
                 services.Configure(httpServiceConfigureOptions);
             services.TryAddSingleton<RequestHandler>();
+            return services;
+        }
+
+        public static IServiceCollection AddNetRpcHttpGateway<TService>(this IServiceCollection services,
+            Action<HttpClientOptions> httpClientConfigureOptions = null,
+            Action<NetRpcClientOption> clientConfigureOptions = null)
+        {
+            services.AddNetRpcHttpClient<TService>(httpClientConfigureOptions, clientConfigureOptions);
+            services.AddNetRpcContractSingleton(typeof(TService),
+                p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))).Proxy);
             return services;
         }
 

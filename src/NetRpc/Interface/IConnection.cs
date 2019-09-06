@@ -9,7 +9,7 @@ namespace NetRpc
 
         Task SendAsync(byte[] buffer, bool isPost = false);
 
-        void Start();
+        Task StartAsync();
     }
 
     public interface IServiceConnection : IDisposable
@@ -18,6 +18,6 @@ namespace NetRpc
 
         Task SendAsync(byte[] buffer);
 
-        void Start();
+        Task StartAsync();
     }
 }

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using DataContract;
 using Grpc.Core;
+using NetRpc;
 using NetRpc.Grpc;
 
 namespace Client

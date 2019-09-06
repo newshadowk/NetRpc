@@ -34,9 +34,10 @@ namespace NetRpc.RabbitMQ
             });
         }
 
-        public void Start()
+        public Task StartAsync()
         {
             _callSession.Start();
+            return Task.CompletedTask;
         }
 
         protected virtual void OnReceived(EventArgsT<byte[]> e)

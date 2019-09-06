@@ -6,20 +6,30 @@ namespace NetRpc.Grpc
 {
     public static class GrpcServiceExtensions
     {
-        public static IServiceCollection AddNetRpcGrpcService(this IServiceCollection services, Action<GrpcServiceOptions> grpcServiceConfigureOptions)
+        public static IServiceCollection AddNetRpcGrpcService(this IServiceCollection services, Action<GrpcServiceOptions> configureOptions)
         {
-            services.Configure(grpcServiceConfigureOptions);
+            services.Configure(configureOptions);
             services.AddNetRpcService();
             services.AddHostedService<GrpcServiceProxy>();
             return services;
         }
 
-        public static IServiceCollection AddNetRpcGrpcClient<TService>(this IServiceCollection services, 
-            Action<GrpcClientOptions> grpcClientChannelConfigureOptions = null, 
+        public static IServiceCollection AddNetRpcGrpcGateway<TService>(this IServiceCollection services,
+            Action<GrpcClientOptions> grpcClientConfigureOptions = null,
             Action<NetRpcClientOption> clientConfigureOptions = null)
         {
-            if (grpcClientChannelConfigureOptions != null)
-                services.Configure(grpcClientChannelConfigureOptions);
+            services.AddNetRpcGrpcClient<TService>(grpcClientConfigureOptions, clientConfigureOptions);
+            services.AddNetRpcContractSingleton(typeof(TService), 
+                p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))).Proxy);
+            return services;
+        }
+
+        public static IServiceCollection AddNetRpcGrpcClient<TService>(this IServiceCollection services,
+            Action<GrpcClientOptions> grpcClientConfigureOptions = null,
+            Action<NetRpcClientOption> clientConfigureOptions = null)
+        {
+            if (grpcClientConfigureOptions != null)
+                services.Configure(grpcClientConfigureOptions);
             services.TryAddSingleton<GrpcClientProxy<TService>>();
             services.AddNetRpcClient<GrpcClientConnectionFactory, TService>(clientConfigureOptions);
             return services;

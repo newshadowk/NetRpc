@@ -14,7 +14,7 @@ namespace Service
             o.AddPort("0.0.0.0", 50001);
             var options = new MiddlewareOptions();
             options.UseCallbackThrottling(1000);
-            var host = NetRpcManager.CreateHost(o, options, typeof(Service));
+            var host = NetRpcManager.CreateHost(o, options, new Contract<IService, Service>());
             await host.StartAsync();
         }
     }

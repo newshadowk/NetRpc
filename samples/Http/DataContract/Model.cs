@@ -59,14 +59,18 @@ namespace DataContract
 
     public class ComplexStream
     {
+        [JsonIgnore]
         public Stream Stream { get; set; }
 
         public string StreamName { get; set; } //the property will map to file name.
+
+        public InnerObj InnerObj { get; set; }
     }
 
     /// <summary>
     /// summary of CustomException
     /// </summary>
+    //[Serializable]
     public class CustomException : Exception
     {
         public string P1 { get; set; }
@@ -83,9 +87,9 @@ namespace DataContract
         {
         }
 
-        protected CustomException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+        //protected CustomException(SerializationInfo info, StreamingContext context) : base(info, context)
+        //{
+        //}
     }
 
     public class CustomException2 : Exception

@@ -1,10 +1,7 @@
 ﻿using System;
-using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using DataContract;
 using NetRpc.RabbitMQ;
-using RabbitMQ.Client;
 using Helper = TestHelper.Helper;
 
 namespace Client
@@ -13,11 +10,16 @@ namespace Client
     {
         static async Task Main(string[] args)
         {
-            var proxy = NetRpcManager.CreateClientProxy<IService>(Helper.GetMQOptions()).Proxy;
-            for (int i = 0; i < 10; i++)
+            var proxy = NetRpcManager.CreateClientProxy<IServiceAsync>(Helper.GetMQOptions()).Proxy;
+
+            for (var i = 0; i < 10; i++)
             {
-                await proxy.CallAsync(Console.WriteLine, i.ToString());
-                Console.WriteLine($"Send {i}");
+                var i1 = i;
+                Task.Run(async() =>
+                {
+                    Console.WriteLine($"Send {i1}");
+                    await proxy.CallAsync(Console.WriteLine, i1.ToString());
+                });
             }
 
             //for (int i = 0; i < 10; i++)

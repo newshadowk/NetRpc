@@ -17,10 +17,10 @@ namespace NetRpc.Http
         public async Task Invoke(HttpContext httpContext, IOptionsSnapshot<ContractOptions> contractOptions, IHubContext<CallbackHub, ICallback> hub, IOptionsSnapshot<HttpServiceOptions> httpOptions, RequestHandler requestHandler)
         {
             bool notMatched;
-            using (var convert = new NetRpcHttpServiceOnceApiConvert(contractOptions.Value.InstanceTypes, httpContext,
-                httpOptions.Value.ApiRootPath, httpOptions.Value.IgnoreWhenNotMatched, httpOptions.Value.SupportCallbackAndCancel, hub, httpOptions.Value.IsClearStackTrace))
+            using (var convert = new HttpServiceOnceApiConvert(contractOptions.Value.Contracts, httpContext,
+                httpOptions.Value.ApiRootPath, httpOptions.Value.IgnoreWhenNotMatched, httpOptions.Value.SupportCallbackAndCancel, hub))
             {
-                await requestHandler.HandleHttpAsync(convert);
+                await requestHandler.HandleAsync(convert);
                 notMatched = convert.NotMatched;
             }
 

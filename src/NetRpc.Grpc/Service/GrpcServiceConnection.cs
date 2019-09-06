@@ -31,7 +31,7 @@ namespace NetRpc.Grpc
                 await _responseStream.WriteAsync(new StreamBuffer { Body = ByteString.CopyFrom(buffer) });
         }
 
-        public void Start()
+        public Task StartAsync()
         {
             Task.Run(async () =>
             {
@@ -39,6 +39,8 @@ namespace NetRpc.Grpc
                 while (await _requestStream.MoveNext(CancellationToken.None))
                     OnReceived(new EventArgsT<byte[]>(_requestStream.Current.Body.ToByteArray()));
             });
+
+            return Task.CompletedTask;
         }
 
         private void OnReceived(EventArgsT<byte[]> e)

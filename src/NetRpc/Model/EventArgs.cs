@@ -2,13 +2,13 @@
 
 namespace NetRpc
 {
-    internal sealed class ResultStreamEventArgs : EventArgs
+    public sealed class ResultStreamEventArgs : EventArgs
     {
-        public long? StreamLength { get; }
+        public object Result { get; }
 
-        public ResultStreamEventArgs(long? streamLength)
+        public ResultStreamEventArgs(object result)
         {
-            StreamLength = streamLength;
+            Result = result;
         }
     }
 }

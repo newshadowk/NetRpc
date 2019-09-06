@@ -9,11 +9,6 @@ namespace NetRpc.Http
         public string ApiRootPath { get; set; }
 
         /// <summary>
-        /// If pass StackTrace to client, default value is false.
-        /// </summary>
-        public bool IsClearStackTrace { get; set; }
-
-        /// <summary>
         /// Set true will pass to next middleware when not match the method, default value is false.
         /// </summary>
         public bool IgnoreWhenNotMatched { get; set; }

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Contract Attribute define for NetRpc.</Description>
+    <RootNamespace>NetRpc</RootNamespace>
   </PropertyGroup>
 
 </Project>

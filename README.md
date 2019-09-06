@@ -2,19 +2,6 @@
 NetRpc is a light weight rpc engine base on **RabbitMQ**, **Grpc**, **Http** targeting .NET Standard 2.0.  It use the simple interface to call each other, 
 provide callback/cancel during invoking, so especially suitable for handle **long call**.
 
-
-## Overall
-NetRpc provide **RabbitMQ**/**Grpc**/**Http** Channels to connect, each one has different advantages.
-* **RabbitMQ** provide load balance, queue feature.
-* **Grpc** use http2, provide all http2 advantages.
-* **Http** use webapi, also provide swagger api.
-
-All channels use uniform contract, so easily to switch channel without modify service implement.
-
-![Alt text](all.png)
-
-## RabbitMQ/Grpc
-![Alt text](nrpc.png)
 ## Hello world!
 ```c#
 //service side
@@ -24,7 +11,7 @@ class Program
     {
         var o = new GrpcServiceOptions();
         o.AddPort("0.0.0.0", 50001);
-        var host = NetRpc.Grpc.NetRpcManager.CreateHost(o, null, typeof(Service));
+        var host = NetRpc.Grpc.NetRpcManager.CreateHost(o, null, new Contract<IService, Service>()).StartAsync();
         await host.StartAsync();
     }
 }
@@ -56,6 +43,21 @@ public interface IService
     void Call(string s);
 }
 ```
+
+## Overall
+NetRpc provide **RabbitMQ**/**Grpc**/**Http** Channels to connect, each one has different advantages.
+* **RabbitMQ** provide load balance, queue feature.
+* **Grpc** use http2, provide all http2 advantages.
+* **Http** use webapi, also provide swagger api.
+
+All channels use uniform contract, so easily to switch channel without modify service implementation.
+
+![Alt text](images\all1.png)
+
+## RabbitMQ/Grpc
+There is message channel for RabbitMQ and Grpc, Http pls see topic blow.
+![Alt text](images\nrpc.png)
+
 ## Swithch RabbitMQ/Grpc/Http
 * **NetRpc.RabbitMQ.NetRpcManager** for **RabbitMQ**.
 * **NetRpc.Grpc.NetRpcManager** for **Grpc**.
@@ -68,7 +70,7 @@ var host = new HostBuilder()
     .ConfigureServices((context, services) =>
     {
         services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50001));
-        services.AddNetRpcServiceContract<Service>();
+        services.AddNetRpcContractSingleton<IService, Service>();
     })
     .Build();
 ```
@@ -85,7 +87,8 @@ var host = new HostBuilder()
 ```
 Other way is **NetRpcManager**.
 ## Serialization
-NetRpc base on **BinaryFormatter**, make sure all contract model mark as **[Serializable]**.
+RabbitMQ, Grpc channel base on **BinaryFormatter**, make sure all contract model mark as **[Serializable]**.  
+Http channel base on **JsonFormatter**.
 ```c#
 [Serializable]
 public class CustomObj
@@ -93,7 +96,9 @@ public class CustomObj
     //...
 }
 ```
-**[Important]** When returned Custom object contains a **Stream**, make sure it mask as **[field: NonSerialized]**.
+**[Important]** When returned Custom object contains a **Stream**:  
+RabbitMQ, Grpc channel make sure it mask as **[field: NonSerialized]**.  
+Http channel make sure it mask as **[JsonIgnore]**.
 ```c#
 Task<ComplexStream> GetComplexStreamAsync();
 
@@ -101,6 +106,7 @@ Task<ComplexStream> GetComplexStreamAsync();
 public class ComplexStream
 {
     [field: NonSerialized]
+    [JsonIgnore]
     public Stream Stream { get; set; }
 
     public string OtherInfo { get; set; }
@@ -181,11 +187,11 @@ client.Proxy.Call();
 ```
 ## ContractLifeTime
 ```c#
-//The same instance for each request.
-services.AddNetRpcServiceContract<Service>(ContractLifeTime.Singleton);
+//Singleton: create one instance for every request.
+services.AddNetRpcContractSingleton<IService, Service>();
 
-//create new instance for each request. 
-services.AddNetRpcServiceContract<Service>(ContractLifeTime.Scoped);
+//Scoped: create new instance for each request. 
+services.AddNetRpcContractScoped<IService,Service>();
 ```
 ## RpcContext
 **Midderware** or **Filter** can access **RpcContext**, it is
@@ -261,10 +267,6 @@ Only for RabbitMQ.
 When run multiple service instances, ther service will auto apply the load balance, this function is base on the RabbitMQ.  
 **MQOptions.PrefetchCount**: The service will acquire more messages, up to the PrefetchCount limit, defalut value is 1.
 ## FaultException\<T>
-When create **ClientProxy** that can pass **isWrapFaultException**, if true will wrap Exception to **FaultExcetpion\<Exception>**.  
-FaultException is usefull when you want to get the exactly **StackTrace** info.  
-**isWrapFaultException** is invalid to **OperationCanceledException** and **TaskCanceledException** because of convenience purpose.
-
 **FaultException** is
 
 | Property | Type | Description |
@@ -284,32 +286,28 @@ internal class ServiceAsync : IServiceAsync
 ```
 ```c#
 //client side
-var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure), isWrapFaultException:true).Proxy;
+var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
 try
 {
     await proxy.CallBySystemExceptionAsync();
 }
 catch (FaultException<NotImplementedException> e)
 {
-    //catched FaultException<NotImplementedException> when set isWrapFaultException to true.
     //e.Deta.StackTrace will get the orginal info.
 }
 catch (FaultException e2)
 {
-   //catched all type of FaultException<> when set isWrapFaultException to true.
+
 }
 catch (OperationCanceledException e2)
 {
-   //catched OperationCanceledException when set isWrapFaultException to false/true.
+
 }
 catch (TaskCanceledException e2)
 {
-   //catched TaskCanceledException when set isWrapFaultException to false/true.
+
 }
-catch (NotImplementedException e2)
-{
-   //catched NotImplementedException when set isWrapFaultException to false.
-}
+
 ```
 ## Cancel
 ```c#
@@ -326,7 +324,7 @@ Built-in **CallbackThrottlingMiddleware** is useful when callback is progress, n
 //service side
 services.AddNetRpcMiddleware(i => i.UseCallbackThrottling(1000)); //limit to one call per second
 //or this:
-services.AddCallbackThrottling(1000);
+services.AddNetRpcCallbackThrottling(1000);
 ...
 public async Task Call(Action<int> cb)
 {
@@ -392,7 +390,7 @@ public class ComplexStream
     public string OtherInfo { get; set; }
 }
 ```
-## NetRpcPostAttribute
+## MQPostAttribute
 Only for RabbitMQ channel, means post way to call, after sent message to rabbitMQ then return immediately, consumer will consum messages in queue asynchronous.  
 Post method define has some limits, no callback Action, no cancelToken, no return value.
 ```c#
@@ -425,7 +423,7 @@ clientProxy.Heartbeat += async s => s.Proxy.Hearbeat();
 ```
 ## Hearbeat
 **ClientProxy** has a **Heartbeat** function after you call **StartHeartbeat()**, the interval is 10 seconds by default.  
-Client should register the **Heartbeat** event and implement logic of heartbeat.  
+Client should register the **Heartbeat** event and implementation of heartbeat.  
 According to **Heartbeat** is successfull or faild, **Connected** or **DisConnected** will invoke correspondingly.
 ```c#
 //client set the heartbeat interval to 10*1000
@@ -445,6 +443,31 @@ Note: only for DI mode:
 services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50001));
 ```
 
+## Gateway
+
+Gateway has many advantages:
+* Convert Channel.
+* Provide exception handle.
+* Provide access authority.
+* ...
+
+![Alt text](images\all2.png)
+
+The code blow show how to Receive message from RabbitMQ channel client and send to Grpc channel service.
+```c#
+ //set single target by DI.
+services.AddNetRpcRabbitMQService(i => i.Value = TestHelper.Helper.GetMQOptions());
+services.AddNetRpcGateway<IService>(o => o.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
+services.AddNetRpcGateway<IService2>();
+
+//set different target point.
+//var p1 = NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
+//var p2 = NetRpcManager.CreateClientProxy<IService2>(new Channel("localhost2", 50001, ChannelCredentials.Insecure)).Proxy;
+//services.AddNetRpcContractSingleton(typeof(IService), p1);
+//services.AddNetRpcContractSingleton(typeof(IService2), p2);
+```
+Also privode middleware in the gateway service, can add access authority if needed.
+
 # [Http] NetRpc.Http
 NetRpc.Http provide:
 * **Webapi** for call api.
@@ -455,7 +478,7 @@ Note:
 * **Swagger** is not necessary.
 * **Mvc** is not necessary.
 
-![Alt text](nrpc_http.png)
+![Alt text](images\nrpc_http.png)
 
 ## [Http] Create Host
 Use **NetRpcManager** create host:
@@ -479,7 +502,6 @@ services.AddNetRpcHttp(i =>    // add RpcHttp service
 {
     i.ApiRootPath = "/api";
     i.IgnoreWhenNotMatched = false;
-    i.IsClearStackTrace = false;
 });
 services.AddNetRpcMiddleware(i => i.UseMiddleware<MyNetRpcMiddleware>());  // define NetRpc Middleware
 services.AddNetRpcServiceContract(instanceTypes); // add Contracts
@@ -490,6 +512,16 @@ app.UseSignalR(routes => { routes.MapHub<CallbackHub>(hubPath); });   // define 
 app.UseNetRpcSwagger();   // use NetRpcSwagger middleware
 app.UseNetRpcHttp();      // use NetRpcHttp middleware
 ```
+## [Http] Client
+use **NetRpc.Http.Client.NetRpcManager.CreateClientProxy** to create a client instance.
+```c#
+_proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(
+    new HttpClientOptions() { 
+        SignalRHubUrl = "http://localhost:5000/callback",
+        ApiUrl = "http://localhost:5000/api" 
+    }).Proxy;
+```
+Also support **DI**.
 ## [Http] Swagger
 Use [Swashbuckle.AspNetCore.Swagger](https://github.com/domaindrivendev/Swashbuckle.AspNetCore) to implement swagger feature.  
 Note: swagger need add Http channel, swagger api path is **[HttpServiceOptions.ApiRootPath]/swagger**, if apiRootPath is "api", should like http://localhost:5000/api/swagger, if apiRootPath is null, should like http://localhost:5000/swagger.  
@@ -500,12 +532,12 @@ services.AddNetRpcSwagger();   // add Swgger service
 app.UseNetRpcSwagger();        // use NetRpcSwagger middleware
 ```
 The demo show how to call a method with callback and cancel:
-![Alt text](swagger.png)
+![Alt text](images\swagger.png)
 
 If define Callback Action\<T> and CancelToken supported, need set **\_connectionId** and **_callId** when request.
 OperationCanceledException will receive respones with statuscode 600.  
 
-![Alt text](callback.png)
+![Alt text](images\callback.png)
 
 Also support summary on model or method.
 ## HttpServiceOptions
@@ -515,10 +547,6 @@ Also support summary on model or method.
 /// </summary>
 public string ApiRootPath { get; set; }
 
-/// <summary>
-/// If pass StackTrace to client, default value is false.
-/// </summary>
-public bool IsClearStackTrace { get; set; }
 
 /// <summary>
 /// Set true will pass to next middleware when not match the method, default value is false.
@@ -564,16 +592,28 @@ document.getElementById("cancelBtn").addEventListener("click", function (event) 
     event.preventDefault();
 });
 ```
-## [Http] NetRpcProducesResponseType
-If contract has **Exception** defined, should use **NetRpcProducesResponseType** to define **statuscode**, 
+## [Http] FaultExceptionAttribute
+If contract has **Exception** defined, should use **FaultExceptionAttribute** to define **statuscode**, 
 use **response code** to define summary(will display in Swagger), 
 otherwise NetRpc will use statuscode **400** to define all Exception by default.
 ```c#
-/// <response code="400">CustomException error.</response>
-/// <response code="401">CustomException2 error</response>
-[NetRpcProducesResponseType(typeof(CustomException), 400)]
-[NetRpcProducesResponseType(typeof(CustomException2), 401)]
+/// <response code="401">CustomException error.</response>
+/// <response code="402">CustomException2 error</response>
+[FaultException(typeof(CustomException), 401)]
+[FaultException(typeof(CustomException2), 402)]
 Task CallByCustomExceptionAsync();
+```
+## [Http] HttpRouteAttribute
+Route the request path, set **trimActionAsync** to true, action name will trim end by 'Async'.
+```c#
+[HttpRoute("Service", true)] //reset "IServiceAsync" to "Service"
+public interface IServiceAsync
+{
+    [HttpRoute("Service1/Call2")] //reset to "Service1/Call2"
+    Task<CustomObj> CallAsync(string p1, int p2);  
+
+    Task CallByCustomExceptionAsync();
+
 ```
 ## [Http] ResponseTextException
 ResponseTextException define pain text response with statucode.
@@ -586,6 +626,7 @@ public async Task CallByResponseTextExceptionAsync()
 Also should use **response code** define summary, it will display in swagger.
 ```c#
 /// <response code="701">return the pain text.</response>
+[ResponseText(701)]
 Task CallByResponseTextExceptionAsync();
 ```
 ## [Http] StreamName
@@ -616,9 +657,10 @@ ComplexStream Call(Stream data, Action<CustomCallbackObj> cb);
 CreateClientProxy<TService>(Channel channel, int timeoutInterval = 1200000)
 ```
 ## Samples
-* [Hello World](samples/HelloWorld) Quick start.
-* [Api](samples/Api) Contains most of features.
-* [Http](samples/Http) Http webapi and swagger api.
-* [LoadBalance](samples/LoadBalance) RabbitMQ load balance and post way to call.
-* [InitializeByDI](samples/InitializeByDI) Use DI to create a client or servcie and how to DI a http channel to exist MVC service.
-* [CallbackThrottling](samples/CallbackThrottling) It useful when callback is progress.
+* [samples/HelloWorld](samples/HelloWorld) Quick start.
+* [samples/Api](samples/Api) Contains most of features.
+* [samples/Http](samples/Http) Http webapi and swagger api.
+* [samples/LoadBalance](samples/LoadBalance) RabbitMQ load balance and post way to call.
+* [samples/InitializeByDI](samples/InitializeByDI) Use DI to create a client or servcie and how to DI a http channel to exist MVC service.
+* [samples/CallbackThrottling](samples/CallbackThrottling) It useful when callback is progress.
+* [samples/Gateway](samples/Gateway) Gateway for NetRpc.

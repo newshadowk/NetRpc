@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using NetRpc.Http.Client;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace NetRpc.Http
@@ -29,12 +30,12 @@ namespace NetRpc.Http
             httpServiceOptions.OnChange(i => _supportCallbackAndCancel = i.SupportCallbackAndCancel);
         }
 
-        private void Process(string apiRootPath, bool supportCallbackAndCancel, IEnumerable<Type> instanceTypes)
+        private void Process(string apiRootPath, bool supportCallbackAndCancel, List<Contract> contracts)
         {
-            var list = GetContractMethodInfos(instanceTypes);
+            var list = GetContractMethodInfos(contracts);
 
             //tag
-            list.ForEach(i => _doc.Tags.Add(new OpenApiTag {Name = i.contractInstance.Name}));
+            list.ForEach(i => _doc.Tags.Add(new OpenApiTag {Name = i.contractType.Name}));
 
             //path
             _doc.Paths = new OpenApiPaths();
@@ -42,12 +43,12 @@ namespace NetRpc.Http
             {
                 foreach (var method in tagGroup.methods)
                 {
-                    var argType = Helper.GetArgType(method, supportCallbackAndCancel, out var streamName, out var action, out var cancelToken);
+                    var argType = ClientHelper.GetArgType(method, supportCallbackAndCancel, out var streamName, out var action, out var cancelToken);
 
                     //Operation
                     var operation = new OpenApiOperation
                     {
-                        Tags = GenerateTags(tagGroup.contractInstance.Name),
+                        Tags = GenerateTags(tagGroup.contractType.Name),
                         RequestBody = GenerateRequestBody(argType, streamName),
                         Responses = GenerateResponses(method, cancelToken != null)
                     };
@@ -62,7 +63,7 @@ namespace NetRpc.Http
                     //Path
                     var openApiPathItem = new OpenApiPathItem();
                     openApiPathItem.AddOperation(OperationType.Post, operation);
-                    var key = $"{apiRootPath}/{tagGroup.contractInstance.Name}/{Helper.FormatMethodName(tagGroup.methods, method.Name)}";
+                    var key = $"{apiRootPath}/{ClientHelper.GetActionPath(tagGroup.contractType, method)}";
                     _doc.Paths.Add(key, openApiPathItem);
                 }
             }
@@ -73,21 +74,12 @@ namespace NetRpc.Http
             };
         }
 
-        private static List<(Type contractInstance, List<MethodInfo> methods)> GetContractMethodInfos(IEnumerable<Type> instanceTypes)
+        private static List<(Type contractType, List<MethodInfo> methods)> GetContractMethodInfos(List<Contract> contracts)
         {
-            var list = new List<(Type contractInstance, List<MethodInfo> methods)>();
-            foreach (var i in instanceTypes)
-            foreach (var m in GetContractMethodInfos(i))
-                list.Add((m.contractInstance, m.methods));
+            var list = new List<(Type contractType, List<MethodInfo> methods)>();
+            foreach (var contract in contracts)
+                list.Add((contract.ContractType, contract.ContractType.GetMethods().ToList()));
             return list;
-        }
-
-        private static List<(Type contractInstance, List<MethodInfo> methods)> GetContractMethodInfos(Type instanceTypes)
-        {
-            var ret = new List<(Type contractInstance, List<MethodInfo> methods)>();
-            foreach (var item in instanceTypes.GetInterfaces())
-                ret.Add((item, item.GetMethods().ToList()));
-            return ret;
         }
 
         private static List<OpenApiTag> GenerateTags(string tagName)
@@ -98,7 +90,7 @@ namespace NetRpc.Http
         private OpenApiResponses GenerateResponses(MethodInfo method, bool hasCancel)
         {
             var ret = new OpenApiResponses();
-            var returnType = Helper.GetTypeFromReturnTypeDefinition(method.ReturnType);
+            var returnType = method.ReturnType.GetTypeFromReturnTypeDefinition();
 
             //200
             var res200 = new OpenApiResponse();
@@ -123,23 +115,15 @@ namespace NetRpc.Http
 
             //600
             if (hasCancel)
-                ret.Add(ConstValue.CancelStatusCode.ToString(), new OpenApiResponse {Description = "A task was canceled."});
+                ret.Add(ClientConstValue.CancelStatusCode.ToString(), new OpenApiResponse {Description = "A task was canceled."});
 
             //exception  
-            var resTypes = method.GetCustomAttributes<NetRpcProducesResponseTypeAttribute>(true).ToList();
+            var resTypes = method.GetCustomAttributes<FaultExceptionAttribute>(true).ToList();
             if (!resTypes.Any())
                 return ret;
 
             foreach (var fault in resTypes)
-            {
-                var res = new OpenApiResponse();
-                res.Content.Add("application/json", new OpenApiMediaType
-                {
-                    Schema = GenerateSchema(fault.DetailType)
-                });
-
-                ret.Add(fault.StatusCode.ToString(), res);
-            }
+                ret.Add(fault.StatusCode.ToString(), new OpenApiResponse());
 
             return ret;
         }
@@ -205,7 +189,6 @@ namespace NetRpc.Http
                 Console.WriteLine(e);
                 throw;
             }
-  
 
             var openApiSchema = new OpenApiSchema
             {
@@ -231,9 +214,9 @@ namespace NetRpc.Http
             });
         }
 
-        public OpenApiDocument GetSwagger(string apiRootPath, IEnumerable<Type> instanceTypes)
+        public OpenApiDocument GetSwagger(string apiRootPath, List<Contract> contracts)
         {
-            Process(apiRootPath, _supportCallbackAndCancel, instanceTypes);
+            Process(apiRootPath, _supportCallbackAndCancel, contracts);
             return _doc;
         }
 

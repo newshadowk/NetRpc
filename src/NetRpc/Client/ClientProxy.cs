@@ -14,7 +14,7 @@ namespace NetRpc
         public event EventHandler DisConnected;
         public event EventHandler<EventArgsT<Exception>> ExceptionInvoked;
         private readonly object LockObj = new object();
-        private readonly IClientConnectionFactory _factory;
+        private readonly IOnceCallFactory _factory;
         private bool _isConnected;
         public event Func<ClientProxy<TService>, Task> Heartbeat;
         private readonly Timer _tHearbeat;
@@ -23,10 +23,10 @@ namespace NetRpc
 
         public TService Proxy { get; }
 
-        public ClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options)
+        public ClientProxy(IOnceCallFactory factory, IOptionsMonitor<NetRpcClientOption> options)
         {
             _factory = factory;
-            var call = new Call(factory, options.CurrentValue.IsWrapFaultException, options.CurrentValue.TimeoutInterval, Context);
+            var call = new Call(typeof(TService), factory, options.CurrentValue.TimeoutInterval, Context);
             ClientMethodInvoker invoker = new ClientMethodInvoker(call);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
             ((SimpleDispatchProxyAsync)(object)Proxy).ExceptionInvoked += ProxyExceptionInvoked;
@@ -35,9 +35,14 @@ namespace NetRpc
 
             options.OnChange(i =>
             {
-                call.Config(i.IsWrapFaultException, i.TimeoutInterval);
+                call.Config(i.TimeoutInterval);
                 _tHearbeat.Interval = i.HearbeatInterval;
             });
+        }
+
+        public ClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options) 
+            : this(new OnceCallFactory(factory), options)
+        {
         }
 
         private void ProxyExceptionInvoked(object sender, EventArgsT<Exception> e)

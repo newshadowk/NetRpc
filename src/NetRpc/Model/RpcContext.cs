@@ -105,7 +105,7 @@ namespace NetRpc
 
             for (int i = 0; i < Args.Length; i++)
             {
-                if (Args[i].GetType() == typeof(Stream))
+                if (Args[i].GetType().IsSubclassOf(typeof(Stream)))
                     Args[i] = Stream;
             }
         }

@@ -23,7 +23,7 @@ namespace NetRpc
             token.ThrowIfCancellationRequested();
             try
             {
-                return _call.CallAsync<object>(targetMethod.GetMethodInfoDto(), callback, token, stream, otherArgs).Result;
+                return _call.CallAsync<object>(targetMethod, callback, token, stream, otherArgs).Result;
             }
             catch (AggregateException e)
             {
@@ -41,14 +41,14 @@ namespace NetRpc
         {
             (Action<object> callback, CancellationToken token, Stream stream, object[] otherArgs) = GetArgs(args);
             token.ThrowIfCancellationRequested();
-            return _call.CallAsync<object>(targetMethod.GetMethodInfoDto(), callback, token, stream, otherArgs);
+            return _call.CallAsync<object>(targetMethod, callback, token, stream, otherArgs);
         }
 
         public Task<T> InvokeAsyncT<T>(MethodInfo targetMethod, object[] args)
         {
             (Action<object> callback, CancellationToken token, Stream stream, object[] otherArgs) = GetArgs(args);
             token.ThrowIfCancellationRequested();
-            return _call.CallAsync<T>(targetMethod.GetMethodInfoDto(), callback, token, stream, otherArgs);
+            return _call.CallAsync<T>(targetMethod, callback, token, stream, otherArgs);
         }
 
         private static (Action<object> callBack, CancellationToken token, Stream stream, object[] otherArgs) GetArgs(object[] args)

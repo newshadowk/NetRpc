@@ -19,27 +19,17 @@ namespace NetRpc
 
         public async Task HandleAsync(IServiceConnection connection)
         {
-            var contractOptions = _serviceProvider.GetRequiredService<IOptions<ContractOptions>>();
-
-            using (var scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
-            {
-                var convert = new BufferServiceOnceApiConvert(connection);
-                var instances = scope.ServiceProvider.GetIContractInstances(contractOptions.Value);
-                var onceTransfer = new BufferServiceOnceTransfer(instances, scope.ServiceProvider, convert, _middlewareBuilder);
-                onceTransfer.Start();
-                await onceTransfer.HandleRequestAsync();
-            }
+            await HandleAsync(new BufferServiceOnceApiConvert(connection));
         }
 
-        public async Task HandleHttpAsync(IHttpServiceOnceApiConvert convert)
+        public async Task HandleAsync(IServiceOnceApiConvert convert)
         {
             var contractOptions = _serviceProvider.GetRequiredService<IOptions<ContractOptions>>();
-
             using (var scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
-                var instances = scope.ServiceProvider.GetIContractInstances(contractOptions.Value);
-                var onceTransfer = new HttpServiceOnceTransfer(instances, scope.ServiceProvider, convert, _middlewareBuilder);
-                onceTransfer.Start();
+                var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
+                var onceTransfer = new ServiceOnceTransfer(instances, scope.ServiceProvider, convert, _middlewareBuilder);
+                await onceTransfer.StartAsync();
                 await onceTransfer.HandleRequestAsync();
             }
         }

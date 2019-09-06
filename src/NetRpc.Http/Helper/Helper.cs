@@ -6,122 +6,13 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using NetRpc.Http.Client;
 using Newtonsoft.Json;
 
 namespace NetRpc.Http
 {
     internal static class Helper
     {
-        public static object ToObject(this string str, Type t)
-        {
-            if (string.IsNullOrEmpty(str))
-                return default;
-
-            return JsonConvert.DeserializeObject(str, t);
-        }
-
-        public static string ToJson<T>(this T obj)
-        {
-            if (obj == null)
-                return null;
-            return JsonConvert.SerializeObject(obj);
-        }
-
-        public static string FormatPath(string path)
-        {
-            path = path.Replace('\\', '/');
-            path = path.Replace("//", "/");
-            path = path.TrimStart('/');
-            return path;
-        }
-
-        public static bool HasStream(this Type t)
-        {
-            if (t == typeof(Stream))
-                return true;
-
-            var propertyInfos = t.GetProperties();
-            return propertyInfos.Any(i => i.PropertyType == typeof(Stream));
-        }
-
-        public static Type GetTypeFromReturnTypeDefinition(Type returnTypeDefinition)
-        {
-            if (returnTypeDefinition.IsTaskT())
-            {
-                var at = returnTypeDefinition.GetGenericArguments()[0];
-                return at;
-            }
-
-            return returnTypeDefinition;
-        }
-
-        public static Type GetArgType(MethodInfo m, bool supportCallbackAndCancel, out string streamName, out TypeName action, out TypeName cancelToken)
-        {
-            streamName = null;
-            action = null;
-            cancelToken = null;
-
-            var typeName = $"{m.Name}Param";
-            var t = ClassHelper.BuildType(typeName);
-            var cis = new List<ClassHelper.CustomsPropertyInfo>();
-
-            foreach (var p in m.GetParameters())
-            {
-                if (p.ParameterType == typeof(Stream))
-                {
-                    streamName = p.Name;
-                    continue;
-                }
-            
-                //callback
-                if (p.ParameterType.IsActionT())
-                {
-                    if (!supportCallbackAndCancel)
-                        continue;
-
-                    action = new TypeName
-                    {
-                        Type = p.ParameterType,
-                        Name = p.Name
-                    };
-
-                    //connectionId callId
-                    cis.Add(new ClassHelper.CustomsPropertyInfo(typeof(string), ConstValue.ConnectionIdName));
-                    cis.Add(new ClassHelper.CustomsPropertyInfo(typeof(string), ConstValue.CallIdName));
-                    continue;
-                }
-
-                //cancel
-                if (p.ParameterType == typeof(CancellationToken?) || p.ParameterType == typeof(CancellationToken))
-                {
-                    if (!supportCallbackAndCancel)
-                        continue;
-
-                    cancelToken = new TypeName
-                    {
-                        Type = p.ParameterType,
-                        Name = p.Name
-                    };
-                    continue;
-                }
-
-                cis.Add(new ClassHelper.CustomsPropertyInfo(p.ParameterType, p.Name));
-            }
-
-            t = ClassHelper.AddProperty(t, cis);
-            if (cis.Count == 0)
-                return null;
-            return t;
-        }
-
-        public static object[] GetArgsFromDataObj(Type dataObjType, object dataObj)
-        {
-            List<object> ret = new List<object>();
-            foreach (var p in dataObjType.GetProperties())
-                ret.Add(ClassHelper.GetPropertyValue(dataObj, p.Name));
-            return ret.ToArray();
-        }
-
         public static object ToObjectForHttp(string str, Type t)
         {
             object dataObj;
@@ -135,6 +26,24 @@ namespace NetRpc.Http
             }
 
             return dataObj;
+        }
+
+        public static string FormatPath(string path)
+        {
+            path = path.Replace('\\', '/');
+            path = path.Replace("//", "/");
+            path = path.TrimStart('/');
+            return path;
+        }
+
+        public static object[] GetArgsFromDataObj(Type dataObjType, object dataObj)
+        {
+            List<object> ret = new List<object>();
+            if (dataObjType == null)
+                return ret.ToArray();
+            foreach (var p in dataObjType.GetProperties())
+                ret.Add(ClassHelper.GetPropertyValue(dataObj, p.Name));
+            return ret.ToArray();
         }
 
         public static object[] GetArgsFromQuery(IQueryCollection query, Type dataObjType)
@@ -217,37 +126,9 @@ namespace NetRpc.Http
             return path;
         }
 
-        /// <summary>
-        /// CallAsync => Call.
-        /// </summary>
-        public static string FormatMethodName(List<MethodInfo> allMethodInfos, string methodName)
+        public static string GetExceptionContent(this Exception ex)
         {
-            if (methodName.EndsWith("Async"))
-            {
-                var trimName = methodName.TrimEndString(5);
-                if (!allMethodInfos.Exists(i => i.Name == trimName))
-                    return trimName;
-            }
-
-            return methodName;
-        }
-
-        /// <summary>
-        /// Call => CallAsync.
-        /// </summary>
-        public static string UnFormatMethodName(List<MethodInfo> allMethodInfos, string methodName)
-        {
-            if (allMethodInfos.Exists(i => i.Name == methodName))
-                return methodName;
-
-            if (!methodName.EndsWith("Async"))
-            {
-                var addName = methodName + "Async";
-                if (allMethodInfos.Exists(i => i.Name == addName))
-                    return addName;
-            }
-
-            return methodName;
+            return $"{ex.GetType()}, {ex.Message}";
         }
     }
 }

@@ -1,0 +1,1 @@
+@dotnet %~dp0\GrpcService\bin\Debug\netcoreapp2.2\GrpcService.dll

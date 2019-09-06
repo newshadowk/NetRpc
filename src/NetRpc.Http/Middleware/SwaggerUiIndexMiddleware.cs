@@ -44,7 +44,7 @@ namespace NetRpc.Http
                     _html = await ReadStringAsync(".index.html");
                     _html = _html.Replace("{url}", swaggerFilePath);
 
-                    OpenApiDocument doc = netRpcSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.InstanceTypes);
+                    OpenApiDocument doc = netRpcSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.Contracts);
                     _json = ToJson(doc);
                 }
 

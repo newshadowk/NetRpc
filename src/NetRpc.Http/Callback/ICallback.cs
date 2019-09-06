@@ -11,22 +11,22 @@ namespace NetRpc.Http
 
     public sealed class CallbackHub : Hub<ICallback>
     {
-        public static event EventHandler Canceled;
+        public static event EventHandler<string> Canceled;
 
         public Task<string> GetConnectionId()
         {
             return Task.FromResult(Context.ConnectionId);
         }
 
-        public Task Cancel()
+        public Task Cancel(string callId)
         {
-            OnCanceled();
+            OnCanceled(callId);
             return Task.CompletedTask;
         }
 
-        private void OnCanceled()
+        private static void OnCanceled(string e)
         {
-            Canceled?.Invoke(this, EventArgs.Empty);
+            Canceled?.Invoke(null, e);
         }
     }
 }

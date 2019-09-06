@@ -22,7 +22,7 @@ namespace NetRpc
 
         public int Read(byte[] buffer, int offset, int count)
         {
-            int readCount = Math.Min(count, LeftCount);
+            var readCount = Math.Min(count, LeftCount);
             Buffer.BlockCopy(Body, Position, buffer, offset, readCount);
             Position += readCount;
             return readCount;
@@ -47,12 +47,12 @@ namespace NetRpc
             if (_isEnd)
                 return 0;
 
-            int readCount = 0;
+            var readCount = 0;
             while (readCount < count)
             {
                 if (lastBuffer == null || lastBuffer.IsEnd)
                 {
-                    (byte[], BufferType) value = _block.Receive(TimeSpan.FromSeconds(20));
+                    var value = _block.Receive(TimeSpan.FromSeconds(20));
                     if (value.Item2 == BufferType.End ||
                         value.Item2 == BufferType.Fault)
                     {
@@ -77,10 +77,13 @@ namespace NetRpc
         }
     }
 
-    public sealed class BufferBlockStream : System.IO.Stream
+    public sealed class BufferBlockStream : Stream
     {
         private long? _length;
         private readonly BufferBlockReader _reader;
+        public event EventHandler End;
+
+        public event EventHandler<long> Progress;
 
         public BufferBlockStream(BufferBlock<(byte[], BufferType)> block, long? length)
         {
@@ -94,8 +97,9 @@ namespace NetRpc
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            int readCount = _reader.Read(buffer, count);
+            var readCount = _reader.Read(buffer, count);
             Position += readCount;
+            OnProgress(Position);
             return readCount;
         }
 
@@ -131,5 +135,22 @@ namespace NetRpc
         }
 
         public override long Position { get; set; }
+
+        private void OnEnd()
+        {
+            End?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+                OnEnd();
+            base.Dispose(disposing);
+        }
+
+        private void OnProgress(long e)
+        {
+            Progress?.Invoke(this, e);
+        }
     }
 }

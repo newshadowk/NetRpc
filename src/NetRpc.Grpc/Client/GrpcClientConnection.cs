@@ -36,10 +36,12 @@ namespace NetRpc.Grpc
             await _api.RequestStream.WriteAsync(new StreamBuffer { Body = ByteString.CopyFrom(buffer) });
         }
 
-        public void Start()
+        public async Task StartAsync()
         {
             _api = _client.CallClient.DuplexStreamingServerMethod();
+#pragma warning disable 4014
             Task.Run(async () =>
+#pragma warning restore 4014
             {
                 while (await _api.ResponseStream.MoveNext(CancellationToken.None))
                     OnReceived(new EventArgsT<byte[]>(_api.ResponseStream.Current.Body.ToByteArray()));

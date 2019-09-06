@@ -31,7 +31,7 @@ namespace NetRpc.RabbitMQ
         public IClientConnection Create()
         {
             lock (_lockObj)
-                return new ClientConnection(_connection, _options.RpcQueue);
+                return new RabbitMQClientConnection(_connection, _options.RpcQueue);
         }
     }
 }
