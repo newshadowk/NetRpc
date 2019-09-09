@@ -270,16 +270,24 @@ namespace NetRpc
             bbs.Progress += (s, e) =>
             {
                 var p = (double)e / totalCount;
-                var p2 = p * rate * 100;
+                if (p == 0)
+                    return;
+
+                var p2 = p * rate * 100 + 100;
                 context.Callback(Convert.ChangeType(p2, context.CallbackType));
             };
 
             var rawAction = context.Callback;
             context.Callback = o =>
             {
-                // ReSharper disable once AccessToDisposedClosure
-                double p3 = (double)o * .9 + 10;
-                rawAction(Convert.ChangeType(p3, context.CallbackType));
+                var postP = (double)o;
+                double retP;
+                if (postP > 100)
+                    retP = postP - 100;
+                else
+                    retP = postP * .9 + progressCount;
+
+                rawAction(Convert.ChangeType(retP, context.CallbackType));
             };
         }
     }
