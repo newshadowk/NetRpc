@@ -84,6 +84,12 @@ namespace NetRpc
             return services;
         }
 
+        public static IServiceCollection AddNetRpcStreamCallBack(this IServiceCollection services, int progressCount)
+        {
+            services.Configure<MiddlewareOptions>(i => i.UseStreamCallBack(progressCount));
+            return services;
+        }
+
         public static IServiceCollection AddNetRpcMiddleware(this IServiceCollection services, Action<MiddlewareOptions> configureOptions)
         {
             if (configureOptions != null)

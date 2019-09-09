@@ -12,18 +12,18 @@ namespace NetRpc
     public class RpcContext
     {
         private object _result;
-        private CancellationToken _token;
-        private Stream _stream;
 
-        public IServiceProvider ServiceProvider { get; set; }
+        public IServiceProvider ServiceProvider { get; }
 
-        public Dictionary<string, object> Header { get; set; }
+        public Dictionary<string, object> Header { get; }
 
-        public object Target { get; set; }
+        public object Target { get; }
 
-        public MethodInfo InstanceMethodInfo { get; set; }
+        public MethodInfo InstanceMethodInfo { get; }
 
-        public MethodInfo ContractMethodInfo { get; set; }
+        public MethodInfo ContractMethodInfo { get; }
+
+        public Type CallbackType { get; }
 
         public Action<object> Callback
         {
@@ -44,36 +44,46 @@ namespace NetRpc
                     var t = Args[i].GetType();
                     if (t.IsActionT())
                     {
-                        Args[i] = ActionHelper.ConvertAction(value, t.GetGenericArguments()[0]);
+                        Args[i] = ActionHelper.ConvertAction(value, CallbackType);
                         return;
                     }
                 }
             }
         }
 
-        public CancellationToken Token
+        public CancellationToken Token { get; }
+
+        public Stream Stream { get; }
+
+        public object[] Args { get; }
+
+        public ActionInfo ActionInfo { get; }
+
+        public RpcContext(IServiceProvider serviceProvider, 
+            Dictionary<string, object> header, 
+            object target, 
+            MethodInfo instanceMethodInfo,
+            MethodInfo contractMethodInfo, 
+            object[] args, 
+            ActionInfo actionInfo,
+            Stream stream,
+            Action<object> callback,
+            CancellationToken token)
         {
-            get => _token;
-            set
-            {
-                _token = value;
-                ResetToken();
-            }
+            ServiceProvider = serviceProvider;
+            Header = header;
+            Target = target;
+            InstanceMethodInfo = instanceMethodInfo;
+            ContractMethodInfo = contractMethodInfo;
+            Args = args;
+            CallbackType = GetActionType(args);
+            ActionInfo = actionInfo;
+            Callback = callback;
+            Stream = stream;
+            Token = token;
+
+            ResetProps();
         }
-
-        public Stream Stream
-        {
-            get => _stream;
-            set
-            {
-                _stream = value;
-                ResetStream();
-            }
-        }
-
-        public object[] Args { get; set; }
-
-        public ActionInfo ActionInfo { get; set; }
 
         public object Result
         {
@@ -86,7 +96,7 @@ namespace NetRpc
             }
         }
 
-        private void ResetToken()
+        private void ResetProps()
         {
             if (Args == null)
                 return;
@@ -95,16 +105,7 @@ namespace NetRpc
             {
                 if (Args[i].GetType().IsCancellationToken())
                     Args[i] = Token;
-            }
-        }
 
-        private void ResetStream()
-        {
-            if (Args == null)
-                return;
-
-            for (var i = 0; i < Args.Length; i++)
-            {
                 if (Args[i].GetType().IsSubclassOf(typeof(Stream)))
                     Args[i] = Stream;
             }
@@ -113,6 +114,18 @@ namespace NetRpc
         public override string ToString()
         {
             return $"Header:{DicToStringForDisplay(Header)}, MethodName:{InstanceMethodInfo.Name}, Args:{ListToStringForDisplay(Args, ",")}";
+        }
+
+        private static Type GetActionType(object[] args)
+        {
+            foreach (var i in args)
+            {
+                var t = i.GetType();
+                if (t.IsActionT())
+                    return t.GetGenericArguments()[0];
+            }
+
+            return null;
         }
 
         private static string ListToStringForDisplay(Array list, string split)

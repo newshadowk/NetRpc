@@ -30,6 +30,13 @@ namespace NetRpc
                 return;
             Items.Add((typeof(CallbackThrottlingMiddleware), new object[] {callbackThrottlingInterval}));
         }
+
+        public void UseStreamCallBack(int progressCount)
+        {
+            if (progressCount <= 0)
+                return;
+            Items.Add((typeof(StreamCallBackMiddleware), new object[] { progressCount }));
+        }
     }
 
     public class MiddlewareBuilder

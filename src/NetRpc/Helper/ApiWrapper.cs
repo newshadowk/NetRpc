@@ -75,19 +75,17 @@ namespace NetRpc
             var (instanceMethodInfo, contractMethodInfo, instance) = GetMethodInfo(scp.Action, instances);
             var ps = contractMethodInfo.GetParameters();
             var args = GetArgs(ps, scp.Args, scp.Callback, scp.Token, scp.Stream);
-            return new RpcContext
-            {
-                Callback = scp.Callback,
-                ActionInfo = scp.Action,
-                Args = args,
-                ContractMethodInfo = contractMethodInfo,
-                InstanceMethodInfo = instanceMethodInfo,
-                ServiceProvider = serviceProvider,
-                Header = scp.Header,
-                Stream = scp.Stream,
-                Target = instance,
-                Token = scp.Token
-            };
+            return new RpcContext(
+                serviceProvider,
+                scp.Header,
+                instance,
+                instanceMethodInfo, 
+                contractMethodInfo, 
+                args, 
+                scp.Action, 
+                scp.Stream, 
+                scp.Callback, 
+                scp.Token);
         }
 
         /// <exception cref="TypeLoadException"></exception>

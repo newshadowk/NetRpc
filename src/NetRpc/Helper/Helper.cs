@@ -253,5 +253,19 @@ namespace NetRpc
             //OperationCanceledException
             return ex;
         }
+
+        public static void ConvertStreamProgress(RpcContext context, int progressCount)
+        {
+            var rate = (double)progressCount / 100;
+            var bbs = (BufferBlockStream)context.Stream;
+            var totalCount = bbs.Length;
+          
+            bbs.Progress += (s, e) =>
+            {
+                var p = (double)e / totalCount;
+                var p2 = p * rate * 100;
+                context.Callback(Convert.ChangeType(p2, context.CallbackType));
+            };
+        }
     }
 }
