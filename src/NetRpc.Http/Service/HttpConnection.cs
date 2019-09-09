@@ -38,7 +38,7 @@ namespace NetRpc.Http
             }
         }
 
-        public Task SendWithStreamAsync(CustomResult result, Stream stream, string streamName)
+        public async Task SendWithStreamAsync(CustomResult result, Stream stream, string streamName)
         {
             var emptyActionDescriptor = new ActionDescriptor();
             var routeData = _context.GetRouteData() ?? new RouteData();
@@ -56,11 +56,7 @@ namespace NetRpc.Http
             }
 
             var executor = new FileStreamResultExecutor(NullLoggerFactory.Instance);
-#pragma warning disable 4014
-            executor.ExecuteAsync(actionContext, fRet);
-#pragma warning restore 4014
-
-            return Task.CompletedTask;
+            await executor.ExecuteAsync(actionContext, fRet);
         }
 
         public async Task SendAsync(Result result)

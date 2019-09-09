@@ -269,6 +269,14 @@ namespace NetRpc
                 var p2 = p * rate * 100;
                 context.Callback(Convert.ChangeType(p2, context.CallbackType));
             };
+
+            var rawAction = context.Callback;
+            context.Callback = o =>
+            {
+                // ReSharper disable once AccessToDisposedClosure
+                double p3 = (double)o * .9 + 10;
+                rawAction(Convert.ChangeType(p3, context.CallbackType));
+            };
         }
     }
 }
