@@ -256,6 +256,9 @@ namespace NetRpc
 
         public static void ConvertStreamProgress(RpcContext context, int progressCount)
         {
+            if (context.Callback == null)
+                return;
+
             var rate = (double)progressCount / 100;
             var bbs = (BufferBlockStream)context.Stream;
             var totalCount = bbs.Length;

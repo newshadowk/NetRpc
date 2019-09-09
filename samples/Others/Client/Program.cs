@@ -14,7 +14,8 @@ namespace Client
             var p = NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure));
             using (var fileStream = File.OpenRead(@"d:\7\3.rar"))
             {
-                await p.Proxy.Call(fileStream, Console.WriteLine);
+                //await p.Proxy.Call(fileStream, Console.WriteLine);
+                await p.Proxy.Call2(fileStream);
             }
 
             Console.WriteLine("end");

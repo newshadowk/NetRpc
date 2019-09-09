@@ -39,7 +39,21 @@ namespace Service
             while (readCount > 0)
             {
                 readCount = stream.Read(bs, 0, size);
-                //prog.Invoke(readCount);
+                Console.WriteLine(readCount);
+            }
+
+            Console.WriteLine("end");
+            return Task.CompletedTask;
+        }
+
+        public Task Call2(Stream stream)
+        {
+            const int size = 81920;
+            var bs = new byte[size];
+            var readCount = stream.Read(bs, 0, size);
+            while (readCount > 0)
+            {
+                readCount = stream.Read(bs, 0, size);
                 Console.WriteLine(readCount);
             }
 
