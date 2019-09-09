@@ -259,6 +259,10 @@ namespace NetRpc
             if (context.Callback == null)
                 return;
 
+            //http channel stream is ref read stream.
+            if (!(context.Stream is BufferBlockStream))
+                return;
+
             var rate = (double)progressCount / 100;
             var bbs = (BufferBlockStream)context.Stream;
             var totalCount = bbs.Length;
