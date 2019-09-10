@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -31,7 +33,11 @@ namespace RabbitMQ.Base
 
         private void ConsumerReceived(object sender, BasicDeliverEventArgs e)
         {
-            OnReceived(new EventArgsT<CallSession>(new CallSession(_connect, _mainModel, e)));
+            //must start a Thread, avoid block receive thread.
+            Task.Run(() =>
+            {
+                OnReceived(new EventArgsT<CallSession>(new CallSession(_connect, _mainModel, e)));
+            });
         }
 
         public void Dispose()

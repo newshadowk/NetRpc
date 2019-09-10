@@ -285,7 +285,7 @@ namespace NetRpc
                 if (postP > 100)
                     retP = postP - 100;
                 else
-                    retP = postP * .9 + progressCount;
+                    retP = postP * (100 - progressCount) / 100 + progressCount;
 
                 rawAction(Convert.ChangeType(retP, context.CallbackType));
             };

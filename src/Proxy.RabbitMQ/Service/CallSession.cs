@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -32,10 +33,10 @@ namespace RabbitMQ.Base
             if (!_isPost)
             {
                 _clientToServiceQueue = _clientToServiceModel.QueueDeclare().QueueName;
-                var replyConsumer = new EventingBasicConsumer(_clientToServiceModel);
-                replyConsumer.Received += (s, e) => { OnReceived(new EventArgsT<byte[]>(e.Body)); };
+                var clientToServiceConsumer = new EventingBasicConsumer(_clientToServiceModel);
+                clientToServiceConsumer.Received += (s, e) => OnReceived(new EventArgsT<byte[]>(e.Body));
 
-                _clientToServiceModel.BasicConsume(_clientToServiceQueue, true, replyConsumer);
+                _clientToServiceModel.BasicConsume(_clientToServiceQueue, true, clientToServiceConsumer);
                 Send(Encoding.UTF8.GetBytes(_clientToServiceQueue));
             }
 

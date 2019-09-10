@@ -15,6 +15,10 @@ namespace Client
     {
         static async Task Main(string[] args)
         {
+            var openRead = File.OpenRead(@"C:\TempF\17\src.pdf");
+            var openReadLength = openRead.Length;
+
+
             //var p = NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure));
             var p = NetRpcManager.CreateClientProxy<IService>(new HttpClientOptions() { ApiUrl = "http://localhost:5000", SignalRHubUrl = "http://localhost:5000/callback" });
 

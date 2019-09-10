@@ -23,7 +23,7 @@ namespace NetRpc
                 context.Callback = o =>
                 {
                     // ReSharper disable once AccessToDisposedClosure
-                    ra.Post(() => { rawAction(o); });
+                    ra.Post(() => rawAction(o));
                 };
                 await _next(context);
             }
