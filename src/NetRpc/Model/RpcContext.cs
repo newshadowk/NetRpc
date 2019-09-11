@@ -29,7 +29,13 @@ namespace NetRpc
         {
             get
             {
-                var found = Args?.FirstOrDefault(i => i.GetType().IsActionT());
+                var found = Args?.FirstOrDefault(i =>
+                {
+                    if (i == null)
+                        return false;
+
+                    return i.GetType().IsActionT();
+                });
                 if (found == null)
                     return null;
                 return ActionHelper.ConvertAction(found);
@@ -41,6 +47,9 @@ namespace NetRpc
 
                 for (var i = 0; i < Args.Length; i++)
                 {
+                    if (Args[i] == null)
+                        continue;
+
                     var t = Args[i].GetType();
                     if (t.IsActionT())
                     {
@@ -103,6 +112,9 @@ namespace NetRpc
 
             for (var i = 0; i < Args.Length; i++)
             {
+                if (Args[i] == null)
+                    continue;
+
                 if (Args[i].GetType().IsCancellationToken())
                     Args[i] = Token;
 

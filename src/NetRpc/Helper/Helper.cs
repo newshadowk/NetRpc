@@ -144,6 +144,8 @@ namespace NetRpc
 
         public static bool IsActionT(this Type t)
         {
+            if (t == null)
+                return false;
             return t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Action<>);
         }
 
