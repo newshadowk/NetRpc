@@ -27,7 +27,6 @@ namespace Client
                 //await p.Proxy.Call(fileStream, Console.WriteLine);
                 //await p.Proxy.Call2(fileStream);
 
-
                 var stream = await p.Proxy.Call3(fileStream, Console.WriteLine);
                 const int size = 81920;
                 var bs = new byte[size];

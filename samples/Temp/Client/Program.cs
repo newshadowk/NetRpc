@@ -17,9 +17,10 @@ namespace Client
 
         static async Task Main(string[] args)
         {
-            _p = NetRpc.RabbitMQ.NetRpcManager.CreateClientProxy<IService>(TestHelper.Helper.GetMQOptions()).Proxy;
+            //_p = NetRpc.RabbitMQ.NetRpcManager.CreateClientProxy<IService>(TestHelper.Helper.GetMQOptions()).Proxy;
+            _p = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
 
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 100; i++)
             {
                 var i1 = i;
                 Task.Run(() => { Run(i1); });
@@ -37,6 +38,7 @@ namespace Client
                 if (index % 2 == 0)
                 {
                     path = @"d:\7\test\3.rar";
+                    //path = @"d:\7\test\1.zip";
                 }
                 else
                 {
@@ -44,6 +46,7 @@ namespace Client
                 }
                 var s = File.OpenRead(path);
                 await _p.Call3(s, index, d => Console.WriteLine($"index:{index}, prog:{d}"));
+                Console.WriteLine($"index:{index}, end-----------------------------");
             }
             catch (Exception e)
             {

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DataContract;
 using Microsoft.Extensions.Hosting;
 using NetRpc;
+using NetRpc.Grpc;
 using NetRpc.RabbitMQ;
 using Helper = TestHelper.Helper;
 
@@ -14,10 +15,34 @@ namespace Service
     {
         static async Task Main(string[] args)
         {
+            ThreadPool.SetMinThreads(110, 110);
+            //for (int i = 0; i < 1000; i++)
+            //{
+            //    //Task.Factory.StartNew(() => { });
+            //    Task.Run(() =>
+            //    {
+            //        Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}, {DateTime.Now}");
+            //        Thread.Sleep(1000000);
+            //    });
+            //}
+
+            //Console.Read();
+
+            await RunMQAsync();
+        }
+
+        static async Task RunMQAsync()
+        {
             var h = new HostBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddNetRpcRabbitMQService(i => { i.Value = Helper.GetMQOptions(); });
+                    services.AddNetRpcRabbitMQService(i =>
+                    {
+                        i.Value = Helper.GetMQOptions();
+                        i.Value.PrefetchCount = 20;
+                    });
+                    services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50001));
+
                     services.AddNetRpcMiddleware(i =>
                     {
                         i.UseMiddleware<CallbackThrottlingMiddleware>(500);
@@ -37,23 +62,23 @@ namespace Service
         {
             Console.WriteLine($"id:{Thread.CurrentThread.ManagedThreadId}, index:{index}, start");
 
-            //using (var os = File.OpenWrite($@"d:\7\test\tgt\{index}.zip"))
-            //{
-            //    await stream.CopyToAsync(os);
-            //}
-
-            const int size = 81920;
-            var bs = new byte[size];
-            var readCount = await stream.ReadAsync(bs, 0, size);
-            Console.WriteLine($"{index}, {readCount}");
-
-            while (readCount > 0)
+            using (var os = File.OpenWrite($@"d:\7\test\tgt\{index}.zip"))
             {
-                readCount = await stream.ReadAsync(bs, 0, size);
-                Console.WriteLine($"id:{Thread.CurrentThread.ManagedThreadId}, index:{index}, {readCount}");
+                await stream.CopyToAsync(os);
             }
 
-            Console.WriteLine($"id:{Thread.CurrentThread.ManagedThreadId}, index:{index}, end");
+            //const int size = 81920;
+            //var bs = new byte[size];
+            //var readCount = await stream.ReadAsync(bs, 0, size);
+            //Console.WriteLine($"{index}, {readCount}");
+
+            //while (readCount > 0)
+            //{
+            //    readCount = await stream.ReadAsync(bs, 0, size);
+            //    Console.WriteLine($"id:{Thread.CurrentThread.ManagedThreadId}, index:{index}, {readCount}");
+            //}
+
+            Console.WriteLine($"id:{Thread.CurrentThread.ManagedThreadId}, index:{index}, end ------------------------");
         }
     }
 
