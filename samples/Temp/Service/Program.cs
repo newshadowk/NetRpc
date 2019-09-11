@@ -15,7 +15,7 @@ namespace Service
     {
         static async Task Main(string[] args)
         {
-            ThreadPool.SetMinThreads(110, 110);
+            //ThreadPool.SetMinThreads(110, 110);
             //for (int i = 0; i < 1000; i++)
             //{
             //    //Task.Factory.StartNew(() => { });
@@ -39,7 +39,7 @@ namespace Service
                     services.AddNetRpcRabbitMQService(i =>
                     {
                         i.Value = Helper.GetMQOptions();
-                        i.Value.PrefetchCount = 20;
+                        i.Value.PrefetchCount = 5;
                     });
                     services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50001));
 

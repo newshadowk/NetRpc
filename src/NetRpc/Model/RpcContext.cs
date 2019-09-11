@@ -120,6 +120,9 @@ namespace NetRpc
         {
             foreach (var i in args)
             {
+                if (i == null)
+                    continue;
+
                 var t = i.GetType();
                 if (t.IsActionT())
                     return t.GetGenericArguments()[0];

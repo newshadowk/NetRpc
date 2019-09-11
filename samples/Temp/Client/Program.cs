@@ -37,12 +37,13 @@ namespace Client
                 string path;
                 if (index % 2 == 0)
                 {
-                    path = @"d:\7\test\3.rar";
-                    //path = @"d:\7\test\1.zip";
+                    //path = @"d:\7\test\3.rar";
+                    path = @"d:\7\test\1.zip";
                 }
                 else
                 {
-                    path = @"d:\7\test\4.rar";
+                    //path = @"d:\7\test\4.rar";
+                    path = @"d:\7\test\1.zip";
                 }
                 var s = File.OpenRead(path);
                 await _p.Call3(s, index, d => Console.WriteLine($"index:{index}, prog:{d}"));
