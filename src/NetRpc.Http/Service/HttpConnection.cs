@@ -51,7 +51,7 @@ namespace NetRpc.Http
 
             if (!(result.Result is Stream))
             {
-                var json = result.ToJson();
+                var json = result.Result.ToJson();
                 _context.Response.Headers.Add(ClientConstValue.CustomResultHeaderKey, json);
             }
 

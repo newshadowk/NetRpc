@@ -48,7 +48,7 @@ namespace DataContract
 
         public override string ToString()
         {
-            return $"{nameof(P1)}: {P1}";
+            return $"{nameof(CustomObj)}: {CustomObj}, {nameof(P1)}: {P1}";
         }
     }
 

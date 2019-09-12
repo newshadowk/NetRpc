@@ -57,7 +57,15 @@ namespace Service
             var ret = new ComplexStream
             {
                 Stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
-                StreamName = "TestFile.txt"
+                StreamName = "TestFile.txt",
+                InnerObj = new InnerObj()
+                {
+                    CustomObj = new CustomObj()
+                    {
+                        Name = NameEnum.John
+                    },
+                    P1 = "p1"
+                }
             };
 
             return ret;
