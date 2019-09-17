@@ -1,10 +1,13 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using DataContract;
 using NetRpc;
 using NetRpc.Http.Client;
+using RestSharp.Extensions;
 using Helper = TestHelper.Helper;
 
 namespace Client
@@ -21,11 +24,11 @@ namespace Client
                 ApiUrl = "http://localhost:5000/api"
             }).Proxy;
 
-            //await Test_CallAsync();
-            //await Test_CallByCancelAsync();
-            //await Test_CallByCustomExceptionAsync();
-            //await Test_CallByDefaultExceptionAsync();
-            //await Test_CallByResponseTextExceptionAsync();
+            await Test_CallAsync();
+            await Test_CallByCancelAsync();
+            await Test_CallByCustomExceptionAsync();
+            await Test_CallByDefaultExceptionAsync();
+            await Test_CallByResponseTextExceptionAsync();
             await Test_ComplexCallAsync();
 
             Console.Read();

@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using RestSharp;
 
 namespace NetRpc.Http.Client
@@ -118,7 +119,8 @@ namespace NetRpc.Http.Client
                 else
                 {
                     var resultH = res.Headers.First(i => i.Name == ClientConstValue.CustomResultHeaderKey);
-                    var retInstance = resultH.Value.ToString().ToObject(realRetT);
+                    var hStr = HttpUtility.UrlDecode(resultH.Value.ToString(), Encoding.UTF8);
+                    var retInstance = hStr.ToObject(realRetT);
                     retInstance.SetStream(ms);
                     OnResultStream(new EventArgsT<object>(retInstance));
                 }

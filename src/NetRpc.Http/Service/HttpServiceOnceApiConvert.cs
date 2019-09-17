@@ -89,15 +89,15 @@ namespace NetRpc.Http
                     return Task.CompletedTask;
             }
 
-            //Cancel
+            // Cancel
             if (body.GetType().IsEqualsOrSubclassOf(typeof(OperationCanceledException)))
                 return _connection.SendAsync(new Result(null, ClientConstValue.CancelStatusCode));
 
-            //ResponseTextException
+            // ResponseTextException
             if (body is ResponseTextException textEx)
                 return _connection.SendAsync(new Result(textEx.Text, textEx.StatusCode));
 
-            //customs Exception
+            // customs Exception
             // ReSharper disable once UseNullPropagation
             if (context != null)
             {
@@ -106,7 +106,7 @@ namespace NetRpc.Http
                     return _connection.SendAsync(new Result(body.GetExceptionContent(), t.StatusCode));
             }
 
-            //default Exception
+            // default Exception
             return _connection.SendAsync(new Result(body.GetExceptionContent(), ClientConstValue.DefaultExceptionStatusCode));
         }
 

@@ -64,7 +64,7 @@ namespace Service
                     {
                         Name = NameEnum.John
                     },
-                    P1 = "p1"
+                    P1 = "中文p1!@#$%^&*()_+\"\":?~!@#$"
                 }
             };
 

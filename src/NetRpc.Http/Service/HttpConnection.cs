@@ -1,5 +1,7 @@
 ﻿using System.IO;
+using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -8,6 +10,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging.Abstractions;
 using NetRpc.Http.Client;
+using RestSharp.Extensions;
 
 namespace NetRpc.Http
 {
@@ -52,6 +55,7 @@ namespace NetRpc.Http
             if (!(result.Result is Stream))
             {
                 var json = result.Result.ToJson();
+                json = HttpUtility.UrlEncode(json, Encoding.UTF8);
                 _context.Response.Headers.Add(ClientConstValue.CustomResultHeaderKey, json);
             }
 
