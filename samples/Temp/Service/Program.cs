@@ -3,11 +3,14 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using NetRpc;
 using NetRpc.Grpc;
+using NetRpc.Http;
 using NetRpc.RabbitMQ;
 using Helper = TestHelper.Helper;
+using NetRpcManager = NetRpc.Grpc.NetRpcManager;
 
 namespace Service
 {
@@ -28,35 +31,43 @@ namespace Service
 
             //Console.Read();
 
-            await RunMQAsync();
+            //await RunMQAsync();
+            var webHost = NetRpc.Http.NetRpcManager.CreateHost(
+                5000,
+                "/callback",
+                true,
+                new HttpServiceOptions { ApiRootPath = "/api" },
+                null,
+                new Contract<I2, Service>());
+            await webHost.RunAsync();
         }
 
-        static async Task RunMQAsync()
-        {
-            var h = new HostBuilder()
-                .ConfigureServices((context, services) =>
-                {
-                    services.AddNetRpcRabbitMQService(i =>
-                    {
-                        i.Value = Helper.GetMQOptions();
-                        i.Value.PrefetchCount = 5;
-                    });
-                    services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50001));
+        //static async Task RunMQAsync()
+        //{
+        //    var h = new HostBuilder()
+        //        .ConfigureServices((context, services) =>
+        //        {
+        //            services.AddNetRpcRabbitMQService(i =>
+        //            {
+        //                i.Value = Helper.GetMQOptions();
+        //                i.Value.PrefetchCount = 5;
+        //            });
+        //            services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50001));
 
-                    services.AddNetRpcMiddleware(i =>
-                    {
-                        i.UseMiddleware<CallbackThrottlingMiddleware>(500);
-                        i.UseMiddleware<StreamCallBackMiddleware>(10);
-                        i.UseMiddleware<ExMiddleware>();
-                    });
-                    services.AddNetRpcContractSingleton<IService, Service>();
-                })
-                .Build();
-            await h.RunAsync();
-        }
+        //            services.AddNetRpcMiddleware(i =>
+        //            {
+        //                i.UseMiddleware<CallbackThrottlingMiddleware>(500);
+        //                i.UseMiddleware<StreamCallBackMiddleware>(10);
+        //                i.UseMiddleware<ExMiddleware>();
+        //            });
+        //            services.AddNetRpcContractSingleton<I2, Service>();
+        //        })
+        //        .Build();
+        //    await h.StartAsync();
+        //}
     }
 
-    internal class Service : IService
+    internal class Service : I2
     {
         public async Task Call3(Stream stream, int index, Action<double> prog)
         {

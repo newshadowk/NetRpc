@@ -51,7 +51,7 @@ namespace NetRpc.Http
                     {
                         Tags = GenerateTags(tagGroup.contractType.Name),
                         RequestBody = GenerateRequestBody(argType, streamName),
-                        Responses = GenerateResponses(method, cancelToken != null)
+                        Responses = GenerateResponses(method, tagGroup.contractFaults, cancelToken != null)
                     };
 
                     //Summary
@@ -75,11 +75,13 @@ namespace NetRpc.Http
             };
         }
 
-        private static List<(Type contractType, List<MethodInfo> methods)> GetContractMethodInfos(List<Contract> contracts)
+        private static List<(Type contractType, List<FaultExceptionAttribute> contractFaults, List<MethodInfo> methods)> GetContractMethodInfos(
+            List<Contract> contracts)
         {
-            var list = new List<(Type contractType, List<MethodInfo> methods)>();
+            var list = new List<(Type contractType, List<FaultExceptionAttribute> contractFaults, List<MethodInfo> methods)>();
             foreach (var contract in contracts)
-                list.Add((contract.ContractType, contract.ContractType.GetInterfaceMethods().ToList()));
+                list.Add((contract.ContractType, contract.ContractType.GetCustomAttributes<FaultExceptionAttribute>(true).ToList(),
+                    contract.ContractType.GetInterfaceMethods().ToList()));
             return list;
         }
 
@@ -88,7 +90,7 @@ namespace NetRpc.Http
             return new List<OpenApiTag> {new OpenApiTag {Name = tagName}};
         }
 
-        private OpenApiResponses GenerateResponses(MethodInfo method, bool hasCancel)
+        private OpenApiResponses GenerateResponses(MethodInfo method, List<FaultExceptionAttribute> contractFaults, bool hasCancel)
         {
             var ret = new OpenApiResponses();
             var returnType = method.ReturnType.GetTypeFromReturnTypeDefinition();
@@ -120,11 +122,12 @@ namespace NetRpc.Http
 
             //exception  
             var resTypes = method.GetCustomAttributes<FaultExceptionAttribute>(true).ToList();
+            resTypes.AddRange(contractFaults);
             if (!resTypes.Any())
                 return ret;
 
             foreach (var fault in resTypes)
-                ret.Add(fault.StatusCode.ToString(), new OpenApiResponse());
+                ret.Add(fault.StatusCode.ToString(), new OpenApiResponse {Description = fault.Summary});
 
             return ret;
         }
