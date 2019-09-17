@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>DataContract</name>
+    </assembly>
+    <members>
+        <member name="T:DataContract.CustomException">
+            <summary>
+            summary of CustomException
+            </summary>
+        </member>
+        <member name="M:DataContract.IService.Call3(System.IO.Stream,System.Int32,System.Action{System.Double})">
+            <summary>
+            summary of Call
+            </summary>
+            <response code="403">Ex2 error</response>
+        </member>
+    </members>
+</doc>
