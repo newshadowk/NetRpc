@@ -17,14 +17,23 @@ namespace Client
 
         static async Task Main(string[] args)
         {
-            //_p = NetRpc.RabbitMQ.NetRpcManager.CreateClientProxy<IService>(TestHelper.Helper.GetMQOptions()).Proxy;
-            _p = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
-
-            for (int i = 0; i < 100; i++)
+            _p = NetRpc.RabbitMQ.NetRpcManager.CreateClientProxy<IService>(TestHelper.Helper.GetMQOptions()).Proxy;
+            try
             {
-                var i1 = i;
-                Task.Run(() => { Run(i1); });
+                await _p.Call();
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            //_p = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
+
+            //for (int i = 0; i < 100; i++)
+            //{
+            //    var i1 = i;
+            //    Task.Run(() => { Run(i1); });
+            //}
 
             Console.WriteLine("end");
             Console.Read();

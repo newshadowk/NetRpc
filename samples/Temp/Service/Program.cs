@@ -80,6 +80,12 @@ namespace Service
 
             Console.WriteLine($"id:{Thread.CurrentThread.ManagedThreadId}, index:{index}, end ------------------------");
         }
+
+        public Task Call()
+        {
+            Console.WriteLine("call");
+            return Task.CompletedTask;
+        }
     }
 
     public class ExMiddleware

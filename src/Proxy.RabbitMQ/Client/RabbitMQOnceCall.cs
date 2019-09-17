@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NetRpc;
@@ -46,10 +47,30 @@ namespace RabbitMQ.Base
 
             if (isFirstSend)
             {
-                var p = _model.CreateBasicProperties();
+                IBasicProperties p = _model.CreateBasicProperties();
                 p.ReplyTo = _serviceToClientQueue;
-                _model.BasicPublish("", _rpcQueue, p, buffer);
-                _clientToServiceQueue = await _clientToServiceQueueOnceBlock.WriteOnceBlock.ReceiveAsync();
+                var cid = Guid.NewGuid().ToString();
+                p.CorrelationId = cid;
+
+                CancellationTokenSource cts = new CancellationTokenSource();
+
+                _model.BasicReturn += (sender, args) =>
+                {
+                    if (args.BasicProperties.CorrelationId == cid)
+                        cts.Cancel();
+                };
+
+                _model.BasicPublish("", _rpcQueue, true, p, buffer);
+
+                try
+                {
+                    _clientToServiceQueue = await _clientToServiceQueueOnceBlock.WriteOnceBlock.ReceiveAsync(cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw new MessageDeliverException($"Message has not sent to queue, check queue if exist : {_rpcQueue}.");
+                }
+
                 isFirstSend = false;
             }
             else
@@ -59,7 +80,7 @@ namespace RabbitMQ.Base
                 //blocking thread in OnceCall row 96:Task.Delay(_timeoutInterval, _timeOutCts.Token).ContinueWith(i =>
             }
         }
-
+    
         private void ConsumerReceived(object s, BasicDeliverEventArgs e)
         {
             if (!_clientToServiceQueueOnceBlock.IsPosted)
