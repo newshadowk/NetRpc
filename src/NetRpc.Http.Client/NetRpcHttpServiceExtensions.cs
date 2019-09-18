@@ -1,7 +1,8 @@
 ﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+using NetRpc;
+using NetRpc.Http.Client;
 
-namespace NetRpc.Http.Client
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class NetRpcHttpClientExtensions
     {

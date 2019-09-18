@@ -1,8 +1,9 @@
 ﻿using System;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using NetRpc;
+using NetRpc.Grpc;
 
-namespace NetRpc.Grpc
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class GrpcServiceExtensions
     {

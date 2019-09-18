@@ -3,14 +3,16 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using NetRpc;
+using NetRpc.Http;
 using NetRpc.Http.Client;
 using Newtonsoft.Json.Serialization;
+using Helper = NetRpc.Http.Helper;
 
-namespace NetRpc.Http
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class NetRpcHttpServiceExtensions
     {

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Grpc.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace NetRpc.Grpc

@@ -1,7 +1,8 @@
 ﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+using NetRpc;
+using NetRpc.RabbitMQ;
 
-namespace NetRpc.RabbitMQ
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class NetRpcRabbitMQServiceExtensions
     {
