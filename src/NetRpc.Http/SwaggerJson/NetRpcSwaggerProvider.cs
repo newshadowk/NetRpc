@@ -132,7 +132,14 @@ namespace NetRpc.Http
                 foreach (var item in grouping)
                     des += $"<b>{item.DetailType.Name}</b> ErrorCode:{item.ErrorCode}, {item.Summary}<br/>";
                 des = des.TrimEndString("<br/>");
-                ret.Add(grouping.Key.ToString(), new OpenApiResponse { Description = des });
+                var resFault = new OpenApiResponse();
+                resFault.Description = des;
+                resFault.Content.Add("application/json", new OpenApiMediaType
+                {
+                    Schema = GenerateSchema(typeof(FaultExceptionJsonObj))
+                });
+
+                ret.Add(grouping.Key.ToString(), resFault);
             }
 
             return ret;
