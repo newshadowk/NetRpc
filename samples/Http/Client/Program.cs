@@ -67,6 +67,10 @@ namespace Client
             {
                 Console.WriteLine("catch FaultException<CustomException>");
             }
+            catch (FaultException<CustomException2>)
+            {
+                Console.WriteLine("catch FaultException<CustomException2>");
+            }
         }
 
         private static async Task Test_CallByDefaultExceptionAsync()
@@ -79,7 +83,7 @@ namespace Client
             }
             catch (FaultException)
             {
-                Console.WriteLine("catch FaultException<CustomException>");
+                Console.WriteLine("catch FaultException");
             }
         }
 

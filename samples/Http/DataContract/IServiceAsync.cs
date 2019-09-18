@@ -19,10 +19,8 @@ namespace DataContract
         /// <summary>
         /// summary of Call
         /// </summary>
-        /// <response code="401">CustomException error.</response>
-        /// <response code="402">CustomException2 error</response>
-        [FaultException(typeof(CustomException), 401)]
-        [FaultException(typeof(CustomException2), 402)]
+        [FaultException(typeof(CustomException), 400, 1, "errorCode1 error description")]
+        [FaultException(typeof(CustomException2), 400, 2, "errorCode2 error description")]
         Task CallByCustomExceptionAsync();
 
         Task CallByDefaultExceptionAsync();

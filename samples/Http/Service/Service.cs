@@ -20,7 +20,8 @@ namespace Service
         public async Task CallByCustomExceptionAsync()
         {
             Console.WriteLine("[CallByCustomExceptionAsync]...");
-            throw new CustomException {P1 = "123", P2 = "abc"};
+            //throw new CustomException {P1 = "123", P2 = "abc"};
+            throw new CustomException2();
         }
 
         public async Task CallByDefaultExceptionAsync()
@@ -40,7 +41,7 @@ namespace Service
 
         public async Task CallByResponseTextExceptionAsync()
         {
-            throw new ResponseTextException("this is customs text.", 701);
+            throw new ResponseTextException("\"this is customs text.\"", 701);
         }
 
         public async Task<ComplexStream> ComplexCallAsync(CustomObj obj, string p1, Stream stream, Action<CustomCallbackObj> cb, CancellationToken token)

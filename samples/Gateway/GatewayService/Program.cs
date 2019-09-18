@@ -60,7 +60,7 @@ namespace Service
                 .ConfigureServices((context, services) =>
                 {
                     //set single target by DI.
-                    services.AddNetRpcRabbitMQService(i => i.Value = Helper.GetMQOptions());
+                    services.AddNetRpcRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
 
                     services.AddNetRpcGrpcGateway<IService>(o => o.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
                     services.AddNetRpcGrpcGateway<IService2>();

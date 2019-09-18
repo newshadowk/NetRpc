@@ -145,19 +145,30 @@ namespace NetRpc.Http.Client
 
         private static void TryThrowFault(MethodInfo methodInfo, IRestResponse res)
         {
+            //OperationCanceledException
             if ((int) res.StatusCode == ClientConstValue.CancelStatusCode)
                 throw new OperationCanceledException();
 
-            var attrs = methodInfo.GetCustomAttributes<FaultExceptionAttribute>(true);
-            var found = attrs.FirstOrDefault(i => i.StatusCode == (int) res.StatusCode);
-            if (found != null)
-                throw CreateException(found.DetailType, res.Content);
-
+            //ResponseTextException
             var textAttrs = methodInfo.GetCustomAttributes<ResponseTextAttribute>(true);
-            var found2 = textAttrs.FirstOrDefault(i => i.StatusCode == (int) res.StatusCode);
+            var found2 = textAttrs.FirstOrDefault(i => i.StatusCode == (int)res.StatusCode);
             if (found2 != null)
-                throw new ResponseTextException(res.Content, (int) res.StatusCode);
+                throw new ResponseTextException(res.Content, (int)res.StatusCode);
 
+            //FaultException
+            var attrs = methodInfo.GetCustomAttributes<FaultExceptionAttribute>(true).ToList();
+            foreach (var grouping in attrs.GroupBy(i => i.StatusCode))
+            {
+                if (grouping.Key == (int)res.StatusCode)
+                {
+                    var fObj = (FaultExceptionJsonObj)res.Content.ToObject(typeof(FaultExceptionJsonObj));
+                    var found = grouping.FirstOrDefault(i => i.ErrorCode == fObj.ErrorCode);
+                    if (found != null)
+                        throw CreateException(found.DetailType, res.Content);
+                }
+            }
+
+            //DefaultException
             if ((int) res.StatusCode == ClientConstValue.DefaultExceptionStatusCode)
                 throw CreateException(typeof(Exception), res.Content);
         }

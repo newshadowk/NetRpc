@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging.Abstractions;
 using NetRpc.Http.Client;
-using RestSharp.Extensions;
 
 namespace NetRpc.Http
 {
@@ -67,7 +66,12 @@ namespace NetRpc.Http
         {
             _context.Response.ContentType = "application/json; charset=utf-8";
             _context.Response.StatusCode = result.StatusCode;
-            await _context.Response.WriteAsync(result.Ret.ToJson() ?? "");
+            string s;
+            if (result.IsPainText)
+                s = result.Ret.ToString();
+            else
+                s = result.Ret.ToJson();
+            await _context.Response.WriteAsync(s ?? "");
         }
     }
 }

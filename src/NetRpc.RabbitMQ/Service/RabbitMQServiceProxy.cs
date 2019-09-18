@@ -15,10 +15,10 @@ namespace NetRpc.RabbitMQ
 
         public RabbitMQServiceProxy(IOptionsMonitor<RabbitMqServiceOptions> mqOptions, IServiceProvider serviceProvider)
         {
-            Reset(mqOptions.CurrentValue.Value, serviceProvider);
+            Reset(mqOptions.CurrentValue, serviceProvider);
             mqOptions.OnChange(i =>
             {
-                Reset(i.Value, serviceProvider);
+                Reset(i, serviceProvider);
                 _service.Open();
             });
         }

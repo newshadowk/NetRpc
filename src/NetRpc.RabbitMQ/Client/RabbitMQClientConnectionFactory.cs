@@ -11,13 +11,13 @@ namespace NetRpc.RabbitMQ
 
         public RabbitMQClientConnectionFactory(IOptionsMonitor<RabbitMQClientOptions> options)
         {
-            _options = options.CurrentValue.Value;
+            _options = options.CurrentValue;
             _connection = _options.CreateConnectionFactory().CreateConnection();
             options.OnChange(i =>
             {
                 lock (_lockObj)
                 {
-                    _options = i.Value;
+                    _options = i;
                     _connection = _options.CreateConnectionFactory().CreateConnection();
                 }
             });

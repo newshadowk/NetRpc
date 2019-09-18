@@ -123,10 +123,5 @@ namespace NetRpc.Http
             path = Path.GetDirectoryName(path);
             return path;
         }
-
-        public static string GetExceptionContent(this Exception ex)
-        {
-            return $"{ex.GetType()}, {ex.Message}";
-        }
     }
 }

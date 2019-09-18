@@ -40,7 +40,7 @@ namespace DataContract
         //}
     }
 
-    [FaultException(typeof(Ex1), 402, "ex1 error")]
+    [FaultException(typeof(Ex1), 402, 3, "ex1 error")]
     public interface I2 : IService
     {
 

@@ -1,21 +1,20 @@
 ﻿using System;
+using System.IO;
 
 namespace NetRpc
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface, AllowMultiple = true, Inherited = false)]
     public sealed class FaultExceptionAttribute : Attribute
     {
-        public FaultExceptionAttribute(Type detailType, int statusCode, string summary = null)
+        public FaultExceptionAttribute(Type detailType, int statusCode, int errorCode = 0, string summary = null)
         {
             DetailType = detailType;
             StatusCode = statusCode;
             Summary = summary;
+            ErrorCode = errorCode;
         }
 
-        public FaultExceptionAttribute(int statusCode)
-        {
-            StatusCode = statusCode;
-        }
+        public int ErrorCode { get; }
 
         public Type DetailType { get; }
 

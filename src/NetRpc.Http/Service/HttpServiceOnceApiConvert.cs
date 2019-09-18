@@ -95,7 +95,7 @@ namespace NetRpc.Http
 
             // ResponseTextException
             if (body is ResponseTextException textEx)
-                return _connection.SendAsync(new Result(textEx.Text, textEx.StatusCode));
+                return _connection.SendAsync(Result.FromPainText(textEx.Text, textEx.StatusCode));
 
             // customs Exception
             // ReSharper disable once UseNullPropagation
@@ -103,11 +103,11 @@ namespace NetRpc.Http
             {
                 var t = context.ContractMethodInfo.GetCustomAttributes<FaultExceptionAttribute>(true).FirstOrDefault(i => body.GetType() == i.DetailType);
                 if (t != null)
-                    return _connection.SendAsync(new Result(body.GetExceptionContent(), t.StatusCode));
+                    return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(t.ErrorCode, body.Message), t.StatusCode));
             }
 
             // default Exception
-            return _connection.SendAsync(new Result(body.GetExceptionContent(), ClientConstValue.DefaultExceptionStatusCode));
+            return _connection.SendAsync(new Result(body.Message, ClientConstValue.DefaultExceptionStatusCode));
         }
 
         public Task SendCallbackAsync(object callbackObj)

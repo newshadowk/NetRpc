@@ -6,7 +6,7 @@
 
         public RabbitMQClientConnectionFactoryOptions(MQOptions options)
         {
-            Factory = new RabbitMQClientConnectionFactory(new SimpleOptionsMonitor<RabbitMQClientOptions>(new RabbitMQClientOptions {Value = options}));
+            Factory = new RabbitMQClientConnectionFactory(new SimpleOptionsMonitor<RabbitMQClientOptions>(new RabbitMQClientOptions(options)));
         }
     }
 }

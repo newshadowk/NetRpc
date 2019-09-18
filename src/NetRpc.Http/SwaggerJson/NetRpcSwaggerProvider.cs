@@ -126,8 +126,14 @@ namespace NetRpc.Http
             if (!resTypes.Any())
                 return ret;
 
-            foreach (var fault in resTypes)
-                ret.Add(fault.StatusCode.ToString(), new OpenApiResponse {Description = fault.Summary});
+            foreach (var grouping in resTypes.GroupBy(i => i.StatusCode))
+            {
+                string des = "";
+                foreach (var item in grouping)
+                    des += $"<b>{item.DetailType.Name}</b> ErrorCode:{item.ErrorCode}, {item.Summary}<br/>";
+                des = des.TrimEndString("<br/>");
+                ret.Add(grouping.Key.ToString(), new OpenApiResponse { Description = des });
+            }
 
             return ret;
         }

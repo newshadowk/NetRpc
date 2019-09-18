@@ -13,7 +13,7 @@ namespace NetRpc.RabbitMQ
                     services.AddNetRpcRabbitMQService(i =>
                     {
                         if (mqOptions != null)
-                            i.Value = mqOptions;
+                            i.CopyFrom(mqOptions);
                     });
                     services.AddNetRpcMiddleware(i =>
                     {
