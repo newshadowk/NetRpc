@@ -10,11 +10,22 @@ namespace NetRpc.Http
         public static IWebHost CreateHost(int port, string hubPath, bool isSwagger, HttpServiceOptions httpServiceOptions, MiddlewareOptions middlewareOptions,
             params Contract[] contracts)
         {
+            const string origins = "_myAllowSpecificOrigins";
             return WebHost.CreateDefaultBuilder(null)
                 .ConfigureKestrel(options => { options.ListenAnyIP(port); })
                 .ConfigureServices(services =>
                 {
-                    services.AddCors();
+                    services.AddCors(op =>
+                    {
+                        op.AddPolicy(origins, set =>
+                        {
+                            set.SetIsOriginAllowed(origin => true)
+                                .AllowAnyHeader()
+                                .AllowAnyMethod()
+                                .AllowCredentials();
+                        });
+                    });
+
                     services.AddSignalR();
                     if (isSwagger)
                         services.AddNetRpcSwagger();
@@ -38,13 +49,7 @@ namespace NetRpc.Http
                 })
                 .Configure(app =>
                 {
-                    app.UseCors(i =>
-                        {
-                            i.AllowAnyHeader();
-                            i.AllowAnyMethod();
-                            i.AllowCredentials();
-                        }
-                    );
+                    app.UseCors(origins);
                     app.UseSignalR(routes => { routes.MapHub<CallbackHub>(hubPath); });
                     if (isSwagger)
                         app.UseNetRpcSwagger();
