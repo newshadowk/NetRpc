@@ -3,14 +3,11 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NetRpc;
-using NetRpc.Grpc;
-using NetRpc.Http;
-using NetRpc.RabbitMQ;
 using Helper = TestHelper.Helper;
-using NetRpcManager = NetRpc.Grpc.NetRpcManager;
 
 namespace Service
 {
@@ -18,83 +15,48 @@ namespace Service
     {
         static async Task Main(string[] args)
         {
-            //ThreadPool.SetMinThreads(110, 110);
-            //for (int i = 0; i < 1000; i++)
-            //{
-            //    //Task.Factory.StartNew(() => { });
-            //    Task.Run(() =>
-            //    {
-            //        Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}, {DateTime.Now}");
-            //        Thread.Sleep(1000000);
-            //    });
-            //}
-
-            //Console.Read();
-
-            //await RunMQAsync();
-            var webHost = NetRpc.Http.NetRpcManager.CreateHost(
-                5000,
-                "/callback",
-                true,
-                new HttpServiceOptions { ApiRootPath = "/api" },
-                null,
-                new Contract<I2, Service>());
-            await webHost.RunAsync();
+            await RunMQAsync();
         }
 
-        //static async Task RunMQAsync()
-        //{
-        //    var h = new HostBuilder()
-        //        .ConfigureServices((context, services) =>
-        //        {
-        //            services.AddNetRpcRabbitMQService(i =>
-        //            {
-        //                i.Value = Helper.GetMQOptions();
-        //                i.Value.PrefetchCount = 5;
-        //            });
-        //            services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50001));
+        static async Task RunMQAsync()
+        {
+            var h = new HostBuilder()
+                .ConfigureServices((context, services) =>
+                {
+                    services.AddNetRpcRabbitMQService(i =>
+                    {
+                       i.CopyFrom(Helper.GetMQOptions());
+                    });
+                    services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50001));
 
-        //            services.AddNetRpcMiddleware(i =>
-        //            {
-        //                i.UseMiddleware<CallbackThrottlingMiddleware>(500);
-        //                i.UseMiddleware<StreamCallBackMiddleware>(10);
-        //                i.UseMiddleware<ExMiddleware>();
-        //            });
-        //            services.AddNetRpcContractSingleton<I2, Service>();
-        //        })
-        //        .Build();
-        //    await h.StartAsync();
-        //}
+                    services.AddNetRpcMiddleware(i =>
+                    {
+                        i.UseMiddleware<CallbackThrottlingMiddleware>(500);
+                        i.UseMiddleware<StreamCallBackMiddleware>(10);
+                        i.UseMiddleware<ExMiddleware>();
+                    });
+                    services.AddNetRpcContractSingleton<IService, Service>();
+                }).ConfigureLogging((context, builder) =>
+                {
+                    builder.AddConsole();
+                })
+                .Build();
+            await h.StartAsync();
+        }
     }
 
-    internal class Service : I2
+    internal class Service : IService
     {
-        public async Task Call3(Stream stream, int index, Action<double> prog)
+        private readonly ILogger<Service> _log;
+
+        public Service(ILogger<Service> log)
         {
-            Console.WriteLine($"id:{Thread.CurrentThread.ManagedThreadId}, index:{index}, start");
-
-            using (var os = File.OpenWrite($@"d:\7\test\tgt\{index}.zip"))
-            {
-                await stream.CopyToAsync(os);
-            }
-
-            //const int size = 81920;
-            //var bs = new byte[size];
-            //var readCount = await stream.ReadAsync(bs, 0, size);
-            //Console.WriteLine($"{index}, {readCount}");
-
-            //while (readCount > 0)
-            //{
-            //    readCount = await stream.ReadAsync(bs, 0, size);
-            //    Console.WriteLine($"id:{Thread.CurrentThread.ManagedThreadId}, index:{index}, {readCount}");
-            //}
-
-            Console.WriteLine($"id:{Thread.CurrentThread.ManagedThreadId}, index:{index}, end ------------------------");
+            _log = log;
         }
-
-        public Task Call()
+    
+        public Task Call3(string s)
         {
-            Console.WriteLine("call");
+            _log.LogInformation($"call, {s}");
             return Task.CompletedTask;
         }
     }

@@ -24,12 +24,12 @@ namespace Client
                 ApiUrl = "http://localhost:5000/api"
             }).Proxy;
 
-            await Test_CallAsync();
-            await Test_CallByCancelAsync();
-            await Test_CallByCustomExceptionAsync();
+            //await Test_CallAsync();
+            //await Test_CallByCancelAsync();
+            //await Test_CallByCustomExceptionAsync();
             await Test_CallByDefaultExceptionAsync();
-            await Test_CallByResponseTextExceptionAsync();
-            await Test_ComplexCallAsync();
+            //await Test_CallByResponseTextExceptionAsync();
+            //await Test_ComplexCallAsync();
 
             Console.Read();
         }

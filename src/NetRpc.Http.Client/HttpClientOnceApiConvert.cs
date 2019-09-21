@@ -12,7 +12,7 @@ namespace NetRpc.Http.Client
 {
     internal sealed class HttpClientOnceApiConvert : IClientOnceApiConvert
     {
-        private readonly Type _contactType;
+        private readonly ContractInfo _contract;
         private readonly string _apiUrl;
         private volatile string _connectionId;
         private readonly HubCallBackNotifier _notifier;
@@ -25,9 +25,9 @@ namespace NetRpc.Http.Client
         public event EventHandler<EventArgsT<object>> Callback;
         public event EventHandler<EventArgsT<object>> Fault;
 
-        public HttpClientOnceApiConvert(Type contactType, string apiUrl, string connectionId, HubCallBackNotifier notifier, int timeoutInterval)
+        public HttpClientOnceApiConvert(ContractInfo contract, string apiUrl, string connectionId, HubCallBackNotifier notifier, int timeoutInterval)
         {
-            _contactType = contactType;
+            _contract = contract;
             _apiUrl = apiUrl;
             _connectionId = connectionId;
             _notifier = notifier;
@@ -70,7 +70,7 @@ namespace NetRpc.Http.Client
             var postType = ClientHelper.GetArgType(methodInfo, true, out var streamName, out _callBackAction, out var outToken);
 
             var postObj = GetPostObj(postType, _callBackAction != null || outToken != null, callParam.Args);
-            var actionPath = ClientHelper.GetActionPath(_contactType, methodInfo);
+            var actionPath = ClientHelper.GetActionPath(_contract.Type, methodInfo);
             var reqUrl = $"{_apiUrl}/{actionPath}";
 
             var client = new RestClient(reqUrl);
@@ -143,7 +143,7 @@ namespace NetRpc.Http.Client
                 _notifier.Callback -= Notifier_Callback;
         }
 
-        private static void TryThrowFault(MethodInfo methodInfo, IRestResponse res)
+        private void TryThrowFault(MethodInfo methodInfo, IRestResponse res)
         {
             //OperationCanceledException
             if ((int) res.StatusCode == ClientConstValue.CancelStatusCode)
@@ -156,7 +156,7 @@ namespace NetRpc.Http.Client
                 throw new ResponseTextException(res.Content, (int)res.StatusCode);
 
             //FaultException
-            var attrs = methodInfo.GetCustomAttributes<FaultExceptionAttribute>(true).ToList();
+            var attrs = _contract.GetFaults(methodInfo);
             foreach (var grouping in attrs.GroupBy(i => i.StatusCode))
             {
                 if (grouping.Key == (int)res.StatusCode)

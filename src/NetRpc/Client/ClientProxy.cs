@@ -26,7 +26,7 @@ namespace NetRpc
         public ClientProxy(IOnceCallFactory factory, IOptionsMonitor<NetRpcClientOption> options)
         {
             _factory = factory;
-            var call = new Call(typeof(TService), factory, options.CurrentValue.TimeoutInterval, Context);
+            var call = new Call(new ContractInfo(typeof(TService)), factory, options.CurrentValue.TimeoutInterval, Context);
             var invoker = new ClientMethodInvoker(call);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
             ((SimpleDispatchProxyAsync) (object) Proxy).ExceptionInvoked += ProxyExceptionInvoked;

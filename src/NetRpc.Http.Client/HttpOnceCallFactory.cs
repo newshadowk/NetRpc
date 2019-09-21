@@ -69,10 +69,10 @@ namespace NetRpc.Http.Client
             _connection.StopAsync().Wait();
         }
 
-        public IOnceCall<T> Create<T>(Type contractType, int timeoutInterval)
+        public IOnceCall<T> Create<T>(ContractInfo contract, int timeoutInterval)
         {
             var cid = InitConnection();
-            var convert = new HttpClientOnceApiConvert(contractType, _options.ApiUrl, cid, _notifier, timeoutInterval);
+            var convert = new HttpClientOnceApiConvert(contract, _options.ApiUrl, cid, _notifier, timeoutInterval);
             return new OnceCall<T>(convert, timeoutInterval);
         }
     }

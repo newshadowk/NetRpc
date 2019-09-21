@@ -12,14 +12,7 @@ namespace NetRpc.Http
 
         public bool IsPainText { get; set; }
 
-        public Result(object ret, int statusCode, int errorCode = 0)
-        {
-            StatusCode = statusCode;
-            ErrorCode = errorCode;
-            Ret = ret;
-        }
-
-        public Result()
+        private Result()
         {
         }
 

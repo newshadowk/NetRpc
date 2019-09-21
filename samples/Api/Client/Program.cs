@@ -35,7 +35,7 @@ namespace Client
                 s.Proxy.Hearbeat();
                 return Task.CompletedTask;
             };
-            clientProxy.StartHeartbeat(true);
+            //clientProxy.StartHeartbeat(true);
 
             _proxy = clientProxy.Proxy;
             _proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(mqF).Proxy;
@@ -45,7 +45,7 @@ namespace Client
             //Grpc
             Console.WriteLine("\r\n--- [Grpc]  ---");
             var grpcF = new GrpcClientConnectionFactoryOptions(
-                new GrpcClientOptions {Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure)});
+                new GrpcClientOptions { Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure) });
             _proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(grpcF).Proxy;
             _proxyAsync = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IServiceAsync>(grpcF).Proxy;
             RunTest();
@@ -74,7 +74,7 @@ namespace Client
 
         private static void Test_FilterAndHeader()
         {
-            NetRpcContext.ThreadHeader.CopyFrom(new Dictionary<string, object> {{"k1", "header value"}});
+            NetRpcContext.Header = new Dictionary<string, object> {{"k1", "header value"}};
             Console.Write("[FilterAndHeader], send:k1, header value");
             _proxy.FilterAndHeader();
         }

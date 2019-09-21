@@ -8,14 +8,14 @@ namespace NetRpc
 {
     internal sealed class Call : ICall
     {
-        private readonly Type _contactType;
+        private readonly ContractInfo _contract;
         private readonly IOnceCallFactory _factory;
         private volatile int _timeoutInterval;
         private readonly NetRpcContext _context;
 
-        public Call(Type contactType, IOnceCallFactory factory, int timeoutInterval, NetRpcContext context)
+        public Call(ContractInfo contract, IOnceCallFactory factory, int timeoutInterval, NetRpcContext context)
         {
-            _contactType = contactType;
+            _contract = contract;
             _factory = factory;
             _timeoutInterval = timeoutInterval;
             _context = context;
@@ -28,14 +28,13 @@ namespace NetRpc
 
         public async Task<T> CallAsync<T>(MethodInfo methodInfo, Action<object> callback, CancellationToken token, Stream stream, params object[] args)
         {
-            var call = _factory.Create<T>(_contactType, _timeoutInterval);
+            var call = _factory.Create<T>(_contract, _timeoutInterval);
             await call.StartAsync();
 
             //header
-            var header = _context.DefaultHeader.Clone();
-            if (header.Count == 0)
-                header = NetRpcContext.ThreadHeader.Clone();
-            NetRpcContext.ThreadHeader.Clear();
+            var header = _context.DefaultHeader;
+            if (header == null || header.Count == 0)
+                header = NetRpcContext.Header;
 
             //onceTransfer will dispose after stream translate finished in OnceCall.
             return await call.CallAsync(header, methodInfo, callback, token, stream, args);

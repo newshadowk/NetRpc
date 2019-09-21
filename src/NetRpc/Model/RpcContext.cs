@@ -23,6 +23,8 @@ namespace NetRpc
 
         public MethodInfo ContractMethodInfo { get; }
 
+        public Contract Contract { get; }
+
         public Type CallbackType { get; }
 
         public Action<object> Callback
@@ -76,6 +78,7 @@ namespace NetRpc
             object[] args, 
             ActionInfo actionInfo,
             Stream stream,
+            Contract contract,
             Action<object> callback,
             CancellationToken token)
         {
@@ -89,6 +92,7 @@ namespace NetRpc
             ActionInfo = actionInfo;
             Callback = callback;
             Stream = stream;
+            Contract = contract;
             Token = token;
 
             ResetProps();

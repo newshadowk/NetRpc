@@ -16,7 +16,7 @@ namespace NetRpc
             _factory?.Dispose();
         }
 
-        public IOnceCall<T> Create<T>(Type contractType, int timeoutInterval)
+        public IOnceCall<T> Create<T>(ContractInfo contract, int timeoutInterval)
         {
             return new OnceCall<T>(new BufferClientOnceApiConvert(_factory.Create()), timeoutInterval);
         }

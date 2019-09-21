@@ -17,7 +17,7 @@ namespace Service
         [TestFilter]
         public void FilterAndHeader()
         {
-            var h = NetRpcContext.ThreadHeader.Clone();
+            var h = NetRpcContext.Header;
             Console.WriteLine($"[TestFilter], Header:{h["k1"]}");
         }
 

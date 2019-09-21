@@ -33,25 +33,23 @@ namespace NetRpc.Http
 
         private void Process(string apiRootPath, bool supportCallbackAndCancel, List<Contract> contracts)
         {
-            var list = GetContractMethodInfos(contracts);
-
             //tag
-            list.ForEach(i => _doc.Tags.Add(new OpenApiTag {Name = i.contractType.Name}));
+            contracts.ForEach(i => _doc.Tags.Add(new OpenApiTag {Name = i.ContractType.Name}));
 
             //path
             _doc.Paths = new OpenApiPaths();
-            foreach (var tagGroup in list)
+            foreach (var contract in contracts)
             {
-                foreach (var method in tagGroup.methods)
+                foreach (var method in contract.Methods)
                 {
                     var argType = ClientHelper.GetArgType(method, supportCallbackAndCancel, out var streamName, out var action, out var cancelToken);
 
                     //Operation
                     var operation = new OpenApiOperation
                     {
-                        Tags = GenerateTags(tagGroup.contractType.Name),
+                        Tags = GenerateTags(contract.ContractType.Name),
                         RequestBody = GenerateRequestBody(argType, streamName),
-                        Responses = GenerateResponses(method, tagGroup.contractFaults, cancelToken != null)
+                        Responses = GenerateResponses(method, contract, cancelToken != null)
                     };
 
                     //Summary
@@ -64,7 +62,7 @@ namespace NetRpc.Http
                     //Path
                     var openApiPathItem = new OpenApiPathItem();
                     openApiPathItem.AddOperation(OperationType.Post, operation);
-                    var key = $"{apiRootPath}/{ClientHelper.GetActionPath(tagGroup.contractType, method)}";
+                    var key = $"{apiRootPath}/{ClientHelper.GetActionPath(contract.ContractType, method)}";
                     _doc.Paths.Add(key, openApiPathItem);
                 }
             }
@@ -75,27 +73,17 @@ namespace NetRpc.Http
             };
         }
 
-        private static List<(Type contractType, List<FaultExceptionAttribute> contractFaults, List<MethodInfo> methods)> GetContractMethodInfos(
-            List<Contract> contracts)
-        {
-            var list = new List<(Type contractType, List<FaultExceptionAttribute> contractFaults, List<MethodInfo> methods)>();
-            foreach (var contract in contracts)
-                list.Add((contract.ContractType, contract.ContractType.GetCustomAttributes<FaultExceptionAttribute>(true).ToList(),
-                    contract.ContractType.GetInterfaceMethods().ToList()));
-            return list;
-        }
-
         private static List<OpenApiTag> GenerateTags(string tagName)
         {
             return new List<OpenApiTag> {new OpenApiTag {Name = tagName}};
         }
 
-        private OpenApiResponses GenerateResponses(MethodInfo method, List<FaultExceptionAttribute> contractFaults, bool hasCancel)
+        private OpenApiResponses GenerateResponses(MethodInfo method, Contract contract, bool hasCancel)
         {
             var ret = new OpenApiResponses();
             var returnType = method.ReturnType.GetTypeFromReturnTypeDefinition();
 
-            //200
+            //200 Ok
             var res200 = new OpenApiResponse();
             var hasStream = returnType.HasStream();
             if (hasStream)
@@ -116,32 +104,12 @@ namespace NetRpc.Http
 
             ret.Add("200", res200);
 
-            //600
+            //600 cancel
             if (hasCancel)
                 ret.Add(ClientConstValue.CancelStatusCode.ToString(), new OpenApiResponse {Description = "A task was canceled."});
 
-            //exception  
-            var resTypes = method.GetCustomAttributes<FaultExceptionAttribute>(true).ToList();
-            resTypes.AddRange(contractFaults);
-            if (!resTypes.Any())
-                return ret;
-
-            foreach (var grouping in resTypes.GroupBy(i => i.StatusCode))
-            {
-                string des = "";
-                foreach (var item in grouping)
-                    des += $"<b>{item.DetailType.Name}</b> ErrorCode:{item.ErrorCode}, {item.Summary}<br/>";
-                des = des.TrimEndString("<br/>");
-                var resFault = new OpenApiResponse();
-                resFault.Description = des;
-                resFault.Content.Add("application/json", new OpenApiMediaType
-                {
-                    Schema = GenerateSchema(typeof(FaultExceptionJsonObj))
-                });
-
-                ret.Add(grouping.Key.ToString(), resFault);
-            }
-
+            //exception
+            GenerateException(ret, method, contract);
             return ret;
         }
 
@@ -243,6 +211,30 @@ namespace NetRpc.Http
                 return null;
 
             return _schemaGenerator.GenerateSchema(type, _schemaRepository);
+        }
+
+        private void GenerateException(OpenApiResponses ret, MethodInfo method, Contract contract)
+        {
+            //merge Faults
+            var allFaults = contract.GetFaults(method);
+            if (!allFaults.Any())
+                return;
+
+            foreach (var grouping in allFaults.GroupBy(i => i.StatusCode))
+            {
+                string des = "";
+                foreach (var item in grouping)
+                    des += $"<b>{item.DetailType.Name}</b> ErrorCode:{item.ErrorCode}, {item.Summary}<br/>";
+                des = des.TrimEndString("<br/>");
+                var resFault = new OpenApiResponse();
+                resFault.Description = des;
+                resFault.Content.Add("application/json", new OpenApiMediaType
+                {
+                    Schema = GenerateSchema(typeof(FaultExceptionJsonObj))
+                });
+
+                ret.Add(grouping.Key.ToString(), resFault);
+            }
         }
     }
 }

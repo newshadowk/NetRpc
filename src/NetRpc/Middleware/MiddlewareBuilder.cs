@@ -207,7 +207,8 @@ namespace NetRpc
             var filters = context.InstanceMethodInfo.GetCustomAttributes<NetRpcFilterAttribute>(true);
             foreach (var f in filters)
                 await f.InvokeAsync(context);
-            NetRpcContext.ThreadHeader.CopyFrom(context.Header);
+
+            NetRpcContext.Header = context.Header;
 
             dynamic ret;
             try

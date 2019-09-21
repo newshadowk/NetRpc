@@ -7,6 +7,8 @@ using NetRpc;
 namespace DataContract
 {
     [HttpRoute("Service", true)]
+    [FaultExceptionDefine(typeof(CustomException), 400, 1, "errorCode1 error description")]
+    [FaultExceptionDefine(typeof(CustomException2), 400, 2, "errorCode2 error description")]
     public interface IServiceAsync
     {
         /// <summary>
@@ -19,8 +21,8 @@ namespace DataContract
         /// <summary>
         /// summary of Call
         /// </summary>
-        [FaultException(typeof(CustomException), 400, 1, "errorCode1 error description")]
-        [FaultException(typeof(CustomException2), 400, 2, "errorCode2 error description")]
+        [FaultException(typeof(CustomException))]
+        [FaultException(typeof(CustomException2))]
         Task CallByCustomExceptionAsync();
 
         Task CallByDefaultExceptionAsync();

@@ -91,7 +91,7 @@ namespace NetRpc.Http
 
             // Cancel
             if (body.GetType().IsEqualsOrSubclassOf(typeof(OperationCanceledException)))
-                return _connection.SendAsync(new Result(null, ClientConstValue.CancelStatusCode));
+                return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(), ClientConstValue.CancelStatusCode));
 
             // ResponseTextException
             if (body is ResponseTextException textEx)
@@ -101,13 +101,13 @@ namespace NetRpc.Http
             // ReSharper disable once UseNullPropagation
             if (context != null)
             {
-                var t = context.ContractMethodInfo.GetCustomAttributes<FaultExceptionAttribute>(true).FirstOrDefault(i => body.GetType() == i.DetailType);
+                var t = context.Contract.GetFaults(context.ContractMethodInfo).FirstOrDefault(i => body.GetType() == i.DetailType);
                 if (t != null)
                     return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(t.ErrorCode, body.Message), t.StatusCode));
             }
 
             // default Exception
-            return _connection.SendAsync(new Result(body.Message, ClientConstValue.DefaultExceptionStatusCode));
+            return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(0, body.Message), ClientConstValue.DefaultExceptionStatusCode));
         }
 
         public Task SendCallbackAsync(object callbackObj)

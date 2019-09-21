@@ -78,24 +78,25 @@ namespace NetRpc
             return new RpcContext(
                 serviceProvider,
                 scp.Header,
-                instance,
+                instance.Value,
                 instanceMethodInfo, 
                 contractMethodInfo, 
                 args, 
                 scp.Action, 
-                scp.Stream, 
+                scp.Stream,
+                instance.Contract,
                 scp.Callback, 
                 scp.Token);
         }
 
         /// <exception cref="TypeLoadException"></exception>
-        public static (MethodInfo instanceMethodInfo, MethodInfo contractMethodInfo, object instance) GetMethodInfo(ActionInfo action, List<Instance> instances)
+        public static (MethodInfo instanceMethodInfo, MethodInfo contractMethodInfo, Instance instance) GetMethodInfo(ActionInfo action, List<Instance> instances)
         {
             foreach (var o in instances)
             {
                 var found = GetMethodInfo(action, o.Contract);
                 if (found != default)
-                    return (found.instanceMethodInfo, found.contractMethodInfo, o.Value);
+                    return (found.instanceMethodInfo, found.contractMethodInfo, o);
             }
 
             throw new MethodNotFoundException($"{action.FullName} not found in instances");

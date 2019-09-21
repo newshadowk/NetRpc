@@ -160,11 +160,10 @@ Task<T2> CallByGenericTypeAsync<T1, T2>(T1 obj);
 ```
 ## Header
 Header is a type of **Dictionary<string, object>** object, mark sure your object mark as **[Serializable]**.  
-* **ThreadHeader**  
-Before call action, client set the **ThreadHeader** which mark as **[ThreadStatic]** that guarantee muti-threads don`t influence each other.
+Before call action, client set the **Header** which mark as **AsyncLocal** that guarantee muti-threads don`t influence each other.
 ```c#
 //client side
-NetRpc.NetRpcContext.ThreadHeader.CopyFrom(new Dictionary<string, object> { { "k1", "header value" } });
+NetRpcContext.Header = new Dictionary<string, object> {{"k1", "header value"}};
 _proxy.TestHeader();
 ```
 Service can receive the header object which client sent.
@@ -172,16 +171,17 @@ Service can receive the header object which client sent.
 //service side
 public void TestHeader()
 {
-    var h = NetRpcContext.ThreadHeader.Clone();
+    var h = NetRpcContext.Header;
+    //...
 }
 ```
 * **DefaultHeader**  
-On the client side, when **DefaultHeader** items count > 0, **ThreadHeader** will get the value of **DefaultHeader** when call the remote. This feature is usefull when you want to transfer a sessionId to service.
+On the client side, when **DefaultHeader** is not null and items count is greater than 0, **Header** will get the value of **DefaultHeader** when call the remote. This feature is usefull when you want to transfer a sessionId to service.
 ```c#
 //client side
 var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
 //set the DefaultHeader with SessionId
-client.Context.DefaultHeader.CopyFrom(new Dictionary<string, object> {{"SessionId", 1}});
+client.Context.DefaultHeader = new Dictionary<string, object> {{"SessionId", 1}};
 //will tranfer the header of SessionId to service.
 client.Proxy.Call();
 ```
@@ -208,6 +208,7 @@ services.AddNetRpcContractScoped<IService,Service>();
 | Token            | CancellationToken          | CancellationToken of invoked action.  |
 | Stream           | Stream                     | Stream of invoked action.  |
 | ServiceProvider  | IServiceProvider           | ServiceProvider of invoked action.  |
+| Contract         | Contract                   | Contract.|
 | Result           | object                     | Result of invoked action.|
 ## Filter
 Filter is common function like MVC. 
@@ -597,11 +598,14 @@ If contract has **Exception** defined, should use **FaultExceptionAttribute** to
 use **response code** to define summary(will display in Swagger), 
 otherwise NetRpc will use statuscode **400** to define all Exception by default.
 ```c#
-/// <response code="401">CustomException error.</response>
-/// <response code="402">CustomException2 error</response>
-[FaultException(typeof(CustomException), 401)]
-[FaultException(typeof(CustomException2), 402)]
+[FaultException(typeof(CustomException), 400, 1, "errorCode1 error description")]
+[FaultException(typeof(CustomException2), 400, 2, "errorCode2 error description")]
 Task CallByCustomExceptionAsync();
+```
+```c#
+//Also can put here, will effect to all methods in IServiceAsync.
+[FaultException(typeof(CustomException2), 400, 2, "errorCode2 error description")]
+public interface IServiceAsync
 ```
 ## [Http] HttpRouteAttribute
 Route the request path, set **trimActionAsync** to true, action name will trim end by 'Async'.
