@@ -9,6 +9,10 @@ namespace Service
 {
     internal class Service : IService
     {
+        public Service()
+        {
+        }
+
         public void Hearbeat()
         {
             Console.WriteLine("[Hearbeat]");
@@ -17,7 +21,7 @@ namespace Service
         [TestFilter]
         public void FilterAndHeader()
         {
-            var h = NetRpcContext.Header;
+            var h = RpcContextAccessor.StaticContext.Header;
             Console.WriteLine($"[TestFilter], Header:{h["k1"]}");
         }
 

@@ -8,6 +8,12 @@ namespace NetRpc
 
         public RpcContext Context
         {
+            get => StaticContext;
+            set => StaticContext = value;
+        }
+
+        public static RpcContext StaticContext
+        {
             get => Local.Value;
             set => Local.Value = value;
         }

@@ -40,8 +40,8 @@ namespace NetRpc
             });
         }
 
-        public ClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options, ITraceIdAccessor traceIdAccessor)
-            : this(new OnceCallFactory(factory, traceIdAccessor), options)
+        public ClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options)
+            : this(new OnceCallFactory(factory), options)
         {
         }
 

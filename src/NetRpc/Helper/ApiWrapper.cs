@@ -79,7 +79,6 @@ namespace NetRpc
                 serviceProvider,
                 scp.Header,
                 instance.Value,
-                scp.TraceId,
                 instanceMethodInfo, 
                 contractMethodInfo, 
                 args, 

@@ -19,8 +19,6 @@ namespace NetRpc
 
         public object Target { get; }
 
-        public string TraceId { get; }
-
         public MethodInfo InstanceMethodInfo { get; }
 
         public MethodInfo ContractMethodInfo { get; }
@@ -75,7 +73,6 @@ namespace NetRpc
         public RpcContext(IServiceProvider serviceProvider, 
             Dictionary<string, object> header, 
             object target, 
-            string traceId,
             MethodInfo instanceMethodInfo,
             MethodInfo contractMethodInfo, 
             object[] args, 
@@ -88,7 +85,6 @@ namespace NetRpc
             ServiceProvider = serviceProvider;
             Header = header;
             Target = target;
-            TraceId = traceId;
             InstanceMethodInfo = instanceMethodInfo;
             ContractMethodInfo = contractMethodInfo;
             Args = args;

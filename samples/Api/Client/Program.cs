@@ -74,7 +74,7 @@ namespace Client
 
         private static void Test_FilterAndHeader()
         {
-            NetRpcContext.Header = new Dictionary<string, object> {{"k1", "header value"}};
+            ClientContext.Header = new Dictionary<string, object> { { "k1", "header value" } };
             Console.Write("[FilterAndHeader], send:k1, header value");
             _proxy.FilterAndHeader();
         }

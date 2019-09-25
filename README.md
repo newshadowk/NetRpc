@@ -163,7 +163,7 @@ Header is a type of **Dictionary<string, object>** object, mark sure your object
 Before call action, client set the **Header** which mark as **AsyncLocal** that guarantee muti-threads don`t influence each other.
 ```c#
 //client side
-NetRpcContext.Header = new Dictionary<string, object> {{"k1", "header value"}};
+ClientContext.Header = new Dictionary<string, object> {{"k1", "header value"}};
 _proxy.TestHeader();
 ```
 Service can receive the header object which client sent.
@@ -171,7 +171,7 @@ Service can receive the header object which client sent.
 //service side
 public void TestHeader()
 {
-    var h = NetRpcContext.Header;
+    var h = RpcContextAccessor.StaticContext.Header;
     //...
 }
 ```
@@ -200,7 +200,6 @@ services.AddNetRpcContractScoped<IService,Service>();
 | :-----           | :--- | :---------- |
 | Header           | Dictionary\<string object> | Header sent from client. |
 | Target           | object                     | Service instance of invoked action.|
-| TraceId          | Guid               | Request Id.  |
 | InstanceMethodInfo | MethodInfo               | Current invoked method.  |
 | ContractMethodInfo | MethodInfo               | Current invoked contract method.  |
 | ActionInfo       | ActionInfo                 | Warpped info of current invoked method.  |
