@@ -12,14 +12,18 @@ namespace NetRpc
         private readonly List<Instance> _instances;
         private readonly IServiceProvider _serviceProvider;
         private readonly MiddlewareBuilder _middlewareBuilder;
+        private readonly ITraceIdAccessor _traceIdAccessor;
+        private readonly IRpcContextAccessor _rpcContextAccessor;
         private readonly CancellationTokenSource _serviceCts = new CancellationTokenSource();
 
         public ServiceOnceTransfer(List<Instance> instances, IServiceProvider serviceProvider, IServiceOnceApiConvert convert,
-            MiddlewareBuilder middlewareBuilder)
+            MiddlewareBuilder middlewareBuilder, ITraceIdAccessor traceIdAccessor, IRpcContextAccessor rpcContextAccessor)
         {
             _instances = instances;
             _serviceProvider = serviceProvider;
             _middlewareBuilder = middlewareBuilder;
+            _traceIdAccessor = traceIdAccessor;
+            _rpcContextAccessor = rpcContextAccessor;
             _convert = convert;
         }
 
@@ -38,6 +42,11 @@ namespace NetRpc
             {
                 scp = await GetServiceCallParamAsync();
                 rpcContext = ApiWrapper.Convert(scp, _instances, _serviceProvider);
+
+                //set Accessor
+                _traceIdAccessor.TraceId = scp.TraceId;
+                _rpcContextAccessor.Context = rpcContext;
+
                 ret = await _middlewareBuilder.InvokeAsync(rpcContext);
 
                 //if Post, do not need send back to client.

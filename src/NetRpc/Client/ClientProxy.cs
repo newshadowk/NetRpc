@@ -19,7 +19,7 @@ namespace NetRpc
         public event Func<ClientProxy<TService>, Task> Heartbeat;
         private readonly Timer _tHearbeat;
 
-        public NetRpcContext Context { get; } = new NetRpcContext();
+        public ClientContext Context { get; } = new ClientContext();
 
         public TService Proxy { get; }
 
@@ -40,8 +40,8 @@ namespace NetRpc
             });
         }
 
-        public ClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options)
-            : this(new OnceCallFactory(factory), options)
+        public ClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options, ITraceIdAccessor traceIdAccessor)
+            : this(new OnceCallFactory(factory, traceIdAccessor), options)
         {
         }
 

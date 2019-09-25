@@ -14,6 +14,8 @@ namespace NetRpc
 
         public long? StreamLength { get; set; }
 
+        public string TraceId { get; }
+
         public Dictionary<string, object> Header { get; }
 
         public Action<object> Callback { get; }
@@ -24,6 +26,7 @@ namespace NetRpc
 
         public ServiceCallParam(OnceCallParam param, Action<object> callback, CancellationToken token, Stream stream)
         {
+            TraceId = param.TraceId;
             Action = param.Action;
             Args = param.Args;
             StreamLength = param.StreamLength;

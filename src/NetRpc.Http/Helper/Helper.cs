@@ -86,7 +86,7 @@ namespace NetRpc.Http
         public static List<string> GetCommentsXmlPaths()
         {
             var ret = new List<string>();
-            var root = GetAssemblyPath();
+            var root = AppContext.BaseDirectory;
             foreach (var file in Directory.GetFiles(root))
             {
                 if (string.Equals(Path.GetExtension(file), ".xml", StringComparison.OrdinalIgnoreCase))
@@ -110,18 +110,6 @@ namespace NetRpc.Http
             if (name == null)
                 name = "";
             return Path.Combine(dir, name);
-        }
-
-        public static string GetAssemblyPath()
-        {
-            var assembly = Assembly.GetEntryAssembly();
-            if (assembly == null)
-                assembly = Assembly.GetExecutingAssembly();
-
-            var path = assembly.CodeBase;
-            path = path.Substring(8, path.Length - 8);
-            path = Path.GetDirectoryName(path);
-            return path;
         }
     }
 }

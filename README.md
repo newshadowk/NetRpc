@@ -200,6 +200,7 @@ services.AddNetRpcContractScoped<IService,Service>();
 | :-----           | :--- | :---------- |
 | Header           | Dictionary\<string object> | Header sent from client. |
 | Target           | object                     | Service instance of invoked action.|
+| TraceId          | Guid               | Request Id.  |
 | InstanceMethodInfo | MethodInfo               | Current invoked method.  |
 | ContractMethodInfo | MethodInfo               | Current invoked contract method.  |
 | ActionInfo       | ActionInfo                 | Warpped info of current invoked method.  |

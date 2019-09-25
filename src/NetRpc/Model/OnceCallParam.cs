@@ -12,12 +12,15 @@ namespace NetRpc
 
         public long? StreamLength { get; set; }
 
+        public string TraceId { get; }
+
         public byte[] PostStream { get; set; }
 
         public Dictionary<string, object> Header { get; set; }
 
-        public OnceCallParam(Dictionary<string, object> header, ActionInfo action, byte[] postStream, long? streamLength, object[] args)
+        public OnceCallParam(string traceId, Dictionary<string, object> header, ActionInfo action, byte[] postStream, long? streamLength, object[] args)
         {
+            TraceId = traceId;
             Action = action;
             Args = args;
             Header = header;

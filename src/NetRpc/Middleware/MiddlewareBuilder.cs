@@ -197,7 +197,6 @@ namespace NetRpc
 
     internal class MethodInvokeMiddleware
     {
-        // ReSharper disable once UnusedParameter.Local
         public MethodInvokeMiddleware(RequestDelegate next)
         {
         }
@@ -207,8 +206,6 @@ namespace NetRpc
             var filters = context.InstanceMethodInfo.GetCustomAttributes<NetRpcFilterAttribute>(true);
             foreach (var f in filters)
                 await f.InvokeAsync(context);
-
-            NetRpcContext.Header = context.Header;
 
             dynamic ret;
             try

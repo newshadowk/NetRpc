@@ -34,7 +34,7 @@ namespace NetRpc.Http
         private void Process(string apiRootPath, bool supportCallbackAndCancel, List<Contract> contracts)
         {
             //tag
-            contracts.ForEach(i => _doc.Tags.Add(new OpenApiTag {Name = i.ContractType.Name}));
+            contracts.ForEach(i => _doc.Tags.Add(new OpenApiTag {Name = i.Route}));
 
             //path
             _doc.Paths = new OpenApiPaths();

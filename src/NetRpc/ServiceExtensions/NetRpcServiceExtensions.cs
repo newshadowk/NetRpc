@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using NetRpc;
 
-namespace NetRpc
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class NetRpcServiceExtensions
     {
         public static IServiceCollection AddNetRpcService(this IServiceCollection services)
         {
             services.TryAddSingleton<MiddlewareBuilder>();
+            services.TryAddSingleton<ITraceIdAccessor, TraceIdAccessor>();
+            services.TryAddSingleton<IRpcContextAccessor, RpcContextAccessor>();
             return services;
         }
 
@@ -56,6 +58,30 @@ namespace NetRpc
             return services;
         }
 
+        public static IServiceCollection AddNetRpcMiddleware(this IServiceCollection services, Action<MiddlewareOptions> configureOptions)
+        {
+            if (configureOptions != null)
+                services.Configure(configureOptions);
+            return services;
+        }
+
+        public static IServiceCollection AddNetRpcCallbackThrottling(this IServiceCollection services, int callbackThrottlingInterval)
+        {
+            services.Configure<MiddlewareOptions>(i => i.UseCallbackThrottling(callbackThrottlingInterval));
+            return services;
+        }
+
+        public static IServiceCollection AddNetRpcStreamCallBack(this IServiceCollection services, int progressCount)
+        {
+            services.Configure<MiddlewareOptions>(i => i.UseStreamCallBack(progressCount));
+            return services;
+        }
+
+        public static List<Instance> GetContractInstances(this IServiceProvider serviceProvider, ContractOptions options)
+        {
+            return options.Contracts.ConvertAll(i => new Instance(i, serviceProvider.GetRequiredService(i.ContractType)));
+        }
+
         public static IServiceCollection AddNetRpcClientByApiConvert<TOnceCallFactoryImplementation, TService>(this IServiceCollection services,
             Action<NetRpcClientOption> configureOptions)
             where TOnceCallFactoryImplementation : class, IOnceCallFactory
@@ -75,31 +101,8 @@ namespace NetRpc
                 services.Configure(configureOptions);
             services.TryAddSingleton<IClientConnectionFactory, TClientConnectionFactoryImplementation>();
             services.TryAddSingleton<ClientProxy<TService>>();
+            services.TryAddSingleton<ITraceIdAccessor, TraceIdAccessor>();
             return services;
-        }
-
-        public static IServiceCollection AddNetRpcCallbackThrottling(this IServiceCollection services, int callbackThrottlingInterval)
-        {
-            services.Configure<MiddlewareOptions>(i => i.UseCallbackThrottling(callbackThrottlingInterval));
-            return services;
-        }
-
-        public static IServiceCollection AddNetRpcStreamCallBack(this IServiceCollection services, int progressCount)
-        {
-            services.Configure<MiddlewareOptions>(i => i.UseStreamCallBack(progressCount));
-            return services;
-        }
-
-        public static IServiceCollection AddNetRpcMiddleware(this IServiceCollection services, Action<MiddlewareOptions> configureOptions)
-        {
-            if (configureOptions != null)
-                services.Configure(configureOptions);
-            return services;
-        }
-
-        public static List<Instance> GetContractInstances(this IServiceProvider serviceProvider, ContractOptions options)
-        {
-            return options.Contracts.ConvertAll(i => new Instance(i, serviceProvider.GetRequiredService(i.ContractType)));
         }
     }
 }

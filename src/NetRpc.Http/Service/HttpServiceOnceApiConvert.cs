@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -183,7 +182,7 @@ namespace NetRpc.Http
                 }
 
                 //application/json
-                if (_context.Request.ContentType == "application/json")
+                if (_context.Request.ContentType.StartsWith("application/json"))
                 {
                     string body;
                     using (var sr = new StreamReader(_context.Request.Body, Encoding.UTF8))
@@ -229,7 +228,7 @@ namespace NetRpc.Http
         private ActionInfo GetActionInfo(string requestPath)
         {
             foreach (var contract in _contracts)
-            foreach (var methodInfo in contract.ContractType.GetInterfaceMethods())
+            foreach (var methodInfo in contract.Methods)
             {
                 if (requestPath == ClientHelper.GetActionPath(contract.ContractType, methodInfo))
                 {

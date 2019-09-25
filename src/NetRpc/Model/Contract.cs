@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 
@@ -16,6 +15,7 @@ namespace NetRpc
 
             var cDefines = type.GetCustomAttributes<FaultExceptionDefineAttribute>(true).ToList();
             var cFaults = type.GetCustomAttributes<FaultExceptionAttribute>(true).ToList();
+            HttpRoute = type.GetCustomAttribute<HttpRouteAttribute>(true);
 
             foreach (var m in type.GetInterfaceMethods())
             {
@@ -46,6 +46,8 @@ namespace NetRpc
         }
 
         public List<MethodInfo> Methods { get; } = new List<MethodInfo>();
+
+        public HttpRouteAttribute HttpRoute { get; }
     }
 
     public class Contract
@@ -72,6 +74,16 @@ namespace NetRpc
         public List<MethodInfo> Methods => Info.Methods;
 
         public Type InstanceType { get; set; }
+
+        public string Route
+        {
+            get
+            {
+                if (Info.HttpRoute == null)
+                    return ContractType.Name;
+                return Info.HttpRoute.Template;
+            }
+        }
 
         public Contract()
         {

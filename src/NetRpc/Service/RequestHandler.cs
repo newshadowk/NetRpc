@@ -25,10 +25,12 @@ namespace NetRpc
         public async Task HandleAsync(IServiceOnceApiConvert convert)
         {
             var contractOptions = _serviceProvider.GetRequiredService<IOptions<ContractOptions>>();
+            var traceIdAccessor = _serviceProvider.GetRequiredService<ITraceIdAccessor>();
+            var rpcContextAccessor = _serviceProvider.GetRequiredService<IRpcContextAccessor>();
             using (var scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
                 var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
-                var onceTransfer = new ServiceOnceTransfer(instances, scope.ServiceProvider, convert, _middlewareBuilder);
+                var onceTransfer = new ServiceOnceTransfer(instances, scope.ServiceProvider, convert, _middlewareBuilder, traceIdAccessor, rpcContextAccessor);
                 await onceTransfer.StartAsync();
                 await onceTransfer.HandleRequestAsync();
             }

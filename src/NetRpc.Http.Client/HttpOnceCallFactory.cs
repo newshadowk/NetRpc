@@ -6,14 +6,16 @@ namespace NetRpc.Http.Client
     internal sealed class HttpOnceCallFactory : IOnceCallFactory
     {
         private readonly HttpClientOptions _options;
+        private readonly ITraceIdAccessor _traceIdAccessor;
         private HubConnection _connection;
         private HubCallBackNotifier _notifier;
         private volatile string _connectionId;
         private readonly object _lockInit = new object();
 
-        public HttpOnceCallFactory(HttpClientOptions options)
+        public HttpOnceCallFactory(HttpClientOptions options, ITraceIdAccessor traceIdAccessor)
         {
             _options = options;
+            _traceIdAccessor = traceIdAccessor;
         }
 
         private string InitConnection()
@@ -73,7 +75,7 @@ namespace NetRpc.Http.Client
         {
             var cid = InitConnection();
             var convert = new HttpClientOnceApiConvert(contract, _options.ApiUrl, cid, _notifier, timeoutInterval);
-            return new OnceCall<T>(convert, timeoutInterval);
+            return new OnceCall<T>(convert, timeoutInterval, _traceIdAccessor.TraceId);
         }
     }
 }

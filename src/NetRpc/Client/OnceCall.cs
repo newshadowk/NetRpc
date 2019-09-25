@@ -10,13 +10,15 @@ namespace NetRpc
     public sealed class OnceCall<T> : IOnceCall<T>
     {
         private readonly int _timeoutInterval;
+        private readonly string _traceId;
         private readonly CancellationTokenSource _timeOutCts = new CancellationTokenSource();
         private CancellationTokenRegistration? _reg;
         private readonly IClientOnceApiConvert _convert;
 
-        public OnceCall(IClientOnceApiConvert convert, int timeoutInterval)
+        public OnceCall(IClientOnceApiConvert convert, int timeoutInterval, string traceId)
         {
             _timeoutInterval = timeoutInterval;
+            _traceId = traceId;
             _convert = convert;
         }
 
@@ -34,18 +36,15 @@ namespace NetRpc
             var t = Task.Run(async () =>
             {
                 _convert.ResultStream += (s, e) => { SetStreamResult(tcs, e.Value); };
-
                 _convert.Result += (s, e) => { SetResult(tcs, e.Value); };
-
                 _convert.Callback += (s, e) => { callback.Invoke(e.Value); };
-
                 _convert.Fault += (s, e) => { SetFault(tcs, e.Value); };
 
                 try
                 {
                     //Send cmd
                     var postStream = action.IsPost ? stream.StreamToBytes() : null;
-                    var p = new OnceCallParam(header, action, postStream, stream.GetLength(), args);
+                    var p = new OnceCallParam(_traceId, header, action, postStream, stream.GetLength(), args);
                     if (token.IsCancellationRequested)
                     {
                         SetCancel(tcs);

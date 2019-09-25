@@ -4,7 +4,7 @@
     {
         public static ClientProxy<TService> CreateClientProxy<TService>(HttpClientOptions options, int timeoutInterval = 1200000, int hearbeatInterval = 10000)
         {
-            return new ClientProxy<TService>(new HttpOnceCallFactory(options),
+            return new ClientProxy<TService>(new HttpOnceCallFactory(options, new TraceIdAccessor()),
                 new SimpleOptionsMonitor<NetRpcClientOption>(new NetRpcClientOption
                     {
                         TimeoutInterval = timeoutInterval,

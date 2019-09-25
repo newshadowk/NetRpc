@@ -79,6 +79,7 @@ namespace NetRpc
                 serviceProvider,
                 scp.Header,
                 instance.Value,
+                scp.TraceId,
                 instanceMethodInfo, 
                 contractMethodInfo, 
                 args, 
@@ -116,7 +117,7 @@ namespace NetRpc
 
         private static (MethodInfo instanceMethodInfo, MethodInfo contractMethodInfo) GetMethodInfo(ActionInfo action, Contract contract)
         {
-            var contractMethodInfo = contract.ContractType.GetInterfaceMethods().FirstOrDefault(i => i.ToFullMethodName() == action.FullName);
+            var contractMethodInfo = contract.Methods.FirstOrDefault(i => i.ToFullMethodName() == action.FullName);
             if (contractMethodInfo != null)
             {
                 var instanceMethodInfo = (contract.InstanceType ?? contract.ContractType).GetMethod(contractMethodInfo.Name);
