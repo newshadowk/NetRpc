@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    public interface IOnceCall<T>
+    public interface IOnceCall
     {
-        Task<T> CallAsync(Dictionary<string, object> header, MethodInfo methodInfo, Action<object> callback, CancellationToken token, Stream stream,
+        Task<object> CallAsync(Dictionary<string, object> header, MethodInfo methodInfo, Action<object> callback, CancellationToken token, Stream stream,
             params object[] args);
 
         Task StartAsync();

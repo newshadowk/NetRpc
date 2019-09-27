@@ -57,7 +57,7 @@ namespace NetRpc
             return r.Body.ToObject<OnceCallParam>();
         }
 
-        public async Task<bool> SendResultAsync(CustomResult result, Stream stream, string streamName, RpcContext context)
+        public async Task<bool> SendResultAsync(CustomResult result, Stream stream, string streamName, ServiceContext context)
         {
             if (result.Result is Stream s)
             {
@@ -80,7 +80,7 @@ namespace NetRpc
             return true;
         }
 
-        public Task SendFaultAsync(Exception body, RpcContext context)
+        public Task SendFaultAsync(Exception body, ServiceContext context)
         {
             try
             {

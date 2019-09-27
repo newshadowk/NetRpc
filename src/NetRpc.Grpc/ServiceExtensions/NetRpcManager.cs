@@ -45,7 +45,7 @@ namespace NetRpc.Grpc
                         TimeoutInterval = timeoutInterval,
                         HearbeatInterval = hearbeatInterval
                     }
-                ));
+                ), null);
         }
 
         public static ClientProxy<TService> CreateClientProxy<TService>(string host, int port, string publicKey, string sslTargetName,

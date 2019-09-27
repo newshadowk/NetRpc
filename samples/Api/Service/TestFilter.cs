@@ -6,7 +6,7 @@ namespace Service
 {
     public class TestFilter : NetRpcFilterAttribute
     {
-        public override Task InvokeAsync(RpcContext context)
+        public override Task InvokeAsync(ServiceContext context)
         {
             Console.Write($"TestFilter.Execute(), context:{context}");
             return Task.CompletedTask;

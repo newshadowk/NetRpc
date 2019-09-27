@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    public class RpcContext
+    public sealed class ServiceContext
     {
         private object _result;
 
@@ -70,7 +70,7 @@ namespace NetRpc
 
         public ActionInfo ActionInfo { get; }
 
-        public RpcContext(IServiceProvider serviceProvider, 
+        public ServiceContext(IServiceProvider serviceProvider, 
             Dictionary<string, object> header, 
             object target, 
             MethodInfo instanceMethodInfo,
@@ -129,7 +129,7 @@ namespace NetRpc
 
         public override string ToString()
         {
-            return $"Header:{DicToStringForDisplay(Header)}, MethodName:{InstanceMethodInfo.Name}, Args:{ListToStringForDisplay(Args, ",")}";
+            return $"Header:{DicToStringForDisplay(Header)}, MethodName:{InstanceMethodInfo.Name}, Args:{Helper.ListToStringForDisplay(Args, ",")}";
         }
 
         private static Type GetActionType(object[] args)
@@ -145,22 +145,6 @@ namespace NetRpc
             }
 
             return null;
-        }
-
-        private static string ListToStringForDisplay(Array list, string split)
-        {
-            var sb = new StringBuilder();
-
-            sb.Append("[Count:" + list.Length + "]");
-            sb.Append(split);
-
-            foreach (var s in list)
-            {
-                sb.Append(s);
-                sb.Append(split);
-            }
-
-            return sb.ToString().TrimEndString(split);
         }
 
         public static string DicToStringForDisplay(Dictionary<string, object> header)

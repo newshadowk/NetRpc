@@ -68,7 +68,7 @@ namespace NetRpc.Http
             return Task.FromResult(param);
         }
 
-        public async Task<bool> SendResultAsync(CustomResult result, Stream stream, string streamName, RpcContext context)
+        public async Task<bool> SendResultAsync(CustomResult result, Stream stream, string streamName, ServiceContext context)
         {
             if (!result.HasStream)
                 await _connection.SendAsync(new Result(result.Result));
@@ -78,7 +78,7 @@ namespace NetRpc.Http
             return false;
         }
 
-        public Task SendFaultAsync(Exception body, RpcContext context)
+        public Task SendFaultAsync(Exception body, ServiceContext context)
         {
             if (body is HttpNotMatchedException ||
                 body is MethodNotFoundException)

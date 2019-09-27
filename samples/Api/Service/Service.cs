@@ -21,7 +21,7 @@ namespace Service
         [TestFilter]
         public void FilterAndHeader()
         {
-            var h = RpcContextAccessor.StaticContext.Header;
+            var h = GlobalServiceContext.Context.Header;
             Console.WriteLine($"[TestFilter], Header:{h["k1"]}");
         }
 

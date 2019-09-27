@@ -4,6 +4,6 @@ namespace NetRpc
 {
     public interface IOnceCallFactory : IDisposable
     {
-        IOnceCall<T> Create<T>(ContractInfo contract, int timeoutInterval);
+        IOnceCall Create(ContractInfo contract, int timeoutInterval);
     }
 }

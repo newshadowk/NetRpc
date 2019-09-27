@@ -25,7 +25,7 @@ namespace NetRpc
         public async Task HandleAsync(IServiceOnceApiConvert convert)
         {
             var contractOptions = _serviceProvider.GetRequiredService<IOptions<ContractOptions>>();
-            var rpcContextAccessor = _serviceProvider.GetRequiredService<IRpcContextAccessor>();
+            var rpcContextAccessor = _serviceProvider.GetRequiredService<IGlobalServiceContextAccessor>();
             using (var scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
                 var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);

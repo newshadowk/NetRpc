@@ -13,7 +13,7 @@ namespace NetRpc
             _progressCount = progressCount;
         }
 
-        public async Task InvokeAsync(RpcContext context)
+        public async Task InvokeAsync(ServiceContext context)
         {
             Helper.ConvertStreamProgress(context, _progressCount);
             await _next(context);

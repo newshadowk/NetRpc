@@ -21,8 +21,4 @@
     <ProjectReference Include="..\NetRpc.Contract\NetRpc.Contract.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Trace\" />
-  </ItemGroup>
-
 </Project>

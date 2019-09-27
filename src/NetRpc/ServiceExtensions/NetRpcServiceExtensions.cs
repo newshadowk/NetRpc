@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddNetRpcService(this IServiceCollection services)
         {
             services.TryAddSingleton<MiddlewareBuilder>();
-            services.TryAddSingleton<IRpcContextAccessor, RpcContextAccessor>();
+            services.TryAddSingleton<IGlobalServiceContextAccessor, GlobalServiceContextAccessor>();
             return services;
         }
 
@@ -98,6 +98,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (configureOptions != null)
                 services.Configure(configureOptions);
+            services.TryAddSingleton<ClientMiddlewareBuilder>();
             services.TryAddSingleton<IClientConnectionFactory, TClientConnectionFactoryImplementation>();
             services.TryAddSingleton<ClientProxy<TService>>();
             return services;

@@ -70,12 +70,12 @@ namespace NetRpc
         }
 
         /// <exception cref="TypeLoadException"></exception>
-        public static RpcContext Convert(ServiceCallParam scp, List<Instance> instances, IServiceProvider serviceProvider)
+        public static ServiceContext Convert(ServiceCallParam scp, List<Instance> instances, IServiceProvider serviceProvider)
         {
             var (instanceMethodInfo, contractMethodInfo, instance) = GetMethodInfo(scp.Action, instances);
             var ps = contractMethodInfo.GetParameters();
             var args = GetArgs(ps, scp.Args, scp.Callback, scp.Token, scp.Stream);
-            return new RpcContext(
+            return new ServiceContext(
                 serviceProvider,
                 scp.Header,
                 instance.Value,

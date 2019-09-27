@@ -15,6 +15,7 @@ namespace Client
 {
     class Program
     {
+        private static ClientProxy<IService> _clientProxy;
         private static IService _proxy;
         private static IServiceAsync _proxyAsync;
 
@@ -23,13 +24,13 @@ namespace Client
             //RabbitMQ
             Console.WriteLine("---  [RabbitMQ]  ---");
             var mqF = new RabbitMQClientConnectionFactoryOptions(Helper.GetMQOptions());
-            var clientProxy = NetRpcManager.CreateClientProxy<IService>(mqF);
-            clientProxy.Connected += (s, e) => Console.WriteLine("[event] Connected");
-            clientProxy.DisConnected += (s, e) => Console.WriteLine("[event] DisConnected");
-            clientProxy.ExceptionInvoked += (s, e) => Console.WriteLine("[event] ExceptionInvoked");
+            _clientProxy = NetRpcManager.CreateClientProxy<IService>(mqF);
+            _clientProxy.Connected += (s, e) => Console.WriteLine("[event] Connected");
+            _clientProxy.DisConnected += (s, e) => Console.WriteLine("[event] DisConnected");
+            _clientProxy.ExceptionInvoked += (s, e) => Console.WriteLine("[event] ExceptionInvoked");
 
             //Heartbeat
-            clientProxy.Heartbeat += s =>
+            _clientProxy.Heartbeat += s =>
             {
                 Console.WriteLine("[event] Heartbeat");
                 s.Proxy.Hearbeat();
@@ -37,7 +38,7 @@ namespace Client
             };
             //clientProxy.StartHeartbeat(true);
 
-            _proxy = clientProxy.Proxy;
+            _proxy = _clientProxy.Proxy;
             _proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(mqF).Proxy;
             RunTest();
             RunTestAsync().Wait();
@@ -46,7 +47,8 @@ namespace Client
             Console.WriteLine("\r\n--- [Grpc]  ---");
             var grpcF = new GrpcClientConnectionFactoryOptions(
                 new GrpcClientOptions { Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure) });
-            _proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(grpcF).Proxy;
+            _clientProxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(grpcF);
+            _proxy = _clientProxy.Proxy;
             _proxyAsync = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IServiceAsync>(grpcF).Proxy;
             RunTest();
             RunTestAsync().Wait();
@@ -74,7 +76,7 @@ namespace Client
 
         private static void Test_FilterAndHeader()
         {
-            ClientContext.Header = new Dictionary<string, object> { { "k1", "header value" } };
+            _clientProxy.AdditionHeader = new Dictionary<string, object> { { "k1", "header value" } };
             Console.Write("[FilterAndHeader], send:k1, header value");
             _proxy.FilterAndHeader();
         }

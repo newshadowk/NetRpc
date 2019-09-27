@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NetRpc
+﻿namespace NetRpc
 {
     internal sealed class OnceCallFactory : IOnceCallFactory
     {
@@ -16,9 +14,9 @@ namespace NetRpc
             _factory?.Dispose();
         }
 
-        public IOnceCall<T> Create<T>(ContractInfo contract, int timeoutInterval)
+        public IOnceCall Create(ContractInfo contract, int timeoutInterval)
         {
-            return new OnceCall<T>(new BufferClientOnceApiConvert(_factory.Create()), timeoutInterval);
+            return new OnceCall(new BufferClientOnceApiConvert(_factory.Create()), timeoutInterval);
         }
     }
 }

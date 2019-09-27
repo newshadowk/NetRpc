@@ -171,7 +171,7 @@ Service can receive the header object which client sent.
 //service side
 public void TestHeader()
 {
-    var h = RpcContextAccessor.StaticContext.Header;
+    var h = GlobalRpcContext.Context.Header;
     //...
 }
 ```

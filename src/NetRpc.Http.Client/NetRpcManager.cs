@@ -10,7 +10,7 @@
                         TimeoutInterval = timeoutInterval,
                         HearbeatInterval = hearbeatInterval
                     }
-                ));
+                ), null);
         }
     }
 }

@@ -6,7 +6,7 @@ namespace NetRpc
     [AttributeUsage(AttributeTargets.Method)]
     public abstract class NetRpcFilterAttribute : Attribute
     {
-        public abstract Task InvokeAsync(RpcContext context);
+        public abstract Task InvokeAsync(ServiceContext context);
     }
 
     public class StreamCallBackFilterAttribute : NetRpcFilterAttribute
@@ -18,7 +18,7 @@ namespace NetRpc
             _progressCount = progressCount;
         }
 
-        public override Task InvokeAsync(RpcContext context)
+        public override Task InvokeAsync(ServiceContext context)
         {
             Helper.ConvertStreamProgress(context, _progressCount);
             return Task.CompletedTask;

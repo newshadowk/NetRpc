@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Timers;
@@ -18,16 +19,21 @@ namespace NetRpc
         private bool _isConnected;
         public event Func<ClientProxy<TService>, Task> Heartbeat;
         private readonly Timer _tHearbeat;
+        private readonly Call _call;
 
-        public ClientContext Context { get; } = new ClientContext();
+        public Dictionary<string, object> AdditionHeader
+        {
+            get => _call.AdditionHeader;
+            set => _call.AdditionHeader = value;
+        }
 
         public TService Proxy { get; }
 
-        public ClientProxy(IOnceCallFactory factory, IOptionsMonitor<NetRpcClientOption> options)
+        public ClientProxy(IOnceCallFactory factory, IOptionsMonitor<NetRpcClientOption> options, IServiceProvider serviceProvider)
         {
             _factory = factory;
-            var call = new Call(new ContractInfo(typeof(TService)), factory, options.CurrentValue.TimeoutInterval, Context);
-            var invoker = new ClientMethodInvoker(call);
+            _call = new Call(serviceProvider, new ContractInfo(typeof(TService)), factory, options.CurrentValue.TimeoutInterval);
+            var invoker = new ClientMethodInvoker(_call);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
             ((SimpleDispatchProxyAsync) (object) Proxy).ExceptionInvoked += ProxyExceptionInvoked;
             _tHearbeat = new Timer(options.CurrentValue.HearbeatInterval);
@@ -35,13 +41,13 @@ namespace NetRpc
 
             options.OnChange(i =>
             {
-                call.Config(i.TimeoutInterval);
+                _call.Config(i.TimeoutInterval);
                 _tHearbeat.Interval = i.HearbeatInterval;
             });
         }
 
-        public ClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options)
-            : this(new OnceCallFactory(factory), options)
+        public ClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options, IServiceProvider serviceProvider)
+            : this(new OnceCallFactory(factory), options, serviceProvider)
         {
         }
 

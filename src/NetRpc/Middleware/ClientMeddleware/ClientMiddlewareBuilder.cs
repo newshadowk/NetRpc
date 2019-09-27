@@ -3,68 +3,38 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    public delegate Task RequestDelegate(RpcContext context);
+    public delegate Task ClientRequestDelegate(ClientContext context);
 
-    public class MiddlewareOptions
-    {
-        public List<(Type Type, object[] args)> Items { get; set; } = new List<(Type Type, object[] args)>();
-
-        public void UseMiddleware<TMiddleware>(params object[] args)
-        {
-            UseMiddleware(typeof(TMiddleware), args);
-        }
-
-        public void UseMiddleware(Type type, params object[] args)
-        {
-            Items.Add((type, args));
-        }
-
-        public void UseCallbackThrottling(int callbackThrottlingInterval)
-        {
-            if (callbackThrottlingInterval <= 0)
-                return;
-            Items.Add((typeof(CallbackThrottlingMiddleware), new object[] {callbackThrottlingInterval}));
-        }
-
-        public void UseStreamCallBack(int progressCount)
-        {
-            if (progressCount <= 0)
-                return;
-            Items.Add((typeof(StreamCallBackMiddleware), new object[] { progressCount }));
-        }
-    }
-
-    public class MiddlewareBuilder
+    public class ClientMiddlewareBuilder
     {
         internal const string InvokeMethodName = "Invoke";
         internal const string InvokeAsyncMethodName = "InvokeAsync";
 
         private static readonly MethodInfo GetServiceInfo =
-            typeof(MiddlewareBuilder).GetMethod(nameof(GetService), BindingFlags.NonPublic | BindingFlags.Static);
+            typeof(ClientMiddlewareBuilder).GetMethod(nameof(GetService), BindingFlags.NonPublic | BindingFlags.Static);
 
-        private RequestDelegate _requestDelegate;
+        private ClientRequestDelegate _requestDelegate;
         private readonly object _lockRequestDelegate = new object();
-        private readonly IList<Func<RequestDelegate, RequestDelegate>> _components = new List<Func<RequestDelegate, RequestDelegate>>();
+        private readonly IList<Func<ClientRequestDelegate, ClientRequestDelegate>> _components = new List<Func<ClientRequestDelegate, ClientRequestDelegate>>();
 
-        public MiddlewareBuilder(MiddlewareOptions options, IServiceProvider serviceProvider)
+        public ClientMiddlewareBuilder(ClientMiddlewareOptions options, IServiceProvider serviceProvider)
         {
-            _components.Add(CreateMiddleware(serviceProvider, typeof(MethodInvokeMiddleware), new object[] { }));
+            _components.Add(CreateMiddleware(serviceProvider, typeof(ClientMethodInvokeMiddleware), new object[] { }));
             options.Items.ForEach(i => _components.Add(CreateMiddleware(serviceProvider, i.Type, i.args)));
         }
 
-        public async Task<object> InvokeAsync(RpcContext context)
+        public async Task<object> InvokeAsync(ClientContext context)
         {
             var requestDelegate = GetRequestDelegate();
             await requestDelegate.Invoke(context);
             return context.Result;
         }
 
-        private RequestDelegate GetRequestDelegate()
+        private ClientRequestDelegate GetRequestDelegate()
         {
             if (_requestDelegate == null)
                 lock (_lockRequestDelegate)
@@ -73,15 +43,15 @@ namespace NetRpc
             return _requestDelegate;
         }
 
-        private RequestDelegate Build()
+        private ClientRequestDelegate Build()
         {
-            RequestDelegate app = context => Task.CompletedTask;
+            ClientRequestDelegate app = context => Task.CompletedTask;
             foreach (var component in _components)
                 app = component(app);
             return app;
         }
 
-        private static Func<RequestDelegate, RequestDelegate> CreateMiddleware(IServiceProvider serviceProvider, Type middleware, object[] args)
+        private static Func<ClientRequestDelegate, ClientRequestDelegate> CreateMiddleware(IServiceProvider serviceProvider, Type middleware, object[] args)
         {
             return next =>
             {
@@ -99,7 +69,7 @@ namespace NetRpc
 
                 var methodInfo = invokeMethods[0];
                 var parameters = methodInfo.GetParameters();
-                if (parameters.Length == 0 || parameters[0].ParameterType != typeof(RpcContext))
+                if (parameters.Length == 0 || parameters[0].ParameterType != typeof(ClientContext))
                     throw new InvalidOperationException($"UseMiddlewareNoParameters, {InvokeMethodName}, {InvokeAsyncMethodName}");
 
                 var ctorArgs = new object[args.Length + 1];
@@ -109,14 +79,14 @@ namespace NetRpc
                 var instance = ActivatorUtilities.CreateInstance(serviceProvider, middleware, ctorArgs);
 
                 if (parameters.Length == 1)
-                    return (RequestDelegate) methodInfo.CreateDelegate(typeof(RequestDelegate), instance);
+                    return (ClientRequestDelegate)methodInfo.CreateDelegate(typeof(ClientRequestDelegate), instance);
 
                 var factory = Compile<object>(methodInfo, parameters);
                 return context => factory(instance, context, context.ServiceProvider);
             };
         }
 
-        private static Func<T, RpcContext, IServiceProvider, Task> Compile<T>(MethodInfo methodInfo, ParameterInfo[] parameters)
+        private static Func<T, ClientContext, IServiceProvider, Task> Compile<T>(MethodInfo methodInfo, ParameterInfo[] parameters)
         {
             // If we call something like
             //
@@ -146,7 +116,7 @@ namespace NetRpc
 
             var middleware = typeof(T);
 
-            var middlewareContextArg = Expression.Parameter(typeof(RpcContext), "apiContext");
+            var middlewareContextArg = Expression.Parameter(typeof(ClientContext), "apiContext");
             var providerArg = Expression.Parameter(typeof(IServiceProvider), "serviceProvider");
             var instanceArg = Expression.Parameter(middleware, "middleware");
 
@@ -178,7 +148,7 @@ namespace NetRpc
 
             var body = Expression.Call(middlewareInstanceArg, methodInfo, methodArguments);
 
-            var lambda = Expression.Lambda<Func<T, RpcContext, IServiceProvider, Task>>(body, instanceArg, middlewareContextArg, providerArg);
+            var lambda = Expression.Lambda<Func<T, ClientContext, IServiceProvider, Task>>(body, instanceArg, middlewareContextArg, providerArg);
 
             return lambda.Compile();
         }
@@ -192,40 +162,6 @@ namespace NetRpc
             }
 
             return service;
-        }
-    }
-
-    internal class MethodInvokeMiddleware
-    {
-        public MethodInvokeMiddleware(RequestDelegate next)
-        {
-        }
-
-        public async Task InvokeAsync(RpcContext context)
-        {
-            var filters = context.InstanceMethodInfo.GetCustomAttributes<NetRpcFilterAttribute>(true);
-            foreach (var f in filters)
-                await f.InvokeAsync(context);
-
-            dynamic ret;
-            try
-            {
-                // ReSharper disable once PossibleNullReferenceException
-                ret = context.InstanceMethodInfo.Invoke(context.Target, context.Args);
-            }
-            catch (TargetInvocationException e)
-            {
-                if (e.InnerException != null)
-                {
-                    var edi = ExceptionDispatchInfo.Capture(e.InnerException);
-                    edi.Throw();
-                }
-
-                throw;
-            }
-
-            var isGenericType = context.InstanceMethodInfo.ReturnType.IsGenericType;
-            context.Result = await ApiWrapper.GetTaskResult(ret, isGenericType);
         }
     }
 }

@@ -1,1 +1,1 @@
-@dotnet %~dp0\GatewayService\bin\Debug\netcoreapp2.2\GatewayService.dll
+@%~dp0\GatewayService\bin\Debug\netcoreapp3.0\GatewayService.exe

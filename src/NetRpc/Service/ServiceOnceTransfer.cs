@@ -12,16 +12,16 @@ namespace NetRpc
         private readonly List<Instance> _instances;
         private readonly IServiceProvider _serviceProvider;
         private readonly MiddlewareBuilder _middlewareBuilder;
-        private readonly IRpcContextAccessor _rpcContextAccessor;
+        private readonly IGlobalServiceContextAccessor _globalServiceContextAccessor;
         private readonly CancellationTokenSource _serviceCts = new CancellationTokenSource();
 
         public ServiceOnceTransfer(List<Instance> instances, IServiceProvider serviceProvider, IServiceOnceApiConvert convert,
-            MiddlewareBuilder middlewareBuilder, IRpcContextAccessor rpcContextAccessor)
+            MiddlewareBuilder middlewareBuilder, IGlobalServiceContextAccessor globalServiceContextAccessor)
         {
             _instances = instances;
             _serviceProvider = serviceProvider;
             _middlewareBuilder = middlewareBuilder;
-            _rpcContextAccessor = rpcContextAccessor;
+            _globalServiceContextAccessor = globalServiceContextAccessor;
             _convert = convert;
         }
 
@@ -33,18 +33,18 @@ namespace NetRpc
         public async Task HandleRequestAsync()
         {
             object ret;
-            RpcContext rpcContext = null;
+            ServiceContext context = null;
             ServiceCallParam scp = null;
 
             try
             {
                 scp = await GetServiceCallParamAsync();
-                rpcContext = ApiWrapper.Convert(scp, _instances, _serviceProvider);
+                context = ApiWrapper.Convert(scp, _instances, _serviceProvider);
 
                 //set Accessor
-                _rpcContextAccessor.Context = rpcContext;
+                _globalServiceContextAccessor.Context = context;
 
-                ret = await _middlewareBuilder.InvokeAsync(rpcContext);
+                ret = await _middlewareBuilder.InvokeAsync(context);
 
                 //if Post, do not need send back to client.
                 if (scp.Action.IsPost)
@@ -57,14 +57,14 @@ namespace NetRpc
                     return;
 
                 //send fault
-                await _convert.SendFaultAsync(e, rpcContext);
+                await _convert.SendFaultAsync(e, context);
                 return;
             }
 
             var hasStream = ret.TryGetStream(out var retStream, out var retStreamName);
 
             //send result
-            var sendStreamNext = await _convert.SendResultAsync(new CustomResult(ret, hasStream, retStream.GetLength()), retStream, retStreamName, rpcContext);
+            var sendStreamNext = await _convert.SendResultAsync(new CustomResult(ret, hasStream, retStream.GetLength()), retStream, retStreamName, context);
             if (!sendStreamNext)
                 return;
 

@@ -19,6 +19,22 @@ namespace NetRpc
         /// </summary>
         public const int StreamBufferCount = 53;
 
+        public static string ListToStringForDisplay(Array list, string split)
+        {
+            var sb = new StringBuilder();
+
+            sb.Append("[Count:" + list.Length + "]");
+            sb.Append(split);
+
+            foreach (var s in list)
+            {
+                sb.Append(s);
+                sb.Append(split);
+            }
+
+            return sb.ToString().TrimEndString(split);
+        }
+
         public static async Task SendStreamAsync(Func<byte[], Task> publishBuffer, Func<Task> publishBufferEnd, Stream stream, CancellationToken token)
         {
             var buffer = new byte[StreamBufferSize];
@@ -230,7 +246,7 @@ namespace NetRpc
             return bytes;
         }
 
-        public static Exception WarpException(Exception ex, RpcContext context = null)
+        public static Exception WarpException(Exception ex, ServiceContext context = null)
         {
             var bodyFe = ex as FaultException;
 
@@ -256,7 +272,7 @@ namespace NetRpc
             return ex;
         }
 
-        public static void ConvertStreamProgress(RpcContext context, int progressCount)
+        public static void ConvertStreamProgress(ServiceContext context, int progressCount)
         {
             if (context.Callback == null)
                 return;
