@@ -84,8 +84,44 @@ var host = new HostBuilder()
             i.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
     })
     .Build();
+
+...
+public class GrpcHostedService : IHostedService
+{
+    private readonly ClientProxy<IService> _client;
+
+    public GrpcHostedService(ClientProxy<IService> client) //DI client here.
+    {
+        _client = client;
+    }
+...
 ```
-Other way is **NetRpcManager**.
+If want to inject multiple **ClientProxies**, should use **IClientProxyFactory**.
+```c#
+//service side
+services.Configure<RabbitMQClientOptions>("mq1", context.Configuration.GetSection("Mq1"));
+services.Configure<RabbitMQClientOptions>("mq2", context.Configuration.GetSection("Mq2"));
+services.AddNetRpcRabbitMQClient<IService>();
+```
+
+```c#
+//client side
+public class MyHost : IHostedService
+{
+    private readonly IClientProxyFactory _factory;
+
+    public MyHost(IClientProxyFactory factory)  //Get IClientProxyFactory here
+    {
+        _factory = factory;
+    }
+
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        var clientProxy = _factory.CreateProxy<IService>("grpc1");
+...
+```
+
+
 ## Serialization
 RabbitMQ, Grpc channel base on **BinaryFormatter**, make sure all contract model mark as **[Serializable]**.  
 Http channel base on **JsonFormatter**.
@@ -666,5 +702,6 @@ CreateClientProxy<TService>(Channel channel, int timeoutInterval = 1200000)
 * [samples/Http](samples/Http) Http webapi and swagger api.
 * [samples/LoadBalance](samples/LoadBalance) RabbitMQ load balance and post way to call.
 * [samples/InitializeByDI](samples/InitializeByDI) Use DI to create a client or servcie and how to DI a http channel to exist MVC service.
+* [samples/InitializeByDIFactory](samples/InitializeByDIFactory) Use ClientProxyFactory to get multiple ClientProxies.
 * [samples/CallbackThrottling](samples/CallbackThrottling) It useful when callback is progress.
 * [samples/Gateway](samples/Gateway) Gateway for NetRpc.

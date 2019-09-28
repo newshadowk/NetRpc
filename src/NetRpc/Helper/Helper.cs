@@ -308,5 +308,42 @@ namespace NetRpc
                 rawAction(Convert.ChangeType(retP, context.CallbackType));
             };
         }
+
+        public static void CopyPropertiesFrom<T>(this T toObj, T fromObj)
+        {
+            var properties = typeof(T).GetProperties();
+            if (properties.Length == 0)
+                return;
+
+            foreach (var p in properties)
+                p.SetValue(toObj, p.GetValue(fromObj, null), null);
+        }
+
+        public static bool IsPropertiesDefault<T>(this T obj)
+        {
+            if (obj == null)
+                return true;
+
+            var properties = typeof(T).GetProperties();
+
+            foreach (var p in properties)
+            {
+                var value = p.GetValue(obj, null);
+                var defaultValue = GetDefaultValue(p.PropertyType);
+
+                if (!Equals(value, defaultValue))
+                    return false;
+            }
+
+            return true;
+        }
+
+        public static object GetDefaultValue(Type t)
+        {
+            if (t.IsValueType)
+                return Activator.CreateInstance(t);
+
+            return null;
+        }
     }
 }

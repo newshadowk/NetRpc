@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetRpc;
 using NetRpc.RabbitMQ;
 
@@ -22,7 +23,12 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (mQClientConfigureOptions != null)
                 services.Configure(mQClientConfigureOptions);
-            services.AddNetRpcClient<RabbitMQClientConnectionFactory, TService>(clientConfigureOptions);
+
+            if (clientConfigureOptions != null)
+                services.Configure(clientConfigureOptions);
+
+            services.AddNetRpcClient<RabbitMQClientConnectionFactory, TService>();
+            services.AddSingleton<IClientProxyProvider, RabbitMqClientProxyProvider>();
             return services;
         }
 
@@ -32,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.AddNetRpcRabbitMQClient<TService>(mQClientConfigureOptions, clientConfigureOptions);
             services.AddNetRpcContractSingleton(typeof(TService),
-                p => ((ClientProxy<TService>) p.GetService(typeof(ClientProxy<TService>))).Proxy);
+                p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))).Proxy);
             return services;
         }
     }

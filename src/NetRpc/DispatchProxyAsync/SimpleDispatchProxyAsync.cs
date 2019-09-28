@@ -21,6 +21,13 @@ namespace System.Reflection
             return (T) proxy;
         }
 
+        public static object Create(Type baseType, IMethodInvoker invoker)
+        {
+            object proxy = Create(baseType, typeof(SimpleDispatchProxyAsync));
+            ((SimpleDispatchProxyAsync)proxy).SetParams(invoker);
+            return proxy;
+        }
+
         public override object Invoke(MethodInfo method, object[] args)
         {
             try

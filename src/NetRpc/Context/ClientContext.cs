@@ -30,7 +30,7 @@ namespace NetRpc
     {
         public IServiceProvider ServiceProvider { get; }
 
-        public IOnceCall OnceCall { get; }
+        internal IOnceCall OnceCall { get; }
 
         public object Result { get; set; }
 

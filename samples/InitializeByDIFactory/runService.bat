@@ -1,0 +1,1 @@
+@%~dp0\Service\bin\Debug\netcoreapp3.0\service.exe

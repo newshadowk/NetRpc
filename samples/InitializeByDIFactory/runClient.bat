@@ -1,0 +1,1 @@
+@%~dp0\Client\bin\Debug\netcoreapp3.0\client.exe

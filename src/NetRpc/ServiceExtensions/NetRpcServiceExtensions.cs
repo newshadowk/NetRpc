@@ -7,12 +7,41 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class NetRpcServiceExtensions
     {
+        #region Service
+
         public static IServiceCollection AddNetRpcService(this IServiceCollection services)
         {
             services.TryAddSingleton<MiddlewareBuilder>();
             services.TryAddSingleton<IGlobalServiceContextAccessor, GlobalServiceContextAccessor>();
             return services;
         }
+
+        #endregion
+
+        #region Middleware
+
+        public static IServiceCollection AddNetRpcMiddleware(this IServiceCollection services, Action<MiddlewareOptions> configureOptions)
+        {
+            if (configureOptions != null)
+                services.Configure(configureOptions);
+            return services;
+        }
+
+        public static IServiceCollection AddNetRpcCallbackThrottling(this IServiceCollection services, int callbackThrottlingInterval)
+        {
+            services.Configure<MiddlewareOptions>(i => i.UseCallbackThrottling(callbackThrottlingInterval));
+            return services;
+        }
+
+        public static IServiceCollection AddNetRpcStreamCallBack(this IServiceCollection services, int progressCount)
+        {
+            services.Configure<MiddlewareOptions>(i => i.UseStreamCallBack(progressCount));
+            return services;
+        }
+
+        #endregion
+
+        #region Contract
 
         public static IServiceCollection AddNetRpcContractSingleton(this IServiceCollection services, Type serviceType, Type implementationType)
         {
@@ -57,38 +86,40 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection AddNetRpcMiddleware(this IServiceCollection services, Action<MiddlewareOptions> configureOptions)
-        {
-            if (configureOptions != null)
-                services.Configure(configureOptions);
-            return services;
-        }
-
-        public static IServiceCollection AddNetRpcCallbackThrottling(this IServiceCollection services, int callbackThrottlingInterval)
-        {
-            services.Configure<MiddlewareOptions>(i => i.UseCallbackThrottling(callbackThrottlingInterval));
-            return services;
-        }
-
-        public static IServiceCollection AddNetRpcStreamCallBack(this IServiceCollection services, int progressCount)
-        {
-            services.Configure<MiddlewareOptions>(i => i.UseStreamCallBack(progressCount));
-            return services;
-        }
-
         public static List<Instance> GetContractInstances(this IServiceProvider serviceProvider, ContractOptions options)
         {
             return options.Contracts.ConvertAll(i => new Instance(i, serviceProvider.GetRequiredService(i.ContractType)));
         }
 
+        #endregion
+
+        #region Client
+
         public static IServiceCollection AddNetRpcClientByApiConvert<TOnceCallFactoryImplementation, TService>(this IServiceCollection services,
-            Action<NetRpcClientOption> configureOptions)
-            where TOnceCallFactoryImplementation : class, IOnceCallFactory
+         Action<NetRpcClientOption> configureOptions)
+         where TOnceCallFactoryImplementation : class, IOnceCallFactory
         {
             if (configureOptions != null)
                 services.Configure(configureOptions);
+            services.AddNetRpcClientByApiConvert<TOnceCallFactoryImplementation, TService>();
+            return services;
+        }
+
+        public static IServiceCollection AddNetRpcClientByApiConvert<TOnceCallFactoryImplementation, TService>(this IServiceCollection services)
+            where TOnceCallFactoryImplementation : class, IOnceCallFactory
+        {
             services.TryAddSingleton<IOnceCallFactory, TOnceCallFactoryImplementation>();
             services.TryAddSingleton<ClientProxy<TService>>();
+            return services;
+        }
+
+        public static IServiceCollection AddNetRpcClient<TClientConnectionFactoryImplementation, TService>(this IServiceCollection services)
+            where TClientConnectionFactoryImplementation : class, IClientConnectionFactory
+        {
+            services.TryAddSingleton<ClientMiddlewareBuilder>();
+            services.TryAddSingleton<IClientConnectionFactory, TClientConnectionFactoryImplementation>();
+            services.TryAddSingleton<ClientProxy<TService>>();
+            services.TryAddSingleton<IClientProxyFactory, ClientProxyFactory>();
             return services;
         }
 
@@ -98,10 +129,10 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (configureOptions != null)
                 services.Configure(configureOptions);
-            services.TryAddSingleton<ClientMiddlewareBuilder>();
-            services.TryAddSingleton<IClientConnectionFactory, TClientConnectionFactoryImplementation>();
-            services.TryAddSingleton<ClientProxy<TService>>();
+            services.AddNetRpcClient<TClientConnectionFactoryImplementation, TService>();
             return services;
         }
+
+        #endregion
     }
 }

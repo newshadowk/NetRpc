@@ -7,14 +7,9 @@ using Grpc.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using NetRpc;
 using NetRpc.Grpc;
-using NetRpc.Http.Client;
 using NetRpc.RabbitMQ;
-using Console = System.Console;
-//using NetRpcManager = NetRpc.Grpc.NetRpcManager;
-using NetRpcManager = NetRpc.Http.Client.NetRpcManager;
 
 namespace Client
 {
@@ -24,7 +19,6 @@ namespace Client
         {
             var h = new HostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-
                 .ConfigureAppConfiguration((hostContext, configApp) =>
                 {
                     configApp.SetBasePath(Directory.GetCurrentDirectory());

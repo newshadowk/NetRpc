@@ -33,6 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.Configure(grpcClientConfigureOptions);
             services.TryAddSingleton<GrpcClientProxy<TService>>();
             services.AddNetRpcClient<GrpcClientConnectionFactory, TService>(clientConfigureOptions);
+            services.AddSingleton<IClientProxyProvider, GrpcClientProxyProvider>();
             return services;
         }
     }

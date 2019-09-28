@@ -12,22 +12,16 @@ namespace Service
     {
         static async Task Main(string[] args)
         {
-            await RunMQAsync();
+            await RunAsync();
         }
 
-        static async Task RunMQAsync()
+        static async Task RunAsync()
         {
             var h = new HostBuilder()
                 .ConfigureServices((context, services) =>
                 {
                     services.AddNetRpcRabbitMQService(i => { i.CopyFrom(Helper.GetMQOptions()); });
                     services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50001));
-                    services.AddNetRpcMiddleware(i =>
-                    {
-                        i.UseMiddleware<CallbackThrottlingMiddleware>(500);
-                        i.UseMiddleware<StreamCallBackMiddleware>(10);
-                        i.UseMiddleware<ExMiddleware>();
-                    });
                     services.AddNetRpcContractSingleton<IService, Service>();
                 })
                 .Build();
@@ -41,29 +35,6 @@ namespace Service
         {
             Console.WriteLine($"CallAsync {s}");
             return Task.CompletedTask;
-        }
-    }
-
-    public class ExMiddleware
-    {
-        private readonly RequestDelegate _next;
-
-        public ExMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
-
-        public async Task InvokeAsync(ServiceContext context)
-        {
-            try
-            {
-                await _next(context);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
         }
     }
 }
