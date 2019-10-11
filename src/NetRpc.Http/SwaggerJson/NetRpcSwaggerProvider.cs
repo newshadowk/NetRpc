@@ -18,20 +18,16 @@ namespace NetRpc.Http
         private readonly SwaggerGeneratorOptions _options;
         private readonly SchemaRepository _schemaRepository;
         private readonly OpenApiDocument _doc;
-        private volatile bool _supportCallbackAndCancel;
 
-        public NetRpcSwaggerProvider(ISchemaGenerator schemaGenerator, IOptionsMonitor<HttpServiceOptions> httpServiceOptions,
-            IOptions<SwaggerGeneratorOptions> optionsAccessor)
+        public NetRpcSwaggerProvider(ISchemaGenerator schemaGenerator, IOptions<SwaggerGeneratorOptions> optionsAccessor)
         {
             _schemaRepository = new SchemaRepository();
             _schemaGenerator = schemaGenerator;
             _options = optionsAccessor.Value;
             _doc = new OpenApiDocument();
-            _supportCallbackAndCancel = httpServiceOptions.CurrentValue.SupportCallbackAndCancel;
-            httpServiceOptions.OnChange(i => _supportCallbackAndCancel = i.SupportCallbackAndCancel);
         }
 
-        private void Process(string apiRootPath, bool supportCallbackAndCancel, List<Contract> contracts)
+        private void Process(string apiRootPath, List<Contract> contracts)
         {
             //tag
             contracts.ForEach(i => _doc.Tags.Add(new OpenApiTag {Name = i.Route}));
@@ -40,29 +36,26 @@ namespace NetRpc.Http
             _doc.Paths = new OpenApiPaths();
             foreach (var contract in contracts)
             {
-                foreach (var method in contract.Methods)
+                foreach (var methodObj in contract.MethodObjs)
                 {
-                    var argType = ClientHelper.GetArgType(method, supportCallbackAndCancel, out var streamName, out var action, out var cancelToken);
-
                     //Operation
                     var operation = new OpenApiOperation
                     {
                         Tags = GenerateTags(contract.ContractType.Name),
-                        RequestBody = GenerateRequestBody(argType, streamName),
-                        Responses = GenerateResponses(method, contract, cancelToken != null)
+                        RequestBody = GenerateRequestBody(methodObj.MergeArgType.Type, methodObj.MergeArgType.StreamName),
+                        Responses = GenerateResponses(methodObj.MethodInfo, contract, methodObj.MergeArgType.CancelToken != null)
                     };
 
                     //Summary
-                    var filterContext = new OperationFilterContext(new ApiDescription(), _schemaGenerator, _schemaRepository, method);
+                    var filterContext = new OperationFilterContext(new ApiDescription(), _schemaGenerator, _schemaRepository, methodObj.MethodInfo);
                     foreach (var filter in _options.OperationFilters)
                         filter.Apply(operation, filterContext);
-                    if (supportCallbackAndCancel)
-                        operation.Summary = AppendSummaryByCallbackAndCancel(operation.Summary, action, cancelToken);
+                    operation.Summary = AppendSummaryByCallbackAndCancel(operation.Summary, methodObj.MergeArgType.CallbackAction, methodObj.MergeArgType.CancelToken);
 
                     //Path
                     var openApiPathItem = new OpenApiPathItem();
                     openApiPathItem.AddOperation(OperationType.Post, operation);
-                    var key = $"{apiRootPath}/{ClientHelper.GetActionPath(contract.ContractType, method)}";
+                    var key = $"{apiRootPath}/{ClientHelper.GetActionPath(contract.ContractType, methodObj.MethodInfo)}";
                     _doc.Paths.Add(key, openApiPathItem);
                 }
             }
@@ -201,7 +194,7 @@ namespace NetRpc.Http
 
         public OpenApiDocument GetSwagger(string apiRootPath, List<Contract> contracts)
         {
-            Process(apiRootPath, _supportCallbackAndCancel, contracts);
+            Process(apiRootPath, contracts);
             return _doc;
         }
 

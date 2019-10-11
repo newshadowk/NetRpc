@@ -8,7 +8,7 @@ namespace NetRpc
     {
         public ActionInfo Action { get; set; }
 
-        public object[] Args { get; set; }
+        public object[] PureArgs { get; set; }
 
         public long? StreamLength { get; set; }
 
@@ -16,10 +16,10 @@ namespace NetRpc
 
         public Dictionary<string, object> Header { get; set; }
 
-        public OnceCallParam(Dictionary<string, object> header, ActionInfo action, byte[] postStream, long? streamLength, object[] args)
+        public OnceCallParam(Dictionary<string, object> header, ActionInfo action, byte[] postStream, long? streamLength, object[] pureArgs)
         {
             Action = action;
-            Args = args;
+            PureArgs = pureArgs;
             Header = header;
             StreamLength = streamLength;
             PostStream = postStream;
@@ -27,7 +27,7 @@ namespace NetRpc
 
         public override string ToString()
         {
-            return $"{Action}({Args.ListToString(", ")})";
+            return $"{Action}({PureArgs.ListToString(", ")})";
         }
     }
 }

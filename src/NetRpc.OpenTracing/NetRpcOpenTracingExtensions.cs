@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetRpc;
 using NetRpc.OpenTracing;
-using OpenTracing.Util;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -9,9 +8,9 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddNetRpcOpenTracing(this IServiceCollection services)
         {
-            services.TryAddSingleton(GlobalTracer.Instance);
             services.TryAddSingleton<IGlobalTracerAccessor, GlobalTracerAccessor>();
             services.Configure<MiddlewareOptions>(i => i.UseMiddleware<NetRpcOpenTracingMiddleware>());
+            services.Configure<ClientMiddlewareOptions>(i => i.UseMiddleware<NetRpcClientOpenTracingMiddleware>());
             return services;
         }
     }

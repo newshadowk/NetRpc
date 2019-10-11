@@ -19,7 +19,7 @@ namespace NetRpc.Http
         {
             bool notMatched;
             using (var convert = new HttpServiceOnceApiConvert(contractOptions.Value.Contracts, httpContext,
-                httpOptions.Value.ApiRootPath, httpOptions.Value.IgnoreWhenNotMatched, httpOptions.Value.SupportCallbackAndCancel, hub))
+                httpOptions.Value.ApiRootPath, httpOptions.Value.IgnoreWhenNotMatched, hub))
             {
                 await requestHandler.HandleAsync(convert);
                 notMatched = convert.NotMatched;

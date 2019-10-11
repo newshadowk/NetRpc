@@ -17,8 +17,8 @@ namespace NetRpc.Http.Client
         private volatile string _connectionId;
         private readonly HubCallBackNotifier _notifier;
         private readonly int _timeoutInterval;
-        private TypeName _callBackAction;
-        private string _callId;
+        private TypeName _callbackAction;
+        private readonly string _callId = Guid.NewGuid().ToString();
 
         public event EventHandler<EventArgsT<object>> ResultStream;
         public event EventHandler<EventArgsT<object>> Result;
@@ -40,8 +40,8 @@ namespace NetRpc.Http.Client
         {
             if (e.CallId != _callId)
                 return;
-            var argType = _callBackAction.Type.GenericTypeArguments[0];
-            var obj = e.Data.ToObject(argType);
+            var argType = _callbackAction.Type.GenericTypeArguments[0];
+            var obj = e.Data.ToDtoObject(argType);
             OnCallback(new EventArgsT<object>(obj));
         }
 
@@ -67,9 +67,9 @@ namespace NetRpc.Http.Client
 
         public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodInfo methodInfo, Stream stream, bool isPost, CancellationToken token)
         {
-            var postType = ClientHelper.GetArgType(methodInfo, true, out var streamName, out _callBackAction, out var outToken);
-
-            var postObj = GetPostObj(postType, _callBackAction != null || outToken != null, callParam.Args);
+            var methodObj = _contract.MethodObjs.Find(i => i.MethodInfo.ToFullMethodName() == methodInfo.ToFullMethodName());
+            _callbackAction = methodObj.MergeArgType.CallbackAction;
+            var postObj = methodObj.CreateMergeArgTypeObj(_callId, _connectionId, callParam.PureArgs);
             var actionPath = ClientHelper.GetActionPath(_contract.Type, methodInfo);
             var reqUrl = $"{_apiUrl}/{actionPath}";
 
@@ -79,10 +79,10 @@ namespace NetRpc.Http.Client
             var req = new RestRequest(Method.POST);
 
             //request
-            if (streamName != null)
+            if (methodObj.MergeArgType.StreamName != null)
             {
-                req.AddParameter("data", postObj.ToJson(), ParameterType.RequestBody);
-                req.AddFile(streamName, stream.CopyTo, streamName, stream.Length);
+                req.AddParameter("data", postObj.ToDtoJson(), ParameterType.RequestBody);
+                req.AddFile(methodObj.MergeArgType.StreamName, stream.CopyTo, methodObj.MergeArgType.StreamName, stream.Length);
             }
             else
             {
@@ -120,7 +120,7 @@ namespace NetRpc.Http.Client
                 {
                     var resultH = res.Headers.First(i => i.Name == ClientConstValue.CustomResultHeaderKey);
                     var hStr = HttpUtility.UrlDecode(resultH.Value.ToString(), Encoding.UTF8);
-                    var retInstance = hStr.ToObject(realRetT);
+                    var retInstance = hStr.ToDtoObject(realRetT);
                     retInstance.SetStream(ms);
                     OnResultStream(new EventArgsT<object>(retInstance));
                 }
@@ -128,7 +128,7 @@ namespace NetRpc.Http.Client
             //return object
             else
             {
-                var value = res.Content.ToObject(realRetT);
+                var value = res.Content.ToDtoObject(realRetT);
                 OnResult(new EventArgsT<object>(value));
             }
 
@@ -161,7 +161,7 @@ namespace NetRpc.Http.Client
             {
                 if (grouping.Key == (int)res.StatusCode)
                 {
-                    var fObj = (FaultExceptionJsonObj)res.Content.ToObject(typeof(FaultExceptionJsonObj));
+                    var fObj = (FaultExceptionJsonObj)res.Content.ToDtoObject(typeof(FaultExceptionJsonObj));
                     var found = grouping.FirstOrDefault(i => i.ErrorCode == fObj.ErrorCode);
                     if (found != null)
                         throw CreateException(found.DetailType, res.Content);
@@ -171,32 +171,6 @@ namespace NetRpc.Http.Client
             //DefaultException
             if ((int) res.StatusCode == ClientConstValue.DefaultExceptionStatusCode)
                 throw CreateException(typeof(Exception), res.Content);
-        }
-
-        private object GetPostObj(Type postType, bool needSignalR, object[] args)
-        {
-            if (postType == null)
-                return null;
-
-            var instance = Activator.CreateInstance(postType);
-            var newArgs = args.ToList();
-
-            //_connectionId _callId
-            if (needSignalR)
-            {
-                _callId = Guid.NewGuid().ToString();
-                newArgs.Add(_connectionId);
-                newArgs.Add(_callId);
-            }
-
-            var i = 0;
-            foreach (var p in postType.GetProperties())
-            {
-                p.SetValue(instance, newArgs[i]);
-                i++;
-            }
-
-            return instance;
         }
 
         private void OnResult(EventArgsT<object> e)

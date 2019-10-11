@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,6 +21,8 @@ namespace NetRpc
         public MethodInfo InstanceMethodInfo { get; }
 
         public MethodInfo ContractMethodInfo { get; }
+
+        public MethodObj MethodObj { get; }
 
         public Contract Contract { get; }
 
@@ -68,7 +69,17 @@ namespace NetRpc
 
         public object[] Args { get; }
 
+        /// <summary>
+        /// Args of invoked action without stream and action.
+        /// </summary>
+        public object[] PureArgs { get; }
+
         public ActionInfo ActionInfo { get; }
+
+        /// <summary>
+        /// A central location for sharing state between components during the invoking process.
+        /// </summary>
+        public Dictionary<object, object> Properties { get; set; } = new Dictionary<object, object>();
 
         public ServiceContext(IServiceProvider serviceProvider, 
             Dictionary<string, object> header, 
@@ -76,6 +87,7 @@ namespace NetRpc
             MethodInfo instanceMethodInfo,
             MethodInfo contractMethodInfo, 
             object[] args, 
+            object[] pureArgs, 
             ActionInfo actionInfo,
             Stream stream,
             Contract contract,
@@ -88,16 +100,21 @@ namespace NetRpc
             InstanceMethodInfo = instanceMethodInfo;
             ContractMethodInfo = contractMethodInfo;
             Args = args;
+            PureArgs = pureArgs;
             CallbackType = GetActionType(args);
             ActionInfo = actionInfo;
             Callback = callback;
             Stream = stream;
             Contract = contract;
             Token = token;
+            MethodObj = Contract.MethodObjs.Find(i => i.MethodInfo == contractMethodInfo);
 
             ResetProps();
         }
 
+        /// <summary>
+        /// Result of invoked action.
+        /// </summary>
         public object Result
         {
             get => _result;

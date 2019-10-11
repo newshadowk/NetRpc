@@ -10,7 +10,7 @@ namespace NetRpc
     {
         public ActionInfo Action { get; }
 
-        public object[] Args { get; }
+        public object[] PureArgs { get; }
 
         public long? StreamLength { get; set; }
 
@@ -25,7 +25,7 @@ namespace NetRpc
         public ServiceCallParam(OnceCallParam param, Action<object> callback, CancellationToken token, Stream stream)
         {
             Action = param.Action;
-            Args = param.Args;
+            PureArgs = param.PureArgs;
             StreamLength = param.StreamLength;
             Callback = callback;
             Token = token;

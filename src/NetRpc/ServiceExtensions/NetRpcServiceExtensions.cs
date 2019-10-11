@@ -109,7 +109,7 @@ namespace Microsoft.Extensions.DependencyInjection
             where TOnceCallFactoryImplementation : class, IOnceCallFactory
         {
             services.TryAddSingleton<IOnceCallFactory, TOnceCallFactoryImplementation>();
-            services.TryAddSingleton<ClientProxy<TService>>();
+            services.TryAddSingleton<IClientProxy<TService>, ClientProxy<TService>>();
             return services;
         }
 
@@ -118,7 +118,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.TryAddSingleton<ClientMiddlewareBuilder>();
             services.TryAddSingleton<IClientConnectionFactory, TClientConnectionFactoryImplementation>();
-            services.TryAddSingleton<ClientProxy<TService>>();
+            services.TryAddSingleton<IClientProxy<TService>, ClientProxy<TService>>();
             services.TryAddSingleton<IClientProxyFactory, ClientProxyFactory>();
             return services;
         }

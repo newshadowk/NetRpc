@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace NetRpc.Http.Client
+namespace NetRpc
 {
     public static class ClassHelper
     {

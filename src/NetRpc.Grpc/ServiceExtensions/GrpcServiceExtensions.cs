@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.AddNetRpcGrpcClient<TService>(grpcClientConfigureOptions, clientConfigureOptions);
             services.AddNetRpcContractSingleton(typeof(TService),
-                p => ((ClientProxy<TService>) p.GetService(typeof(ClientProxy<TService>))).Proxy);
+                p => ((IClientProxy<TService>) p.GetService(typeof(IClientProxy<TService>))).Proxy);
             return services;
         }
 

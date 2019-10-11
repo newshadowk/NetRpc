@@ -18,18 +18,15 @@ namespace NetRpc.Http
         private readonly HttpConnection _connection;
         private readonly string _rootPath;
         private readonly bool _ignoreWhenNotMatched;
-        private readonly bool _supportCallbackAndCancel;
         private CancellationTokenSource _cts;
 
-        public HttpServiceOnceApiConvert(List<Contract> contracts, HttpContext context, string rootPath, bool ignoreWhenNotMatched,
-            bool supportCallbackAndCancel, IHubContext<CallbackHub, ICallback> hub)
+        public HttpServiceOnceApiConvert(List<Contract> contracts, HttpContext context, string rootPath, bool ignoreWhenNotMatched, IHubContext<CallbackHub, ICallback> hub)
         {
             _contracts = contracts;
             _context = context;
             _connection = new HttpConnection(context, hub);
             _rootPath = rootPath;
             _ignoreWhenNotMatched = ignoreWhenNotMatched;
-            _supportCallbackAndCancel = supportCallbackAndCancel;
             CallbackHub.Canceled += CallbackHubCanceled;
         }
 
@@ -63,8 +60,8 @@ namespace NetRpc.Http
         {
             var actionInfo = GetActionInfo();
             var header = GetHeader();
-            var args = GetArgs(actionInfo);
-            var param = new OnceCallParam(header, actionInfo, null, null, args);
+            var pureArgs = GetPureArgs(actionInfo);
+            var param = new OnceCallParam(header, actionInfo, null, null, pureArgs);
             return Task.FromResult(param);
         }
 
@@ -159,11 +156,11 @@ namespace NetRpc.Http
             return ret;
         }
 
-        private object[] GetArgs(ActionInfo ai)
+        private object[] GetPureArgs(ActionInfo ai)
         {
             //dataObjType
             var method = ApiWrapper.GetMethodInfo(ai, _contracts);
-            var dataObjType = ClientHelper.GetArgType(method.contractMethodInfo, _supportCallbackAndCancel, out _, out _, out _);
+            var dataObjType = method.methodObj.MergeArgType.Type;
 
             if (_context.Request.ContentType != null)
             {
@@ -178,7 +175,7 @@ namespace NetRpc.Http
 
                     var dataObj = Helper.ToObjectForHttp(data[0], dataObjType);
                     (_connection.ConnectionId, _connection.CallId) = GetConnectionIdCallId(dataObj);
-                    return Helper.GetArgsFromDataObj(dataObjType, dataObj);
+                    return Helper.GetPureArgsFromDataObj(dataObjType, dataObj);
                 }
 
                 //application/json
@@ -190,7 +187,7 @@ namespace NetRpc.Http
 
                     var dataObj = Helper.ToObjectForHttp(body, dataObjType);
                     (_connection.ConnectionId, _connection.CallId) = GetConnectionIdCallId(dataObj);
-                    return Helper.GetArgsFromDataObj(dataObjType, dataObj);
+                    return Helper.GetPureArgsFromDataObj(dataObjType, dataObj);
                 }
             }
             else
@@ -228,11 +225,11 @@ namespace NetRpc.Http
         private ActionInfo GetActionInfo(string requestPath)
         {
             foreach (var contract in _contracts)
-            foreach (var methodInfo in contract.Methods)
+            foreach (var methodObj in contract.MethodObjs)
             {
-                if (requestPath == ClientHelper.GetActionPath(contract.ContractType, methodInfo))
+                if (requestPath == ClientHelper.GetActionPath(contract.ContractType, methodObj.MethodInfo))
                 {
-                    return methodInfo.ToActionInfo();
+                    return methodObj.MethodInfo.ToActionInfo();
                 }
             }
 

@@ -72,16 +72,17 @@ namespace NetRpc
         /// <exception cref="TypeLoadException"></exception>
         public static ServiceContext Convert(ServiceCallParam scp, List<Instance> instances, IServiceProvider serviceProvider)
         {
-            var (instanceMethodInfo, contractMethodInfo, instance) = GetMethodInfo(scp.Action, instances);
-            var ps = contractMethodInfo.GetParameters();
-            var args = GetArgs(ps, scp.Args, scp.Callback, scp.Token, scp.Stream);
+            var (instanceMethodInfo, methodObj, instance) = GetMethodInfo(scp.Action, instances);
+            var ps = methodObj.MethodInfo.GetParameters();
+            var args = GetArgs(ps, scp.PureArgs, scp.Callback, scp.Token, scp.Stream);
             return new ServiceContext(
                 serviceProvider,
                 scp.Header,
                 instance.Value,
                 instanceMethodInfo, 
-                contractMethodInfo, 
-                args, 
+                methodObj.MethodInfo, 
+                args,
+                scp.PureArgs,
                 scp.Action, 
                 scp.Stream,
                 instance.Contract,
@@ -90,19 +91,19 @@ namespace NetRpc
         }
 
         /// <exception cref="TypeLoadException"></exception>
-        public static (MethodInfo instanceMethodInfo, MethodInfo contractMethodInfo, Instance instance) GetMethodInfo(ActionInfo action, List<Instance> instances)
+        public static (MethodInfo instanceMethodInfo, MethodObj methodObj, Instance instance) GetMethodInfo(ActionInfo action, List<Instance> instances)
         {
             foreach (var o in instances)
             {
                 var found = GetMethodInfo(action, o.Contract);
                 if (found != default)
-                    return (found.instanceMethodInfo, found.contractMethodInfo, o);
+                    return (found.instanceMethodInfo, found.methodObj, o);
             }
 
             throw new MethodNotFoundException($"{action.FullName} not found in instances");
         }
 
-        public static (MethodInfo instanceMethodInfo, MethodInfo contractMethodInfo) GetMethodInfo(ActionInfo action, List<Contract> contracts)
+        public static (MethodInfo instanceMethodInfo, MethodObj methodObj) GetMethodInfo(ActionInfo action, List<Contract> contracts)
         {
             foreach (var contract in contracts)
             {
@@ -114,12 +115,12 @@ namespace NetRpc
             throw new MethodNotFoundException($"{action.FullName} not found in instanceTypes");
         }
 
-        private static (MethodInfo instanceMethodInfo, MethodInfo contractMethodInfo) GetMethodInfo(ActionInfo action, Contract contract)
+        private static (MethodInfo instanceMethodInfo, MethodObj methodObj) GetMethodInfo(ActionInfo action, Contract contract)
         {
-            var contractMethodInfo = contract.Methods.FirstOrDefault(i => i.ToFullMethodName() == action.FullName);
-            if (contractMethodInfo != null)
+            var methodObj = contract.MethodObjs.FirstOrDefault(i => i.MethodInfo.ToFullMethodName() == action.FullName);
+            if (methodObj != null)
             {
-                var instanceMethodInfo = (contract.InstanceType ?? contract.ContractType).GetMethod(contractMethodInfo.Name);
+                var instanceMethodInfo = (contract.InstanceType ?? contract.ContractType).GetMethod(methodObj.MethodInfo.Name);
                 if (action.GenericArguments.Length > 0)
                 {
                     var ts = action.GenericArguments.ToList().ConvertAll(Type.GetType).ToArray();
@@ -127,7 +128,7 @@ namespace NetRpc
                     instanceMethodInfo = instanceMethodInfo.MakeGenericMethod(ts);
                 }
 
-                return (instanceMethodInfo, contractMethodInfo);
+                return (instanceMethodInfo, methodObj);
             }
 
             return default;

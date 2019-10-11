@@ -10,7 +10,7 @@ namespace NetRpc
     public interface IOnceCall
     {
         Task<object> CallAsync(Dictionary<string, object> header, MethodInfo methodInfo, Action<object> callback, CancellationToken token, Stream stream,
-            params object[] args);
+            params object[] pureArgs);
 
         Task StartAsync();
     }

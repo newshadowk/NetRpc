@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 return null;
 
             var f = new GrpcClientConnectionFactory(new SimpleOptionsMonitor<GrpcClientOptions>(options));
-            var clientProxy = new ClientProxy<TService>(f, _netRpcClientOption, _serviceProvider);
+            var clientProxy = new ClientProxy<TService>(f, _netRpcClientOption, _serviceProvider, name);
             return clientProxy;
         }
     }

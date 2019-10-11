@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace NetRpc
 {
-    public class ClientProxy<TService> : IDisposable
+    public class ClientProxy<TService> : IClientProxy<TService>
     {
         private bool _disposed;
         protected readonly object LockDispose = new object();
@@ -17,7 +17,7 @@ namespace NetRpc
         private readonly object LockObj = new object();
         private readonly IOnceCallFactory _factory;
         private bool _isConnected;
-        public event Func<ClientProxy<TService>, Task> Heartbeat;
+        public event Func<IClientProxy<TService>, Task> Heartbeat;
         private readonly Timer _tHearbeat;
         private readonly Call _call;
 
@@ -29,13 +29,13 @@ namespace NetRpc
 
         public TService Proxy { get; }
 
-        public ClientProxy(IOnceCallFactory factory, IOptionsMonitor<NetRpcClientOption> options, IServiceProvider serviceProvider)
+        public ClientProxy(IOnceCallFactory factory, IOptionsMonitor<NetRpcClientOption> options, IServiceProvider serviceProvider, string optionsName = null)
         {
             _factory = factory;
-            _call = new Call(serviceProvider, new ContractInfo(typeof(TService)), factory, options.CurrentValue.TimeoutInterval);
+            _call = new Call(serviceProvider, new ContractInfo(typeof(TService)), factory, options.CurrentValue.TimeoutInterval, optionsName);
             var invoker = new ClientMethodInvoker(_call);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
-            ((SimpleDispatchProxyAsync) (object) Proxy).ExceptionInvoked += ProxyExceptionInvoked;
+            ((SimpleDispatchProxyAsync)(object)Proxy).ExceptionInvoked += ProxyExceptionInvoked;
             _tHearbeat = new Timer(options.CurrentValue.HearbeatInterval);
             _tHearbeat.Elapsed += THearbeatElapsed;
 
@@ -46,10 +46,11 @@ namespace NetRpc
             });
         }
 
-        public ClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options, IServiceProvider serviceProvider)
-            : this(new OnceCallFactory(factory), options, serviceProvider)
+        public ClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options, IServiceProvider serviceProvider, string optionsName = null)
+            : this(new OnceCallFactory(factory), options, serviceProvider, optionsName)
         {
         }
+      
 
         private void ProxyExceptionInvoked(object sender, EventArgsT<Exception> e)
         {

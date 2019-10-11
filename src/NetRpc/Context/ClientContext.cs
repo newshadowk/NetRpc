@@ -6,35 +6,23 @@ using System.Threading;
 
 namespace NetRpc
 {
-    //public sealed class ClientContext
-    //{
-    //    private static readonly AsyncLocal<Dictionary<string, object>> _local = new AsyncLocal<Dictionary<string, object>>();
-
-    //    public Dictionary<string, object> DefaultHeader { get; set; } = new Dictionary<string, object>();
-
-    //    public static Dictionary<string, object> Header
-    //    {
-    //        get
-    //        {
-    //            if (_local.Value != null)
-    //                return _local.Value;
-
-    //            _local.Value = new Dictionary<string, object>();
-    //            return _local.Value;
-    //        }
-    //        set => _local.Value = value;
-    //    }
-    //}
-
     public sealed class ClientContext
     {
         public IServiceProvider ServiceProvider { get; }
 
         internal IOnceCall OnceCall { get; }
 
+        /// <summary>
+        /// Result of invoked action.
+        /// </summary>
         public object Result { get; set; }
 
         public Dictionary<string, object> Header { get; set; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// A central location for sharing state between components during the invoking process.
+        /// </summary>
+        public Dictionary<object, object> Properties { get; set; } = new Dictionary<object, object>();
 
         public MethodInfo MethodInfo { get; }
 
@@ -42,25 +30,40 @@ namespace NetRpc
 
         public CancellationToken Token { get; }
 
+        public ContractInfo ContractInfo { get; }
+
+        public MethodObj MethodObj { get; }
+
         public Stream Stream { get; }
 
-        public object[] Args { get; }
+        /// <summary>
+        /// Args of invoked action without stream and action.
+        /// </summary>
+        public object[] PureArgs { get; }
+
+        public string OptionsName { get; }
 
         public ClientContext(IServiceProvider serviceProvider, 
+            string optionsName,
             IOnceCall onceCall, 
             MethodInfo methodInfo, 
             Action<object> callback, 
-            CancellationToken token, 
+            CancellationToken token,
+            ContractInfo contractInfo,
+            MethodObj methodObj,
             Stream stream, 
-            object[] args)
+            object[] pureArgs)
         {
             ServiceProvider = serviceProvider;
             OnceCall = onceCall;
             MethodInfo = methodInfo;
             Callback = callback;
+            ContractInfo = contractInfo;
+            MethodObj = methodObj;
             Token = token;
             Stream = stream;
-            Args = args;
+            PureArgs = pureArgs;
+            OptionsName = optionsName;
         }
     }
 }

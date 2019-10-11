@@ -35,7 +35,6 @@ namespace NetRpc.Http
                         {
                             i.ApiRootPath = httpServiceOptions.ApiRootPath;
                             i.IgnoreWhenNotMatched = httpServiceOptions.IgnoreWhenNotMatched;
-                            i.SupportCallbackAndCancel = httpServiceOptions.SupportCallbackAndCancel;
                         }
                     });
                     services.AddNetRpcMiddleware(i =>

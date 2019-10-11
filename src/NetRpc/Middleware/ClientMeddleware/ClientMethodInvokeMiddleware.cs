@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace NetRpc
 {
@@ -10,7 +11,15 @@ namespace NetRpc
 
         public async Task InvokeAsync(ClientContext context)
         {
-            context.Result = await context.OnceCall.CallAsync(context.Header, context.MethodInfo, context.Callback, context.Token, context.Stream, context.Args);
+            try
+            {
+                context.Result = await context.OnceCall.CallAsync(context.Header, context.MethodInfo, context.Callback, context.Token, context.Stream, context.PureArgs);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
     }
 }

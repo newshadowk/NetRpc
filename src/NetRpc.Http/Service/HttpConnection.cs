@@ -33,7 +33,7 @@ namespace NetRpc.Http
             try
             {
                 if (ConnectionId != null)
-                    await _hub.Clients.Client(ConnectionId).Callback(CallId, callbackObj.ToJson());
+                    await _hub.Clients.Client(ConnectionId).Callback(CallId, callbackObj.ToDtoJson());
             }
             catch
             {
@@ -53,7 +53,7 @@ namespace NetRpc.Http
 
             if (!(result.Result is Stream))
             {
-                var json = result.Result.ToJson();
+                var json = result.Result.ToDtoJson();
                 json = HttpUtility.UrlEncode(json, Encoding.UTF8);
                 _context.Response.Headers.Add(ClientConstValue.CustomResultHeaderKey, json);
             }
@@ -70,7 +70,7 @@ namespace NetRpc.Http
             if (result.IsPainText)
                 s = result.Ret.ToString();
             else
-                s = result.Ret.ToJson();
+                s = result.Ret.ToDtoJson();
             await _context.Response.WriteAsync(s ?? "");
         }
     }

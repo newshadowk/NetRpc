@@ -26,7 +26,7 @@ namespace NetRpc
         }
 
         public Task<object> CallAsync(Dictionary<string, object> header, MethodInfo methodInfo, Action<object> callback, CancellationToken token, Stream stream,
-            params object[] args)
+            params object[] pureArgs)
         {
             var action = methodInfo.ToActionInfo();
 
@@ -42,7 +42,7 @@ namespace NetRpc
                 {
                     //Send cmd
                     var postStream = action.IsPost ? stream.StreamToBytes() : null;
-                    var p = new OnceCallParam(header, action, postStream, stream.GetLength(), args);
+                    var p = new OnceCallParam(header, action, postStream, stream.GetLength(), pureArgs);
                     if (token.IsCancellationRequested)
                     {
                         SetCancel(tcs);

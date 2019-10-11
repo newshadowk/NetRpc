@@ -14,7 +14,7 @@ namespace NetRpc.Http
             object dataObj;
             try
             {
-                dataObj = str.ToObject(t);
+                dataObj = str.ToDtoObject(t);
             }
             catch (Exception e)
             {
@@ -32,7 +32,7 @@ namespace NetRpc.Http
             return path;
         }
 
-        public static object[] GetArgsFromDataObj(Type dataObjType, object dataObj)
+        public static object[] GetPureArgsFromDataObj(Type dataObjType, object dataObj)
         {
             var ret = new List<object>();
             if (dataObjType == null)

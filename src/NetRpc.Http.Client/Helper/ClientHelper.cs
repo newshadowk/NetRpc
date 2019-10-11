@@ -4,88 +4,20 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace NetRpc.Http.Client
 {
     public static class ClientHelper
     {
-        public static object ToObject(this string str, Type t)
+        private static readonly JsonSerializerSettings Js = new JsonSerializerSettings{ContractResolver = DtoContractResolver.Instance};
+
+        public static object ToDtoObject(this string str, Type t)
         {
             if (string.IsNullOrEmpty(str))
                 return default;
 
-            return JsonConvert.DeserializeObject(str, t);
-        }
-
-        public static Type GetArgType(MethodInfo m, bool supportCallbackAndCancel, out string streamName, out TypeName action, out TypeName cancelToken)
-        {
-            streamName = null;
-            action = null;
-            cancelToken = null;
-
-            var typeName = $"{m.Name}Param";
-            var t = ClassHelper.BuildType(typeName);
-            var cis = new List<ClassHelper.CustomsPropertyInfo>();
-
-            var addedCallId = false;
-            foreach (var p in m.GetParameters())
-            {
-                if (p.ParameterType == typeof(Stream))
-                {
-                    streamName = p.Name;
-                    continue;
-                }
-
-                //callback
-                if (p.ParameterType.IsActionT())
-                {
-                    if (!supportCallbackAndCancel)
-                        continue;
-
-                    action = new TypeName
-                    {
-                        Type = p.ParameterType,
-                        Name = p.Name
-                    };
-
-                    addedCallId = true;
-
-                    continue;
-                }
-
-                //cancel
-                if (p.ParameterType == typeof(CancellationToken?) || p.ParameterType == typeof(CancellationToken))
-                {
-                    if (!supportCallbackAndCancel)
-                        continue;
-
-                    cancelToken = new TypeName
-                    {
-                        Type = p.ParameterType,
-                        Name = p.Name
-                    };
-
-                    addedCallId = true;
-
-                    continue;
-                }
-
-                cis.Add(new ClassHelper.CustomsPropertyInfo(p.ParameterType, p.Name));
-            }
-
-            //connectionId callId
-            if (addedCallId)
-            {
-                cis.Add(new ClassHelper.CustomsPropertyInfo(typeof(string), ClientConstValue.ConnectionIdName));
-                cis.Add(new ClassHelper.CustomsPropertyInfo(typeof(string), ClientConstValue.CallIdName));
-            }
-
-            t = ClassHelper.AddProperty(t, cis);
-            if (cis.Count == 0)
-                return null;
-            return t;
+            return JsonConvert.DeserializeObject(str, t, Js);
         }
 
         public static string GetActionPath(Type contractType, MethodInfo methodInfo)
@@ -132,11 +64,11 @@ namespace NetRpc.Http.Client
             return propertyInfos.FirstOrDefault(i => i.PropertyType == typeof(Stream));
         }
 
-        public static string ToJson<T>(this T obj)
+        public static string ToDtoJson<T>(this T obj)
         {
             if (obj == null)
                 return null;
-            return JsonConvert.SerializeObject(obj);
+            return JsonConvert.SerializeObject(obj, Js);
         }
 
         public static Type GetTypeFromReturnTypeDefinition(this Type returnTypeDefinition)

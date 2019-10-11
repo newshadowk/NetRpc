@@ -8,6 +8,6 @@ namespace NetRpc
 {
     internal interface ICall
     {
-        Task<object> CallAsync(MethodInfo methodInfo, Action<object> callback, CancellationToken token, Stream stream, params object[] args);
+        Task<object> CallAsync(MethodInfo methodInfo, Action<object> callback, CancellationToken token, Stream stream, params object[] otherArgs);
     }
 }

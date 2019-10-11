@@ -35,6 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection
             if (httpServiceConfigureOptions != null)
                 services.Configure(httpServiceConfigureOptions);
             services.TryAddSingleton<RequestHandler>();
+            services.AddNetRpcService();
             return services;
         }
 
