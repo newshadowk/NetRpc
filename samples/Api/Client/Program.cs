@@ -63,7 +63,6 @@ namespace Client
         {
             Test_FilterAndHeader();
             Test_SetAndGetObj();
-            Test_CallByGeneric();
             Test_CallByCallBack();
             Test_CallBySystemException();
             Test_CallByCustomException();
@@ -79,14 +78,6 @@ namespace Client
             _clientProxy.AdditionHeader = new Dictionary<string, object> { { "k1", "header value" } };
             Console.Write("[FilterAndHeader], send:k1, header value");
             _proxy.FilterAndHeader();
-        }
-
-        private static void Test_CallByGeneric()
-        {
-            var obj = new CustomObj {Date = DateTime.Now, Name = "test"};
-            Console.Write($"[CallByGeneric], send:{obj}, receive:");
-            var ret = _proxy.CallByGenericType<int, int>(1);
-            Console.WriteLine($"{ret}");
         }
 
         private static void Test_SetAndGetObj()
@@ -196,7 +187,6 @@ namespace Client
 
         private static async Task RunTestAsync()
         {
-            await Test_CallByGenericAsync();
             await Test_SetAndGetObjAsync();
             await Test_CallByCancelAsync();
             await Test_CallByCallBackAsync();
@@ -207,14 +197,6 @@ namespace Client
             await Test_EchoStreamAsync();
             await Test_GetComplexStreamAsync();
             await Test_ComplexCallAsync();
-        }
-
-        private static async Task Test_CallByGenericAsync()
-        {
-            var obj = new CustomObj {Date = DateTime.Now, Name = "test"};
-            Console.Write($"[CallByGenericAsync], send:{obj}, ");
-            var ret = await _proxyAsync.CallByGenericAsync<CustomObj, int>(obj);
-            Console.WriteLine($"receive:{ret}");
         }
 
         private static async Task Test_SetAndGetObjAsync()

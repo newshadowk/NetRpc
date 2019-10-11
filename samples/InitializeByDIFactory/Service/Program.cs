@@ -25,7 +25,7 @@ namespace Service
                     services.AddNetRpcContractSingleton<IService, Service>();
                 })
                 .Build();
-            await h.StartAsync();
+            await h.RunAsync();
         }
     }
 

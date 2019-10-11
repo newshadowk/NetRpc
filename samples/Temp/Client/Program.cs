@@ -45,7 +45,7 @@ namespace Client
                 })
                 .Build();
 
-            await h.StartAsync();
+            await h.RunAsync();
         }
     }
 

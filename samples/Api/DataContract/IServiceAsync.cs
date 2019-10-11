@@ -7,8 +7,6 @@ namespace DataContract
 {
     public interface IServiceAsync
     {
-        Task<T2> CallByGenericAsync<T1, T2>(T1 obj);
-
         Task<CustomObj> SetAndGetObj(CustomObj obj);
 
         /// <exception cref="TaskCanceledException"></exception>

@@ -20,7 +20,7 @@ namespace Service
                 })
                 .Build();
 
-            await host.StartAsync();
+            await host.RunAsync();
         }
     }
 

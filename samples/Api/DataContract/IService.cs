@@ -9,8 +9,6 @@ namespace DataContract
 
         void FilterAndHeader();
 
-        T2 CallByGenericType<T1, T2>(T1 obj);
-
         CustomObj SetAndGetObj(CustomObj obj);
 
         void CallByCallBack(Action<CustomCallbackObj> cb);

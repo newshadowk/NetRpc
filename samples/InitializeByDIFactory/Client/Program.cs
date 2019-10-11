@@ -21,7 +21,7 @@ namespace Client
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .ConfigureAppConfiguration((hostContext, configApp) =>
                 {
-                    configApp.SetBasePath(Directory.GetCurrentDirectory());
+                    configApp.SetBasePath(AppContext.BaseDirectory);
                     configApp.AddJsonFile("appsettings.json", optional: false);
                 })
                 .ConfigureServices((context, services) =>
@@ -39,7 +39,7 @@ namespace Client
                 })
                 .Build();
 
-            await h.StartAsync();
+            await h.RunAsync();
         }
     }
 

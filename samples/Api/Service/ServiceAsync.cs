@@ -9,13 +9,6 @@ namespace Service
 {
     internal class ServiceAsync : IServiceAsync
     {
-        public async Task<T2> CallByGenericAsync<T1, T2>(T1 obj)
-        {
-            var ret = new CustomObj {Date = DateTime.Now, Name = "CallByGenericAsync"};
-            Console.WriteLine($"[CallByGenericAsync], receive:{obj}");
-            return default;
-        }
-
         public async Task<CustomObj> SetAndGetObj(CustomObj obj)
         {
             var ret = new CustomObj {Date = DateTime.Now, Name = "SetAndGetObj"};

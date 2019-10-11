@@ -25,12 +25,6 @@ namespace Service
             Console.WriteLine($"[TestFilter], Header:{h["k1"]}");
         }
 
-        public T2 CallByGenericType<T1, T2>(T1 obj)
-        {
-            Console.WriteLine($"[CallByGenericType], {obj}");
-            return default;
-        }
-
         public CustomObj SetAndGetObj(CustomObj obj)
         {
             var retObj = new CustomObj {Date = DateTime.Now, Name = "SetAndGetObj"};

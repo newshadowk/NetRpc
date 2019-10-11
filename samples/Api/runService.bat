@@ -1,1 +1,1 @@
-@%~dp0\Service\bin\Debug\netcoreapp3.0\service.exe
+@dotnet %~dp0\Service\bin\Debug\netcoreapp2.2\service.dll

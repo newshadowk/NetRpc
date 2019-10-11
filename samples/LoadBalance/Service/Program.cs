@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.Extensions.Hosting;
 using NetRpc;
 using NetRpc.RabbitMQ;
 using Helper = TestHelper.Helper;
@@ -17,7 +18,7 @@ namespace Service
                 new Contract<IServiceAsync, ServiceAsync>());
 
             Console.WriteLine("Service Opened.");
-            await host.StartAsync();
+            await host.RunAsync();
 
             Console.Read();
         }

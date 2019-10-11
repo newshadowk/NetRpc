@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.Extensions.Hosting;
 using NetRpc;
 using NetRpc.Grpc;
 
@@ -12,7 +13,7 @@ namespace Service
         {
             var o = new GrpcServiceOptions();
             o.AddPort("0.0.0.0", 50001);
-            await NetRpcManager.CreateHost(o, null, new Contract<IService, Service>()).StartAsync();
+            await NetRpcManager.CreateHost(o, null, new Contract<IService, Service>()).RunAsync();
         }
     }
 

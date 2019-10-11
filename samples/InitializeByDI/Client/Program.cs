@@ -22,15 +22,15 @@ namespace Client
                 })
                 .Build();
 
-            await host.StartAsync();
+            await host.RunAsync();
         }
     }
 
     public class GrpcHostedService : IHostedService
     {
-        private readonly ClientProxy<IService> _client;
+        private readonly IClientProxy<IService> _client;
 
-        public GrpcHostedService(ClientProxy<IService> client) //DI client here.
+        public GrpcHostedService(IClientProxy<IService> client) //DI client here.
         {
             _client = client;
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.Extensions.Hosting;
 using NetRpc;
 using NetRpc.Grpc;
 
@@ -15,7 +16,7 @@ namespace Service
             var options = new MiddlewareOptions();
             options.UseCallbackThrottling(1000);
             var host = NetRpcManager.CreateHost(o, options, new Contract<IService, Service>());
-            await host.StartAsync();
+            await host.RunAsync();
         }
     }
 

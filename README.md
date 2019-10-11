@@ -11,8 +11,8 @@ class Program
     {
         var o = new GrpcServiceOptions();
         o.AddPort("0.0.0.0", 50001);
-        var host = NetRpc.Grpc.NetRpcManager.CreateHost(o, null, new Contract<IService, Service>()).StartAsync();
-        await host.StartAsync();
+        var host = NetRpc.Grpc.NetRpcManager.CreateHost(o, null, new Contract<IService, Service>()).RunAsync();
+        await host.RunAsync();
     }
 }
 
@@ -124,7 +124,6 @@ public class MyHost : IHostedService
 
 ## Serialization
 RabbitMQ, Grpc channel base on **BinaryFormatter**, make sure all contract model mark as **[Serializable]**.  
-Http channel base on **JsonFormatter**.
 ```c#
 [Serializable]
 public class CustomObj
@@ -134,7 +133,6 @@ public class CustomObj
 ```
 **[Important]** When returned Custom object contains a **Stream**:  
 RabbitMQ, Grpc channel make sure it mask as **[field: NonSerialized]**.  
-Http channel make sure it mask as **[JsonIgnore]**.
 ```c#
 Task<ComplexStream> GetComplexStreamAsync();
 
@@ -142,7 +140,6 @@ Task<ComplexStream> GetComplexStreamAsync();
 public class ComplexStream
 {
     [field: NonSerialized]
-    [JsonIgnore]
     public Stream Stream { get; set; }
 
     public string OtherInfo { get; set; }
@@ -153,8 +150,6 @@ public class ComplexStream
 //Async
 public interface IServiceAsync
 {
-    Task<T2> CallByGenericTypeAsync<T1, T2>(T1 obj);
-
     Task<CustomObj> SetAndGetObj(CustomObj obj);
 
     /// <exception cref="TaskCanceledException"></exception>
@@ -229,8 +224,8 @@ services.AddNetRpcContractSingleton<IService, Service>();
 //Scoped: create new instance for each request. 
 services.AddNetRpcContractScoped<IService,Service>();
 ```
-## RpcContext
-**Midderware** or **Filter** can access **RpcContext**, it is
+## Context
+On service side, **Midderware** or **Filter** can access **ServiceContext**, it is
 
 | Property         | Type | Description |
 | :-----           | :--- | :---------- |
@@ -240,12 +235,32 @@ services.AddNetRpcContractScoped<IService,Service>();
 | ContractMethodInfo | MethodInfo               | Current invoked contract method.  |
 | ActionInfo       | ActionInfo                 | Warpped info of current invoked method.  |
 | Args             | object[]                   | Args of invoked action.  |
+| PureArgs        | object[]                   | Args of invoked action without stream and action.  |
 | Callback         | Action\<object>            | Callback of invoked action.  |
 | Token            | CancellationToken          | CancellationToken of invoked action.  |
 | Stream           | Stream                     | Stream of invoked action.  |
 | ServiceProvider  | IServiceProvider           | ServiceProvider of invoked action.  |
 | Contract         | Contract                   | Contract.|
+| MethodObj        | MethodObj                  | MethodObj.|
 | Result           | object                     | Result of invoked action.|
+| Properties       | Dictionary\<object, object>| A central location for sharing state between components during the invoking process.  |
+
+On client side, **Midderware** can access **ClientContext**, it is
+
+| Property         | Type | Description |
+| :-----           | :--- | :---------- |
+| ServiceProvider  | IServiceProvider           | ServiceProvider of invoked action.  |
+| Result           | object                     | Result of invoked action.|
+| Header           | Dictionary\<string object> | Header sent from client. |
+| MethodInfo       | MethodInfo                 | Current invoked method.  |
+| Callback         | Action\<object>            | Callback of invoked action.  |
+| Token            | CancellationToken          | CancellationToken of invoked action.  |
+| ContractInfo     | ContractInfo               | ContractInfo.|
+| MethodObj        | MethodObj                  | MethodObj.|
+| Stream           | Stream                     | Stream of invoked action.  |
+| PureArgs        | object[]                   | Args of invoked action without stream and action.  |
+| Properties       | Dictionary\<object, object>| A central location for sharing state between components during the invoking process.  |
+
 ## Filter
 Filter is common function like MVC. 
 ```c#
@@ -298,6 +313,21 @@ public class TestGlobalExceptionMiddleware
         }
     }
 }
+```
+Client side also support Middleware.
+```c#
+public class NetRpcClientOpenTracingMiddleware
+{
+    private readonly ClientRequestDelegate _next;
+
+    public NetRpcClientOpenTracingMiddleware(ClientRequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task InvokeAsync(ClientContext context, ITracer tracer)
+    {
+...
 ```
 ## Load Balance
 Only for RabbitMQ.  
@@ -505,6 +535,15 @@ services.AddNetRpcGateway<IService2>();
 ```
 Also privode middleware in the gateway service, can add access authority if needed.
 
+# OpenTracing
+Set the tags relate to method, it contains:
+* Name
+* Params
+* Result
+* Exception
+
+For more details pls go to [samples/OpenTracing](samples/OpenTracing)
+![Alt text](images/tracer.png)
 # [Http] NetRpc.Http
 NetRpc.Http provide:
 * **Webapi** for call api.
@@ -590,10 +629,6 @@ public string ApiRootPath { get; set; }
 /// </summary>
 public bool IgnoreWhenNotMatched { get; set; }
 
-/// <summary>
-/// If support callback/cancel, default value is true.
-/// </summary>
-public bool SupportCallbackAndCancel { get; set; } = true;
 ```
 ## [Http] Callback and Cancel
 Contract define the **Action\<T>** and **CancellationToken** to enable this feature.
@@ -705,3 +740,4 @@ CreateClientProxy<TService>(Channel channel, int timeoutInterval = 1200000)
 * [samples/InitializeByDIFactory](samples/InitializeByDIFactory) Use ClientProxyFactory to get multiple ClientProxies.
 * [samples/CallbackThrottling](samples/CallbackThrottling) It useful when callback is progress.
 * [samples/Gateway](samples/Gateway) Gateway for NetRpc.
+* [samples/OpenTracing](samples/OpenTracing) OpenTracing for NetRpc.

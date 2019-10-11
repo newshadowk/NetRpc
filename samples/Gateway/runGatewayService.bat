@@ -1,1 +1,0 @@
-@%~dp0\GatewayService\bin\Debug\netcoreapp3.0\GatewayService.exe
