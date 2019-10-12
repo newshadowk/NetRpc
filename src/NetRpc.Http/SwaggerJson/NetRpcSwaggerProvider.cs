@@ -41,7 +41,7 @@ namespace NetRpc.Http
                     //Operation
                     var operation = new OpenApiOperation
                     {
-                        Tags = GenerateTags(contract.ContractType.Name),
+                        Tags = GenerateTags(contract.Route),
                         RequestBody = GenerateRequestBody(methodObj.MergeArgType.Type, methodObj.MergeArgType.StreamName),
                         Responses = GenerateResponses(methodObj.MethodInfo, contract, methodObj.MergeArgType.CancelToken != null)
                     };
