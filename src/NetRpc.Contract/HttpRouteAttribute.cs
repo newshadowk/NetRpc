@@ -20,6 +20,11 @@ namespace NetRpc
             TrimActionAsync = trimActionAsync;
         }
 
+        public HttpRouteAttribute(bool trimActionAsync)
+        {
+            TrimActionAsync = trimActionAsync;
+        }
+
         public string Template { get; }
 
         public bool TrimActionAsync { get; }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
+using NetRpc;
 
 namespace DataContract
 {
@@ -42,9 +42,10 @@ namespace DataContract
         Task<Result> Call(string s);
     }
 
+    [HttpRoute("ReService", true)]
     public interface IService_1
     {
-        Task<Result> Call_1(SendObj s, int i1, bool b1, Action<int> cb, CancellationToken token);
+        Task<Result> Call_1Async(SendObj s, int i1, bool b1, Action<int> cb, CancellationToken token);
     }
 
     public interface IService_1_1

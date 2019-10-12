@@ -10,11 +10,11 @@ namespace NetRpc
     public class ClientProxy<TService> : IClientProxy<TService>
     {
         private bool _disposed;
-        protected readonly object LockDispose = new object();
+        private readonly object _lockDispose = new object();
         public event EventHandler Connected;
         public event EventHandler DisConnected;
         public event EventHandler<EventArgsT<Exception>> ExceptionInvoked;
-        private readonly object LockObj = new object();
+        private readonly object _lockObj = new object();
         private readonly IOnceCallFactory _factory;
         private bool _isConnected;
         public event Func<IClientProxy<TService>, Task> Heartbeat;
@@ -50,7 +50,6 @@ namespace NetRpc
             : this(new OnceCallFactory(factory), options, serviceProvider, optionsName)
         {
         }
-      
 
         private void ProxyExceptionInvoked(object sender, EventArgsT<Exception> e)
         {
@@ -66,12 +65,12 @@ namespace NetRpc
         {
             get
             {
-                lock (LockObj)
+                lock (_lockObj)
                     return _isConnected;
             }
             protected set
             {
-                lock (LockObj)
+                lock (_lockObj)
                 {
                     if (_isConnected == value)
                         return;
@@ -144,7 +143,7 @@ namespace NetRpc
 
         protected virtual void Dispose(bool disposing)
         {
-            lock (LockDispose)
+            lock (_lockDispose)
             {
                 if (_disposed)
                     return;

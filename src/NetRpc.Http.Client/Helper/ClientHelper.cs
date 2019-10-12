@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using Newtonsoft.Json;
 
 namespace NetRpc.Http.Client
@@ -18,32 +16,6 @@ namespace NetRpc.Http.Client
                 return default;
 
             return JsonConvert.DeserializeObject(str, t, Js);
-        }
-
-        public static string GetActionPath(Type contractType, MethodInfo methodInfo)
-        {
-            string contractPath;
-            var contractRoute = contractType.GetCustomAttribute<HttpRouteAttribute>(true);
-            if (contractRoute == null)
-                contractPath = contractType.Name;
-            else
-                contractPath = contractRoute.Template;
-
-            string path;
-            var methodRoute = methodInfo.GetCustomAttribute<HttpRouteAttribute>(true);
-            if (methodRoute == null)
-            {
-                if (contractRoute != null && contractRoute.TrimActionAsync)
-                    path = $"{contractPath}/{methodInfo.Name.TrimEndString("Async")}";
-                else
-                    path = $"{contractPath}/{methodInfo.Name}";
-            }
-            else
-            {
-                path = methodRoute.Template;
-            }
-
-            return path;
         }
 
         public static bool HasStream(this Type t)

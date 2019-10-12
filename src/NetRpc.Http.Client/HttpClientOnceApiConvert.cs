@@ -70,7 +70,7 @@ namespace NetRpc.Http.Client
             var methodObj = _contract.MethodObjs.Find(i => i.MethodInfo.ToFullMethodName() == methodInfo.ToFullMethodName());
             _callbackAction = methodObj.MergeArgType.CallbackAction;
             var postObj = methodObj.CreateMergeArgTypeObj(_callId, _connectionId, callParam.PureArgs);
-            var actionPath = ClientHelper.GetActionPath(_contract.Type, methodInfo);
+            var actionPath = methodObj.HttpRoutInfo.ToString();
             var reqUrl = $"{_apiUrl}/{actionPath}";
 
             var client = new RestClient(reqUrl);

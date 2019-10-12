@@ -61,20 +61,41 @@ namespace NetRpc
         }
     }
 
+    public sealed class HttpRoutInfo
+    {
+        public string ContractPath { get; }
+
+        public string MethodPath { get; }
+
+        public HttpRoutInfo(string contractPath, string methodPath)
+        {
+            ContractPath = contractPath;
+            MethodPath = methodPath;
+        }
+
+        public override string ToString()
+        {
+            return $"{ContractPath}/{MethodPath}";
+        }
+    }
+
     public sealed class MethodObj
     {
         public MethodInfo MethodInfo { get; }
 
         public List<MethodParameter> Parameters { get; }
 
-        public MethodObj(MethodInfo methodInfo, List<MethodParameter> parameters)
+        public MethodObj(Type contractType, MethodInfo methodInfo, List<MethodParameter> parameters)
         {
             MethodInfo = methodInfo;
             Parameters = parameters;
             MergeArgType = GetMergeArgType(methodInfo);
+            HttpRoutInfo = GetHttpRoutInfo(contractType, methodInfo);
         }
 
         public MergeArgType MergeArgType { get; }
+
+        public HttpRoutInfo HttpRoutInfo { get; }
 
         private static MergeArgType GetMergeArgType(MethodInfo m)
         {
@@ -161,6 +182,42 @@ namespace NetRpc
 
             return instance;
         }
+
+        private static HttpRoutInfo GetHttpRoutInfo(Type contractType, MethodInfo methodInfo)
+        {
+            //contractPath
+            string contractPath;
+            var contractRoute = contractType.GetCustomAttribute<HttpRouteAttribute>(true);
+            if (contractRoute?.Template == null)
+                contractPath = contractType.Name;
+            else
+                contractPath = contractRoute.Template;
+
+            //methodPath
+            string methodPath;
+            var methodRoute = methodInfo.GetCustomAttribute<HttpRouteAttribute>(true);
+            if (methodRoute?.Template != null)
+            {
+                if (methodRoute.Template != null)
+                {
+                    methodPath = methodRoute.Template;
+                }
+                else
+                {
+                    methodPath = methodInfo.Name;
+                    if (methodRoute.TrimActionAsync)
+                        methodPath = methodPath.TrimEndString("Async");
+                }
+            }
+            else
+            {
+                methodPath = methodInfo.Name;
+                if (contractRoute != null && contractRoute.TrimActionAsync)
+                    methodPath = methodPath.TrimEndString("Async");
+            }
+
+            return new HttpRoutInfo(contractPath, methodPath);
+        }
     }
 
     public sealed class ContractInfo
@@ -193,7 +250,7 @@ namespace NetRpc
 
                 _faultDic[m] = faults;
                 var ps = GetMethodParameters(m);
-                MethodObjs.Add(new MethodObj(m, ps));
+                MethodObjs.Add(new MethodObj(type, m, ps));
             }
         }
 
@@ -254,7 +311,7 @@ namespace NetRpc
         {
             get
             {
-                if (Info.HttpRoute == null)
+                if (Info.HttpRoute?.Template == null)
                     return ContractType.Name;
                 return Info.HttpRoute.Template;
             }

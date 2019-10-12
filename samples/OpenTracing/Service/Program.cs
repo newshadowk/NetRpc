@@ -11,7 +11,6 @@ using NetRpc;
 using NetRpc.Grpc;
 using NetRpc.Http;
 using NetRpc.Jaeger;
-using OpenTracing.Util;
 
 namespace Service
 {
@@ -99,7 +98,7 @@ namespace Service
                     new InnerObj {IP1 = "2"}
                 }
             };
-            await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1(obj, 101, true, Console.WriteLine, default);
+            await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1Async(obj, 101, true, Console.WriteLine, default);
             await _factory.CreateProxy<IService_2>("grpc2").Proxy.Call_2(false);
             return new Result();
         }

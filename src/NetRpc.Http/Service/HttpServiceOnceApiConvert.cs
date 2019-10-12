@@ -227,10 +227,8 @@ namespace NetRpc.Http
             foreach (var contract in _contracts)
             foreach (var methodObj in contract.MethodObjs)
             {
-                if (requestPath == ClientHelper.GetActionPath(contract.ContractType, methodObj.MethodInfo))
-                {
+                if (requestPath == methodObj.HttpRoutInfo.ToString())
                     return methodObj.MethodInfo.ToActionInfo();
-                }
             }
 
             return null;

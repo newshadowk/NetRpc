@@ -73,7 +73,7 @@ namespace Service_1
             _clientProxy = clientProxy;
         }
 
-        public async Task<Result> Call_1(SendObj s, int i1, bool b1, Action<int> cb, CancellationToken token)
+        public async Task<Result> Call_1Async(SendObj s, int i1, bool b1, Action<int> cb, CancellationToken token)
         {
             cb.Invoke(3);
             Console.WriteLine($"Receive: {s}");

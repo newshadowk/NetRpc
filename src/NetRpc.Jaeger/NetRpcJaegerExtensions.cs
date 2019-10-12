@@ -6,7 +6,6 @@ using Jaeger.Senders;
 using Microsoft.Extensions.Options;
 using NetRpc;
 using NetRpc.Jaeger;
-using NetRpc.OpenTracing;
 using OpenTracing;
 using OpenTracing.Util;
 

@@ -55,7 +55,7 @@ namespace NetRpc.Http
                     //Path
                     var openApiPathItem = new OpenApiPathItem();
                     openApiPathItem.AddOperation(OperationType.Post, operation);
-                    var key = $"{apiRootPath}/{ClientHelper.GetActionPath(contract.ContractType, methodObj.MethodInfo)}";
+                    var key = $"{apiRootPath}/{methodObj.HttpRoutInfo}";
                     _doc.Paths.Add(key, openApiPathItem);
                 }
             }

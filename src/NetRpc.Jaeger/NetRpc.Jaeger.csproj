@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NetRpc.Contract\NetRpc.Contract.csproj" />
     <ProjectReference Include="..\NetRpc.OpenTracing\NetRpc.OpenTracing.csproj" />
   </ItemGroup>
 </Project>
