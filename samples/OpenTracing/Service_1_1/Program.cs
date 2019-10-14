@@ -41,7 +41,7 @@ namespace Service
                     services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50004); });
                     services.AddNetRpcContractSingleton<IService_1_1, Service>();
 
-                    services.Configure<ServiceSwaggerOptions>(i => i.BasePath = "http://localhost:5004/swagger");
+                    services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5004/swagger");
                     services.AddNetRpcJaeger(i =>
                     {
                         i.Host = "jaeger.yx.com";

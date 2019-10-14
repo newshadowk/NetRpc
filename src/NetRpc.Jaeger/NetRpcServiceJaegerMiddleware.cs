@@ -1,6 +1,4 @@
-﻿using System;
-using System.Reflection;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using OpenTracing;
 using OpenTracing.Tag;
@@ -23,8 +21,9 @@ namespace NetRpc.Jaeger
 
             //http://localhost:5001/swagger/index.html#/IService/post_IService_Call
             var info = context.MethodObj.HttpRoutInfo;
-            tracer.ActiveSpan.SetTag(new StringTag("Url"),
-                $"{options.Value.BasePath.FormatUrl()}/index.html#/{info.ContractPath}/post_{info.ContractPath}_{info.MethodPath}");
+            var requestUrl = Helper.GetRequestUrl(options.Value.HostPath.FormatUrl(), options.Value.ApiPath, info.ContractPath, info.MethodPath);
+            tracer.ActiveSpan.SetTag(new StringTag("Url"), requestUrl);
+
             await _next(context);
         }
     }
@@ -46,8 +45,9 @@ namespace NetRpc.Jaeger
                 return;
 
             var info = context.MethodObj.HttpRoutInfo;
-            tracer.ActiveSpan.SetTag(new StringTag("Url"),
-                $"{opt.BasePath.FormatUrl()}/index.html#/{info.ContractPath}/post_{info.ContractPath}_{info.MethodPath}");
+            var requestUrl = Helper.GetRequestUrl(opt.HostPath.FormatUrl(), opt.ApiPath, info.ContractPath, info.MethodPath);
+            tracer.ActiveSpan.SetTag(new StringTag("Url"), requestUrl);
+
             await _next(context);
         }
     }

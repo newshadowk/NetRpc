@@ -47,9 +47,9 @@ namespace Service
                     services.AddNetRpcGrpcClient<IService_1>();
                     services.AddNetRpcGrpcClient<IService_2>();
 
-                    services.Configure<ServiceSwaggerOptions>(i => i.BasePath = "http://localhost:5001/swagger");
-                    services.Configure<ClientSwaggerOptions>("grpc1", i => i.BasePath = "http://localhost:5002/swagger");
-                    services.Configure<ClientSwaggerOptions>("grpc2", i => i.BasePath = "http://localhost:5003/swagger");
+                    services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5001/swagger");
+                    services.Configure<ClientSwaggerOptions>("grpc1", i => i.HostPath = "http://localhost:5002/swagger");
+                    services.Configure<ClientSwaggerOptions>("grpc2", i => i.HostPath = "http://localhost:5003/swagger");
                     services.AddNetRpcJaeger(i =>
                     {
                         i.Host = "jaeger.yx.com";
