@@ -29,14 +29,17 @@ namespace Client
     public class GrpcHostedService : IHostedService
     {
         private readonly IClientProxy<IService> _client;
+        private readonly IService _service;
 
-        public GrpcHostedService(IClientProxy<IService> client) //DI client here.
+        public GrpcHostedService(IClientProxy<IService> client, IService service) //DI client here.
         {
             _client = client;
+            _service = service;
         }
 
         public Task StartAsync(CancellationToken cancellationToken = new CancellationToken())
         {
+            _service.Call("222");
             _client.Proxy.Call("hello world.");
             return Task.CompletedTask;
         }

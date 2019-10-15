@@ -3,8 +3,9 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
+using NetRpc;
 using NetRpc.Http.Client;
-using TestHelper;
+using Helper = TestHelper.Helper;
 
 namespace Service
 {
@@ -13,7 +14,8 @@ namespace Service
         public async Task<CustomObj> CallAsync(string p1, int p2)
         {
             var retObj = new CustomObj {Date = DateTime.Now, Name = NameEnum.John};
-            Console.WriteLine($"[Call]...receive:{p1}, {p2}, return:{retObj}");
+            var h = GlobalServiceContext.Context.Header;
+            Console.WriteLine($"[Call]...receive:{p1}, {p2}, h1:{h["h1"]}, h2:{h["h2"]} return:{retObj}");
             return retObj;
         }
 

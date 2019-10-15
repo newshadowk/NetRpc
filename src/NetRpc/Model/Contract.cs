@@ -7,12 +7,6 @@ using System.Threading;
 
 namespace NetRpc
 {
-    public static class CallConst
-    {
-        public const string ConnectionIdName = "_connectionId";
-        public const string CallIdName = "_callId";
-    }
-
     public class TypeName
     {
         public string Name { get; set; }
@@ -156,7 +150,7 @@ namespace NetRpc
 
             t = ClassHelper.AddProperty(t, cis);
             if (cis.Count == 0)
-                return null;
+                return new MergeArgType(null, null, null, null);
 
             return new MergeArgType(t, streamName, action, cancelToken);
         }
@@ -223,15 +217,17 @@ namespace NetRpc
     public sealed class ContractInfo
     {
         private readonly Dictionary<MemberInfo, List<FaultExceptionAttribute>> _faultDic = new Dictionary<MemberInfo, List<FaultExceptionAttribute>>();
+        private readonly Dictionary<MemberInfo, List<HttpHeaderAttribute>> _headerDic = new Dictionary<MemberInfo, List<HttpHeaderAttribute>>();
 
         public ContractInfo(Type type)
         {
             Type = type;
 
+            //_faultDic
             var cDefines = type.GetCustomAttributes<FaultExceptionDefineAttribute>(true).ToList();
             var cFaults = type.GetCustomAttributes<FaultExceptionAttribute>(true).ToList();
             HttpRoute = type.GetCustomAttribute<HttpRouteAttribute>(true);
-
+            
             foreach (var m in type.GetInterfaceMethods())
             {
                 var faults = m.GetCustomAttributes<FaultExceptionAttribute>(true).ToList();
@@ -244,13 +240,23 @@ namespace NetRpc
                     {
                         f.StatusCode = foundF.StatusCode;
                         f.ErrorCode = foundF.ErrorCode;
-                        f.Summary = foundF.Summary;
+                        f.Description = foundF.Description;
                     }
                 }
 
                 _faultDic[m] = faults;
                 var ps = GetMethodParameters(m);
                 MethodObjs.Add(new MethodObj(type, m, ps));
+            }
+
+            //_headerDic
+            var cHeaders = type.GetCustomAttributes<HttpHeaderAttribute>(true).ToList();
+            foreach (var m in type.GetInterfaceMethods())
+            {
+                var tempH = cHeaders.ToList();
+                var headers = m.GetCustomAttributes<HttpHeaderAttribute>(true).ToList();
+                tempH.AddRange(headers);
+                _headerDic[m] = tempH;
             }
         }
 
@@ -259,6 +265,11 @@ namespace NetRpc
         public List<FaultExceptionAttribute> GetFaults(MethodInfo contractMethod)
         {
             return _faultDic[contractMethod];
+        }
+
+        public List<HttpHeaderAttribute> GetHeaders(MethodInfo contractMethod)
+        {
+            return _headerDic[contractMethod];
         }
 
         public List<MethodObj> MethodObjs { get; } = new List<MethodObj>();
@@ -284,7 +295,7 @@ namespace NetRpc
 
     public class Contract
     {
-        private ContractInfo Info;
+        private ContractInfo _info;
 
         private Type _contractType;
 
@@ -294,16 +305,21 @@ namespace NetRpc
             set
             {
                 _contractType = value;
-                Info = new ContractInfo(value);
+                _info = new ContractInfo(value);
             }
         }
 
         public List<FaultExceptionAttribute> GetFaults(MethodInfo contractMethod)
         {
-            return Info.GetFaults(contractMethod);
+            return _info.GetFaults(contractMethod);
         }
 
-        public List<MethodObj> MethodObjs => Info.MethodObjs;
+        public List<HttpHeaderAttribute> GetHeaders(MethodInfo contractMethod)
+        {
+            return _info.GetHeaders(contractMethod);
+        }
+
+        public List<MethodObj> MethodObjs => _info.MethodObjs;
 
         public Type InstanceType { get; set; }
 
@@ -311,9 +327,9 @@ namespace NetRpc
         {
             get
             {
-                if (Info.HttpRoute?.Template == null)
+                if (_info.HttpRoute?.Template == null)
                     return ContractType.Name;
-                return Info.HttpRoute.Template;
+                return _info.HttpRoute.Template;
             }
         }
 

@@ -52,6 +52,19 @@ namespace NetRpc.Http
                         filter.Apply(operation, filterContext);
                     operation.Summary = AppendSummaryByCallbackAndCancel(operation.Summary, methodObj.MergeArgType.CallbackAction, methodObj.MergeArgType.CancelToken);
 
+                    //Header
+                    operation.Parameters = new List<OpenApiParameter>();
+                    foreach (var header in contract.GetHeaders(methodObj.MethodInfo))
+                    {
+                        operation.Parameters.Add(new OpenApiParameter
+                        {
+                            In = ParameterLocation.Header,
+                            Name = header.Name,
+                            Description = header.Description,
+                            Schema = new OpenApiSchema { Type = "string" }
+                        });
+                    }
+
                     //Path
                     var openApiPathItem = new OpenApiPathItem();
                     openApiPathItem.AddOperation(OperationType.Post, operation);
@@ -217,7 +230,7 @@ namespace NetRpc.Http
             {
                 string des = "";
                 foreach (var item in grouping)
-                    des += $"<b>{item.DetailType.Name}</b> ErrorCode:{item.ErrorCode}, {item.Summary}<br/>";
+                    des += $"<b>{item.DetailType.Name}</b> ErrorCode:{item.ErrorCode}, {item.Description}<br/>";
                 des = des.TrimEndString("<br/>");
                 var resFault = new OpenApiResponse();
                 resFault.Description = des;

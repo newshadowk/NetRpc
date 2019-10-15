@@ -110,6 +110,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.TryAddSingleton<IOnceCallFactory, TOnceCallFactoryImplementation>();
             services.TryAddSingleton<IClientProxy<TService>, ClientProxy<TService>>();
+            services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxy<TService>>().Proxy);
             return services;
         }
 
@@ -119,6 +120,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<ClientMiddlewareBuilder>();
             services.TryAddSingleton<IClientConnectionFactory, TClientConnectionFactoryImplementation>();
             services.TryAddSingleton<IClientProxy<TService>, ClientProxy<TService>>();
+            services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxy<TService>>().Proxy);
             services.TryAddSingleton<IClientProxyFactory, ClientProxyFactory>();
             return services;
         }
