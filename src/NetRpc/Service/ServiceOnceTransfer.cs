@@ -69,10 +69,10 @@ namespace NetRpc
                 return;
 
             //send stream
-            await SendStream(hasStream, retStream, scp);
+            await SendStreamAsync(hasStream, retStream, scp);
         }
 
-        private async Task SendStream(bool hasStream, Stream retStream, ServiceCallParam scp)
+        private async Task SendStreamAsync(bool hasStream, Stream retStream, ServiceCallParam scp)
         {
             if (hasStream)
             {

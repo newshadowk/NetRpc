@@ -20,7 +20,7 @@ namespace NetRpc.Grpc
                     services.AddNetRpcMiddleware(i =>
                     {
                         if (middlewareOptions != null)
-                            i.Items = middlewareOptions.Items;
+                            i.AddItems(middlewareOptions.GetItems());
                     });
 
                     foreach (var contract in contracts)

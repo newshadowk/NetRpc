@@ -97,7 +97,7 @@ namespace NetRpc.Http
             // ReSharper disable once UseNullPropagation
             if (context != null)
             {
-                var t = context.Contract.GetFaults(context.ContractMethodInfo).FirstOrDefault(i => body.GetType() == i.DetailType);
+                var t = context.Contract.ContractInfo.GetFaults(context.ContractMethodInfo).FirstOrDefault(i => body.GetType() == i.DetailType);
                 if (t != null)
                     return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(t.ErrorCode, body.Message), t.StatusCode));
             }

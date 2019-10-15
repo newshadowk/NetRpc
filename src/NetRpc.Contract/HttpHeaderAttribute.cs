@@ -2,7 +2,7 @@
 
 namespace NetRpc
 {
-    [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
     public class HttpHeaderAttribute : Attribute
     {
         public HttpHeaderAttribute(string name, string description = null)

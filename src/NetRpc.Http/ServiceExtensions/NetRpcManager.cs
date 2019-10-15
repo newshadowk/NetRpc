@@ -29,7 +29,7 @@ namespace NetRpc.Http
                     services.AddSignalR();
                     if (isSwagger)
                         services.AddNetRpcSwagger();
-                    services.AddNetRpcHttp(i =>
+                    services.AddNetRpcHttpService(i =>
                     {
                         if (httpServiceOptions != null)
                         {
@@ -40,7 +40,7 @@ namespace NetRpc.Http
                     services.AddNetRpcMiddleware(i =>
                     {
                         if (middlewareOptions != null)
-                            i.Items = middlewareOptions.Items;
+                            i.AddItems(middlewareOptions.GetItems());
                     });
 
                     foreach (var contract in contracts)

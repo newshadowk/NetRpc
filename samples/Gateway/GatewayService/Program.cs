@@ -33,7 +33,7 @@ namespace Service
                     services.AddCors();
                     services.AddSignalR();
                     services.AddNetRpcSwagger();
-                    services.AddNetRpcHttp();
+                    services.AddNetRpcHttpService();
                     services.AddNetRpcGrpcGateway<IService>(o => o.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
                     services.AddNetRpcGrpcGateway<IService2>();
                 })

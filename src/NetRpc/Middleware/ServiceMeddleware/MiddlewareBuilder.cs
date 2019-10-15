@@ -24,7 +24,7 @@ namespace NetRpc
         public MiddlewareBuilder(MiddlewareOptions options, IServiceProvider serviceProvider)
         {
             _components.Add(CreateMiddleware(serviceProvider, typeof(MethodInvokeMiddleware), new object[] { }));
-            options.Items.ForEach(i => _components.Add(CreateMiddleware(serviceProvider, i.Type, i.args)));
+            options.GetItems().ForEach(i => _components.Add(CreateMiddleware(serviceProvider, i.Type, i.args)));
         }
 
         public async Task<object> InvokeAsync(ServiceContext context)

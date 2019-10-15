@@ -85,11 +85,22 @@ namespace NetRpc
             Parameters = parameters;
             MergeArgType = GetMergeArgType(methodInfo);
             HttpRoutInfo = GetHttpRoutInfo(contractType, methodInfo);
+
+            //IgnoreAttribute
+            GrpcIgnore = methodInfo.GetCustomAttribute<GrpcIgnoreAttribute>(true) != null;
+            RabbitMQIgnore = methodInfo.GetCustomAttribute<RabbitMQIgnoreAttribute>(true) != null;
+            HttpIgnore = methodInfo.GetCustomAttribute<HttpIgnoreAttribute>(true) != null;
         }
 
         public MergeArgType MergeArgType { get; }
 
         public HttpRoutInfo HttpRoutInfo { get; }
+
+        public bool GrpcIgnore { get; }
+
+        public bool RabbitMQIgnore { get; }
+
+        public bool HttpIgnore { get; }
 
         private static MergeArgType GetMergeArgType(MethodInfo m)
         {
@@ -218,7 +229,7 @@ namespace NetRpc
     {
         private readonly Dictionary<MemberInfo, List<FaultExceptionAttribute>> _faultDic = new Dictionary<MemberInfo, List<FaultExceptionAttribute>>();
         private readonly Dictionary<MemberInfo, List<HttpHeaderAttribute>> _headerDic = new Dictionary<MemberInfo, List<HttpHeaderAttribute>>();
-
+        
         public ContractInfo(Type type)
         {
             Type = type;
@@ -295,62 +306,37 @@ namespace NetRpc
 
     public class Contract
     {
-        private ContractInfo _info;
+        public ContractInfo ContractInfo { get; }
 
-        private Type _contractType;
+        public Type ContractType { get; }
 
-        public Type ContractType
-        {
-            get => _contractType;
-            set
-            {
-                _contractType = value;
-                _info = new ContractInfo(value);
-            }
-        }
+        public List<MethodObj> MethodObjs => ContractInfo.MethodObjs;
 
-        public List<FaultExceptionAttribute> GetFaults(MethodInfo contractMethod)
-        {
-            return _info.GetFaults(contractMethod);
-        }
-
-        public List<HttpHeaderAttribute> GetHeaders(MethodInfo contractMethod)
-        {
-            return _info.GetHeaders(contractMethod);
-        }
-
-        public List<MethodObj> MethodObjs => _info.MethodObjs;
-
-        public Type InstanceType { get; set; }
+        public Type InstanceType { get; }
 
         public string Route
         {
             get
             {
-                if (_info.HttpRoute?.Template == null)
+                if (ContractInfo.HttpRoute?.Template == null)
                     return ContractType.Name;
-                return _info.HttpRoute.Template;
+                return ContractInfo.HttpRoute.Template;
             }
-        }
-
-        public Contract()
-        {
         }
 
         public Contract(Type contractType, Type instanceType)
         {
             ContractType = contractType;
             InstanceType = instanceType;
+            ContractInfo = new ContractInfo(ContractType);
         }
     }
 
     public sealed class Contract<TService, TImplementation> : Contract where TService : class
         where TImplementation : class, TService
     {
-        public Contract()
+        public Contract() : base(typeof(TService), typeof(TImplementation))
         {
-            ContractType = typeof(TService);
-            InstanceType = typeof(TImplementation);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using NetRpc;
 
 namespace DataContract
 {
@@ -7,6 +8,7 @@ namespace DataContract
     {
         void Hearbeat();
 
+        [GrpcIgnore]
         void FilterAndHeader();
 
         CustomObj SetAndGetObj(CustomObj obj);

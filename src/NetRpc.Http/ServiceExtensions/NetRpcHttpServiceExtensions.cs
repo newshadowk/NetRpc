@@ -30,10 +30,11 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection AddNetRpcHttp(this IServiceCollection services, Action<HttpServiceOptions> httpServiceConfigureOptions = null)
+        public static IServiceCollection AddNetRpcHttpService(this IServiceCollection services, Action<HttpServiceOptions> httpServiceConfigureOptions = null)
         {
             if (httpServiceConfigureOptions != null)
                 services.Configure(httpServiceConfigureOptions);
+            services.Configure<MiddlewareOptions>(i => i.UseMiddlewareLast(typeof(HttpIgnoreMiddleware)));
             services.TryAddSingleton<RequestHandler>();
             services.AddNetRpcService();
             return services;

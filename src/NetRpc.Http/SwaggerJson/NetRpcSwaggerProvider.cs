@@ -38,6 +38,9 @@ namespace NetRpc.Http
             {
                 foreach (var methodObj in contract.MethodObjs)
                 {
+                    if (methodObj.HttpIgnore)
+                        continue;
+
                     //Operation
                     var operation = new OpenApiOperation
                     {
@@ -54,7 +57,7 @@ namespace NetRpc.Http
 
                     //Header
                     operation.Parameters = new List<OpenApiParameter>();
-                    foreach (var header in contract.GetHeaders(methodObj.MethodInfo))
+                    foreach (var header in contract.ContractInfo.GetHeaders(methodObj.MethodInfo))
                     {
                         operation.Parameters.Add(new OpenApiParameter
                         {
@@ -222,7 +225,7 @@ namespace NetRpc.Http
         private void GenerateException(OpenApiResponses ret, MethodInfo method, Contract contract)
         {
             //merge Faults
-            var allFaults = contract.GetFaults(method);
+            var allFaults = contract.ContractInfo.GetFaults(method);
             if (!allFaults.Any())
                 return;
 

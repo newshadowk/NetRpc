@@ -45,7 +45,7 @@ namespace Service
                     services.AddCors();
                     services.AddSignalR();
                     services.AddNetRpcSwagger();
-                    services.AddNetRpcHttp();
+                    services.AddNetRpcHttpService();
                     services.AddNetRpcContractSingleton<IService, Service>();
                 })
                 .Configure(app =>

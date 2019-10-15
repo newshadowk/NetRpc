@@ -32,23 +32,15 @@ namespace NetRpc.Grpc
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            Console.WriteLine("_service.Dispose()");
-
             _service.Dispose();
-
-
             return Task.Run(() =>
             {
                 while (_messageCallImpl.IsHanding)
                 {
                     if (cancellationToken.IsCancellationRequested)
-                    {
-                        Console.WriteLine("IsCancellationRequested");
                         break;
-                    }
 
                     Thread.Sleep(1000);
-                    Console.WriteLine("IsHanding?");
                 }
             }, cancellationToken);
         }

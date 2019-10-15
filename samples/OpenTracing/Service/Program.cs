@@ -37,7 +37,7 @@ namespace Service
 
                     services.AddSignalR();
                     services.AddNetRpcSwagger();
-                    services.AddNetRpcHttp();
+                    services.AddNetRpcHttpService();
 
                     services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50001); });
                     services.AddNetRpcContractSingleton<IService, Service>();
