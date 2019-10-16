@@ -17,7 +17,10 @@ namespace NetRpc.Jaeger
         public async Task InvokeAsync(ServiceContext context, ITracer tracer, IOptions<ServiceSwaggerOptions> options)
         {
             if (options.Value.IsPropertiesDefault())
+            {
+                await _next(context);
                 return;
+            }
 
             //http://localhost:5001/swagger/index.html#/IService/post_IService_Call
             var info = context.MethodObj.HttpRoutInfo;
@@ -42,13 +45,15 @@ namespace NetRpc.Jaeger
             var opt = options.Get(context.OptionsName);
 
             if (opt.IsPropertiesDefault())
+            {
+                await _next(context);
                 return;
+            }
 
             var info = context.MethodObj.HttpRoutInfo;
             var requestUrl = Helper.GetRequestUrl(opt.HostPath.FormatUrl(), opt.ApiPath, info.ContractPath, info.MethodPath);
             tracer.ActiveSpan.SetTag(new StringTag("Url"), requestUrl);
 
-            await _next(context);
         }
     }
 }
