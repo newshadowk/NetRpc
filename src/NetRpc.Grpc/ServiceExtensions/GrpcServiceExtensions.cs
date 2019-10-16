@@ -9,7 +9,6 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddNetRpcGrpcService(this IServiceCollection services, Action<GrpcServiceOptions> configureOptions)
         {
-            services.Configure<MiddlewareOptions>(i => i.UseMiddlewareLast(typeof(GrpcIgnoreMiddleware)));
             services.Configure(configureOptions);
             services.AddNetRpcService();
             services.AddHostedService<GrpcServiceProxy>();

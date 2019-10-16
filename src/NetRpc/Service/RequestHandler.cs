@@ -8,11 +8,13 @@ namespace NetRpc
     public sealed class RequestHandler
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly ChannelType _channelType;
         private readonly MiddlewareBuilder _middlewareBuilder;
 
-        public RequestHandler(IServiceProvider serviceProvider)
+        public RequestHandler(IServiceProvider serviceProvider, ChannelType channelType)
         {
             _serviceProvider = serviceProvider;
+            _channelType = channelType;
             var middlewareOptions = _serviceProvider.GetService<IOptions<MiddlewareOptions>>().Value;
             _middlewareBuilder = new MiddlewareBuilder(middlewareOptions, serviceProvider);
         }
@@ -29,7 +31,7 @@ namespace NetRpc
             using (var scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
                 var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
-                var onceTransfer = new ServiceOnceTransfer(instances, scope.ServiceProvider, convert, _middlewareBuilder, rpcContextAccessor);
+                var onceTransfer = new ServiceOnceTransfer(instances, scope.ServiceProvider, convert, _middlewareBuilder, rpcContextAccessor, _channelType);
                 await onceTransfer.StartAsync();
                 await onceTransfer.HandleRequestAsync();
             }

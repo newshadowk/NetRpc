@@ -7,27 +7,16 @@ namespace NetRpc
     {
         private readonly List<(Type Type, object[] args)> _items = new List<(Type Type, object[] args)>();
 
-        private (Type Type, object[] args) _lastItem;
-
         public List<(Type Type, object[] args)> GetItems()
         {
             var ret = new List<(Type Type, object[] args)>();
             ret.AddRange(_items);
-            if (_lastItem != default)
-                ret.Add(_lastItem);
             return ret;
         }
 
         public void AddItems(List<(Type Type, object[] args)> items)
         {
             _items.AddRange(items);
-        }
-
-        public void UseMiddlewareLast(Type type, params object[] args)
-        {
-            if (_lastItem != default)
-                throw new Exception();
-            _lastItem = (type, args);
         }
 
         public void UseMiddleware<TMiddleware>(params object[] args)

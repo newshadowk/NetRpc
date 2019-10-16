@@ -32,7 +32,7 @@ namespace NetRpc.RabbitMQ
             }
 
             _service = new Service(opt.CreateConnectionFactory(), opt.RpcQueue, opt.PrefetchCount);
-            _requestHandler = new RequestHandler(serviceProvider);
+            _requestHandler = new RequestHandler(serviceProvider, ChannelType.RabbitMQ);
             _service.Received += ServiceReceived;
         }
 

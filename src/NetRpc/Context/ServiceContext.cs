@@ -12,6 +12,8 @@ namespace NetRpc
     {
         private object _result;
 
+        public ChannelType ChannelType { get; }
+
         public IServiceProvider ServiceProvider { get; }
 
         public Dictionary<string, object> Header { get; }
@@ -91,10 +93,12 @@ namespace NetRpc
             ActionInfo actionInfo,
             Stream stream,
             Contract contract,
+            ChannelType channelType,
             Action<object> callback,
             CancellationToken token)
         {
             ServiceProvider = serviceProvider;
+            ChannelType = channelType;
             Header = header;
             Target = target;
             InstanceMethodInfo = instanceMethodInfo;

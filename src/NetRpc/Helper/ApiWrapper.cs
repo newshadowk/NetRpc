@@ -70,7 +70,7 @@ namespace NetRpc
         }
 
         /// <exception cref="TypeLoadException"></exception>
-        public static ServiceContext Convert(ServiceCallParam scp, List<Instance> instances, IServiceProvider serviceProvider)
+        public static ServiceContext GetServiceContext(ServiceCallParam scp, List<Instance> instances, IServiceProvider serviceProvider, ChannelType channelType)
         {
             var (instanceMethodInfo, methodObj, instance) = GetMethodInfo(scp.Action, instances);
             var ps = methodObj.MethodInfo.GetParameters();
@@ -86,6 +86,7 @@ namespace NetRpc
                 scp.Action, 
                 scp.Stream,
                 instance.Contract,
+                channelType,
                 scp.Callback, 
                 scp.Token);
         }

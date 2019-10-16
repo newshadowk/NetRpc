@@ -12,7 +12,6 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (configureOptions != null)
                 services.Configure(configureOptions);
-            services.Configure<MiddlewareOptions>(i => i.UseMiddlewareLast(typeof(RabbitMQIgnoreMiddleware)));
             services.AddNetRpcService();
             services.AddHostedService<RabbitMQServiceProxy>();
             return services;

@@ -10,7 +10,6 @@ namespace NetRpc
         }
     }
 
-
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
     public class RabbitMQIgnoreAttribute : Attribute
     {

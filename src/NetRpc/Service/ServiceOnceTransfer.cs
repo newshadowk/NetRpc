@@ -13,15 +13,17 @@ namespace NetRpc
         private readonly IServiceProvider _serviceProvider;
         private readonly MiddlewareBuilder _middlewareBuilder;
         private readonly IGlobalServiceContextAccessor _globalServiceContextAccessor;
+        private readonly ChannelType _channelType;
         private readonly CancellationTokenSource _serviceCts = new CancellationTokenSource();
 
         public ServiceOnceTransfer(List<Instance> instances, IServiceProvider serviceProvider, IServiceOnceApiConvert convert,
-            MiddlewareBuilder middlewareBuilder, IGlobalServiceContextAccessor globalServiceContextAccessor)
+            MiddlewareBuilder middlewareBuilder, IGlobalServiceContextAccessor globalServiceContextAccessor, ChannelType channelType)
         {
             _instances = instances;
             _serviceProvider = serviceProvider;
             _middlewareBuilder = middlewareBuilder;
             _globalServiceContextAccessor = globalServiceContextAccessor;
+            _channelType = channelType;
             _convert = convert;
         }
 
@@ -38,12 +40,17 @@ namespace NetRpc
 
             try
             {
+                //get context
                 scp = await GetServiceCallParamAsync();
-                context = ApiWrapper.Convert(scp, _instances, _serviceProvider);
+                context = ApiWrapper.GetServiceContext(scp, _instances, _serviceProvider, _channelType);
 
                 //set Accessor
                 _globalServiceContextAccessor.Context = context;
 
+                //CheckIgnore
+                CheckIgnore(context);
+
+                //middleware Invoke
                 ret = await _middlewareBuilder.InvokeAsync(context);
 
                 //if Post, do not need send back to client.
@@ -70,6 +77,29 @@ namespace NetRpc
 
             //send stream
             await SendStreamAsync(hasStream, retStream, scp);
+        }
+
+        private static void CheckIgnore(ServiceContext context)
+        {
+            switch (context.ChannelType)
+            {
+                case ChannelType.Undefined:
+                    break;
+                case ChannelType.Grpc:
+                    if (context.MethodObj.GrpcIgnore)
+                        throw new NetRpcIgnoreException("Grpc");
+                    break;
+                case ChannelType.RabbitMQ:
+                    if (context.MethodObj.RabbitMQIgnore)
+                        throw new NetRpcIgnoreException("RabbitMQ");
+                    break;
+                case ChannelType.Http:
+                    if (context.MethodObj.HttpIgnore)
+                        throw new NetRpcIgnoreException("Http");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         private async Task SendStreamAsync(bool hasStream, Stream retStream, ServiceCallParam scp)

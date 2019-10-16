@@ -34,7 +34,6 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (httpServiceConfigureOptions != null)
                 services.Configure(httpServiceConfigureOptions);
-            services.Configure<MiddlewareOptions>(i => i.UseMiddlewareLast(typeof(HttpIgnoreMiddleware)));
             services.TryAddSingleton<RequestHandler>();
             services.AddNetRpcService();
             return services;

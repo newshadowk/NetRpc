@@ -10,6 +10,10 @@ namespace NetRpc
         {
         }
 
+        public NetRpcIgnoreException(string message) : base(message)
+        {
+        }
+
         protected NetRpcIgnoreException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }

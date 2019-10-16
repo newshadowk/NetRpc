@@ -13,7 +13,7 @@ namespace NetRpc.Grpc
 
         public MessageCallImpl(IServiceProvider serviceProvider)
         {
-            _requestHandler = new RequestHandler(serviceProvider);
+            _requestHandler = new RequestHandler(serviceProvider, ChannelType.Grpc);
         }
 
         public bool IsHanding => _handlingCount > 0;
