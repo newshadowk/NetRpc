@@ -15,7 +15,8 @@ namespace NetRpc
             if (optionsName == null)
                 throw new ArgumentNullException(nameof(optionsName));
 
-            var handler = (ClientProxy<TService>)_caches.GetOrAdd(optionsName, new Lazy<object>(() => CreateInner<TService>(optionsName), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
+            var key = $"{optionsName}_{typeof(TService).FullName}";
+            var handler = (ClientProxy<TService>)_caches.GetOrAdd(key, new Lazy<object>(() => CreateInner<TService>(optionsName), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
             return handler;
         }
     }

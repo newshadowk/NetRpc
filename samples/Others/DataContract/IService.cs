@@ -19,4 +19,9 @@ namespace DataContract
     {
         Task Call();
     }
+
+    public interface IService3
+    {
+        Task Call();
+    }
 }

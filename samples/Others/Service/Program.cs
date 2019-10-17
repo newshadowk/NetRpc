@@ -32,6 +32,7 @@ namespace Service
                     services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50001); });
                     services.AddNetRpcContractSingleton<IService, Service>();
                     services.AddNetRpcContractSingleton<IService2, Service2>();
+                    services.AddNetRpcContractSingleton<IService3, Service3>();
                     services.AddNetRpcRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
                 })
                 .Build();
@@ -129,6 +130,14 @@ namespace Service
         public async Task Call()
         {
             Console.WriteLine("s2 call");
+        }
+    }
+
+    internal class Service3 : IService3
+    {
+        public async Task Call()
+        {
+            Console.WriteLine("s3 call");
         }
     }
 }
