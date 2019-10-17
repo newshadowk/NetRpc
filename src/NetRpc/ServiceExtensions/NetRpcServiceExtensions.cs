@@ -86,7 +86,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        public static List<Instance> GetContractInstances(this IServiceProvider serviceProvider, ContractOptions options)
+        internal static List<Instance> GetContractInstances(this IServiceProvider serviceProvider, ContractOptions options)
         {
             return options.Contracts.ConvertAll(i => new Instance(i, serviceProvider.GetRequiredService(i.ContractType)));
         }
@@ -95,43 +95,45 @@ namespace Microsoft.Extensions.DependencyInjection
 
         #region Client
 
-        public static IServiceCollection AddNetRpcClientByApiConvert<TOnceCallFactoryImplementation, TService>(this IServiceCollection services,
-         Action<NetRpcClientOption> configureOptions)
-         where TOnceCallFactoryImplementation : class, IOnceCallFactory
-        {
-            if (configureOptions != null)
-                services.Configure(configureOptions);
-            services.AddNetRpcClientByApiConvert<TOnceCallFactoryImplementation, TService>();
-            return services;
-        }
-
-        public static IServiceCollection AddNetRpcClientByApiConvert<TOnceCallFactoryImplementation, TService>(this IServiceCollection services)
+        public static IServiceCollection AddNetRpcClientByOnceCallFactory<TOnceCallFactoryImplementation>(this IServiceCollection services,
+            Action<NetRpcClientOption> configureOptions = null)
             where TOnceCallFactoryImplementation : class, IOnceCallFactory
         {
             services.TryAddSingleton<IOnceCallFactory, TOnceCallFactoryImplementation>();
-            services.TryAddSingleton<IClientProxy<TService>, ClientProxy<TService>>();
-            services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxy<TService>>().Proxy);
+            services.AddNetRpcClient(configureOptions);
             return services;
         }
 
-        public static IServiceCollection AddNetRpcClient<TClientConnectionFactoryImplementation, TService>(this IServiceCollection services)
+        public static IServiceCollection AddNetRpcClientByClientConnectionFactory<TClientConnectionFactoryImplementation>(this IServiceCollection services, 
+            Action<NetRpcClientOption> configureOptions = null)
             where TClientConnectionFactoryImplementation : class, IClientConnectionFactory
         {
-            services.TryAddSingleton<ClientMiddlewareBuilder>();
             services.TryAddSingleton<IClientConnectionFactory, TClientConnectionFactoryImplementation>();
-            services.TryAddSingleton<IClientProxy<TService>, ClientProxy<TService>>();
-            services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxy<TService>>().Proxy);
-            services.TryAddSingleton<IClientProxyFactory, ClientProxyFactory>();
+            services.AddNetRpcClient(configureOptions);
             return services;
         }
 
-        public static IServiceCollection AddNetRpcClient<TClientConnectionFactoryImplementation, TService>(this IServiceCollection services,
-            Action<NetRpcClientOption> configureOptions)
-            where TClientConnectionFactoryImplementation : class, IClientConnectionFactory
+        public static IServiceCollection AddNetRpcClientContract<TService>(this IServiceCollection services)
+        {
+            services.TryAddSingleton<IClientProxy<TService>, ClientProxy<TService>>();
+            services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxy<TService>>().Proxy);
+            return services;
+        }
+
+        public static IServiceCollection AddNetRpcClientContract<TService>(this IServiceCollection services, string optionsName)
+        {
+            services.TryAddSingleton(typeof(IClientProxy<TService>), p => p.GetService<IClientProxyFactory>().CreateProxy<TService>(optionsName));
+            services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxyFactory>().CreateProxy<TService>(optionsName).Proxy);
+            return services;
+        }
+
+        private static IServiceCollection AddNetRpcClient(this IServiceCollection services, Action<NetRpcClientOption> configureOptions = null)
         {
             if (configureOptions != null)
                 services.Configure(configureOptions);
-            services.AddNetRpcClient<TClientConnectionFactoryImplementation, TService>();
+
+            services.TryAddSingleton<ClientMiddlewareBuilder>();
+            services.TryAddSingleton<IClientProxyFactory, ClientProxyFactory>();
             return services;
         }
 

@@ -203,9 +203,9 @@ namespace NetRpc.Http.Client
             return Helper.WarpException(ex);
         }
 
-        private void OnFault(EventArgsT<object> e)
-        {
-            Fault?.Invoke(this, e);
-        }
+        //    private void OnFault(EventArgsT<object> e)
+        //    {
+        //        Fault?.Invoke(this, e);
+        //    }
     }
 }

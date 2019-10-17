@@ -6,13 +6,14 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class NetRpcHttpClientExtensions
     {
-        public static IServiceCollection AddNetRpcHttpClient<TService>(this IServiceCollection services,
+        public static IServiceCollection AddNetRpcHttpClient(this IServiceCollection services,
             Action<HttpClientOptions> httpClientConfigureOptions = null,
             Action<NetRpcClientOption> clientConfigureOptions = null)
         {
             if (httpClientConfigureOptions != null)
                 services.Configure(httpClientConfigureOptions);
-            services.AddNetRpcClientByApiConvert<HttpOnceCallFactory, TService>(clientConfigureOptions);
+            services.AddNetRpcClientByOnceCallFactory<HttpOnceCallFactory>(clientConfigureOptions);
+            services.AddSingleton<IClientProxyProvider, HttpClientProxyProvider>();
             return services;
         }
     }

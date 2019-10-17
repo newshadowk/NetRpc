@@ -11,5 +11,12 @@ namespace DataContract
         Task Call2(Stream stream);
 
         Task<Stream> Call3(Stream stream, Action<int> prog);
+
+        Task Call4();
+    }
+
+    public interface IService2
+    {
+        Task Call();
     }
 }

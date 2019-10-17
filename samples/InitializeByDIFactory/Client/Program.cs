@@ -31,11 +31,11 @@ namespace Client
 
                     services.Configure<RabbitMQClientOptions>("mq1", context.Configuration.GetSection("Mq1"));
                     services.Configure<RabbitMQClientOptions>("mq2", context.Configuration.GetSection("Mq2"));
-                    services.AddNetRpcRabbitMQClient<IService>();
+                    services.AddNetRpcRabbitMQClient();
 
                     services.Configure<GrpcClientOptions>("grpc1", i => i.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
                     services.Configure<GrpcClientOptions>("grpc2", i => i.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
-                    services.AddNetRpcGrpcClient<IService>();
+                    services.AddNetRpcGrpcClient();
                 })
                 .Build();
 

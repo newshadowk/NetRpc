@@ -31,21 +31,6 @@ namespace TestHelper
             return p;
         }
 
-        public static Action<MQOptions> MQOptionsConfigure()
-        {
-            var opt = GetMQOptions();
-            return i =>
-            {
-                i.User = opt.User;
-                i.Password = opt.Password;
-                i.Host = opt.Host;
-                i.VirtualHost = opt.VirtualHost;
-                i.Port = opt.Port;
-                i.RpcQueue = opt.RpcQueue;
-                i.PrefetchCount = opt.PrefetchCount;
-            };
-        }
-
         public static string GetTestFilePath()
         {
             var assemblyPath = Assembly.GetExecutingAssembly().CodeBase;

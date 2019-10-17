@@ -10,12 +10,12 @@ namespace NetRpc
 
         protected abstract ClientProxy<TService> CreateInner<TService>(string name);
 
-        public ClientProxy<TService> CreateProxy<TService>(string name)
+        public ClientProxy<TService> CreateProxy<TService>(string optionsName)
         {
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
+            if (optionsName == null)
+                throw new ArgumentNullException(nameof(optionsName));
 
-            var handler = (ClientProxy<TService>)_caches.GetOrAdd(name, new Lazy<object>(() => CreateInner<TService>(name), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
+            var handler = (ClientProxy<TService>)_caches.GetOrAdd(optionsName, new Lazy<object>(() => CreateInner<TService>(optionsName), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
             return handler;
         }
     }

@@ -2,6 +2,6 @@
 {
     public interface IClientProxyProvider
     {
-        ClientProxy<TService> CreateProxy<TService>(string name);
+        ClientProxy<TService> CreateProxy<TService>(string optionsName);
     }
 }

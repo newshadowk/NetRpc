@@ -12,11 +12,11 @@ namespace NetRpc
             _providers = providers.ToList();
         }
 
-        public IClientProxy<TService> CreateProxy<TService>(string name)
+        public IClientProxy<TService> CreateProxy<TService>(string optionsName)
         {
             foreach (var p in _providers)
             {
-                var client = p.CreateProxy<TService>(name);
+                var client = p.CreateProxy<TService>(optionsName);
                 if (client != null)
                     return client;
             }

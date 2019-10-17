@@ -5,7 +5,6 @@ using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetRpc;
-using NetRpc.Grpc;
 
 namespace Client
 {
@@ -17,8 +16,9 @@ namespace Client
                 .ConfigureServices((context, services) =>
                 {
                     services.AddHostedService<GrpcHostedService>();
-                    services.AddNetRpcGrpcClient<IService>(i =>
+                    services.AddNetRpcGrpcClient(i =>
                         i.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
+                    services.AddNetRpcClientContract<IService>();
                 })
                 .Build();
 

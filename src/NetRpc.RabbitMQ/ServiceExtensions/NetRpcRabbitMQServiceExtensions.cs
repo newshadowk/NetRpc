@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetRpc;
 using NetRpc.RabbitMQ;
 
@@ -17,17 +16,13 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection AddNetRpcRabbitMQClient<TService>(this IServiceCollection services,
+        public static IServiceCollection AddNetRpcRabbitMQClient(this IServiceCollection services,
             Action<RabbitMQClientOptions> mQClientConfigureOptions = null,
             Action<NetRpcClientOption> clientConfigureOptions = null)
         {
             if (mQClientConfigureOptions != null)
                 services.Configure(mQClientConfigureOptions);
-
-            if (clientConfigureOptions != null)
-                services.Configure(clientConfigureOptions);
-
-            services.AddNetRpcClient<RabbitMQClientConnectionFactory, TService>();
+            services.AddNetRpcClientByClientConnectionFactory<RabbitMQClientConnectionFactory>(clientConfigureOptions);
             services.AddSingleton<IClientProxyProvider, RabbitMqClientProxyProvider>();
             return services;
         }
@@ -36,7 +31,8 @@ namespace Microsoft.Extensions.DependencyInjection
             Action<RabbitMQClientOptions> mQClientConfigureOptions = null,
             Action<NetRpcClientOption> clientConfigureOptions = null)
         {
-            services.AddNetRpcRabbitMQClient<TService>(mQClientConfigureOptions, clientConfigureOptions);
+            services.AddNetRpcRabbitMQClient(mQClientConfigureOptions, clientConfigureOptions);
+            services.AddNetRpcClientContract<TService>();
             services.AddNetRpcContractSingleton(typeof(TService),
                 p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))).Proxy);
             return services;

@@ -53,7 +53,7 @@ namespace NetRpc.Jaeger
             var info = context.MethodObj.HttpRoutInfo;
             var requestUrl = Helper.GetRequestUrl(opt.HostPath.FormatUrl(), opt.ApiPath, info.ContractPath, info.MethodPath);
             tracer.ActiveSpan.SetTag(new StringTag("Url"), requestUrl);
-
+            await _next(context);
         }
     }
 }

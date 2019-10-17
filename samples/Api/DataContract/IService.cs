@@ -8,7 +8,7 @@ namespace DataContract
     {
         void Hearbeat();
 
-        [GrpcIgnore]
+        //[GrpcIgnore]
         void FilterAndHeader();
 
         CustomObj SetAndGetObj(CustomObj obj);

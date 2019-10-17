@@ -19,21 +19,29 @@ namespace Microsoft.Extensions.DependencyInjection
             Action<GrpcClientOptions> grpcClientConfigureOptions = null,
             Action<NetRpcClientOption> clientConfigureOptions = null)
         {
-            services.AddNetRpcGrpcClient<TService>(grpcClientConfigureOptions, clientConfigureOptions);
+            services.AddNetRpcGrpcClient(grpcClientConfigureOptions, clientConfigureOptions);
+            services.AddNetRpcGrpcClientContract<TService>();
             services.AddNetRpcContractSingleton(typeof(TService),
                 p => ((IClientProxy<TService>) p.GetService(typeof(IClientProxy<TService>))).Proxy);
             return services;
         }
 
-        public static IServiceCollection AddNetRpcGrpcClient<TService>(this IServiceCollection services,
+        public static IServiceCollection AddNetRpcGrpcClient(this IServiceCollection services,
             Action<GrpcClientOptions> grpcClientConfigureOptions = null,
             Action<NetRpcClientOption> clientConfigureOptions = null)
         {
             if (grpcClientConfigureOptions != null)
                 services.Configure(grpcClientConfigureOptions);
-            services.TryAddSingleton<GrpcClientProxy<TService>>();
-            services.AddNetRpcClient<GrpcClientConnectionFactory, TService>(clientConfigureOptions);
+
+            services.AddNetRpcClientByClientConnectionFactory<GrpcClientConnectionFactory>(clientConfigureOptions);
             services.AddSingleton<IClientProxyProvider, GrpcClientProxyProvider>();
+            return services;
+        }
+
+        public static IServiceCollection AddNetRpcGrpcClientContract<TService>(this IServiceCollection services)
+        {
+            services.TryAddSingleton<IClientProxy<TService>, GrpcClientProxy<TService>>();
+            services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxy<TService>>().Proxy);
             return services;
         }
     }

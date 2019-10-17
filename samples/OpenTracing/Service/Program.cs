@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
 using Grpc.Core;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using NetRpc;
 using NetRpc.Grpc;
 using NetRpc.Http;
@@ -44,8 +46,7 @@ namespace Service
 
                     services.Configure<GrpcClientOptions>("grpc1", i => i.Channel = new Channel("localhost", 50002, ChannelCredentials.Insecure));
                     services.Configure<GrpcClientOptions>("grpc2", i => i.Channel = new Channel("localhost", 50003, ChannelCredentials.Insecure));
-                    services.AddNetRpcGrpcClient<IService_1>();
-                    services.AddNetRpcGrpcClient<IService_2>();
+                    services.AddNetRpcGrpcClient();
 
                     services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5001/swagger");
                     services.Configure<ClientSwaggerOptions>("grpc1", i => i.HostPath = "http://localhost:5002/swagger");

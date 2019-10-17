@@ -34,7 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (httpServiceConfigureOptions != null)
                 services.Configure(httpServiceConfigureOptions);
-            services.TryAddSingleton<RequestHandler>();
+            services.TryAddSingleton(p => new RequestHandler(p, ChannelType.Http));
             services.AddNetRpcService();
             return services;
         }
@@ -43,7 +43,8 @@ namespace Microsoft.Extensions.DependencyInjection
             Action<HttpClientOptions> httpClientConfigureOptions = null,
             Action<NetRpcClientOption> clientConfigureOptions = null)
         {
-            services.AddNetRpcHttpClient<TService>(httpClientConfigureOptions, clientConfigureOptions);
+            services.AddNetRpcHttpClient(httpClientConfigureOptions, clientConfigureOptions);
+            services.AddNetRpcClientContract<TService>();
             services.AddNetRpcContractSingleton(typeof(TService),
                 p => ((ClientProxy<TService>) p.GetService(typeof(ClientProxy<TService>))).Proxy);
             return services;

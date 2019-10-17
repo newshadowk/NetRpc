@@ -45,7 +45,6 @@ namespace Service
                         i.Port = 6831;
                         i.ServiceName = "Service_2";
                     });
-
                 })
                 .Configure(app =>
                 {

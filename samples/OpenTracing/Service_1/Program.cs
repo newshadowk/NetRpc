@@ -40,7 +40,8 @@ namespace Service_1
 
                     services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50002); });
                     services.AddNetRpcContractSingleton<IService_1, Service>();
-                    services.AddNetRpcGrpcClient<IService_1_1>(i => i.Channel = new Channel("localhost", 50004, ChannelCredentials.Insecure));
+                    services.AddNetRpcGrpcClient(i => i.Channel = new Channel("localhost", 50004, ChannelCredentials.Insecure));
+                    services.AddNetRpcClientContract<IService_1_1>();
 
                     services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5002/swagger");
                     services.Configure<ClientSwaggerOptions>(i => i.HostPath = "http://localhost:5004/swagger");

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using NetRpc;
 using NetRpc.Grpc;
 using NetRpc.Http;
+using Helper = TestHelper.Helper;
 
 namespace Service
 {
@@ -17,8 +18,8 @@ namespace Service
     {
         static async Task Main(string[] args)
         {
-            //await RunGrpcAsync();
-            await RunHttpAsync();
+            await RunGrpcAsync();
+            //await RunHttpAsync();
         }
 
         static async Task RunGrpcAsync()
@@ -29,10 +30,13 @@ namespace Service
                 .ConfigureServices((context, services) =>
                 {
                     services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50001); });
-                    services.AddNetRpcStreamCallBack(10);
                     services.AddNetRpcContractSingleton<IService, Service>();
+                    services.AddNetRpcContractSingleton<IService2, Service2>();
+                    services.AddNetRpcRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
                 })
                 .Build();
+
+
             await host.RunAsync();
         }
 
@@ -112,6 +116,19 @@ namespace Service
             Console.WriteLine("end");
             var fileStream = File.OpenRead(@"d:\7\4-.rar");
             return fileStream;
+        }
+
+        public async Task Call4()
+        {
+            Console.WriteLine("s1 call");
+        }
+    }
+
+    internal class Service2 : IService2
+    {
+        public async Task Call()
+        {
+            Console.WriteLine("s2 call");
         }
     }
 }
