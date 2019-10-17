@@ -80,8 +80,9 @@ var host = new HostBuilder()
     .ConfigureServices((context, services) =>
     {
         services.AddHostedService<GrpcHostedService>();
-        services.AddNetRpcGrpcClient<IService>(i =>
+        services.AddNetRpcGrpcClient(i =>
             i.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
+        services.AddNetRpcClientContract<IService>();
     })
     .Build();
 
@@ -90,7 +91,7 @@ public class GrpcHostedService : IHostedService
 {
     private readonly ClientProxy<IService> _client;
 
-    public GrpcHostedService(ClientProxy<IService> client) //DI client here.
+    public GrpcHostedService(ClientProxy<IService> client, IService service) //DI client here.
     {
         _client = client;
     }
@@ -101,7 +102,9 @@ If want to inject multiple **ClientProxies**, should use **IClientProxyFactory**
 //service side
 services.Configure<RabbitMQClientOptions>("mq1", context.Configuration.GetSection("Mq1"));
 services.Configure<RabbitMQClientOptions>("mq2", context.Configuration.GetSection("Mq2"));
-services.AddNetRpcRabbitMQClient<IService>();
+services.AddNetRpcRabbitMQClient();
+services.AddNetRpcClientContract<IService>();
+
 ```
 
 ```c#
@@ -206,13 +209,13 @@ public void TestHeader()
     //...
 }
 ```
-* **DefaultHeader**  
-On the client side, when **DefaultHeader** is not null and items count is greater than 0, **Header** will get the value of **DefaultHeader** when call the remote. This feature is usefull when you want to transfer a sessionId to service.
+* **AdditionHeader**  
+On the client side, when **AdditionHeader** is not null and items count is greater than 0, **Header** will get the value of **AdditionHeader** when call the remote. This feature is usefull when you want to transfer a sessionId to service.
 ```c#
 //client side
 var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
-//set the DefaultHeader with SessionId
-client.Context.DefaultHeader = new Dictionary<string, object> {{"SessionId", 1}};
+//set the AdditionHeader with SessionId
+client.Context.AdditionHeader = new Dictionary<string, object> {{"SessionId", 1}};
 //will tranfer the header of SessionId to service.
 client.Proxy.Call();
 ```
@@ -231,6 +234,7 @@ On service side, **Midderware** or **Filter** can access **ServiceContext**, it 
 | :-----           | :--- | :---------- |
 | Header           | Dictionary\<string object> | Header sent from client. |
 | Target           | object                     | Service instance of invoked action.|
+| ChannelType      | ChannelType                | Enum value: Undefined, Grpc, RabbitMQ, Http.|
 | InstanceMethodInfo | MethodInfo               | Current invoked method.  |
 | ContractMethodInfo | MethodInfo               | Current invoked contract method.  |
 | ActionInfo       | ActionInfo                 | Warpped info of current invoked method.  |
@@ -252,6 +256,7 @@ On client side, **Midderware** can access **ClientContext**, it is
 | ServiceProvider  | IServiceProvider           | ServiceProvider of invoked action.  |
 | Result           | object                     | Result of invoked action.|
 | Header           | Dictionary\<string object> | Header sent from client. |
+| OptionsName      | string                     | Config options name by DI. |
 | MethodInfo       | MethodInfo                 | Current invoked method.  |
 | Callback         | Action\<object>            | Callback of invoked action.  |
 | Token            | CancellationToken          | CancellationToken of invoked action.  |
@@ -464,6 +469,16 @@ Post method define has some limits, no callback Action, no cancelToken, no retur
 [NetRpcPost]
 Task PostAsync(string s1, Stream stream);
 ```
+## IgnoreAttribute
+* GrpcIgnoreAttribute
+* RabbitMQIgnoreAttribute
+* HttpIgnoreAttribute
+
+```c#
+[GrpcIgnore]
+Task CallAsync(call);
+```
+
 ## Multi contracts bind to one port
 Client should use the **ClientConnectionFactory** manage the connection, that use one connection apply to muti contracts.
 ```c#
@@ -689,6 +704,14 @@ public interface IServiceAsync
 
     Task CallByCustomExceptionAsync();
 
+```
+## [Http] HttpHeaderAttribute
+Add a header field to swagger.
+```c#
+public interface IServiceAsync
+{
+    [HttpHeader("h2", "h2 descrption.")]
+    Task CallAsync();  
 ```
 ## [Http] ResponseTextException
 ResponseTextException define pain text response with statucode.
