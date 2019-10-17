@@ -17,9 +17,9 @@ namespace NetRpc.RabbitMQ
             _serviceProvider = serviceProvider;
         }
 
-        protected override ClientProxy<TService> CreateInner<TService>(string name)
+        protected override ClientProxy<TService> CreateProxyInner<TService>(string optionsName)
         {
-            var options = _rabbitMqClientOptions.Get(name);
+            var options = _rabbitMqClientOptions.Get(optionsName);
             if (options.IsPropertiesDefault())
                 return null;
             

@@ -8,7 +8,7 @@ namespace NetRpc
     {
         private readonly ConcurrentDictionary<string, Lazy<object>> _caches = new ConcurrentDictionary<string, Lazy<object>>(StringComparer.Ordinal);
 
-        protected abstract ClientProxy<TService> CreateInner<TService>(string name);
+        protected abstract ClientProxy<TService> CreateProxyInner<TService>(string optionsName);
 
         public ClientProxy<TService> CreateProxy<TService>(string optionsName)
         {
@@ -16,7 +16,7 @@ namespace NetRpc
                 throw new ArgumentNullException(nameof(optionsName));
 
             var key = $"{optionsName}_{typeof(TService).FullName}";
-            var handler = (ClientProxy<TService>)_caches.GetOrAdd(key, new Lazy<object>(() => CreateInner<TService>(optionsName), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
+            var handler = (ClientProxy<TService>)_caches.GetOrAdd(key, new Lazy<object>(() => CreateProxyInner<TService>(optionsName), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
             return handler;
         }
     }

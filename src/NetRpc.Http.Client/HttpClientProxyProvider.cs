@@ -17,14 +17,14 @@ namespace NetRpc.Http.Client
             _serviceProvider = serviceProvider;
         }
 
-        protected override ClientProxy<TService> CreateInner<TService>(string name)
+        protected override ClientProxy<TService> CreateProxyInner<TService>(string optionsName)
         {
-            var options = _httpClientOptions.Get(name);
+            var options = _httpClientOptions.Get(optionsName);
             if (options.IsPropertiesDefault())
                 return null;
 
             var f = new HttpOnceCallFactory(options);
-            var clientProxy = new ClientProxy<TService>(f, _netRpcClientOption, _serviceProvider, name);
+            var clientProxy = new ClientProxy<TService>(f, _netRpcClientOption, _serviceProvider, optionsName);
             return clientProxy;
         }
     }

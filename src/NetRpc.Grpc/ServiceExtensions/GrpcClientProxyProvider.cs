@@ -19,14 +19,14 @@ namespace Microsoft.Extensions.DependencyInjection
             _serviceProvider = serviceProvider;
         }
 
-        protected override ClientProxy<TService> CreateInner<TService>(string name)
+        protected override ClientProxy<TService> CreateProxyInner<TService>(string optionsName)
         {
-            var options = _grpcClientOptions.Get(name);
+            var options = _grpcClientOptions.Get(optionsName);
             if (options.IsPropertiesDefault())
                 return null;
 
             var f = new GrpcClientConnectionFactory(new SimpleOptionsMonitor<GrpcClientOptions>(options));
-            var clientProxy = new GrpcClientProxy<TService>(f, _netRpcClientOption, _serviceProvider, name);
+            var clientProxy = new GrpcClientProxy<TService>(f, _netRpcClientOption, _serviceProvider, optionsName);
             return clientProxy;
         }
     }
