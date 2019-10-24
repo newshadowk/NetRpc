@@ -42,28 +42,30 @@ namespace NetRpc
 
         public async Task<object> CallAsync(MethodInfo methodInfo, Action<object> callback, CancellationToken token, Stream stream, params object[] otherArgs)
         {
-            var call = _factory.Create(_contract, _timeoutInterval);
+            var call = _factory.Create(_timeoutInterval);
             await call.StartAsync();
 
-            var methodObj = _contract.MethodObjs.Find(i => i.MethodInfo == methodInfo);
-            var context = new ClientContext(_serviceProvider, _optionsName, call, methodInfo, callback, token, _contract, methodObj, stream, otherArgs);
+            var contractMethod = _contract.Methods.Find(i => i.MethodInfo == methodInfo);
+            var instanceMethod = new InstanceMethod(methodInfo);
+            var methodContext = new MethodContext(contractMethod, instanceMethod);
+            var clientContext = new ClientContext(_serviceProvider, _optionsName, call, instanceMethod, callback, token, _contract, contractMethod, stream, otherArgs);
 
             //header
             var header = AdditionHeader;
             if (header != null && header.Count > 0)
             {
                 foreach (var key in header.Keys) 
-                    context.Header.Add(key, header[key]);
+                    clientContext.Header.Add(key, header[key]);
             }
 
             if (_middlewareBuilder != null)
             {
-                await _middlewareBuilder.InvokeAsync(context);
-                return context.Result;
+                await _middlewareBuilder.InvokeAsync(clientContext);
+                return clientContext.Result;
             }
 
             //onceTransfer will dispose after stream translate finished in OnceCall.
-            return await call.CallAsync(header, methodInfo, callback, token, stream, otherArgs);
+            return await call.CallAsync(header, methodContext, callback, token, stream, otherArgs);
         }
     }
 }

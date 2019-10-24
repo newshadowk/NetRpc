@@ -24,7 +24,7 @@ namespace NetRpc.Grpc
                     });
 
                     foreach (var contract in contracts)
-                        services.AddNetRpcContractSingleton(contract.ContractType, contract.InstanceType);
+                        services.AddNetRpcContractSingleton(contract.ContractInfo.Type, contract.InstanceType);
                 })
                 .Build();
         }

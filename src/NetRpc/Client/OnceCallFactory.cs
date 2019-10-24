@@ -14,7 +14,7 @@
             _factory?.Dispose();
         }
 
-        public IOnceCall Create(ContractInfo contract, int timeoutInterval)
+        public IOnceCall Create(int timeoutInterval)
         {
             return new OnceCall(new BufferClientOnceApiConvert(_factory.Create()), timeoutInterval);
         }

@@ -2,7 +2,7 @@
 {
     public class GlobalServiceContextAccessor : IGlobalServiceContextAccessor
     {
-        public ServiceContext Context
+        public ActionExecutingContext Context
         {
             get => GlobalServiceContext.Context;
             set => GlobalServiceContext.Context = value;

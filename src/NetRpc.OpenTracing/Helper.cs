@@ -13,10 +13,10 @@ namespace NetRpc.OpenTracing
     {
         private static readonly JsonSerializerSettings Js = new JsonSerializerSettings { ContractResolver = DtoContractResolver.Instance };
 
-        public static ISpan SetTagMethodObj(this ISpan span, MethodObj methodObj, object[] args)
+        public static ISpan SetTagMethodObj(this ISpan span, ContractMethod contractMethod, object[] args)
         {
-            var mergeArgTypeObj = methodObj.CreateMergeArgTypeObj(null, null, args);
-            span.SetTag(new StringTag("Name"), methodObj.MethodInfo.ToFullMethodName());
+            var mergeArgTypeObj = contractMethod.CreateMergeArgTypeObj(null, null, args);
+            span.SetTag(new StringTag("Name"), contractMethod.MethodInfo.ToFullMethodName());
             span.SetTag(new StringTag("Params"), mergeArgTypeObj.ToDtoJson());
             return span;
         }

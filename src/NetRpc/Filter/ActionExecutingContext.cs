@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    public sealed class ServiceContext
+    public class ServiceContext
     {
         private object _result;
 
@@ -18,13 +18,11 @@ namespace NetRpc
 
         public Dictionary<string, object> Header { get; }
 
-        public object Target { get; }
+        public InstanceMethod InstanceMethod { get; }
 
-        public MethodInfo InstanceMethodInfo { get; }
+        public ContractMethod ContractMethod { get; }
 
-        public MethodInfo ContractMethodInfo { get; }
-
-        public MethodObj MethodObj { get; }
+        public Instance Instance { get; }
 
         public Contract Contract { get; }
 
@@ -83,13 +81,13 @@ namespace NetRpc
         /// </summary>
         public Dictionary<object, object> Properties { get; set; } = new Dictionary<object, object>();
 
-        public ServiceContext(IServiceProvider serviceProvider, 
-            Dictionary<string, object> header, 
-            object target, 
+        public ServiceContext(IServiceProvider serviceProvider,
+            Dictionary<string, object> header,
+            Instance instance,
             MethodInfo instanceMethodInfo,
-            MethodInfo contractMethodInfo, 
-            object[] args, 
-            object[] pureArgs, 
+            ContractMethod contractMethod,
+            object[] args,
+            object[] pureArgs,
             ActionInfo actionInfo,
             Stream stream,
             Contract contract,
@@ -100,9 +98,9 @@ namespace NetRpc
             ServiceProvider = serviceProvider;
             ChannelType = channelType;
             Header = header;
-            Target = target;
-            InstanceMethodInfo = instanceMethodInfo;
-            ContractMethodInfo = contractMethodInfo;
+            InstanceMethod = instance.Methods.Find(i => i.MethodInfo == instanceMethodInfo);
+            ContractMethod = contractMethod;
+            Instance = instance;
             Args = args;
             PureArgs = pureArgs;
             CallbackType = GetActionType(args);
@@ -111,13 +109,12 @@ namespace NetRpc
             Stream = stream;
             Contract = contract;
             Token = token;
-            MethodObj = Contract.MethodObjs.Find(i => i.MethodInfo == contractMethodInfo);
 
             ResetProps();
         }
 
         /// <summary>
-        /// Result of invoked action.
+        /// Gets or sets value inside an action filter will short-circuit the action and any remaining action filters.
         /// </summary>
         public object Result
         {
@@ -150,7 +147,7 @@ namespace NetRpc
 
         public override string ToString()
         {
-            return $"Header:{DicToStringForDisplay(Header)}, MethodName:{InstanceMethodInfo.Name}, Args:{Helper.ListToStringForDisplay(Args, ",")}";
+            return $"Header:{DicToStringForDisplay(Header)}, MethodName:{InstanceMethod.MethodInfo.Name}, Args:{Helper.ListToStringForDisplay(Args, ",")}";
         }
 
         private static Type GetActionType(object[] args)

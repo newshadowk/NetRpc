@@ -16,24 +16,24 @@ namespace NetRpc.OpenTracing
             _next = next;
         }
 
-        public async Task InvokeAsync(ServiceContext context, ITracer tracer)
+        public async Task InvokeAsync(ActionExecutingContext context, ITracer tracer)
         {
             IScope scope;
             if (context.Header != null && context.Header.ContainsKey("uber-trace-id"))
             {
                 var spanContext = tracer.Extract(BuiltinFormats.HttpHeaders, new RequestHeadersExtractAdapter(context.Header));
-                scope = tracer.BuildSpan(context.ContractMethodInfo.Name)
+                scope = tracer.BuildSpan(context.ContractMethod.MethodInfo.Name)
                     .AsChildOf(spanContext)
                     .StartActive(true);
             }
             else
             {
-                scope = tracer.BuildSpan(context.ContractMethodInfo.Name).StartActive(true);
+                scope = tracer.BuildSpan(context.ContractMethod.MethodInfo.Name).StartActive(true);
             }
 
             using (scope)
             {
-                scope.Span.SetTagMethodObj(context.MethodObj, context.PureArgs);
+                scope.Span.SetTagMethodObj(context.ContractMethod, context.PureArgs);
 
                 try
                 {
@@ -61,11 +61,11 @@ namespace NetRpc.OpenTracing
 
         public async Task InvokeAsync(ClientContext context, ITracer tracer)
         {
-            using (var scope = tracer.BuildSpan(context.MethodInfo.Name).StartActive(true))
+            using (var scope = tracer.BuildSpan(context.ContractMethod.MethodInfo.Name).StartActive(true))
             {
                 var injectDic = new Dictionary<string, string>();
                 tracer.Inject(scope.Span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(injectDic));
-                scope.Span.SetTagMethodObj(context.MethodObj, context.PureArgs);
+                scope.Span.SetTagMethodObj(context.ContractMethod, context.PureArgs);
 
                 if (context.Header == null) 
                     context.Header = new Dictionary<string, object>();

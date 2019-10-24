@@ -8,6 +8,12 @@ namespace NetRpc
 {
     public sealed class ClientContext
     {
+        /// <summary>
+        /// Gets or sets an indication set to
+        /// <c>true</c> and short-circuited the pipeline.
+        /// </summary>
+        public bool Canceled { get; set; }
+
         public IServiceProvider ServiceProvider { get; }
 
         internal IOnceCall OnceCall { get; }
@@ -24,15 +30,15 @@ namespace NetRpc
         /// </summary>
         public Dictionary<object, object> Properties { get; set; } = new Dictionary<object, object>();
 
-        public MethodInfo MethodInfo { get; }
+        public ContractMethod ContractMethod { get; set; }
+
+        public InstanceMethod InstanceMethod { get; set; }
+
+        public ContractInfo ContractInfo { get; }
 
         public Action<object> Callback { get; }
 
         public CancellationToken Token { get; }
-
-        public ContractInfo ContractInfo { get; }
-
-        public MethodObj MethodObj { get; }
 
         public Stream Stream { get; }
 
@@ -45,21 +51,21 @@ namespace NetRpc
 
         public ClientContext(IServiceProvider serviceProvider, 
             string optionsName,
-            IOnceCall onceCall, 
-            MethodInfo methodInfo, 
+            IOnceCall onceCall,
+            InstanceMethod instanceMethod, 
             Action<object> callback, 
             CancellationToken token,
             ContractInfo contractInfo,
-            MethodObj methodObj,
+            ContractMethod contractMethod,
             Stream stream, 
             object[] pureArgs)
         {
             ServiceProvider = serviceProvider;
             OnceCall = onceCall;
-            MethodInfo = methodInfo;
+            InstanceMethod = instanceMethod;
             Callback = callback;
             ContractInfo = contractInfo;
-            MethodObj = methodObj;
+            ContractMethod = contractMethod;
             Token = token;
             Stream = stream;
             PureArgs = pureArgs;

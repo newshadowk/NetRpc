@@ -19,8 +19,13 @@
     <ProjectReference Include="..\..\..\src\NetRpc.Http\NetRpc.Http.csproj" />
     <ProjectReference Include="..\..\..\src\NetRpc.RabbitMQ\NetRpc.RabbitMQ.csproj" />
     <ProjectReference Include="..\..\TestHelper\TestHelper.csproj" />
-    <ProjectReference Include="..\DataContract\DataContract.csproj" />
     <ProjectReference Include="..\DataContract1\DataContract1.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TestFile.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

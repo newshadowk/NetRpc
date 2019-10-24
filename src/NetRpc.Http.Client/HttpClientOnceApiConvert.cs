@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,9 +11,8 @@ namespace NetRpc.Http.Client
 {
     internal sealed class HttpClientOnceApiConvert : IClientOnceApiConvert
     {
-        private readonly ContractInfo _contract;
         private readonly string _apiUrl;
-        private volatile string _connectionId;
+        private readonly string _connectionId;
         private readonly HubCallBackNotifier _notifier;
         private readonly int _timeoutInterval;
         private TypeName _callbackAction;
@@ -25,9 +23,8 @@ namespace NetRpc.Http.Client
         public event EventHandler<EventArgsT<object>> Callback;
         public event EventHandler<EventArgsT<object>> Fault;
 
-        public HttpClientOnceApiConvert(ContractInfo contract, string apiUrl, string connectionId, HubCallBackNotifier notifier, int timeoutInterval)
+        public HttpClientOnceApiConvert(string apiUrl, string connectionId, HubCallBackNotifier notifier, int timeoutInterval)
         {
-            _contract = contract;
             _apiUrl = apiUrl;
             _connectionId = connectionId;
             _notifier = notifier;
@@ -65,12 +62,11 @@ namespace NetRpc.Http.Client
             return Task.CompletedTask;
         }
 
-        public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodInfo methodInfo, Stream stream, bool isPost, CancellationToken token)
+        public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream stream, bool isPost, CancellationToken token)
         {
-            var methodObj = _contract.MethodObjs.Find(i => i.MethodInfo.ToFullMethodName() == methodInfo.ToFullMethodName());
-            _callbackAction = methodObj.MergeArgType.CallbackAction;
-            var postObj = methodObj.CreateMergeArgTypeObj(_callId, _connectionId, callParam.PureArgs);
-            var actionPath = methodObj.HttpRoutInfo.ToString();
+            _callbackAction = methodContext.ContractMethod.MergeArgType.CallbackAction;
+            var postObj = methodContext.ContractMethod.CreateMergeArgTypeObj(_callId, _connectionId, callParam.PureArgs);
+            var actionPath = methodContext.ContractMethod.HttpRoutInfo.ToString();
             var reqUrl = $"{_apiUrl}/{actionPath}";
 
             var client = new RestClient(reqUrl);
@@ -79,10 +75,11 @@ namespace NetRpc.Http.Client
             var req = new RestRequest(Method.POST);
 
             //request
-            if (methodObj.MergeArgType.StreamName != null)
+            if (methodContext.ContractMethod.MergeArgType.StreamName != null)
             {
                 req.AddParameter("data", postObj.ToDtoJson(), ParameterType.RequestBody);
-                req.AddFile(methodObj.MergeArgType.StreamName, stream.CopyTo, methodObj.MergeArgType.StreamName, stream.Length);
+                req.AddFile(methodContext.ContractMethod.MergeArgType.StreamName, stream.CopyTo, methodContext.ContractMethod.MergeArgType.StreamName,
+                    stream.Length);
             }
             else
             {
@@ -90,7 +87,7 @@ namespace NetRpc.Http.Client
             }
 
             //send request
-            var realRetT = methodInfo.ReturnType.GetTypeFromReturnTypeDefinition();
+            var realRetT = methodContext.ContractMethod.MethodInfo.ReturnType.GetTypeFromReturnTypeDefinition();
 
             //cancel
 #pragma warning disable 4014
@@ -108,13 +105,13 @@ namespace NetRpc.Http.Client
             var res = await client.ExecuteTaskAsync(req);
 
             //fault
-            TryThrowFault(methodInfo, res);
+            TryThrowFault(methodContext, res);
 
             //return stream
             if (realRetT.HasStream())
             {
                 var ms = new MemoryStream(res.RawBytes);
-                if (methodInfo.ReturnType.GetTypeFromReturnTypeDefinition() == typeof(Stream))
+                if (methodContext.ContractMethod.MethodInfo.ReturnType.GetTypeFromReturnTypeDefinition() == typeof(Stream))
                     OnResultStream(new EventArgsT<object>(ms));
                 else
                 {
@@ -143,25 +140,25 @@ namespace NetRpc.Http.Client
                 _notifier.Callback -= Notifier_Callback;
         }
 
-        private void TryThrowFault(MethodInfo methodInfo, IRestResponse res)
+        private static void TryThrowFault(MethodContext methodContext, IRestResponse res)
         {
             //OperationCanceledException
             if ((int) res.StatusCode == ClientConstValue.CancelStatusCode)
                 throw new OperationCanceledException();
 
             //ResponseTextException
-            var textAttrs = methodInfo.GetCustomAttributes<ResponseTextAttribute>(true);
-            var found2 = textAttrs.FirstOrDefault(i => i.StatusCode == (int)res.StatusCode);
+            var textAttrs = methodContext.ContractMethod.ResponseTextAttributes;
+            var found2 = textAttrs.FirstOrDefault(i => i.StatusCode == (int) res.StatusCode);
             if (found2 != null)
-                throw new ResponseTextException(res.Content, (int)res.StatusCode);
+                throw new ResponseTextException(res.Content, (int) res.StatusCode);
 
             //FaultException
-            var attrs = _contract.GetFaults(methodInfo);
+            var attrs = methodContext.ContractMethod.FaultExceptionAttributes;
             foreach (var grouping in attrs.GroupBy(i => i.StatusCode))
             {
-                if (grouping.Key == (int)res.StatusCode)
+                if (grouping.Key == (int) res.StatusCode)
                 {
-                    var fObj = (FaultExceptionJsonObj)res.Content.ToDtoObject(typeof(FaultExceptionJsonObj));
+                    var fObj = (FaultExceptionJsonObj) res.Content.ToDtoObject(typeof(FaultExceptionJsonObj));
                     var found = grouping.FirstOrDefault(i => i.ErrorCode == fObj.ErrorCode);
                     if (found != null)
                         throw CreateException(found.DetailType, res.Content);

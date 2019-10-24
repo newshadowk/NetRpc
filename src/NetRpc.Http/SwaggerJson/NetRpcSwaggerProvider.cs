@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -30,48 +29,49 @@ namespace NetRpc.Http
         private void Process(string apiRootPath, List<Contract> contracts)
         {
             //tag
-            contracts.ForEach(i => _doc.Tags.Add(new OpenApiTag {Name = i.Route}));
+            contracts.ForEach(i => _doc.Tags.Add(new OpenApiTag {Name = i.ContractInfo.Route}));
 
             //path
             _doc.Paths = new OpenApiPaths();
             foreach (var contract in contracts)
             {
-                foreach (var methodObj in contract.MethodObjs)
+                foreach (var contractMethod in contract.ContractInfo.Methods)
                 {
-                    if (methodObj.HttpIgnore)
+                    if (contractMethod.IsHttpIgnore)
                         continue;
 
                     //Operation
                     var operation = new OpenApiOperation
                     {
-                        Tags = GenerateTags(contract.Route),
-                        RequestBody = GenerateRequestBody(methodObj.MergeArgType.Type, methodObj.MergeArgType.StreamName),
-                        Responses = GenerateResponses(methodObj.MethodInfo, contract, methodObj.MergeArgType.CancelToken != null)
+                        Tags = GenerateTags(contract.ContractInfo.Route),
+                        RequestBody = GenerateRequestBody(contractMethod.MergeArgType.Type, contractMethod.MergeArgType.StreamName),
+                        Responses = GenerateResponses(contractMethod, contractMethod.MergeArgType.CancelToken != null)
                     };
 
                     //Summary
-                    var filterContext = new OperationFilterContext(new ApiDescription(), _schemaGenerator, _schemaRepository, methodObj.MethodInfo);
+                    var filterContext = new OperationFilterContext(new ApiDescription(), _schemaGenerator, _schemaRepository, contractMethod.MethodInfo);
                     foreach (var filter in _options.OperationFilters)
                         filter.Apply(operation, filterContext);
-                    operation.Summary = AppendSummaryByCallbackAndCancel(operation.Summary, methodObj.MergeArgType.CallbackAction, methodObj.MergeArgType.CancelToken);
+                    operation.Summary = AppendSummaryByCallbackAndCancel(operation.Summary, contractMethod.MergeArgType.CallbackAction,
+                        contractMethod.MergeArgType.CancelToken);
 
                     //Header
                     operation.Parameters = new List<OpenApiParameter>();
-                    foreach (var header in contract.ContractInfo.GetHeaders(methodObj.MethodInfo))
+                    foreach (var header in contractMethod.HttpHeaderAttributes)
                     {
                         operation.Parameters.Add(new OpenApiParameter
                         {
                             In = ParameterLocation.Header,
                             Name = header.Name,
                             Description = header.Description,
-                            Schema = new OpenApiSchema { Type = "string" }
+                            Schema = new OpenApiSchema {Type = "string"}
                         });
                     }
 
                     //Path
                     var openApiPathItem = new OpenApiPathItem();
                     openApiPathItem.AddOperation(OperationType.Post, operation);
-                    var key = $"{apiRootPath}/{methodObj.HttpRoutInfo}";
+                    var key = $"{apiRootPath}/{contractMethod.HttpRoutInfo}";
                     _doc.Paths.Add(key, openApiPathItem);
                 }
             }
@@ -87,10 +87,10 @@ namespace NetRpc.Http
             return new List<OpenApiTag> {new OpenApiTag {Name = tagName}};
         }
 
-        private OpenApiResponses GenerateResponses(MethodInfo method, Contract contract, bool hasCancel)
+        private OpenApiResponses GenerateResponses(ContractMethod method, bool hasCancel)
         {
             var ret = new OpenApiResponses();
-            var returnType = method.ReturnType.GetTypeFromReturnTypeDefinition();
+            var returnType = method.MethodInfo.ReturnType.GetTypeFromReturnTypeDefinition();
 
             //200 Ok
             var res200 = new OpenApiResponse();
@@ -118,7 +118,7 @@ namespace NetRpc.Http
                 ret.Add(ClientConstValue.CancelStatusCode.ToString(), new OpenApiResponse {Description = "A task was canceled."});
 
             //exception
-            GenerateException(ret, method, contract);
+            GenerateException(ret, method);
             return ret;
         }
 
@@ -222,16 +222,16 @@ namespace NetRpc.Http
             return _schemaGenerator.GenerateSchema(type, _schemaRepository);
         }
 
-        private void GenerateException(OpenApiResponses ret, MethodInfo method, Contract contract)
+        private void GenerateException(OpenApiResponses ret, ContractMethod method)
         {
             //merge Faults
-            var allFaults = contract.ContractInfo.GetFaults(method);
+            var allFaults = method.FaultExceptionAttributes;
             if (!allFaults.Any())
                 return;
 
             foreach (var grouping in allFaults.GroupBy(i => i.StatusCode))
             {
-                string des = "";
+                var des = "";
                 foreach (var item in grouping)
                     des += $"<b>{item.DetailType.Name}</b> ErrorCode:{item.ErrorCode}, {item.Description}<br/>";
                 des = des.TrimEndString("<br/>");

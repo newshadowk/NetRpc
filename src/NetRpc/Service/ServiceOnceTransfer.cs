@@ -35,32 +35,28 @@ namespace NetRpc
         public async Task HandleRequestAsync()
         {
             object ret;
-            ServiceContext context = null;
+            ActionExecutingContext context = null;
             ServiceCallParam scp = null;
 
             try
             {
                 //get context
-                scp = await GetServiceCallParamAsync();
-                context = ApiWrapper.GetServiceContext(scp, _instances, _serviceProvider, _channelType);
+                context = await GetContext();
 
                 //set Accessor
                 _globalServiceContextAccessor.Context = context;
-
-                //CheckIgnore
-                CheckIgnore(context);
 
                 //middleware Invoke
                 ret = await _middlewareBuilder.InvokeAsync(context);
 
                 //if Post, do not need send back to client.
-                if (scp.Action.IsPost)
+                if (context.ContractMethod.IsMQPost)
                     return;
             }
             catch (Exception e)
             {
                 //if Post, do not need send back to client.
-                if (scp != null && scp.Action.IsPost)
+                if (context != null && context.ContractMethod.IsMQPost)
                     return;
 
                 //send fault
@@ -79,27 +75,38 @@ namespace NetRpc
             await SendStreamAsync(hasStream, retStream, scp);
         }
 
-        private static void CheckIgnore(ServiceContext context)
+        private async Task<ActionExecutingContext> GetContext()
         {
-            switch (context.ChannelType)
-            {
-                case ChannelType.Undefined:
-                    break;
-                case ChannelType.Grpc:
-                    if (context.MethodObj.GrpcIgnore)
-                        throw new NetRpcIgnoreException("Grpc");
-                    break;
-                case ChannelType.RabbitMQ:
-                    if (context.MethodObj.RabbitMQIgnore)
-                        throw new NetRpcIgnoreException("RabbitMQ");
-                    break;
-                case ChannelType.Http:
-                    if (context.MethodObj.HttpIgnore)
-                        throw new NetRpcIgnoreException("Http");
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            var onceCallParam = await _convert.GetOnceCallParamAsync();
+            var (instanceMethodInfo, contractMethod, instance) = ApiWrapper.GetMethodInfo(onceCallParam.Action, _instances);
+
+            Stream stream;
+            if (contractMethod.IsMQPost)
+                stream = BytesToStream(onceCallParam.PostStream);
+            else
+                stream = _convert.GetRequestStream(onceCallParam.StreamLength);
+
+            //serviceCallParam
+            var scp = new ServiceCallParam(onceCallParam,
+                async i => await _convert.SendCallbackAsync(i),
+                _serviceCts.Token, stream);
+
+            var ps = contractMethod.MethodInfo.GetParameters();
+            var args = ApiWrapper.GetArgs(ps, scp.PureArgs, scp.Callback, scp.Token, scp.Stream);
+            return new ActionExecutingContext(
+                _serviceProvider,
+                scp.Header,
+                instance,
+                instanceMethodInfo,
+                contractMethod,
+                args,
+                scp.PureArgs,
+                scp.Action,
+                scp.Stream,
+                instance.Contract,
+                _channelType,
+                scp.Callback,
+                scp.Token);
         }
 
         private async Task SendStreamAsync(bool hasStream, Stream retStream, ServiceCallParam scp)
@@ -123,24 +130,6 @@ namespace NetRpc
                     await _convert.SendBufferFaultAsync();
                 }
             }
-        }
-
-        private async Task<ServiceCallParam> GetServiceCallParamAsync()
-        {
-            //onceCallParam
-            var onceCallParam = await _convert.GetOnceCallParamAsync();
-
-            //stream
-            Stream stream;
-            if (onceCallParam.Action.IsPost)
-                stream = BytesToStream(onceCallParam.PostStream);
-            else
-                stream = _convert.GetRequestStream(onceCallParam.StreamLength);
-
-            //serviceCallParam
-            return new ServiceCallParam(onceCallParam,
-                async i => await _convert.SendCallbackAsync(i),
-                _serviceCts.Token, stream);
         }
 
         private static Stream BytesToStream(byte[] bytes)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
 using Grpc.Core;
@@ -8,11 +7,12 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using NetRpc;
 using NetRpc.Grpc;
 using NetRpc.Http;
 using NetRpc.Jaeger;
+using OpenTracing.Tag;
+using OpenTracing.Util;
 
 namespace Service
 {
@@ -82,6 +82,7 @@ namespace Service
 
         public async Task<Result> Call(string s)
         {
+            GlobalTracer.Instance.ActiveSpan.SetTag(new StringTag("file"), "123.txt");
             Console.WriteLine($"Receive: {s}");
             var obj = new SendObj
             {
@@ -99,8 +100,8 @@ namespace Service
                     new InnerObj {IP1 = "2"}
                 }
             };
-            await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1Async(obj, 101, true, Console.WriteLine, default);
-            await _factory.CreateProxy<IService_2>("grpc2").Proxy.Call_2(false);
+            //await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1Async(obj, 101, true, Console.WriteLine, default);
+            //await _factory.CreateProxy<IService_2>("grpc2").Proxy.Call_2(false);
             return new Result();
         }
     }

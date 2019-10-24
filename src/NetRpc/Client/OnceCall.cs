@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,10 +24,10 @@ namespace NetRpc
             await _convert.StartAsync();
         }
 
-        public Task<object> CallAsync(Dictionary<string, object> header, MethodInfo methodInfo, Action<object> callback, CancellationToken token, Stream stream,
+        public Task<object> CallAsync(Dictionary<string, object> header, MethodContext methodContext, Action<object> callback, CancellationToken token, Stream stream,
             params object[] pureArgs)
         {
-            var action = methodInfo.ToActionInfo();
+            var action = methodContext.InstanceMethod.MethodInfo.ToActionInfo();
 
             var tcs = new TaskCompletionSource<object>();
             var t = Task.Run(async () =>
@@ -41,7 +40,7 @@ namespace NetRpc
                 try
                 {
                     //Send cmd
-                    var postStream = action.IsPost ? stream.StreamToBytes() : null;
+                    var postStream = methodContext.ContractMethod.IsMQPost ? stream.StreamToBytes() : null;
                     var p = new OnceCallParam(header, action, postStream, stream.GetLength(), pureArgs);
                     if (token.IsCancellationRequested)
                     {
@@ -49,7 +48,7 @@ namespace NetRpc
                         return;
                     }
 
-                    var sendStreamNext = await _convert.SendCmdAsync(p, methodInfo, stream, p.Action.IsPost, token);
+                    var sendStreamNext = await _convert.SendCmdAsync(p, methodContext, stream, methodContext.ContractMethod.IsMQPost, token);
                     if (!sendStreamNext)
                         return;
 

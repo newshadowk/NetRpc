@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    public delegate Task RequestDelegate(ServiceContext context);
+    public delegate Task RequestDelegate(ActionExecutingContext context);
 
     public class MiddlewareBuilder
     {
@@ -23,11 +23,12 @@ namespace NetRpc
 
         public MiddlewareBuilder(MiddlewareOptions options, IServiceProvider serviceProvider)
         {
+            _components.Add(CreateMiddleware(serviceProvider, typeof(IgnoreMiddleware), new object[] { }));
             _components.Add(CreateMiddleware(serviceProvider, typeof(MethodInvokeMiddleware), new object[] { }));
             options.GetItems().ForEach(i => _components.Add(CreateMiddleware(serviceProvider, i.Type, i.args)));
         }
 
-        public async Task<object> InvokeAsync(ServiceContext context)
+        public async Task<object> InvokeAsync(ActionExecutingContext context)
         {
             var requestDelegate = GetRequestDelegate();
             await requestDelegate.Invoke(context);
@@ -45,10 +46,10 @@ namespace NetRpc
 
         private RequestDelegate Build()
         {
-            RequestDelegate app = context => Task.CompletedTask;
+            RequestDelegate requestDelegate = context => Task.CompletedTask;
             foreach (var component in _components)
-                app = component(app);
-            return app;
+                requestDelegate = component(requestDelegate);
+            return requestDelegate;
         }
 
         private static Func<RequestDelegate, RequestDelegate> CreateMiddleware(IServiceProvider serviceProvider, Type middleware, object[] args)
@@ -69,7 +70,7 @@ namespace NetRpc
 
                 var methodInfo = invokeMethods[0];
                 var parameters = methodInfo.GetParameters();
-                if (parameters.Length == 0 || parameters[0].ParameterType != typeof(ServiceContext))
+                if (parameters.Length == 0 || parameters[0].ParameterType != typeof(ActionExecutingContext))
                     throw new InvalidOperationException($"UseMiddlewareNoParameters, {InvokeMethodName}, {InvokeAsyncMethodName}");
 
                 var ctorArgs = new object[args.Length + 1];
@@ -86,7 +87,7 @@ namespace NetRpc
             };
         }
 
-        private static Func<T, ServiceContext, IServiceProvider, Task> Compile<T>(MethodInfo methodInfo, ParameterInfo[] parameters)
+        private static Func<T, ActionExecutingContext, IServiceProvider, Task> Compile<T>(MethodInfo methodInfo, ParameterInfo[] parameters)
         {
             // If we call something like
             //
@@ -116,7 +117,7 @@ namespace NetRpc
 
             var middleware = typeof(T);
 
-            var middlewareContextArg = Expression.Parameter(typeof(ServiceContext), "apiContext");
+            var middlewareContextArg = Expression.Parameter(typeof(ActionExecutingContext), "apiContext");
             var providerArg = Expression.Parameter(typeof(IServiceProvider), "serviceProvider");
             var instanceArg = Expression.Parameter(middleware, "middleware");
 
@@ -148,7 +149,7 @@ namespace NetRpc
 
             var body = Expression.Call(middlewareInstanceArg, methodInfo, methodArguments);
 
-            var lambda = Expression.Lambda<Func<T, ServiceContext, IServiceProvider, Task>>(body, instanceArg, middlewareContextArg, providerArg);
+            var lambda = Expression.Lambda<Func<T, ActionExecutingContext, IServiceProvider, Task>>(body, instanceArg, middlewareContextArg, providerArg);
 
             return lambda.Compile();
         }

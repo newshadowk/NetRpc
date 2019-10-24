@@ -4,9 +4,9 @@ namespace NetRpc
 {
     public static class GlobalServiceContext
     {
-        private static readonly AsyncLocal<ServiceContext> Local = new AsyncLocal<ServiceContext>();
+        private static readonly AsyncLocal<ActionExecutingContext> Local = new AsyncLocal<ActionExecutingContext>();
 
-        public static ServiceContext Context
+        public static ActionExecutingContext Context
         {
             get => Local.Value;
             set => Local.Value = value;

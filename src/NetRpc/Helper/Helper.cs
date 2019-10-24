@@ -145,7 +145,6 @@ namespace NetRpc
             {
                 GenericArguments = method.GetGenericArguments().ToList().ConvertAll(GetTypeName).ToArray(),
                 FullName = method.ToFullMethodName(),
-                IsPost = method.GetCustomAttribute<MQPostAttribute>(true) != null
             };
         }
 
@@ -246,7 +245,7 @@ namespace NetRpc
             return bytes;
         }
 
-        public static Exception WarpException(Exception ex, ServiceContext context = null)
+        public static Exception WarpException(Exception ex, ActionExecutingContext context = null)
         {
             var bodyFe = ex as FaultException;
 
@@ -272,7 +271,7 @@ namespace NetRpc
             return ex;
         }
 
-        public static void ConvertStreamProgress(ServiceContext context, int progressCount)
+        public static void ConvertStreamProgress(ActionExecutingContext context, int progressCount)
         {
             if (context.Callback == null)
                 return;

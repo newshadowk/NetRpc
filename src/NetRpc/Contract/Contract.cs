@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -73,34 +74,51 @@ namespace NetRpc
         }
     }
 
-    public sealed class MethodObj
+    public sealed class ContractMethod
     {
         public MethodInfo MethodInfo { get; }
 
         public List<MethodParameter> Parameters { get; }
 
-        public MethodObj(Type contractType, MethodInfo methodInfo, List<MethodParameter> parameters)
+        public ContractMethod(Type contractType, MethodInfo methodInfo, List<MethodParameter> parameters, List<FaultExceptionAttribute> faultExceptionAttributes,
+            List<HttpHeaderAttribute> httpHeaderAttributes, List<ResponseTextAttribute> responseTextAttributes)
         {
             MethodInfo = methodInfo;
             Parameters = parameters;
+            FaultExceptionAttributes = faultExceptionAttributes;
+            HttpHeaderAttributes = httpHeaderAttributes;
+            ResponseTextAttributes = responseTextAttributes;
             MergeArgType = GetMergeArgType(methodInfo);
             HttpRoutInfo = GetHttpRoutInfo(contractType, methodInfo);
 
             //IgnoreAttribute
-            GrpcIgnore = methodInfo.GetCustomAttribute<GrpcIgnoreAttribute>(true) != null;
-            RabbitMQIgnore = methodInfo.GetCustomAttribute<RabbitMQIgnoreAttribute>(true) != null;
-            HttpIgnore = methodInfo.GetCustomAttribute<HttpIgnoreAttribute>(true) != null;
+            IsGrpcIgnore = GetCustomAttribute<GrpcIgnoreAttribute>(contractType, methodInfo) != null;
+            IsRabbitMQIgnore = GetCustomAttribute<RabbitMQIgnoreAttribute>(contractType, methodInfo) != null;
+            IsHttpIgnore = GetCustomAttribute<HttpIgnoreAttribute>(contractType, methodInfo) != null;
+            IsJaegerIgnore = GetCustomAttribute<JaegerIgnoreAttribute>(contractType, methodInfo) != null;
+
+            IsMQPost = GetCustomAttribute<MQPostAttribute>(contractType, methodInfo) != null;
         }
 
         public MergeArgType MergeArgType { get; }
 
         public HttpRoutInfo HttpRoutInfo { get; }
 
-        public bool GrpcIgnore { get; }
+        public bool IsGrpcIgnore { get; }
 
-        public bool RabbitMQIgnore { get; }
+        public bool IsRabbitMQIgnore { get; }
 
-        public bool HttpIgnore { get; }
+        public bool IsHttpIgnore { get; }
+
+        public bool IsJaegerIgnore { get; }
+
+        public bool IsMQPost { get; }
+
+        public List<FaultExceptionAttribute> FaultExceptionAttributes { get; }
+
+        public List<HttpHeaderAttribute> HttpHeaderAttributes { get; }
+
+        public List<ResponseTextAttribute> ResponseTextAttributes { get; }
 
         private static MergeArgType GetMergeArgType(MethodInfo m)
         {
@@ -188,6 +206,15 @@ namespace NetRpc
             return instance;
         }
 
+        private static T GetCustomAttribute<T>(Type contractType, MethodInfo methodInfo) where T : Attribute
+        {
+            var methodA = methodInfo.GetCustomAttribute<T>(true);
+            if (methodA != null)
+                return methodA;
+
+            return contractType.GetCustomAttribute<T>(true);
+        }
+
         private static HttpRoutInfo GetHttpRoutInfo(Type contractType, MethodInfo methodInfo)
         {
             //contractPath
@@ -227,65 +254,37 @@ namespace NetRpc
 
     public sealed class ContractInfo
     {
-        private readonly Dictionary<MemberInfo, List<FaultExceptionAttribute>> _faultDic = new Dictionary<MemberInfo, List<FaultExceptionAttribute>>();
-        private readonly Dictionary<MemberInfo, List<HttpHeaderAttribute>> _headerDic = new Dictionary<MemberInfo, List<HttpHeaderAttribute>>();
-        
         public ContractInfo(Type type)
         {
             Type = type;
 
-            //_faultDic
-            var cDefines = type.GetCustomAttributes<FaultExceptionDefineAttribute>(true).ToList();
-            var cFaults = type.GetCustomAttributes<FaultExceptionAttribute>(true).ToList();
             HttpRoute = type.GetCustomAttribute<HttpRouteAttribute>(true);
-            
-            foreach (var m in type.GetInterfaceMethods())
-            {
-                var faults = m.GetCustomAttributes<FaultExceptionAttribute>(true).ToList();
-                faults.AddRange(cFaults);
+            Methods = new List<ContractMethod>();
 
-                foreach (var f in faults)
-                {
-                    var foundF = cDefines.FirstOrDefault(i => i.DetailType == f.DetailType);
-                    if (foundF != null)
-                    {
-                        f.StatusCode = foundF.StatusCode;
-                        f.ErrorCode = foundF.ErrorCode;
-                        f.Description = foundF.Description;
-                    }
-                }
+            var methodInfos = type.GetInterfaceMethods().ToList();
+            var faultsDic = GetFaults(type, methodInfos);
+            var headerDic = GetAttributes<HttpHeaderAttribute>(type, methodInfos);
+            var textDic = GetAttributes<ResponseTextAttribute>(type, methodInfos);
 
-                _faultDic[m] = faults;
-                var ps = GetMethodParameters(m);
-                MethodObjs.Add(new MethodObj(type, m, ps));
-            }
-
-            //_headerDic
-            var cHeaders = type.GetCustomAttributes<HttpHeaderAttribute>(true).ToList();
-            foreach (var m in type.GetInterfaceMethods())
-            {
-                var tempH = cHeaders.ToList();
-                var headers = m.GetCustomAttributes<HttpHeaderAttribute>(true).ToList();
-                tempH.AddRange(headers);
-                _headerDic[m] = tempH;
-            }
+            foreach (var f in faultsDic) 
+                Methods.Add(new ContractMethod(type, f.Key, GetMethodParameters(f.Key), f.Value, headerDic[f.Key], textDic[f.Key]));
         }
 
         public Type Type { get; }
 
-        public List<FaultExceptionAttribute> GetFaults(MethodInfo contractMethod)
-        {
-            return _faultDic[contractMethod];
-        }
-
-        public List<HttpHeaderAttribute> GetHeaders(MethodInfo contractMethod)
-        {
-            return _headerDic[contractMethod];
-        }
-
-        public List<MethodObj> MethodObjs { get; } = new List<MethodObj>();
+        public List<ContractMethod> Methods { get; }
 
         public HttpRouteAttribute HttpRoute { get; }
+
+        public string Route
+        {
+            get
+            {
+                if (HttpRoute?.Template == null)
+                    return Type.Name;
+                return HttpRoute.Template;
+            }
+        }
 
         private static List<MethodParameter> GetMethodParameters(MethodInfo methodInfo)
         {
@@ -302,33 +301,60 @@ namespace NetRpc
 
             return ret;
         }
+
+        private static Dictionary<MethodInfo, List<FaultExceptionAttribute>> GetFaults(Type type, IEnumerable<MethodInfo> methodInfos)
+        {
+            var dic = new Dictionary<MethodInfo, List<FaultExceptionAttribute>>();
+            var cDefines = type.GetCustomAttributes<FaultExceptionDefineAttribute>(true).ToList();
+            var cFaults = type.GetCustomAttributes<FaultExceptionAttribute>(true).ToList();
+
+            foreach (var m in methodInfos)
+            {
+                //Faults
+                var faults = m.GetCustomAttributes<FaultExceptionAttribute>(true).ToList();
+                faults.AddRange(cFaults);
+                foreach (var f in faults)
+                {
+                    var foundF = cDefines.FirstOrDefault(i => i.DetailType == f.DetailType);
+                    if (foundF != null)
+                    {
+                        f.StatusCode = foundF.StatusCode;
+                        f.ErrorCode = foundF.ErrorCode;
+                        f.Description = foundF.Description;
+                    }
+                }
+
+                dic[m] = faults;
+            }
+
+            return dic;
+        }
+
+        private static Dictionary<MethodInfo, List<T>> GetAttributes<T>(Type type, IEnumerable<MethodInfo> methodInfos) where T : Attribute
+        {
+            var dic = new Dictionary<MethodInfo, List<T>>();
+            var typeAttrs = type.GetCustomAttributes<T>(true).ToList();
+            foreach (var m in methodInfos)
+            {
+                var tempL = typeAttrs.ToList();
+                tempL.AddRange(m.GetCustomAttributes<T>(true).ToList());
+                dic[m] = tempL;
+            }
+
+            return dic;
+        }
     }
 
     public class Contract
     {
         public ContractInfo ContractInfo { get; }
 
-        public Type ContractType { get; }
-
-        public List<MethodObj> MethodObjs => ContractInfo.MethodObjs;
-
         public Type InstanceType { get; }
-
-        public string Route
-        {
-            get
-            {
-                if (ContractInfo.HttpRoute?.Template == null)
-                    return ContractType.Name;
-                return ContractInfo.HttpRoute.Template;
-            }
-        }
 
         public Contract(Type contractType, Type instanceType)
         {
-            ContractType = contractType;
             InstanceType = instanceType;
-            ContractInfo = new ContractInfo(ContractType);
+            ContractInfo = new ContractInfo(contractType);
         }
     }
 

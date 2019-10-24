@@ -4,12 +4,11 @@ using NetRpc;
 
 namespace Service
 {
-    public class TestFilter : NetRpcFilterAttribute
+    public class TestFilter : ActionFilterAttribute
     {
-        public override Task InvokeAsync(ServiceContext context)
+        public override void OnActionExecuting(ActionExecutingContext context)
         {
             Console.Write($"TestFilter.Execute(), context:{context}");
-            return Task.CompletedTask;
         }
     }
 }

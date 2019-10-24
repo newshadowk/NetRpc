@@ -65,7 +65,7 @@ namespace NetRpc.Http
             return Task.FromResult(param);
         }
 
-        public async Task<bool> SendResultAsync(CustomResult result, Stream stream, string streamName, ServiceContext context)
+        public async Task<bool> SendResultAsync(CustomResult result, Stream stream, string streamName, ActionExecutingContext context)
         {
             if (!result.HasStream)
                 await _connection.SendAsync(new Result(result.Result));
@@ -75,7 +75,7 @@ namespace NetRpc.Http
             return false;
         }
 
-        public Task SendFaultAsync(Exception body, ServiceContext context)
+        public Task SendFaultAsync(Exception body, ActionExecutingContext context)
         {
             if (body is HttpNotMatchedException ||
                 body is MethodNotFoundException)
@@ -97,7 +97,7 @@ namespace NetRpc.Http
             // ReSharper disable once UseNullPropagation
             if (context != null)
             {
-                var t = context.Contract.ContractInfo.GetFaults(context.ContractMethodInfo).FirstOrDefault(i => body.GetType() == i.DetailType);
+                var t = context.ContractMethod.FaultExceptionAttributes.FirstOrDefault(i => body.GetType() == i.DetailType);
                 if (t != null)
                     return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(t.ErrorCode, body.Message), t.StatusCode));
             }
@@ -160,7 +160,7 @@ namespace NetRpc.Http
         {
             //dataObjType
             var method = ApiWrapper.GetMethodInfo(ai, _contracts);
-            var dataObjType = method.methodObj.MergeArgType.Type;
+            var dataObjType = method.contractMethod.MergeArgType.Type;
 
             if (_context.Request.ContentType != null)
             {
@@ -225,10 +225,10 @@ namespace NetRpc.Http
         private ActionInfo GetActionInfo(string requestPath)
         {
             foreach (var contract in _contracts)
-            foreach (var methodObj in contract.MethodObjs)
+            foreach (var contractMethod in contract.ContractInfo.Methods)
             {
-                if (requestPath == methodObj.HttpRoutInfo.ToString())
-                    return methodObj.MethodInfo.ToActionInfo();
+                if (requestPath == contractMethod.HttpRoutInfo.ToString())
+                    return contractMethod.MethodInfo.ToActionInfo();
             }
 
             return null;

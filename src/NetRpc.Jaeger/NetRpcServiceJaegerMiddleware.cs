@@ -14,16 +14,16 @@ namespace NetRpc.Jaeger
             _next = next;
         }
 
-        public async Task InvokeAsync(ServiceContext context, ITracer tracer, IOptions<ServiceSwaggerOptions> options)
+        public async Task InvokeAsync(ActionExecutingContext context, ITracer tracer, IOptions<ServiceSwaggerOptions> options)
         {
-            if (options.Value.IsPropertiesDefault())
+            if (options.Value.IsPropertiesDefault() || context.ContractMethod.IsJaegerIgnore)
             {
                 await _next(context);
                 return;
             }
 
             //http://localhost:5001/swagger/index.html#/IService/post_IService_Call
-            var info = context.MethodObj.HttpRoutInfo;
+            var info = context.ContractMethod.HttpRoutInfo;
             var requestUrl = Helper.GetRequestUrl(options.Value.HostPath.FormatUrl(), options.Value.ApiPath, info.ContractPath, info.MethodPath);
             tracer.ActiveSpan.SetTag(new StringTag("Url"), requestUrl);
 
@@ -44,15 +44,16 @@ namespace NetRpc.Jaeger
         {
             var opt = options.Get(context.OptionsName);
 
-            if (opt.IsPropertiesDefault())
+            if (opt.IsPropertiesDefault() || context.ContractMethod.IsJaegerIgnore)
             {
                 await _next(context);
                 return;
             }
 
-            var info = context.MethodObj.HttpRoutInfo;
+            var info = context.ContractMethod.HttpRoutInfo;
             var requestUrl = Helper.GetRequestUrl(opt.HostPath.FormatUrl(), opt.ApiPath, info.ContractPath, info.MethodPath);
             tracer.ActiveSpan.SetTag(new StringTag("Url"), requestUrl);
+
             await _next(context);
         }
     }

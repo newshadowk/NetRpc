@@ -3,18 +3,21 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DataContract
+namespace DataContract1
 {
-    public interface IService
+    public interface IService1
     {
         Task<Ret> Call(InParam p, Stream stream, Action<int> progs, CancellationToken token);
-
-        Task<string> Call2(string s);
     }
 
     public class InParam
     {
         public string P1 { get; set; }
+
+        public override string ToString()
+        {
+            return $"{nameof(P1)}: {P1}";
+        }
     }
 
     public class Ret

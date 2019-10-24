@@ -29,8 +29,6 @@ namespace Client
                     });
 
                     services.AddNetRpcRabbitMQClient();
-                    services.AddNetRpcClientContract<IService2>("mq");
-                    services.AddNetRpcClientContract<IService3>("mq");
 
                     services.AddHostedService<H>();
                 })
@@ -45,21 +43,24 @@ namespace Client
     public class H : IHostedService
     {
         private readonly IService _s1;
-        private readonly IService2 _s2;
-        private readonly IService3 _s3;
 
-        public H(IService s1, IService2 s2, IService3 s3)
+        public H(IService s1)
         {
             _s1 = s1;
-            _s2 = s2;
-            _s3 = s3;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await _s1.Call4();
-            await _s2.Call();
-            await _s3.Call();
+            //await _s1.Call()
+            try
+            {
+                await _s1.Call2("123");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)

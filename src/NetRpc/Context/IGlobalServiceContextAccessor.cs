@@ -2,6 +2,6 @@
 {
     public interface IGlobalServiceContextAccessor
     {
-        ServiceContext Context { get; set; }
+        ActionExecutingContext Context { get; set; }
     }
 }

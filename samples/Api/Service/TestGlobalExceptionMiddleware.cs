@@ -14,7 +14,7 @@ namespace Service
             Console.WriteLine("[testArg1]");
         }
 
-        public async Task InvokeAsync(ServiceContext context)
+        public async Task InvokeAsync(ActionExecutingContext context)
         {
             try
             {
