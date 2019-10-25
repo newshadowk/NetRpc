@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
 using Grpc.Core;
@@ -41,7 +42,7 @@ namespace Service
                     services.AddNetRpcSwagger();
                     services.AddNetRpcHttpService();
 
-                    services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50001); });
+                    services.AddNetRpcRabbitMQService(i => i.CopyFrom(TestHelper.Helper.GetMQOptions()));
                     services.AddNetRpcContractSingleton<IService, Service>();
 
                     services.Configure<GrpcClientOptions>("grpc1", i => i.Channel = new Channel("localhost", 50002, ChannelCredentials.Insecure));
@@ -71,6 +72,11 @@ namespace Service
         }
     }
 
+    public class T1
+    {
+        public string P1 { get; set; }
+    }
+    
     internal class Service : IService
     {
         private readonly IClientProxyFactory _factory;
@@ -100,8 +106,12 @@ namespace Service
                     new InnerObj {IP1 = "2"}
                 }
             };
-            //await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1Async(obj, 101, true, Console.WriteLine, default);
-            //await _factory.CreateProxy<IService_2>("grpc2").Proxy.Call_2(false);
+
+            await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1Async(obj, 101, true, i =>
+            {
+                Console.WriteLine($"tid:{GlobalTracer.Instance?.ActiveSpan.Context.TraceId}, callback:{i}");
+            }, default);
+            await _factory.CreateProxy<IService_2>("grpc2").Proxy.Call_2(false);
             return new Result();
         }
     }

@@ -76,7 +76,12 @@ namespace Service_1
 
         public async Task<Result> Call_1Async(SendObj s, int i1, bool b1, Action<int> cb, CancellationToken token)
         {
-            cb.Invoke(3);
+            for (var i = 0; i < 10; i++)
+            {
+                cb.Invoke(i);
+                await Task.Delay(100);
+            }
+
             Console.WriteLine($"Receive: {s}");
             await _clientProxy.Proxy.Call_1_1(201);
             return new Result();
