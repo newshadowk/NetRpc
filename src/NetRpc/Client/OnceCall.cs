@@ -101,7 +101,7 @@ namespace NetRpc
             }, token);
 
             if (t.IsCanceled)
-                tcs.TrySetCanceled();
+                SetCancel(tcs);
 
             return tcs.Task;
         }
