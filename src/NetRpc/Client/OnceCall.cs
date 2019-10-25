@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 
 namespace NetRpc
 {
@@ -10,8 +11,10 @@ namespace NetRpc
     {
         private readonly int _timeoutInterval;
         private readonly CancellationTokenSource _timeOutCts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _callbackCts = new CancellationTokenSource();
         private CancellationTokenRegistration? _reg;
         private readonly IClientOnceApiConvert _convert;
+        private readonly BufferBlock<object> _callbackBB = new BufferBlock<object>();
 
         public OnceCall(IClientOnceApiConvert convert, int timeoutInterval)
         {
@@ -34,8 +37,17 @@ namespace NetRpc
             {
                 _convert.ResultStream += (s, e) => { SetStreamResult(tcs, e.Value); };
                 _convert.Result += (s, e) => { SetResult(tcs, e.Value); };
-                _convert.Callback += (s, e) => { callback.Invoke(e.Value); };
+                _convert.Callback += (s, e) => _callbackBB.Post(e.Value);
                 _convert.Fault += (s, e) => { SetFault(tcs, e.Value); };
+
+                //_callbackBB is make sure callback is the same context with call, scope which start with middleware.
+#pragma warning disable 4014
+                Task.Run(async () =>
+#pragma warning restore 4014
+                {
+                    while (!_callbackCts.Token.IsCancellationRequested)
+                        callback(await _callbackBB.ReceiveAsync(_callbackCts.Token));
+                }, token);
 
                 try
                 {
@@ -94,10 +106,11 @@ namespace NetRpc
             return tcs.Task;
         }
 
-        private static void SetStreamResult(TaskCompletionSource<object> tcs, object result)
+        private void SetStreamResult(TaskCompletionSource<object> tcs, object result)
         {
             //current thread is receive thread by lower layer (rabbitMq or Grpc), can not be block.
             //run a thread to handle Stream result, avoid sync read stream by user.
+            _callbackCts.Cancel();
             Task.Run(() => { tcs.SetResult(result); });
         }
 
@@ -105,6 +118,7 @@ namespace NetRpc
         {
             _reg?.Dispose();
             _timeOutCts.Cancel();
+            _callbackCts.Cancel();
             _convert.Dispose();
             tcs.TrySetCanceled();
         }
@@ -113,6 +127,7 @@ namespace NetRpc
         {
             _reg?.Dispose();
             _timeOutCts.Cancel();
+            _callbackCts.Cancel();
             _convert.Dispose();
             tcs.TrySetException((Exception) result);
         }
@@ -121,6 +136,7 @@ namespace NetRpc
         {
             _reg?.Dispose();
             _timeOutCts.Cancel();
+            _callbackCts.Cancel();
             _convert.Dispose();
             tcs.TrySetResult(result);
         }

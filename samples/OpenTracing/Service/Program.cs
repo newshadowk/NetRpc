@@ -43,7 +43,7 @@ namespace Service
                     services.AddNetRpcHttpService();
 
                     services.AddNetRpcRabbitMQService(i => i.CopyFrom(TestHelper.Helper.GetMQOptions()));
-                    services.AddNetRpcContractSingleton<IService, Service>();
+                    services.AddNetRpcContractScoped<IService, Service>();
 
                     services.Configure<GrpcClientOptions>("grpc1", i => i.Channel = new Channel("localhost", 50002, ChannelCredentials.Insecure));
                     services.Configure<GrpcClientOptions>("grpc2", i => i.Channel = new Channel("localhost", 50003, ChannelCredentials.Insecure));
