@@ -8,12 +8,12 @@ namespace NetRpc
         private Exception _exception;
         private ExceptionDispatchInfo _exceptionDispatchInfo;
 
-        public ActionExecutedContext(ServiceContext serviceContext)
+        public ActionExecutedContext(ActionExecutingContext actionExecutingContext)
         {
-            ServiceContext = serviceContext;
+            ActionExecutingContext = actionExecutingContext;
         }
 
-        public ServiceContext ServiceContext { get; set; }
+        public ActionExecutingContext ActionExecutingContext { get; set; }
 
         public bool Canceled { get; set; }
 

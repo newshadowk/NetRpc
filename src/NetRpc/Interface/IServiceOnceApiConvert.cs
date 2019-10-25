@@ -20,9 +20,9 @@ namespace NetRpc
         Task<OnceCallParam> GetOnceCallParamAsync();
 
         /// <returns>True need send stream next, otherwise false.</returns>
-        Task<bool> SendResultAsync(CustomResult result, Stream stream, string streamName, ServiceContext context);
+        Task<bool> SendResultAsync(CustomResult result, Stream stream, string streamName, ActionExecutingContext context);
 
-        Task SendFaultAsync(Exception body, ServiceContext context);
+        Task SendFaultAsync(Exception body, ActionExecutingContext context);
 
         Task SendCallbackAsync(object callbackObj);
 

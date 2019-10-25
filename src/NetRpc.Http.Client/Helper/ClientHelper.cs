@@ -42,16 +42,5 @@ namespace NetRpc.Http.Client
                 return null;
             return JsonConvert.SerializeObject(obj, Js);
         }
-
-        public static Type GetTypeFromReturnTypeDefinition(this Type returnTypeDefinition)
-        {
-            if (returnTypeDefinition.IsTaskT())
-            {
-                var at = returnTypeDefinition.GetGenericArguments()[0];
-                return at;
-            }
-
-            return returnTypeDefinition;
-        }
     }
 }

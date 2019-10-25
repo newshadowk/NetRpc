@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    public class ServiceContext
+    public class ActionExecutingContext
     {
         private object _result;
 
@@ -63,7 +63,7 @@ namespace NetRpc
             }
         }
 
-        public CancellationToken Token { get; }
+        public CancellationToken CancellationToken { get; }
 
         public Stream Stream { get; }
 
@@ -81,7 +81,7 @@ namespace NetRpc
         /// </summary>
         public Dictionary<object, object> Properties { get; set; } = new Dictionary<object, object>();
 
-        public ServiceContext(IServiceProvider serviceProvider,
+        public ActionExecutingContext(IServiceProvider serviceProvider,
             Dictionary<string, object> header,
             Instance instance,
             MethodInfo instanceMethodInfo,
@@ -93,7 +93,7 @@ namespace NetRpc
             Contract contract,
             ChannelType channelType,
             Action<object> callback,
-            CancellationToken token)
+            CancellationToken cancellationToken)
         {
             ServiceProvider = serviceProvider;
             ChannelType = channelType;
@@ -108,7 +108,7 @@ namespace NetRpc
             Callback = callback;
             Stream = stream;
             Contract = contract;
-            Token = token;
+            CancellationToken = cancellationToken;
 
             ResetProps();
         }
@@ -138,7 +138,7 @@ namespace NetRpc
                     continue;
 
                 if (Args[i].GetType().IsCancellationToken())
-                    Args[i] = Token;
+                    Args[i] = CancellationToken;
 
                 if (Args[i].GetType().IsSubclassOf(typeof(Stream)))
                     Args[i] = Stream;

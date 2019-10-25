@@ -53,7 +53,7 @@ namespace Service
             _next = next;
         }
 
-        public async Task InvokeAsync(ServiceContext context)
+        public async Task InvokeAsync(ActionExecutingContext context)
         {
             try
             {

@@ -2,7 +2,7 @@
 
 namespace NetRpc
 {
-    public static class GlobalServiceContext
+    public static class GlobalActionExecutingContext
     {
         private static readonly AsyncLocal<ActionExecutingContext> Local = new AsyncLocal<ActionExecutingContext>();
 

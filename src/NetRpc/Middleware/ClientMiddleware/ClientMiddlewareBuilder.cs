@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    public delegate Task ClientRequestDelegate(ClientContext context);
+    public delegate Task ClientRequestDelegate(ClientActionExecutingContext context);
 
     public class ClientMiddlewareBuilder
     {
@@ -27,7 +27,7 @@ namespace NetRpc
             options.Items.ForEach(i => _components.Add(CreateMiddleware(serviceProvider, i.Type, i.args)));
         }
 
-        public async Task<object> InvokeAsync(ClientContext context)
+        public async Task<object> InvokeAsync(ClientActionExecutingContext context)
         {
             var requestDelegate = GetRequestDelegate();
             await requestDelegate.Invoke(context);
@@ -69,7 +69,7 @@ namespace NetRpc
 
                 var methodInfo = invokeMethods[0];
                 var parameters = methodInfo.GetParameters();
-                if (parameters.Length == 0 || parameters[0].ParameterType != typeof(ClientContext))
+                if (parameters.Length == 0 || parameters[0].ParameterType != typeof(ClientActionExecutingContext))
                     throw new InvalidOperationException($"UseMiddlewareNoParameters, {InvokeMethodName}, {InvokeAsyncMethodName}");
 
                 var ctorArgs = new object[args.Length + 1];
@@ -86,7 +86,7 @@ namespace NetRpc
             };
         }
 
-        private static Func<T, ClientContext, IServiceProvider, Task> Compile<T>(MethodInfo methodInfo, ParameterInfo[] parameters)
+        private static Func<T, ClientActionExecutingContext, IServiceProvider, Task> Compile<T>(MethodInfo methodInfo, ParameterInfo[] parameters)
         {
             // If we call something like
             //
@@ -116,7 +116,7 @@ namespace NetRpc
 
             var middleware = typeof(T);
 
-            var middlewareContextArg = Expression.Parameter(typeof(ClientContext), "apiContext");
+            var middlewareContextArg = Expression.Parameter(typeof(ClientActionExecutingContext), "apiContext");
             var providerArg = Expression.Parameter(typeof(IServiceProvider), "serviceProvider");
             var instanceArg = Expression.Parameter(middleware, "middleware");
 
@@ -148,7 +148,7 @@ namespace NetRpc
 
             var body = Expression.Call(middlewareInstanceArg, methodInfo, methodArguments);
 
-            var lambda = Expression.Lambda<Func<T, ClientContext, IServiceProvider, Task>>(body, instanceArg, middlewareContextArg, providerArg);
+            var lambda = Expression.Lambda<Func<T, ClientActionExecutingContext, IServiceProvider, Task>>(body, instanceArg, middlewareContextArg, providerArg);
 
             return lambda.Compile();
         }

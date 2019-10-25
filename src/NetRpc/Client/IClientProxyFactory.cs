@@ -1,4 +1,6 @@
-﻿namespace NetRpc
+﻿using System;
+
+namespace NetRpc
 {
     public interface IClientProxyFactory
     {

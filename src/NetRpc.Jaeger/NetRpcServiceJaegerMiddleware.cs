@@ -40,7 +40,7 @@ namespace NetRpc.Jaeger
             _next = next;
         }
 
-        public async Task InvokeAsync(ClientContext context, ITracer tracer, IOptionsMonitor<ClientSwaggerOptions> options)
+        public async Task InvokeAsync(ClientActionExecutingContext context, ITracer tracer, IOptionsMonitor<ClientSwaggerOptions> options)
         {
             var opt = options.Get(context.OptionsName);
 

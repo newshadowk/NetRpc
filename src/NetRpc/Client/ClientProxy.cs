@@ -14,10 +14,10 @@ namespace NetRpc
         public event EventHandler Connected;
         public event EventHandler DisConnected;
         public event EventHandler<EventArgsT<Exception>> ExceptionInvoked;
+        public event Func<IClientProxy, Task> Heartbeat;
         private readonly object _lockObj = new object();
         private readonly IOnceCallFactory _factory;
         private bool _isConnected;
-        public event Func<IClientProxy<TService>, Task> Heartbeat;
         private readonly Timer _tHearbeat;
         private readonly Call _call;
 
@@ -26,8 +26,6 @@ namespace NetRpc
             get => _call.AdditionHeader;
             set => _call.AdditionHeader = value;
         }
-
-        public TService Proxy { get; }
 
         public ClientProxy(IOnceCallFactory factory, IOptionsMonitor<NetRpcClientOption> options, IServiceProvider serviceProvider, string optionsName = null)
         {
@@ -60,6 +58,10 @@ namespace NetRpc
         {
             DoHeartbeat();
         }
+
+        public TService Proxy { get; }
+
+        object IClientProxy.Proxy => Proxy;
 
         public bool IsConnected
         {

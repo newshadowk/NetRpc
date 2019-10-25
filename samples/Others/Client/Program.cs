@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
@@ -54,7 +56,21 @@ namespace Client
             //await _s1.Call()
             try
             {
-                await _s1.Call2("123");
+                var ret = await _s1.Call(
+                    new InParam() { P1 = "123" }, 100,
+                    File.OpenRead(Helper.GetTestFilePath()),
+                    Console.WriteLine,
+                    CancellationToken.None);
+                Console.WriteLine($"ret:{ret.P1}");
+
+                using (var fs = File.OpenWrite(@"d:\1.rar"))
+                {
+                    ret.Stream.CopyTo(fs);
+                }
+                
+                //Console.WriteLine($"ret:{ret.P1}, {Helper.ReadStr(ret.Stream)}");
+
+                //await _s1.Call2("123");
             }
             catch (Exception e)
             {
@@ -65,7 +81,6 @@ namespace Client
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
         }
     }
 }

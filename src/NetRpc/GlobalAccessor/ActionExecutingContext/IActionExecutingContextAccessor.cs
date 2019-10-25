@@ -1,6 +1,6 @@
 ﻿namespace NetRpc
 {
-    public interface IGlobalServiceContextAccessor
+    public interface IActionExecutingContextAccessor
     {
         ActionExecutingContext Context { get; set; }
     }

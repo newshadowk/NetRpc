@@ -4,14 +4,19 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    public interface IClientProxy<out TService> : IDisposable
+    public interface IClientProxy<out TService> : IClientProxy
+    {
+        new TService Proxy { get; }
+    }
+
+    public interface IClientProxy : IDisposable
     {
         event EventHandler Connected;
         event EventHandler DisConnected;
         event EventHandler<EventArgsT<Exception>> ExceptionInvoked;
-        event Func<IClientProxy<TService>, Task> Heartbeat;
+        event Func<IClientProxy, Task> Heartbeat;
         Dictionary<string, object> AdditionHeader { get; set; }
-        TService Proxy { get; }
+        object Proxy { get; }
         bool IsConnected { get; }
         void StartHeartbeat(bool isImmediate = false);
         Task HeartbeatAsync();

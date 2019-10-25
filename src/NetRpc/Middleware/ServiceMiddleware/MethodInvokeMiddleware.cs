@@ -11,7 +11,7 @@ namespace NetRpc
         {
         }
 
-        public async Task InvokeAsync(ServiceContext context)
+        public async Task InvokeAsync(ActionExecutingContext context)
         {
             ActionInvoker ai = new ActionInvoker(context);
             await ai.InvokeAsync();

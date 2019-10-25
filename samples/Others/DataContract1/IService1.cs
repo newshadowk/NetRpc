@@ -7,9 +7,10 @@ namespace DataContract1
 {
     public interface IService1
     {
-        Task<Ret> Call(InParam p, Stream stream, Action<int> progs, CancellationToken token);
+        Task<Ret> Call(InParam p, int i, Stream stream, Action<int> progs, CancellationToken token);
     }
 
+    [Serializable]
     public class InParam
     {
         public string P1 { get; set; }
@@ -20,10 +21,12 @@ namespace DataContract1
         }
     }
 
+    [Serializable]
     public class Ret
     {
         public string P1 { get; set; }
 
+        [field:NonSerialized]
         public Stream Stream { get; set; }
     }
 }

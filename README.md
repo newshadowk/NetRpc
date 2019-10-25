@@ -197,7 +197,7 @@ Header is a type of **Dictionary<string, object>** object, mark sure your object
 Before call action, client set the **Header** which mark as **AsyncLocal** that guarantee muti-threads don`t influence each other.
 ```c#
 //client side
-ClientContext.Header = new Dictionary<string, object> {{"k1", "header value"}};
+_proxy.AdditionHeader.Add("k1", "header value");
 _proxy.TestHeader();
 ```
 Service can receive the header object which client sent.
@@ -205,7 +205,7 @@ Service can receive the header object which client sent.
 //service side
 public void TestHeader()
 {
-    var h = GlobalRpcContext.Context.Header;
+    var h = GlobalActionExecutingContext.Context.Header;
     //...
 }
 ```
@@ -228,7 +228,7 @@ services.AddNetRpcContractSingleton<IService, Service>();
 services.AddNetRpcContractScoped<IService,Service>();
 ```
 ## Context
-On service side, **Midderware** or **Filter** can access **ServiceContext**, it is
+On service side, **Midderware** or **Filter** can access **ActionExecutingContext**, it is
 
 | Property         | Type | Description |
 | :-----           | :--- | :---------- |
@@ -249,7 +249,7 @@ On service side, **Midderware** or **Filter** can access **ServiceContext**, it 
 | Result           | object                     | Result of invoked action.|
 | Properties       | Dictionary\<object, object>| A central location for sharing state between components during the invoking process.  |
 
-On client side, **Midderware** can access **ClientContext**, it is
+On client side, **Midderware** can access **ClientActionExecutingContext**, it is
 
 | Property         | Type | Description |
 | :-----           | :--- | :---------- |
@@ -270,12 +270,11 @@ On client side, **Midderware** can access **ClientContext**, it is
 Filter is common function like MVC. 
 ```c#
 //service side
-public class TestFilter : NetRpcFilterAttribute
+public class TestFilter : ActionFilterAttribute
 {
-    public override Task InvokeAsync(RpcContext context)
+    public override void OnActionExecuting(ActionExecutingContext context)
     {
-        Console.Write($"context:{context}");
-        return Task.CompletedTask;
+        Console.Write($"TestFilter.Execute(), context:{context}");
     }
 }
 

@@ -12,9 +12,6 @@ namespace NetRpc
 
         public ClientProxy<TService> CreateProxy<TService>(string optionsName)
         {
-            if (optionsName == null)
-                throw new ArgumentNullException(nameof(optionsName));
-
             var key = $"{optionsName}_{typeof(TService).FullName}";
             var handler = (ClientProxy<TService>)_caches.GetOrAdd(key, new Lazy<object>(() => CreateProxyInner<TService>(optionsName), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
             return handler;

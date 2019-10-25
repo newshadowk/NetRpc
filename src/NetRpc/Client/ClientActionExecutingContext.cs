@@ -6,14 +6,8 @@ using System.Threading;
 
 namespace NetRpc
 {
-    public sealed class ClientContext
+    public sealed class ClientActionExecutingContext
     {
-        /// <summary>
-        /// Gets or sets an indication set to
-        /// <c>true</c> and short-circuited the pipeline.
-        /// </summary>
-        public bool Canceled { get; set; }
-
         public IServiceProvider ServiceProvider { get; }
 
         internal IOnceCall OnceCall { get; }
@@ -49,7 +43,7 @@ namespace NetRpc
 
         public string OptionsName { get; }
 
-        public ClientContext(IServiceProvider serviceProvider, 
+        public ClientActionExecutingContext(IServiceProvider serviceProvider, 
             string optionsName,
             IOnceCall onceCall,
             InstanceMethod instanceMethod, 

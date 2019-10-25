@@ -14,7 +14,7 @@ namespace Service
         public async Task<CustomObj> CallAsync(string p1, int p2)
         {
             var retObj = new CustomObj {Date = DateTime.Now, Name = NameEnum.John};
-            var h = GlobalServiceContext.Context.Header;
+            var h = GlobalActionExecutingContext.Context.Header;
             Console.WriteLine($"[Call]...receive:{p1}, {p2}, h1:{h["h1"]}, h2:{h["h2"]} return:{retObj}");
             return retObj;
         }

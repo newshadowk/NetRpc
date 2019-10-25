@@ -5,7 +5,6 @@ namespace NetRpc
 {
     public delegate Task<ActionExecutedContext> ActionExecutionDelegate();
 
-
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
     public class ActionFilterAttribute : Attribute, IAsyncActionFilter
     {
@@ -13,11 +12,11 @@ namespace NetRpc
         {
         }
 
-        public virtual void OnActionExecuting(ServiceContext context)
+        public virtual void OnActionExecuting(ActionExecutingContext context)
         {
         }
 
-        public virtual async Task OnActionExecutionAsync(ServiceContext context, ActionExecutionDelegate next)
+        public virtual async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             if (context == null)
             {

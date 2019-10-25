@@ -59,7 +59,7 @@ namespace NetRpc.OpenTracing
             _next = next;
         }
 
-        public async Task InvokeAsync(ClientContext context, ITracer tracer)
+        public async Task InvokeAsync(ClientActionExecutingContext context, ITracer tracer)
         {
             using (var scope = tracer.BuildSpan(context.ContractMethod.MethodInfo.Name).StartActive(true))
             {

@@ -51,6 +51,12 @@ namespace NetRpc
             return objs.ToArray();
         }
 
+        public static Task<object> InvokeAsync(this MethodInfo methodInfo, object target, object[] parameters)
+        {
+            dynamic invokeRet = methodInfo.Invoke(target, parameters);
+            return GetTaskResult(invokeRet, methodInfo.ReturnType.IsGenericType);
+        }
+
         public static async Task<object> GetTaskResult(dynamic invokeRet, bool isGenericType)
         {
             if (invokeRet is Task)

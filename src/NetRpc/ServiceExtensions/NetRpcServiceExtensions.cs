@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddNetRpcService(this IServiceCollection services)
         {
             services.TryAddSingleton<MiddlewareBuilder>();
-            services.TryAddSingleton<IGlobalServiceContextAccessor, GlobalServiceContextAccessor>();
+            services.TryAddSingleton<IActionExecutingContextAccessor, ActionExecutingContextAccessor>();
             return services;
         }
 

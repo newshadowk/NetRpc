@@ -344,5 +344,16 @@ namespace NetRpc
 
             return null;
         }
+
+        public static Type GetTypeFromReturnTypeDefinition(this Type returnTypeDefinition)
+        {
+            if (returnTypeDefinition.IsTaskT())
+            {
+                var at = returnTypeDefinition.GetGenericArguments()[0];
+                return at;
+            }
+
+            return returnTypeDefinition;
+        }
     }
 }

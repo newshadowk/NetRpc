@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,17 +14,17 @@ namespace NetRpc
         private readonly List<Instance> _instances;
         private readonly IServiceProvider _serviceProvider;
         private readonly MiddlewareBuilder _middlewareBuilder;
-        private readonly IGlobalServiceContextAccessor _globalServiceContextAccessor;
+        private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
         private readonly ChannelType _channelType;
         private readonly CancellationTokenSource _serviceCts = new CancellationTokenSource();
 
         public ServiceOnceTransfer(List<Instance> instances, IServiceProvider serviceProvider, IServiceOnceApiConvert convert,
-            MiddlewareBuilder middlewareBuilder, IGlobalServiceContextAccessor globalServiceContextAccessor, ChannelType channelType)
+            MiddlewareBuilder middlewareBuilder, IActionExecutingContextAccessor actionExecutingContextAccessor, ChannelType channelType)
         {
             _instances = instances;
             _serviceProvider = serviceProvider;
             _middlewareBuilder = middlewareBuilder;
-            _globalServiceContextAccessor = globalServiceContextAccessor;
+            _actionExecutingContextAccessor = actionExecutingContextAccessor;
             _channelType = channelType;
             _convert = convert;
         }
@@ -36,7 +38,6 @@ namespace NetRpc
         {
             object ret;
             ActionExecutingContext context = null;
-            ServiceCallParam scp = null;
 
             try
             {
@@ -44,7 +45,7 @@ namespace NetRpc
                 context = await GetContext();
 
                 //set Accessor
-                _globalServiceContextAccessor.Context = context;
+                _actionExecutingContextAccessor.Context = context;
 
                 //middleware Invoke
                 ret = await _middlewareBuilder.InvokeAsync(context);
@@ -72,7 +73,7 @@ namespace NetRpc
                 return;
 
             //send stream
-            await SendStreamAsync(hasStream, retStream, scp);
+            await SendStreamAsync(hasStream, retStream, context.CancellationToken);
         }
 
         private async Task<ActionExecutingContext> GetContext()
@@ -109,7 +110,7 @@ namespace NetRpc
                 scp.Token);
         }
 
-        private async Task SendStreamAsync(bool hasStream, Stream retStream, ServiceCallParam scp)
+        private async Task SendStreamAsync(bool hasStream, Stream retStream, CancellationToken token)
         {
             if (hasStream)
             {
@@ -118,7 +119,7 @@ namespace NetRpc
                     using (retStream)
                     {
                         await Helper.SendStreamAsync(i => _convert.SendBufferAsync(i), () =>
-                            _convert.SendBufferEndAsync(), retStream, scp.Token);
+                            _convert.SendBufferEndAsync(), retStream, token);
                     }
                 }
                 catch (TaskCanceledException)

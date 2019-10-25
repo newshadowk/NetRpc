@@ -33,7 +33,7 @@ namespace Client
             _clientProxy.Heartbeat += s =>
             {
                 Console.WriteLine("[event] Heartbeat");
-                s.Proxy.Hearbeat();
+                ((IService)s.Proxy).Hearbeat();
                 return Task.CompletedTask;
             };
             //clientProxy.StartHeartbeat(true);
@@ -75,7 +75,7 @@ namespace Client
 
         private static void Test_FilterAndHeader()
         {
-            _clientProxy.AdditionHeader = new Dictionary<string, object> { { "k1", "header value" } };
+            _clientProxy.AdditionHeader.Add("k1", "header value");
             Console.Write("[FilterAndHeader], send:k1, header value");
             _proxy.FilterAndHeader();
         }

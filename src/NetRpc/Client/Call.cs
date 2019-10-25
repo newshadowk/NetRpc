@@ -38,7 +38,7 @@ namespace NetRpc
             _timeoutInterval = timeoutInterval;
         }
 
-        public Dictionary<string, object> AdditionHeader { get; set; }
+        public Dictionary<string, object> AdditionHeader { get; set; } = new Dictionary<string, object>();
 
         public async Task<object> CallAsync(MethodInfo methodInfo, Action<object> callback, CancellationToken token, Stream stream, params object[] otherArgs)
         {
@@ -48,13 +48,13 @@ namespace NetRpc
             var contractMethod = _contract.Methods.Find(i => i.MethodInfo == methodInfo);
             var instanceMethod = new InstanceMethod(methodInfo);
             var methodContext = new MethodContext(contractMethod, instanceMethod);
-            var clientContext = new ClientContext(_serviceProvider, _optionsName, call, instanceMethod, callback, token, _contract, contractMethod, stream, otherArgs);
+            var clientContext = new ClientActionExecutingContext(_serviceProvider, _optionsName, call, instanceMethod, callback, token, _contract, contractMethod, stream, otherArgs);
 
             //header
             var header = AdditionHeader;
             if (header != null && header.Count > 0)
             {
-                foreach (var key in header.Keys) 
+                foreach (var key in header.Keys)
                     clientContext.Header.Add(key, header[key]);
             }
 

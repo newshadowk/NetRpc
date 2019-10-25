@@ -21,17 +21,8 @@ namespace NetRpc
             Contract = contract;
             Target = target;
             Type = target.GetType();
-            var list = InstanceCache.TypeActionFilters.GetOrAdd(Type, i => i.GetCustomAttributes<ActionFilterAttribute>(true).ToList());
-            foreach (var m in Type.GetMethods())
-            {
-                InstanceCache.MethodActionFilters.GetOrAdd(m, i =>
-                {
-                    list.AddRange(i.GetCustomAttributes<ActionFilterAttribute>(true).ToList());
-                    return list;
-                });
-
-                Methods.Add(new InstanceMethod(m, list));
-            }
+            foreach (var m in Type.GetMethods()) 
+                Methods.Add(new InstanceMethod(m, target));
         }
     }
 
@@ -39,33 +30,31 @@ namespace NetRpc
     {
         public MethodInfo MethodInfo { get; }
 
-        public List<ActionFilterAttribute> ActionFilters { get; }
+        public List<ActionFilterAttribute> ActionFilters { get; } = new List<ActionFilterAttribute>();
 
-        public InstanceMethod(MethodInfo methodInfo, List<ActionFilterAttribute> actionFilters = null)
+        public InstanceMethod(MethodInfo methodInfo, object target = null)
         {
             MethodInfo = methodInfo;
 
-            if (actionFilters == null)
-            {
-                // ReSharper disable once AssignNullToNotNullAttribute
-                var list = InstanceCache.TypeActionFilters.GetOrAdd(methodInfo.DeclaringType,
-                    i => i.GetCustomAttributes<ActionFilterAttribute>(true).ToList());
+            if (target is ActionFilterAttribute targetF) 
+                ActionFilters.Add(targetF);
 
-                InstanceCache.MethodActionFilters.GetOrAdd(methodInfo,
-                    i =>
-                    {
-                        list.AddRange(methodInfo.GetCustomAttributes<ActionFilterAttribute>(true).ToList());
-                        return list;
-                    });
-            }
-            else
-                ActionFilters = actionFilters;
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var cloneList = InstanceCache.InstanceTypeActionFilters.GetOrAdd(methodInfo.DeclaringType,
+                i => i.GetCustomAttributes<ActionFilterAttribute>(true).ToList()).ToList();
+
+            ActionFilters.AddRange(InstanceCache.MethodActionFilters.GetOrAdd(methodInfo,
+                i =>
+                {
+                    cloneList.AddRange(methodInfo.GetCustomAttributes<ActionFilterAttribute>(true).ToList());
+                    return cloneList;
+                }));
         }
     }
 
     internal static class InstanceCache
     {
-        public static readonly ConcurrentDictionary<Type, List<ActionFilterAttribute>> TypeActionFilters =
+        public static readonly ConcurrentDictionary<Type, List<ActionFilterAttribute>> InstanceTypeActionFilters =
             new ConcurrentDictionary<Type, List<ActionFilterAttribute>>();
 
         public static readonly ConcurrentDictionary<MethodInfo, List<ActionFilterAttribute>> MethodActionFilters =

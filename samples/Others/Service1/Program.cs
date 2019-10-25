@@ -19,12 +19,10 @@ namespace Service
 
         static async Task RunGrpcAsync()
         {
-            var o = new GrpcServiceOptions();
-            o.AddPort("0.0.0.0", 50001);
             var host = new HostBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50001); });
+                    services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50002); });
                     services.AddNetRpcContractSingleton<IService1, Service1>();
                 })
                 .Build();
@@ -35,19 +33,20 @@ namespace Service
 
     internal class Service1 : IService1
     {
-        public async Task<Ret> Call(InParam p, Stream stream, Action<int> progs, CancellationToken token)
+        public async Task<Ret> Call(InParam p, int i, Stream stream, Action<int> progs, CancellationToken token)
         {
-            Console.WriteLine($"{p}, {Helper.ReadStr(stream)}");
+            Console.WriteLine($"{p}, {i}, {Helper.ReadStr(stream)}");
 
-            for (int i = 0; i < 3; i++)
+            for (int i1 = 0; i1 < 3; i1++)
             {
-                progs(i);
+                progs(i1);
                 await Task.Delay(100, token);
             }
 
             return new Ret
             {
-                Stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
+                //Stream = File.OpenRead(Helper.GetTestFilePath()),
+                Stream = File.OpenRead(@"d:\3.rar"),
                 P1 = "return p1"
             };
         }

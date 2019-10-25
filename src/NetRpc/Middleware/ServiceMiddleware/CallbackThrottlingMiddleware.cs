@@ -15,7 +15,7 @@ namespace NetRpc
             _callbackThrottlingInterval = callbackThrottlingInterval;
         }
 
-        public async Task InvokeAsync(ServiceContext context)
+        public async Task InvokeAsync(ActionExecutingContext context)
         {
             using (var ra = new ThrottlingAction(_callbackThrottlingInterval))
             {
