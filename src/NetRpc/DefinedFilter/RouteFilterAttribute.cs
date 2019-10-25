@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 namespace NetRpc
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface)]
-    public class RouteToAttribute : ActionFilterAttribute
+    public class RouteFilterAttribute : ActionFilterAttribute
     {
         private readonly string _methodName;
         private readonly IClientProxy _clientProxy;
         private readonly MethodInfo[] _proxyMethodInfos;
 
-        public RouteToAttribute(Type contactType, string methodName = null, string optionsName = null)
+        public RouteFilterAttribute(Type contactType, string methodName = null, string optionsName = null)
         {
             //_clientProxy
             var f = (IClientProxyFactory)GlobalServiceProvider.ScopeProvider.GetService(typeof(IClientProxyFactory));

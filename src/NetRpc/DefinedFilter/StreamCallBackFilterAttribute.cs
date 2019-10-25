@@ -1,10 +1,10 @@
 ﻿namespace NetRpc
 {
-    public class StreamCallBackAttribute : ActionFilterAttribute
+    public class StreamCallBackFilterAttribute : ActionFilterAttribute
     {
         private readonly int _progressCount;
 
-        public StreamCallBackAttribute(int progressCount)
+        public StreamCallBackFilterAttribute(int progressCount)
         {
             _progressCount = progressCount;
         }

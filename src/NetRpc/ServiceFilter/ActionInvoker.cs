@@ -161,27 +161,9 @@ namespace NetRpc
             }
         }
 
-        public async Task InvokeActionInsideAsync()
+        private async Task InvokeActionInsideAsync()
         {
-            dynamic ret;
-            try
-            {
-                // ReSharper disable once PossibleNullReferenceException
-                ret = _context.InstanceMethod.MethodInfo.Invoke(_context.Instance.Target, _context.Args);
-            }
-            catch (TargetInvocationException e)
-            {
-                if (e.InnerException != null)
-                {
-                    var edi = ExceptionDispatchInfo.Capture(e.InnerException);
-                    edi.Throw();
-                }
-
-                throw;
-            }
-
-            var isGenericType = _context.InstanceMethod.MethodInfo.ReturnType.IsGenericType;
-            _context.Result = await ApiWrapper.GetTaskResult(ret, isGenericType);
+            _context.Result = await _context.InstanceMethod.MethodInfo.InvokeAsync(_context.Instance.Target, _context.Args);
         }
 
         private enum Scope

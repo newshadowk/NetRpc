@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -49,12 +50,6 @@ namespace NetRpc
             }
 
             return objs.ToArray();
-        }
-
-        public static Task<object> InvokeAsync(this MethodInfo methodInfo, object target, object[] parameters)
-        {
-            dynamic invokeRet = methodInfo.Invoke(target, parameters);
-            return GetTaskResult(invokeRet, methodInfo.ReturnType.IsGenericType);
         }
 
         public static async Task<object> GetTaskResult(dynamic invokeRet, bool isGenericType)
@@ -134,6 +129,29 @@ namespace NetRpc
                     yield return method;
                 }
             }
+        }
+
+        public static async Task<object> InvokeAsync(this MethodInfo methodInfo, object target, object[] args)
+        {
+            dynamic ret;
+            try
+            {
+                // ReSharper disable once PossibleNullReferenceException
+                ret = methodInfo.Invoke(target, args);
+            }
+            catch (TargetInvocationException e)
+            {
+                if (e.InnerException != null)
+                {
+                    var edi = ExceptionDispatchInfo.Capture(e.InnerException);
+                    edi.Throw();
+                }
+
+                throw;
+            }
+
+            var isGenericType = methodInfo.ReturnType.IsGenericType;
+            return await GetTaskResult(ret, isGenericType);
         }
     }
 }

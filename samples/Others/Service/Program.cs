@@ -38,7 +38,7 @@ namespace Service
 
     internal class Service : IService
     {
-        [RouteTo(typeof(IService1))]
+        [RouteFilter(typeof(IService1))]
         public async Task<Ret> Call(InParam p, int i, Stream stream, Action<int> progs, CancellationToken token)
         {
             throw new NotImplementedException();
