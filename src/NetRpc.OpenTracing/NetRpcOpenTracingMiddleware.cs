@@ -33,12 +33,14 @@ namespace NetRpc.OpenTracing
 
             using (scope)
             {
-                scope.Span.SetTagMethodObj(context.ContractMethod, context.PureArgs);
+                if (!context.ContractMethod.IsTraceParamIgnore)
+                    scope.Span.SetTagMethodObj(context.ContractMethod, context.PureArgs);
 
                 try
                 {
                     await _next(context);
-                    scope.Span.SetTag(new StringTag("Result"), context.Result.ToDtoJson());
+                    if (!context.ContractMethod.IsTraceParamIgnore)
+                        scope.Span.SetTag(new StringTag("Result"), context.Result.ToDtoJson());
                 }
                 catch (Exception e)
                 {
@@ -65,7 +67,9 @@ namespace NetRpc.OpenTracing
             {
                 var injectDic = new Dictionary<string, string>();
                 tracer.Inject(scope.Span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(injectDic));
-                scope.Span.SetTagMethodObj(context.ContractMethod, context.PureArgs);
+
+                if (!context.ContractMethod.IsTraceParamIgnore)
+                    scope.Span.SetTagMethodObj(context.ContractMethod, context.PureArgs);
 
                 if (context.Header == null) 
                     context.Header = new Dictionary<string, object>();
@@ -76,7 +80,9 @@ namespace NetRpc.OpenTracing
                 try
                 {
                     await _next(context);
-                    scope.Span.SetTag(new StringTag("Result"), context.Result.ToDtoJson());
+
+                    if (!context.ContractMethod.IsTraceParamIgnore)
+                        scope.Span.SetTag(new StringTag("Result"), context.Result.ToDtoJson());
                 }
                 catch (Exception e)
                 {

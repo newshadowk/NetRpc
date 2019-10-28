@@ -26,8 +26,8 @@ namespace NetRpc.Grpc
                 Interlocked.Increment(ref _handlingCount);
                 try
                 {
-                    using (var connection = new GrpcServiceConnection(requestStream, responseStream))
-                        await _requestHandler.HandleAsync(connection);
+                    using var connection = new GrpcServiceConnection(requestStream, responseStream);
+                    await _requestHandler.HandleAsync(connection);
                 }
                 finally
                 {
