@@ -96,7 +96,8 @@ namespace NetRpc
             IsRabbitMQIgnore = GetCustomAttribute<RabbitMQIgnoreAttribute>(contractType, methodInfo) != null;
             IsHttpIgnore = GetCustomAttribute<HttpIgnoreAttribute>(contractType, methodInfo) != null;
             IsJaegerIgnore = GetCustomAttribute<JaegerIgnoreAttribute>(contractType, methodInfo) != null;
-            IsTraceParamIgnore = GetCustomAttribute<TraceParamIgnoreAttribute>(contractType, methodInfo) != null;
+            IsTraceArgsIgnore = GetCustomAttribute<TraceArgsIgnoreAttribute>(contractType, methodInfo) != null;
+            IsTraceReturnIgnore = GetCustomAttribute<TraceReturnIgnoreAttribute>(contractType, methodInfo) != null;
 
             IsMQPost = GetCustomAttribute<MQPostAttribute>(contractType, methodInfo) != null;
         }
@@ -105,7 +106,9 @@ namespace NetRpc
 
         public HttpRoutInfo HttpRoutInfo { get; }
 
-        public bool IsTraceParamIgnore { get; }
+        public bool IsTraceArgsIgnore { get; }
+
+        public bool IsTraceReturnIgnore { get; }
 
         public bool IsGrpcIgnore { get; }
 

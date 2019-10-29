@@ -33,13 +33,13 @@ namespace NetRpc.OpenTracing
 
             using (scope)
             {
-                if (!context.ContractMethod.IsTraceParamIgnore)
+                if (!context.ContractMethod.IsTraceArgsIgnore)
                     scope.Span.SetTagMethodObj(context.ContractMethod, context.PureArgs);
 
                 try
                 {
                     await _next(context);
-                    if (!context.ContractMethod.IsTraceParamIgnore)
+                    if (!context.ContractMethod.IsTraceReturnIgnore)
                         scope.Span.SetTag(new StringTag("Result"), context.Result.ToDtoJson());
                 }
                 catch (Exception e)
@@ -68,7 +68,7 @@ namespace NetRpc.OpenTracing
                 var injectDic = new Dictionary<string, string>();
                 tracer.Inject(scope.Span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(injectDic));
 
-                if (!context.ContractMethod.IsTraceParamIgnore)
+                if (!context.ContractMethod.IsTraceArgsIgnore)
                     scope.Span.SetTagMethodObj(context.ContractMethod, context.PureArgs);
 
                 if (context.Header == null) 
@@ -81,7 +81,7 @@ namespace NetRpc.OpenTracing
                 {
                     await _next(context);
 
-                    if (!context.ContractMethod.IsTraceParamIgnore)
+                    if (!context.ContractMethod.IsTraceReturnIgnore)
                         scope.Span.SetTag(new StringTag("Result"), context.Result.ToDtoJson());
                 }
                 catch (Exception e)

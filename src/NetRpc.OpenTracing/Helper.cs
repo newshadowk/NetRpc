@@ -17,7 +17,7 @@ namespace NetRpc.OpenTracing
         {
             var mergeArgTypeObj = contractMethod.CreateMergeArgTypeObj(null, null, args);
             span.SetTag(new StringTag("Name"), contractMethod.MethodInfo.ToFullMethodName());
-            span.SetTag(new StringTag("Params"), mergeArgTypeObj.ToDtoJson());
+            span.SetTag(new StringTag("Args"), mergeArgTypeObj.ToDtoJson());
             return span;
         }
 
