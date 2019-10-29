@@ -1,61 +1,42 @@
 <?xml version="1.0"?>
-
 <doc>
-  <assembly>
-    <name>DataContract</name>
-  </assembly>
-  <members>
-    <member name="M:DataContract.IServiceAsync.Call(System.String,System.Int32)">
-      <summary>
-        summary of Call
-      </summary>
-      <response code="201">Returns the newly created item</response>
-    </member>
-    <member name="M:DataContract.IServiceAsync.CallByCustomExceptionAsync">
-      <summary>
-        summary of Call
-      </summary>
-      <response code="400">CustomException error.</response>
-      <response code="401">CustomException2 error</response>
-    </member>
-    <member name="M:DataContract.IServiceAsync.CallByResponseTextExceptionAsync">
-      <response code="701">return the pain text.</response>
-    </member>
-    <member name="M:DataContract.IServiceAsync.EchoStreamAsync(System.IO.Stream)">
-      <summary>
-        summary of EchoStreamAsync
-      </summary>
-    </member>
-    <member name="M:DataContract.IServiceAsync.GetComplexStreamAsync">
-      <summary>
-        summary of GetComplexStreamAsync
-      </summary>
-    </member>
-    <member
-      name="M:DataContract.IServiceAsync.ComplexCallAsync(DataContract.CustomObj,System.String,System.IO.Stream,System.Action{DataContract.CustomCallbackObj},System.Threading.CancellationToken)">
-      <summary>
-        summary of ComplexCallAsync
-      </summary>
-    </member>
-    <member name="T:DataContract.CustomObj">
-      <summary>
-        a CustomObj
-      </summary>
-    </member>
-    <member name="P:DataContract.CustomObj.Name">
-      <summary>
-        a Name
-      </summary>
-    </member>
-    <member name="P:DataContract.CustomObj.Date">
-      <summary>
-        a Date
-      </summary>
-    </member>
-    <member name="T:DataContract.CustomException">
-      <summary>
-        summary of CustomException
-      </summary>
-    </member>
-  </members>
+    <assembly>
+        <name>DataContract</name>
+    </assembly>
+    <members>
+        <member name="M:DataContract.IServiceAsync.CallAsync(System.String,System.Int32)">
+            <summary>
+            summary of Call
+            </summary>
+            <response code="201">Returns the newly created item</response>
+        </member>
+        <member name="M:DataContract.IServiceAsync.CallByCustomExceptionAsync">
+            <summary>
+            summary of Call
+            </summary>
+        </member>
+        <member name="M:DataContract.IServiceAsync.CallByResponseTextExceptionAsync">
+            <response code="701">return the pain text.</response>
+        </member>
+        <member name="T:DataContract.CustomObj">
+            <summary>
+            a CustomObj
+            </summary>
+        </member>
+        <member name="P:DataContract.CustomObj.Name">
+            <summary>
+            a Name
+            </summary>
+        </member>
+        <member name="P:DataContract.CustomObj.Date">
+            <summary>
+            a Date
+            </summary>
+        </member>
+        <member name="T:DataContract.CustomException">
+            <summary>
+            summary of CustomException
+            </summary>
+        </member>
+    </members>
 </doc>

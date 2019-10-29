@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>C:\G2\NetRpc_swagger\samples\Http\DataContract\DataContract.xml</DocumentationFile>
+    <DocumentationFile>C:\G2\NetRpc\samples\Http\DataContract\DataContract.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

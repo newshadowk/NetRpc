@@ -29,13 +29,14 @@ namespace Client
                     services.AddOptions();
                     services.AddHostedService<MyHost>();
 
+                    services.AddNetRpcRabbitMQClient();
                     services.Configure<RabbitMQClientOptions>("mq1", context.Configuration.GetSection("Mq1"));
                     services.Configure<RabbitMQClientOptions>("mq2", context.Configuration.GetSection("Mq2"));
-                    services.AddNetRpcRabbitMQClient();
+                    services.AddNetRpcClientContract<IService>("mq1");
 
+                    services.AddNetRpcGrpcClient();
                     services.Configure<GrpcClientOptions>("grpc1", i => i.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
                     services.Configure<GrpcClientOptions>("grpc2", i => i.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
-                    services.AddNetRpcGrpcClient();
                 })
                 .Build();
 
@@ -47,7 +48,7 @@ namespace Client
     {
         private readonly IClientProxyFactory _factory;
 
-        public MyHost(IClientProxyFactory factory)
+        public MyHost(IClientProxyFactory factory, IService Iservice)
         {
             _factory = factory;
         }
