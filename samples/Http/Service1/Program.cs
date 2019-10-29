@@ -17,7 +17,8 @@ namespace Service
             var webHost = WebHost.CreateDefaultBuilder(null)
                 .ConfigureServices(services =>
                 {
-                    services.AddCors(op =>
+                    var services1 = services;
+                    services1.AddCors(op =>
                     {
                         op.AddPolicy(origins, set =>
                         {
@@ -28,10 +29,10 @@ namespace Service
                         });
                     });
 
-                    services.AddSignalR();
-                    services.AddNetRpcSwagger();
-                    services.AddNetRpcHttpService();
-                    services.AddNetRpcContractSingleton<IServiceAsync, ServiceAsync>();
+                    services1.AddSignalR();
+                    services1.AddNetRpcSwagger();
+                    services1.AddNetRpcHttpService();
+                    services1.AddNetRpcContractSingleton<IServiceAsync, ServiceAsync>();
                 })
                 .Configure(app =>
                 {
