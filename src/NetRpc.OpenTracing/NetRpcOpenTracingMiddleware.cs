@@ -44,6 +44,12 @@ namespace NetRpc.OpenTracing
                 }
                 catch (Exception e)
                 {
+                    if (context.ContractMethod.IsTraceArgsIgnore)
+                        scope.Span.SetTagMethodObj(context.ContractMethod, context.PureArgs);
+
+                    if (context.ContractMethod.IsTraceReturnIgnore)
+                        scope.Span.SetTag(new StringTag("Result"), context.Result.ToDtoJson());
+
                     var str = Helper.GetException(e);
                     scope.Span.SetTag(new StringTag("Exception"), str);
                     throw;
@@ -86,6 +92,12 @@ namespace NetRpc.OpenTracing
                 }
                 catch (Exception e)
                 {
+                    if (context.ContractMethod.IsTraceArgsIgnore) 
+                        scope.Span.SetTagMethodObj(context.ContractMethod, context.PureArgs);
+
+                    if (context.ContractMethod.IsTraceReturnIgnore) 
+                        scope.Span.SetTag(new StringTag("Result"), context.Result.ToDtoJson());
+
                     var str = Helper.GetException(e);
                     scope.Span.SetTag(new StringTag("Exception"), str);
                     throw;
