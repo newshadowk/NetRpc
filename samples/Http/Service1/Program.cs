@@ -18,7 +18,7 @@ namespace Service
             var webHost = WebHost.CreateDefaultBuilder(null)
                 .ConfigureServices(services =>
                 {
-                    services.Configure<KestrelServerOptions>(i => i.AllowSynchronousIO = true);
+                    //services.Configure<KestrelServerOptions>(i => i.AllowSynchronousIO = true);
                     services.AddCors(op =>
                     {
                         op.AddPolicy(origins, set =>

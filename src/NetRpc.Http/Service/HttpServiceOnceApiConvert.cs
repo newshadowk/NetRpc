@@ -56,13 +56,13 @@ namespace NetRpc.Http
             return Task.CompletedTask;
         }
 
-        public Task<OnceCallParam> GetOnceCallParamAsync()
+        public async Task<OnceCallParam> GetOnceCallParamAsync()
         {
             var actionInfo = GetActionInfo();
             var header = GetHeader();
-            var pureArgs = GetPureArgs(actionInfo);
+            var pureArgs = await GetPureArgsAsync(actionInfo);
             var param = new OnceCallParam(header, actionInfo, null, null, pureArgs);
-            return Task.FromResult(param);
+            return param;
         }
 
         public async Task<bool> SendResultAsync(CustomResult result, Stream stream, string streamName, ActionExecutingContext context)
@@ -156,7 +156,7 @@ namespace NetRpc.Http
             return ret;
         }
 
-        private object[] GetPureArgs(ActionInfo ai)
+        private async Task<object[]> GetPureArgsAsync(ActionInfo ai)
         {
             //dataObjType
             var method = ApiWrapper.GetMethodInfo(ai, _contracts);
@@ -183,7 +183,7 @@ namespace NetRpc.Http
                 {
                     string body;
                     using (var sr = new StreamReader(_context.Request.Body, Encoding.UTF8))
-                        body = sr.ReadToEnd();
+                        body = await sr.ReadToEndAsync();
 
                     var dataObj = Helper.ToObjectForHttp(body, dataObjType);
                     (_connection.ConnectionId, _connection.CallId) = GetConnectionIdCallId(dataObj);
