@@ -3,7 +3,6 @@ using DataContract;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using NetRpc.Http;
 
@@ -18,7 +17,6 @@ namespace Service
             var webHost = WebHost.CreateDefaultBuilder(null)
                 .ConfigureServices(services =>
                 {
-                    //services.Configure<KestrelServerOptions>(i => i.AllowSynchronousIO = true);
                     services.AddCors(op =>
                     {
                         op.AddPolicy(origins, set =>

@@ -9,7 +9,7 @@ namespace NetRpc.Grpc
     internal sealed class MessageCallImpl : MessageCall.MessageCallBase
     {
         private readonly RequestHandler _requestHandler;
-        private volatile int _handlingCount;
+        private int _handlingCount;
 
         public MessageCallImpl(IServiceProvider serviceProvider)
         {

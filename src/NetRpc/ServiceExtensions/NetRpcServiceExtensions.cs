@@ -52,14 +52,15 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddNetRpcContractSingleton(this IServiceCollection services, Type serviceType,
             Func<IServiceProvider, object> implementationFactory)
         {
-            services.Configure<ContractOptions>(i => i.Contracts.Add(new Contract(serviceType, null)));
+            //implementationFactory()
+            services.Configure<ContractOptions>(i => i.Contracts.Add(new Contract(serviceType, implementationFactory)));
             services.TryAddSingleton(serviceType, implementationFactory);
             return services;
         }
 
         public static IServiceCollection AddNetRpcContractSingleton(this IServiceCollection services, Type serviceType, object implementationInstance)
         {
-            services.Configure<ContractOptions>(i => i.Contracts.Add(new Contract(serviceType, null)));
+            services.Configure<ContractOptions>(i => i.Contracts.Add(new Contract(serviceType, implementationInstance.GetType())));
             services.AddSingleton(serviceType, implementationInstance);
             return services;
         }
@@ -131,7 +132,6 @@ namespace Microsoft.Extensions.DependencyInjection
             if (configureOptions != null)
                 services.Configure(configureOptions);
 
-            services.TryAddSingleton<ClientMiddlewareBuilder>();
             services.TryAddSingleton<IClientProxyFactory, ClientProxyFactory>();
             return services;
         }

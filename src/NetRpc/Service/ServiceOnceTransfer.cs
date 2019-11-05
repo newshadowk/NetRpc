@@ -79,7 +79,7 @@ namespace NetRpc
         private async Task<ActionExecutingContext> GetContext()
         {
             var onceCallParam = await _convert.GetOnceCallParamAsync();
-            var (instanceMethodInfo, contractMethod, instance) = ApiWrapper.GetMethodInfo(onceCallParam.Action, _instances);
+            var (instanceMethodInfo, contractMethod, instance) = ApiWrapper.GetMethodInfo(onceCallParam.Action, _instances, _serviceProvider);
 
             Stream stream;
             if (contractMethod.IsMQPost)

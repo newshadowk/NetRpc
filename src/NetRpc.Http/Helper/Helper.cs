@@ -38,7 +38,7 @@ namespace NetRpc.Http
             if (dataObjType == null)
                 return ret.ToArray();
             foreach (var p in dataObjType.GetProperties())
-                ret.Add(ClassHelper.GetPropertyValue(dataObj, p.Name));
+                ret.Add(GetPropertyValue(dataObj, p.Name));
             return ret.ToArray();
         }
 
@@ -71,7 +71,7 @@ namespace NetRpc.Http
                 }
                 else
                 {
-                    ret.Add(ClassHelper.GetDefault(p.PropertyType));
+                    ret.Add(NetRpc.Helper.GetDefaultValue(p.PropertyType));
                 }
             }
 
@@ -111,5 +111,13 @@ namespace NetRpc.Http
                 name = "";
             return Path.Combine(dir, name);
         }
+
+        public static object GetPropertyValue(object classInstance, string propertyName)
+        {
+            return classInstance.GetType().InvokeMember(propertyName, BindingFlags.GetProperty,
+                null, classInstance, new object[] { });
+        }
+
+
     }
 }

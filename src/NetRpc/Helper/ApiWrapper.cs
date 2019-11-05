@@ -71,11 +71,12 @@ namespace NetRpc
         }
 
         /// <exception cref="TypeLoadException"></exception>
-        public static (MethodInfo instanceMethodInfo, ContractMethod contractMethod, Instance instance) GetMethodInfo(ActionInfo action, List<Instance> instances)
+        public static (MethodInfo instanceMethodInfo, ContractMethod contractMethod, Instance instance) GetMethodInfo(ActionInfo action, List<Instance> instances, 
+            IServiceProvider serviceProvider)
         {
             foreach (var i in instances)
             {
-                var found = GetMethodInfo(action, i.Contract);
+                var found = GetMethodInfo(action, i.Contract, serviceProvider);
                 if (found != default)
                     return (found.instanceMethodInfo, found.contractMethod, i);
             }
@@ -83,11 +84,11 @@ namespace NetRpc
             throw new MethodNotFoundException($"{action.FullName} not found in instances");
         }
 
-        public static (MethodInfo instanceMethodInfo, ContractMethod contractMethod) GetMethodInfo(ActionInfo action, List<Contract> contracts)
+        public static (MethodInfo instanceMethodInfo, ContractMethod contractMethod) GetMethodInfo(ActionInfo action, List<Contract> contracts, IServiceProvider serviceProvider)
         {
             foreach (var contract in contracts)
             {
-                var found = GetMethodInfo(action, contract);
+                var found = GetMethodInfo(action, contract, serviceProvider);
                 if (found != default)
                     return found;
             }
@@ -95,12 +96,12 @@ namespace NetRpc
             throw new MethodNotFoundException($"{action.FullName} not found in instanceTypes");
         }
 
-        private static (MethodInfo instanceMethodInfo, ContractMethod contractMethod) GetMethodInfo(ActionInfo action, Contract contract)
+        private static (MethodInfo instanceMethodInfo, ContractMethod contractMethod) GetMethodInfo(ActionInfo action, Contract contract, IServiceProvider serviceProvider)
         {
             var methodObj = contract.ContractInfo.Methods.FirstOrDefault(i => i.MethodInfo.ToFullMethodName() == action.FullName);
             if (methodObj != null)
             {
-                var instanceMethodInfo = (contract.InstanceType ?? contract.ContractInfo.Type).GetMethod(methodObj.MethodInfo.Name);
+                var instanceMethodInfo = contract.GetInstanceMethodInfo(methodObj.MethodInfo.Name, serviceProvider);
                 if (action.GenericArguments.Length > 0)
                 {
                     var ts = action.GenericArguments.ToList().ConvertAll(Type.GetType).ToArray();

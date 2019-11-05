@@ -18,15 +18,18 @@ namespace NetRpc.Http
         private readonly HttpConnection _connection;
         private readonly string _rootPath;
         private readonly bool _ignoreWhenNotMatched;
+        private readonly IServiceProvider _serviceProvider;
         private CancellationTokenSource _cts;
 
-        public HttpServiceOnceApiConvert(List<Contract> contracts, HttpContext context, string rootPath, bool ignoreWhenNotMatched, IHubContext<CallbackHub, ICallback> hub)
+        public HttpServiceOnceApiConvert(List<Contract> contracts, HttpContext context, string rootPath, bool ignoreWhenNotMatched, IHubContext<CallbackHub, ICallback> hub,
+            IServiceProvider serviceProvider)
         {
             _contracts = contracts;
             _context = context;
             _connection = new HttpConnection(context, hub);
             _rootPath = rootPath;
             _ignoreWhenNotMatched = ignoreWhenNotMatched;
+            _serviceProvider = serviceProvider;
             CallbackHub.Canceled += CallbackHubCanceled;
         }
 
@@ -159,7 +162,7 @@ namespace NetRpc.Http
         private async Task<object[]> GetPureArgsAsync(ActionInfo ai)
         {
             //dataObjType
-            var method = ApiWrapper.GetMethodInfo(ai, _contracts);
+            var method = ApiWrapper.GetMethodInfo(ai, _contracts, _serviceProvider);
             var dataObjType = method.contractMethod.MergeArgType.Type;
 
             if (_context.Request.ContentType != null)

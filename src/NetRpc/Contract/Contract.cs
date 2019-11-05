@@ -132,9 +132,9 @@ namespace NetRpc
             TypeName action = null;
             TypeName cancelToken = null;
 
-            var typeName = $"{m.Name}Param";
-            var t = ClassHelper.BuildType(typeName);
-            var cis = new List<ClassHelper.CustomsPropertyInfo>();
+            // ReSharper disable once PossibleNullReferenceException
+            var typeName = $"{m.DeclaringType.Namespace}_{m.DeclaringType.Name}_{m.Name}Param";
+            var cis = new List<CustomsPropertyInfo>();
 
             var addedCallId = false;
             foreach (var p in m.GetParameters())
@@ -173,17 +173,17 @@ namespace NetRpc
                     continue;
                 }
 
-                cis.Add(new ClassHelper.CustomsPropertyInfo(p.ParameterType, p.Name));
+                cis.Add(new CustomsPropertyInfo(p.ParameterType, p.Name));
             }
 
             //connectionId callId
             if (addedCallId)
             {
-                cis.Add(new ClassHelper.CustomsPropertyInfo(typeof(string), CallConst.ConnectionIdName));
-                cis.Add(new ClassHelper.CustomsPropertyInfo(typeof(string), CallConst.CallIdName));
+                cis.Add(new CustomsPropertyInfo(typeof(string), CallConst.ConnectionIdName));
+                cis.Add(new CustomsPropertyInfo(typeof(string), CallConst.CallIdName));
             }
-
-            t = ClassHelper.AddProperty(t, cis);
+            
+            var t = TypeFactory.BuildType(typeName, cis);
             if (cis.Count == 0)
                 return new MergeArgType(null, null, null, null);
 
@@ -353,13 +353,30 @@ namespace NetRpc
 
     public class Contract
     {
+        private readonly Func<IServiceProvider, object> _instanceFactory;
+
         public ContractInfo ContractInfo { get; }
 
-        public Type InstanceType { get; }
+        public Type InstanceType { get; private set; }
+
+        public MethodInfo GetInstanceMethodInfo(string name, IServiceProvider serviceProvider)
+        {
+            if (InstanceType != null)
+                return InstanceType.GetMethod(name);
+
+            InstanceType = _instanceFactory(serviceProvider).GetType();
+            return InstanceType.GetMethod(name);
+        }
 
         public Contract(Type contractType, Type instanceType)
         {
             InstanceType = instanceType;
+            ContractInfo = new ContractInfo(contractType);
+        }
+
+        public Contract(Type contractType, Func<IServiceProvider, object> instanceFactory)
+        {
+            _instanceFactory = instanceFactory;
             ContractInfo = new ContractInfo(contractType);
         }
     }
