@@ -12,5 +12,9 @@ namespace NetRpc
             params object[] pureArgs);
 
         Task StartAsync();
+
+        event EventHandler SendStreamStarted;
+
+        event EventHandler SendStreamFinished;
     }
 }

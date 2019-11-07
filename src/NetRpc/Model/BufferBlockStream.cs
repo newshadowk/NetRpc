@@ -82,9 +82,11 @@ namespace NetRpc
     {
         private long? _length;
         private readonly BufferBlockReader _reader;
-        public event EventHandler End;
-
+        public event EventHandler Finished;
+        public event EventHandler Started;
         public event EventHandler<long> Progress;
+        private volatile bool _isStarted;
+        private volatile bool _isFinished;
 
         public BufferBlockStream(BufferBlock<(byte[], BufferType)> block, long? length)
         {
@@ -98,9 +100,15 @@ namespace NetRpc
 
         public override int Read(byte[] buffer, int offset, int count)
         {
+            InvokeStart();
+
             var readCount = _reader.Read(buffer, count);
             Position += readCount;
             OnProgress(Position);
+
+            if (readCount < count) 
+                InvokeFinish();
+
             return readCount;
         }
 
@@ -137,21 +145,45 @@ namespace NetRpc
 
         public override long Position { get; set; }
 
-        private void OnEnd()
-        {
-            End?.Invoke(this, EventArgs.Empty);
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-                OnEnd();
+                InvokeFinish();
+
             base.Dispose(disposing);
+        }
+
+        private void InvokeFinish()
+        {
+            if (!_isFinished)
+            {
+                _isFinished = true;
+                OnFinished();
+            }
+        }
+
+        private void InvokeStart()
+        {
+            if (!_isStarted)
+            {
+                _isStarted = true;
+                OnStarted();
+            }
+        }
+
+        private void OnFinished()
+        {
+            Finished?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnProgress(long e)
         {
             Progress?.Invoke(this, e);
+        }
+
+        private void OnStarted()
+        {
+            Started?.Invoke(this, EventArgs.Empty);
         }
     }
 }

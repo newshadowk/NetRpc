@@ -60,11 +60,11 @@ namespace NetRpc
 
             void OnEnd(object sender, EventArgs e)
             {
-                ((BufferBlockStream) sender).End -= OnEnd;
+                ((BufferBlockStream) sender).Finished -= OnEnd;
                 Dispose();
             }
 
-            _stream.End += OnEnd;
+            _stream.Finished += OnEnd;
             return _stream;
         }
 

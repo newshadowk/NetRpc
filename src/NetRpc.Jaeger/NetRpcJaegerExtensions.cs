@@ -6,6 +6,7 @@ using Jaeger.Senders;
 using Microsoft.Extensions.Options;
 using NetRpc;
 using NetRpc.Jaeger;
+using NetRpc.OpenTracing;
 using OpenTracing;
 using OpenTracing.Util;
 
@@ -13,9 +14,14 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class NetRpcJaegerExtensions
     {
-        public static IServiceCollection AddNetRpcJaeger(this IServiceCollection services, Action<JaegerOptions> configureOptions)
+        public static IServiceCollection AddNetRpcJaeger(this IServiceCollection services, 
+            Action<JaegerOptions> configureJaegerOptions = null, Action<OpenTracingOptions> configureOpenTracingOptions = null)
         {
-            services.Configure(configureOptions);
+            if (configureJaegerOptions != null)
+                services.Configure(configureJaegerOptions);
+            if (configureOpenTracingOptions != null)
+                services.Configure(configureOpenTracingOptions);
+
             services.Configure<MiddlewareOptions>(i => i.UseMiddleware<NetRpcServiceJaegerMiddleware>());
             services.Configure<ClientMiddlewareOptions>(i => i.UseMiddleware<NetRpcClientJaegerMiddleware>());
             services.AddNetRpcOpenTracing();

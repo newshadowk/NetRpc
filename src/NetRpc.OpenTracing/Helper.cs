@@ -6,6 +6,7 @@ using System.Text;
 using Newtonsoft.Json;
 using OpenTracing;
 using OpenTracing.Tag;
+using OpenTracing.Util;
 
 namespace NetRpc.OpenTracing
 {
@@ -13,27 +14,46 @@ namespace NetRpc.OpenTracing
     {
         private static readonly JsonSerializerSettings Js = new JsonSerializerSettings { ContractResolver = DtoContractResolver.Instance };
 
-        public static ISpan SetTagMethodObj(this ISpan span, ContractMethod contractMethod, object[] args)
+        public static ISpan SetTagMethodObj(this ISpan span, IActionExecutingContext context, int maxLength, bool isForce = false)
         {
-            var mergeArgTypeObj = contractMethod.CreateMergeArgTypeObj(null, null, args);
-            span.SetTag(new StringTag("Name"), contractMethod.MethodInfo.ToFullMethodName());
-            span.SetTag(new StringTag("Args"), mergeArgTypeObj.ToDtoJson());
+            if (!isForce && context.ContractMethod.IsTraceArgsIgnore)
+                return span;
+
+            span.SetTag(new StringTag("Name"), context.ContractMethod.MethodInfo.ToFullMethodName());
+
+            if (context.ContractMethod.MethodInfo.GetParameters().Length == 0)
+                return span;
+
+            var mergeArgTypeObj = context.ContractMethod.CreateMergeArgTypeObj(null, null, context.PureArgs);
+            span.SetTag(new StringTag("Args"), mergeArgTypeObj.ToDisplayJson(maxLength));
             return span;
         }
 
-        public static string ToDtoJson<T>(this T obj)
+        public static ISpan SetTagReturn(this ISpan span, IActionExecutingContext context, int maxLength, bool isForce = false)
+        {
+            if (!isForce && context.ContractMethod.IsTraceReturnIgnore)
+                return span;
+
+            if (context.ContractMethod.MethodInfo.ReturnType != typeof(void))
+               span.SetTag(new StringTag("Result"), context.Result.ToDisplayJson(maxLength));
+
+            return span;
+        }
+
+        public static string ToDisplayJson<T>(this T obj, int maxLength)
         {
             if (obj == null)
                 return null;
-            return JsonConvert.SerializeObject(obj, Js);
-        }
 
-        public static object ToDtoObject(this string str, Type t)
-        {
-            if (string.IsNullOrEmpty(str))
-                return default;
+            if (obj is Stream)
+            {
+                return "Stream";
+            }
 
-            return JsonConvert.DeserializeObject(str, t, Js);
+            string s = JsonConvert.SerializeObject(obj, Js);
+            if (maxLength > 0 && s.Length > maxLength)
+                return s.Substring(0, maxLength) + "...";
+            return s;
         }
 
         public static bool HasStream(this Type t)

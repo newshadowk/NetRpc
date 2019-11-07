@@ -35,12 +35,12 @@ namespace NetRpc
     }
 
     [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, Inherited = false)]
-    public sealed class TraceArgsIgnoreAttribute : Attribute
+    public sealed class TracerArgsIgnoreAttribute : Attribute
     {
     }
 
     [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, Inherited = false)]
-    public sealed class TraceReturnIgnoreAttribute : Attribute
+    public sealed class TracerReturnIgnoreAttribute : Attribute
     {
     }
 }

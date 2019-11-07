@@ -40,7 +40,7 @@ namespace NetRpc
 
         public Dictionary<string, object> AdditionHeader { get; set; } = new Dictionary<string, object>();
 
-        public async Task<object> CallAsync(MethodInfo methodInfo, Action<object> callback, CancellationToken token, Stream stream, params object[] otherArgs)
+        public async Task<object> CallAsync(MethodInfo methodInfo, Action<object> callback, CancellationToken token, Stream stream, params object[] pureArgs)
         {
             var call = _factory.Create(_timeoutInterval);
             await call.StartAsync();
@@ -48,7 +48,7 @@ namespace NetRpc
             var contractMethod = _contract.Methods.Find(i => i.MethodInfo == methodInfo);
             var instanceMethod = new InstanceMethod(methodInfo);
             var methodContext = new MethodContext(contractMethod, instanceMethod);
-            var clientContext = new ClientActionExecutingContext(_serviceProvider, _optionsName, call, instanceMethod, callback, token, _contract, contractMethod, stream, otherArgs);
+            var clientContext = new ClientActionExecutingContext(_serviceProvider, _optionsName, call, instanceMethod, callback, token, _contract, contractMethod, stream, pureArgs);
 
             //header
             var header = AdditionHeader;
@@ -65,7 +65,7 @@ namespace NetRpc
             }
 
             //onceTransfer will dispose after stream translate finished in OnceCall.
-            return await call.CallAsync(header, methodContext, callback, token, stream, otherArgs);
+            return await call.CallAsync(header, methodContext, callback, token, stream, pureArgs);
         }
     }
 }

@@ -6,11 +6,11 @@ using System.Threading;
 
 namespace NetRpc
 {
-    public sealed class ClientActionExecutingContext
+    public sealed class ClientActionExecutingContext : IActionExecutingContext
     {
         public IServiceProvider ServiceProvider { get; }
 
-        internal IOnceCall OnceCall { get; }
+        public IOnceCall OnceCall { get; }
 
         /// <summary>
         /// Result of invoked action.
@@ -32,7 +32,7 @@ namespace NetRpc
 
         public Action<object> Callback { get; }
 
-        public CancellationToken Token { get; }
+        public CancellationToken CancellationToken { get; }
 
         public Stream Stream { get; }
 
@@ -60,7 +60,7 @@ namespace NetRpc
             Callback = callback;
             ContractInfo = contractInfo;
             ContractMethod = contractMethod;
-            Token = token;
+            CancellationToken = token;
             Stream = stream;
             PureArgs = pureArgs;
             OptionsName = optionsName;

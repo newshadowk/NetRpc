@@ -8,9 +8,13 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    public class ActionExecutingContext
+    public class ActionExecutingContext : IActionExecutingContext
     {
         private object _result;
+
+        public event EventHandler ResultStreamStarted;
+
+        public event EventHandler ResultStreamFinished;
 
         public ChannelType ChannelType { get; }
 
@@ -21,6 +25,8 @@ namespace NetRpc
         public InstanceMethod InstanceMethod { get; }
 
         public ContractMethod ContractMethod { get; }
+
+        public ContractInfo ContractInfo => Contract.ContractInfo;
 
         public Instance Instance { get; }
 
@@ -171,6 +177,16 @@ namespace NetRpc
             foreach (var p in header)
                 s += $"{p.Key}:{p.Value}, ";
             return s;
+        }
+
+        public virtual void OnResultStreamFinished()
+        {
+            ResultStreamFinished?.Invoke(this, EventArgs.Empty);
+        }
+
+        public virtual void OnResultStreamStarted()
+        {
+            ResultStreamStarted?.Invoke(this, EventArgs.Empty);
         }
     }
 }

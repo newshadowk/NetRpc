@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -73,7 +71,9 @@ namespace NetRpc
                 return;
 
             //send stream
-            await SendStreamAsync(hasStream, retStream, context.CancellationToken);
+            await SendStreamAsync(context, hasStream, retStream);
+
+            context.OnResultStreamFinished();
         }
 
         private async Task<ActionExecutingContext> GetContext()
@@ -110,7 +110,7 @@ namespace NetRpc
                 scp.Token);
         }
 
-        private async Task SendStreamAsync(bool hasStream, Stream retStream, CancellationToken token)
+        private async Task SendStreamAsync(ActionExecutingContext context, bool hasStream, Stream retStream)
         {
             if (hasStream)
             {
@@ -119,7 +119,7 @@ namespace NetRpc
                     using (retStream)
                     {
                         await Helper.SendStreamAsync(i => _convert.SendBufferAsync(i), () =>
-                            _convert.SendBufferEndAsync(), retStream, token);
+                            _convert.SendBufferEndAsync(), retStream, context.CancellationToken, context.OnResultStreamStarted);
                     }
                 }
                 catch (TaskCanceledException)

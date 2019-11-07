@@ -231,9 +231,9 @@ namespace NetRpc.Http
 
             foreach (var grouping in allFaults.GroupBy(i => i.StatusCode))
             {
-                var des = "";
+                var des = "[ErrorCode] : <b>[FaultName]</b> [Description]<br>";
                 foreach (var item in grouping)
-                    des += $"<b>{item.DetailType.Name}</b> ErrorCode:{item.ErrorCode}, {item.Description}<br/>";
+                    des += $"{item.ErrorCode} : <b>{item.DetailType.Name}</b> {item.Description}<br/>";
                 des = des.TrimEndString("<br/>");
                 var resFault = new OpenApiResponse();
                 resFault.Description = des;

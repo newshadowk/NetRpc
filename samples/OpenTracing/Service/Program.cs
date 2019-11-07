@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.IO;
 using System.Threading.Tasks;
 using DataContract;
 using Grpc.Core;
@@ -12,8 +12,10 @@ using NetRpc;
 using NetRpc.Grpc;
 using NetRpc.Http;
 using NetRpc.Jaeger;
+using NetRpc.OpenTracing;
 using OpenTracing.Tag;
 using OpenTracing.Util;
+using Helper = TestHelper.Helper;
 
 namespace Service
 {
@@ -42,7 +44,7 @@ namespace Service
                     services.AddNetRpcSwagger();
                     services.AddNetRpcHttpService();
 
-                    services.AddNetRpcRabbitMQService(i => i.CopyFrom(TestHelper.Helper.GetMQOptions()));
+                    services.AddNetRpcRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
                     services.AddNetRpcContractScoped<IService, Service>();
 
                     services.Configure<GrpcClientOptions>("grpc1", i => i.Channel = new Channel("localhost", 50002, ChannelCredentials.Insecure));
@@ -57,7 +59,7 @@ namespace Service
                         i.Host = "jaeger.yx.com";
                         i.Port = 6831;
                         i.ServiceName = "Service";
-                    });
+                    }, i => i.LogActionInfoMaxLength = 10);
                 })
                 .Configure(app =>
                 {
@@ -76,7 +78,7 @@ namespace Service
     {
         public string P1 { get; set; }
     }
-    
+
     internal class Service : IService
     {
         private readonly IClientProxyFactory _factory;
@@ -107,12 +109,26 @@ namespace Service
                 }
             };
 
-            await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1Async(obj, 101, true, i =>
+            using (var scope = TracerScope.BuildChild("test"))
             {
-                Console.WriteLine($"tid:{GlobalTracer.Instance?.ActiveSpan.Context.TraceId}, callback:{i}");
-            }, default);
+                scope.Span.SetTag("p1", "123");
+                await Task.Delay(500);
+            }
+
+            await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1(obj, 101, true,
+                i => { Console.WriteLine($"tid:{GlobalTracer.Instance?.ActiveSpan.Context.TraceId}, callback:{i}"); }, default);
             await _factory.CreateProxy<IService_2>("grpc2").Proxy.Call_2(false);
             return new Result();
+        }
+
+        public async Task<Stream> Echo(Stream stream)
+        {
+            //MemoryStream ms = new MemoryStream();
+            //using (stream)
+            //    await stream.CopyToAsync(ms);
+            //ms.Seek(0, SeekOrigin.Begin);
+            //return ms;
+            return await _factory.CreateProxy<IService_1>("grpc1").Proxy.Echo_1(stream);
         }
     }
 }

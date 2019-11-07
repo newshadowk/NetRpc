@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using Jaeger;
+using OpenTracing;
+using OpenTracing.Util;
 
 namespace NetRpc.Jaeger
 {

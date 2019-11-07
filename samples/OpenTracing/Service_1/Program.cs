@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
@@ -74,7 +75,7 @@ namespace Service_1
             _clientProxy = clientProxy;
         }
 
-        public async Task<Result> Call_1Async(SendObj s, int i1, bool b1, Action<int> cb, CancellationToken token)
+        public async Task<Result> Call_1(SendObj s, int i1, bool b1, Action<int> cb, CancellationToken token)
         {
             for (var i = 0; i < 10; i++)
             {
@@ -85,6 +86,15 @@ namespace Service_1
             Console.WriteLine($"Receive: {s}");
             await _clientProxy.Proxy.Call_1_1(201);
             return new Result();
+        }
+
+        public async Task<Stream> Echo_1(Stream stream)
+        {
+            //MemoryStream ms = new MemoryStream();
+            //using (stream)
+            //    await stream.CopyToAsync(ms);
+            //ms.Seek(0, SeekOrigin.Begin);
+            return stream;
         }
     }
 }

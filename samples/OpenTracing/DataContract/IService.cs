@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NetRpc;
@@ -37,15 +38,20 @@ namespace DataContract
         public string P2 { get; set; } = "p2 value;";
     }
 
+
     public interface IService
     {
         Task<Result> Call(string s);
+
+        Task<Stream> Echo(Stream stream);
     }
 
     [HttpRoute("ReService", true)]
     public interface IService_1
     {
-        Task<Result> Call_1Async(SendObj s, int i1, bool b1, Action<int> cb, CancellationToken token);
+        Task<Result> Call_1(SendObj s, int i1, bool b1, Action<int> cb, CancellationToken token);
+
+        Task<Stream> Echo_1(Stream stream);
     }
 
     public interface IService_1_1

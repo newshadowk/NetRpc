@@ -35,11 +35,13 @@ namespace NetRpc
             return sb.ToString().TrimEndString(split);
         }
 
-        public static async Task SendStreamAsync(Func<byte[], Task> publishBuffer, Func<Task> publishBufferEnd, Stream stream, CancellationToken token)
+        public static async Task SendStreamAsync(Func<byte[], Task> publishBuffer, Func<Task> publishBufferEnd, Stream stream, CancellationToken token,
+            Action started = null)
         {
             var buffer = new byte[StreamBufferSize];
 
             var readCount = await stream.ReadAsync(buffer, 0, StreamBufferSize, token);
+            started?.Invoke();
             while (readCount > 0)
             {
                 if (readCount < StreamBufferSize)
