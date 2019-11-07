@@ -25,8 +25,8 @@ namespace NetRpc
             await _convert.StartAsync();
         }
 
-        public event EventHandler SendStreamStarted;
-        public event EventHandler SendStreamFinished;
+        public event EventHandler SendRequestStreamStarted;
+        public event EventHandler SendRequestStreamFinished;
 
         public Task<object> CallAsync(Dictionary<string, object> header, MethodContext methodContext, Action<object> callback, CancellationToken token, Stream stream,
             params object[] pureArgs)
@@ -90,8 +90,8 @@ namespace NetRpc
                     //Continue send stream
                     if (stream != null)
                     {
-                        await Helper.SendStreamAsync(_convert.SendBufferAsync, _convert.SendBufferEndAsync, stream, token, OnSendStreamStarted);
-                        OnSendStreamFinished();
+                        await Helper.SendStreamAsync(_convert.SendBufferAsync, _convert.SendBufferEndAsync, stream, token, OnSendRequestStreamStarted);
+                        OnSendRequestStreamFinished();
                     }
                 }
                 catch (Exception e)
@@ -141,14 +141,14 @@ namespace NetRpc
             tcs.TrySetResult(result);
         }
 
-        private void OnSendStreamStarted()
+        private void OnSendRequestStreamStarted()
         {
-            SendStreamStarted?.Invoke(this, EventArgs.Empty);
+            SendRequestStreamStarted?.Invoke(this, EventArgs.Empty);
         }
 
-        private void OnSendStreamFinished()
+        private void OnSendRequestStreamFinished()
         {
-            SendStreamFinished?.Invoke(this, EventArgs.Empty);
+            SendRequestStreamFinished?.Invoke(this, EventArgs.Empty);
         }
     }
 }

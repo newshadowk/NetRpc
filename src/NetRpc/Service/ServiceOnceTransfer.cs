@@ -73,7 +73,7 @@ namespace NetRpc
             //send stream
             await SendStreamAsync(context, hasStream, retStream);
 
-            context.OnResultStreamFinished();
+            context.OnSendResultStreamFinished();
         }
 
         private async Task<ActionExecutingContext> GetContext()
@@ -119,7 +119,7 @@ namespace NetRpc
                     using (retStream)
                     {
                         await Helper.SendStreamAsync(i => _convert.SendBufferAsync(i), () =>
-                            _convert.SendBufferEndAsync(), retStream, context.CancellationToken, context.OnResultStreamStarted);
+                            _convert.SendBufferEndAsync(), retStream, context.CancellationToken, context.OnSendResultStreamStarted);
                     }
                 }
                 catch (TaskCanceledException)

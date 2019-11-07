@@ -38,8 +38,8 @@ namespace NetRpc.OpenTracing
         {
             var spanBuilder = GlobalTracer.Instance.BuildSpan($"{ConstValue.ServiceStream} {ConstValue.SendStr}").AsChildOf(GlobalTracer.Instance.ActiveSpan);
             ISpan span = null;
-            context.ResultStreamStarted += (s, e) => span = spanBuilder.Start();
-            context.ResultStreamFinished += (s, e) => span?.Finish();
+            context.SendResultStreamStarted += (s, e) => span = spanBuilder.Start();
+            context.SendResultStreamFinished += (s, e) => span?.Finish();
         }
     }
 }

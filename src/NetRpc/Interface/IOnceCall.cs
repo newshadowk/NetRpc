@@ -13,8 +13,8 @@ namespace NetRpc
 
         Task StartAsync();
 
-        event EventHandler SendStreamStarted;
+        event EventHandler SendRequestStreamStarted;
 
-        event EventHandler SendStreamFinished;
+        event EventHandler SendRequestStreamFinished;
     }
 }

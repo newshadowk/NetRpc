@@ -24,8 +24,8 @@ namespace NetRpc.OpenTracing
         {
             var spanBuilder = GlobalTracer.Instance.BuildSpan($"{ConstValue.ClientStream} {ConstValue.SendStr}").AsChildOf(GlobalTracer.Instance.ActiveSpan);
             ISpan span = null;
-            context.OnceCall.SendStreamStarted += (s, e) => span = spanBuilder.Start();
-            context.OnceCall.SendStreamFinished += (s, e) => span?.Finish();
+            context.OnceCall.SendRequestStreamStarted += (s, e) => span = spanBuilder.Start();
+            context.OnceCall.SendRequestStreamFinished += (s, e) => span?.Finish();
         }
 
         private static void SetTracingAfter(ClientActionExecutingContext context)

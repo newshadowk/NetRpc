@@ -12,9 +12,9 @@ namespace NetRpc
     {
         private object _result;
 
-        public event EventHandler ResultStreamStarted;
+        public event EventHandler SendResultStreamStarted;
 
-        public event EventHandler ResultStreamFinished;
+        public event EventHandler SendResultStreamFinished;
 
         public ChannelType ChannelType { get; }
 
@@ -179,14 +179,14 @@ namespace NetRpc
             return s;
         }
 
-        public virtual void OnResultStreamFinished()
+        public virtual void OnSendResultStreamFinished()
         {
-            ResultStreamFinished?.Invoke(this, EventArgs.Empty);
+            SendResultStreamFinished?.Invoke(this, EventArgs.Empty);
         }
 
-        public virtual void OnResultStreamStarted()
+        public virtual void OnSendResultStreamStarted()
         {
-            ResultStreamStarted?.Invoke(this, EventArgs.Empty);
+            SendResultStreamStarted?.Invoke(this, EventArgs.Empty);
         }
     }
 }
