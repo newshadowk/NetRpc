@@ -62,7 +62,7 @@ namespace Service
                     }, i =>
                     {
                         i.LogActionInfoMaxLength = 10;
-                        i.IsLogDetails = true;
+                        //i.IsLogDetails = false;
                     });
                 })
                 .Configure(app =>

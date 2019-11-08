@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using OpenTracing;
 using OpenTracing.Propagation;
 using OpenTracing.Tag;
+using OpenTracing.Util;
 
 namespace NetRpc.OpenTracing
 {

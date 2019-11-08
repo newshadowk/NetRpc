@@ -21,28 +21,27 @@ namespace NetRpc.OpenTracing
         public async Task InvokeAsync(ClientActionExecutingContext context, ITracer tracer, IOptions<OpenTracingOptions> options)
         {
             var opt = options.Value;
-
-            var span = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.SendStr}").Start();
-
-            //header
-            bool isLogDetails = Helper.GetIsLogDetails(opt);
-            var injectDic = new Dictionary<string, string>();
-            if (isLogDetails)
-                tracer.Inject(span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(injectDic));
+            if (Helper.GetIsLogDetails(opt))
+                await InvokeAsyncByLogDetailsAsync(context, tracer, opt);
             else
-                tracer.Inject(GlobalTracer.Instance.ScopeManager.Active.Span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(injectDic));
+                await InvokeAsyncByNotLogDetailsAsync(context, tracer, opt);
+        }
+
+        private async Task InvokeAsyncByNotLogDetailsAsync(ClientActionExecutingContext context, ITracer tracer, OpenTracingOptions options)
+        {
+            //header
+            var injectDic = new Dictionary<string, string>();
+
+            tracer.Inject(GlobalTracer.Instance.ScopeManager.Active.Span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(injectDic));
             foreach (var dic in injectDic)
                 context.Header.Add(dic.Key, dic.Value);
+
+            var span = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.SendStr}").Start();
+            SetIsLogDetails(span, options);
 
             try
             {
                 await _next(context);
-                if (isLogDetails)
-                {
-                    span.SetTagReturn(context, opt.LogActionInfoMaxLength);
-                    span.SetTagMethodObj(context, opt.LogActionInfoMaxLength);
-                    span.Finish();
-                }
             }
             catch (Exception e)
             {
@@ -52,6 +51,36 @@ namespace NetRpc.OpenTracing
                 span.Finish();
                 throw;
             }
+        }
+
+        private async Task InvokeAsyncByLogDetailsAsync(ClientActionExecutingContext context, ITracer tracer, OpenTracingOptions options)
+        {
+            var injectDic = new Dictionary<string, string>();
+            using var scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.SendStr}").StartActive(true);
+            SetIsLogDetails(scope.Span, options);
+            tracer.Inject(scope.Span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(injectDic));
+            foreach (var dic in injectDic)
+                context.Header.Add(dic.Key, dic.Value);
+
+            try
+            {
+                await _next(context);
+                scope.Span.SetTagReturn(context, options.LogActionInfoMaxLength);
+                scope.Span.SetTagMethodObj(context, options.LogActionInfoMaxLength);
+            }
+            catch (Exception e)
+            {
+                scope.Span.SetTagMethodObj(context, 0, true);
+                scope.Span.SetTagReturn(context, 0, true);
+                scope.Span.SetTag(new StringTag("Exception"), Helper.GetException(e));
+                throw;
+            }
+        }
+
+        private static void SetIsLogDetails(ISpan span, OpenTracingOptions options)
+        {
+            if (span.GetBaggageItem(ConstValue.IsLogDetails) == null) 
+                span.SetBaggageItem(ConstValue.IsLogDetails, options.IsLogDetails.ToString());
         }
     }
 }

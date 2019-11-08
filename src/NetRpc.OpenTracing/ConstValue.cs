@@ -10,6 +10,6 @@
 
         public const string ServiceStream = "ServiceStream";
 
-        public const string IsLogDetails = "IsLogDetails";
+        public const string IsLogDetails = "islogdetails";
     }
 }
