@@ -9,5 +9,7 @@
         public const string ClientStream = "ClientStream";
 
         public const string ServiceStream = "ServiceStream";
+
+        public const string IsLogDetails = "IsLogDetails";
     }
 }

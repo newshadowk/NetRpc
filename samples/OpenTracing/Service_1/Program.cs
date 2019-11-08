@@ -77,6 +77,7 @@ namespace Service_1
 
         public async Task<Result> Call_1(SendObj s, int i1, bool b1, Action<int> cb, CancellationToken token)
         {
+            throw new Exception();
             for (var i = 0; i < 10; i++)
             {
                 cb.Invoke(i);

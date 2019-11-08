@@ -88,6 +88,23 @@ namespace NetRpc.OpenTracing
             return msgContent.ToString();
         }
 
+        public static void CopyBaggageItemsTo(this ISpanContext spanContext, ISpan span)
+        {
+            foreach (var pair in spanContext.GetBaggageItems()) 
+                span.SetBaggageItem(pair.Key, pair.Value);
+        }
+
+        public static bool GetIsLogDetails(OpenTracingOptions options)
+        {
+            if (GlobalTracer.Instance.ActiveSpan == null)
+                return true;
+
+            var isLogDetailsStr = GlobalTracer.Instance.ActiveSpan.GetBaggageItem(ConstValue.IsLogDetails);
+            if (isLogDetailsStr == null)
+                return options.IsLogDetails;
+            return bool.Parse(isLogDetailsStr);
+        }
+
         private static string GetMsgContent(Exception ee)
         {
             string ret = ee.Message;

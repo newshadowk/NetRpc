@@ -20,23 +20,17 @@ namespace NetRpc.OpenTracing
         {
             using var scope = GetScope(context, tracer);
 
-            scope.Span.SetTagMethodObj(context, options.Value.LogActionInfoMaxLength);
-
             try
             {
                 await _next(context);
+                scope.Span.SetTagMethodObj(context, options.Value.LogActionInfoMaxLength);
                 scope.Span.SetTagReturn(context, options.Value.LogActionInfoMaxLength);
             }
             catch (Exception e)
             {
-                if (context.ContractMethod.IsTraceArgsIgnore)
-                    scope.Span.SetTagMethodObj(context, options.Value.LogActionInfoMaxLength, true);
-
-                if (context.ContractMethod.IsTraceReturnIgnore)
-                    scope.Span.SetTagReturn(context, options.Value.LogActionInfoMaxLength, true);
-
-                var str = Helper.GetException(e);
-                scope.Span.SetTag(new StringTag("Exception"), str);
+                scope.Span.SetTagMethodObj(context, options.Value.LogActionInfoMaxLength, true);
+                scope.Span.SetTagReturn(context, options.Value.LogActionInfoMaxLength, true);
+                scope.Span.SetTag(new StringTag("Exception"), Helper.GetException(e));
                 throw;
             }
         }
@@ -53,12 +47,13 @@ namespace NetRpc.OpenTracing
             //get scope
             IScope scope;
             if (spanContext == null)
-                scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.ReceiveStr}").StartActive(true);
+                scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.ReceiveStr}")
+                    .StartActive(true);
             else
             {
                 scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.ReceiveStr}")
-                    .AsChildOf(spanContext)
-                    .StartActive(true);
+                    .AsChildOf(spanContext).StartActive(true);
+                spanContext.CopyBaggageItemsTo(scope.Span);
             }
 
             return scope;

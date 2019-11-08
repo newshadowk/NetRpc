@@ -13,7 +13,6 @@ namespace Client
             //var p = NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure));
             //await p.Proxy.Call("msg");
 
-            //using (var s = File.OpenRead(@"d:\7\1.txt"))
             using (var s = File.OpenRead(@"d:\7\3.rar"))
             {
                 var stream = await p.Proxy.Echo(s);

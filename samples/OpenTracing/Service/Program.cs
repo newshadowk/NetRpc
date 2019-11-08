@@ -59,7 +59,11 @@ namespace Service
                         i.Host = "jaeger.yx.com";
                         i.Port = 6831;
                         i.ServiceName = "Service";
-                    }, i => i.LogActionInfoMaxLength = 10);
+                    }, i =>
+                    {
+                        i.LogActionInfoMaxLength = 10;
+                        i.IsLogDetails = true;
+                    });
                 })
                 .Configure(app =>
                 {

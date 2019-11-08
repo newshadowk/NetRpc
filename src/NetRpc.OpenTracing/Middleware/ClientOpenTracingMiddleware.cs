@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using OpenTracing;
 using OpenTracing.Propagation;
 using OpenTracing.Tag;
+using OpenTracing.Util;
 
 namespace NetRpc.OpenTracing
 {
@@ -19,34 +20,36 @@ namespace NetRpc.OpenTracing
 
         public async Task InvokeAsync(ClientActionExecutingContext context, ITracer tracer, IOptions<OpenTracingOptions> options)
         {
-            using var scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.SendStr}").StartActive(true);
+            var opt = options.Value;
 
+            var span = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.SendStr}").Start();
+
+            //header
+            bool isLogDetails = Helper.GetIsLogDetails(opt);
             var injectDic = new Dictionary<string, string>();
-            tracer.Inject(scope.Span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(injectDic));
-
-            scope.Span.SetTagMethodObj(context, options.Value.LogActionInfoMaxLength);
-
-            if (context.Header == null)
-                context.Header = new Dictionary<string, object>();
-
+            if (isLogDetails)
+                tracer.Inject(span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(injectDic));
+            else
+                tracer.Inject(GlobalTracer.Instance.ScopeManager.Active.Span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(injectDic));
             foreach (var dic in injectDic)
                 context.Header.Add(dic.Key, dic.Value);
 
             try
             {
                 await _next(context);
-                scope.Span.SetTagReturn(context, options.Value.LogActionInfoMaxLength);
+                if (isLogDetails)
+                {
+                    span.SetTagReturn(context, opt.LogActionInfoMaxLength);
+                    span.SetTagMethodObj(context, opt.LogActionInfoMaxLength);
+                    span.Finish();
+                }
             }
             catch (Exception e)
             {
-                if (context.ContractMethod.IsTraceArgsIgnore)
-                    scope.Span.SetTagMethodObj(context, options.Value.LogActionInfoMaxLength, true);
-
-                if (context.ContractMethod.IsTraceReturnIgnore)
-                    scope.Span.SetTagReturn(context, options.Value.LogActionInfoMaxLength, true);
-
-                var str = Helper.GetException(e);
-                scope.Span.SetTag(new StringTag("Exception"), str);
+                span.SetTagMethodObj(context, 0, true);
+                span.SetTagReturn(context, 0, true);
+                span.SetTag(new StringTag("Exception"), Helper.GetException(e));
+                span.Finish();
                 throw;
             }
         }
