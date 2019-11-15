@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Extensions;
 using Microsoft.OpenApi.Models;
 using NetRpc.Http.Client;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -25,13 +27,43 @@ namespace NetRpc.Http
             _options = optionsAccessor.Value;
             _doc = new OpenApiDocument();
         }
+        OpenApiSecurityScheme ApiKeySecurityScheme;
 
         private void Process(string apiRootPath, List<Contract> contracts)
         {
             //tag
             contracts.ForEach(i => _doc.Tags.Add(new OpenApiTag {Name = i.ContractInfo.Route}));
 
+            ApiKeySecurityScheme = new OpenApiSecurityScheme
+            {
+                Description = "description1",
+                Name = "sid",
+                Type = SecuritySchemeType.ApiKey,
+                In = ParameterLocation.Header,
+                UnresolvedReference = false
+            };
+
             //path
+            ProcessPath(apiRootPath, contracts);
+
+            //Components
+            _doc.Components = new OpenApiComponents
+            {
+                Schemas = _schemaRepository.Schemas
+            };
+
+            //var docSecurityRequirements = new List<OpenApiSecurityRequirement>();
+            //OpenApiSecurityRequirement r = new OpenApiSecurityRequirement() { };
+
+
+            //r[ApiKeySecurityScheme] = new List<string>();
+            //docSecurityRequirements.Add(r);
+            //_doc.SecurityRequirements = docSecurityRequirements;
+            _doc.Components.SecuritySchemes["myToken"] = ApiKeySecurityScheme;
+        }
+
+        private void ProcessPath(string apiRootPath, List<Contract> contracts)
+        {
             _doc.Paths = new OpenApiPaths();
             foreach (var contract in contracts)
             {
@@ -70,16 +102,27 @@ namespace NetRpc.Http
 
                     //Path
                     var openApiPathItem = new OpenApiPathItem();
+                    var r = new OpenApiSecurityRequirement
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference()
+                                {
+                                    Id = "myToken",
+                                    Type = ReferenceType.SecurityScheme
+                                },
+                                UnresolvedReference = true
+                            },
+                            new List<string>()
+                        }
+                    };
+                    operation.Security.Add(r);
                     openApiPathItem.AddOperation(OperationType.Post, operation);
                     var key = $"{apiRootPath}/{contractMethod.HttpRoutInfo}";
                     _doc.Paths.Add(key, openApiPathItem);
                 }
             }
-
-            _doc.Components = new OpenApiComponents
-            {
-                Schemas = _schemaRepository.Schemas
-            };
         }
 
         private static List<OpenApiTag> GenerateTags(string tagName)
@@ -149,6 +192,8 @@ namespace NetRpc.Http
 
         private static string AppendSummaryByCallbackAndCancel(string oldDes, TypeName action, TypeName cancelToken)
         {
+            return "";
+
             if (oldDes == null)
                 oldDes = "";
 
