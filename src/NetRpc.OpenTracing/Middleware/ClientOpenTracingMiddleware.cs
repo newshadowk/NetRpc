@@ -20,6 +20,12 @@ namespace NetRpc.OpenTracing
 
         public async Task InvokeAsync(ClientActionExecutingContext context, ITracer tracer, IOptions<OpenTracingOptions> options)
         {
+            if (context.ContractMethod.IsTracerIgnore)
+            {
+                await _next(context);
+                return;
+            }
+
             var opt = options.Value;
             if (Helper.GetIsLogDetails(opt))
                 await InvokeAsyncByLogDetailsAsync(context, tracer, opt);

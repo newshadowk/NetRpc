@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -81,19 +82,26 @@ namespace NetRpc
             var onceCallParam = await _convert.GetOnceCallParamAsync();
             var (instanceMethodInfo, contractMethod, instance) = ApiWrapper.GetMethodInfo(onceCallParam.Action, _instances, _serviceProvider);
 
-            Stream stream;
+            //get parameters
+            var parameters = contractMethod.MethodInfo.GetParameters();
+
+            //stream
+            Stream stream = null;
             if (contractMethod.IsMQPost)
                 stream = BytesToStream(onceCallParam.PostStream);
             else
-                stream = _convert.GetRequestStream(onceCallParam.StreamLength);
+            {
+                var hasStream = parameters.Any(i => i.ParameterType == typeof(Stream));
+                if (hasStream)
+                    stream = _convert.GetRequestStream(onceCallParam.StreamLength);
+            }
 
             //serviceCallParam
             var scp = new ServiceCallParam(onceCallParam,
                 async i => await _convert.SendCallbackAsync(i),
                 _serviceCts.Token, stream);
 
-            var ps = contractMethod.MethodInfo.GetParameters();
-            var args = ApiWrapper.GetArgs(ps, scp.PureArgs, scp.Callback, scp.Token, scp.Stream);
+            var args = ApiWrapper.GetArgs(parameters, scp.PureArgs, scp.Callback, scp.Token, scp.Stream);
             return new ActionExecutingContext(
                 _serviceProvider,
                 scp.Header,

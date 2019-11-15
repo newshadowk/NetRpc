@@ -8,6 +8,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NetRpc;
 using NetRpc.Grpc;
 using NetRpc.Http;
@@ -62,7 +63,7 @@ namespace Service
                     }, i =>
                     {
                         i.LogActionInfoMaxLength = 10;
-                        //i.IsLogDetails = false;
+                        i.IsLogDetails = false;
                     });
                 })
                 .Configure(app =>
@@ -71,6 +72,10 @@ namespace Service
                     app.UseSignalR(routes => { routes.MapHub<CallbackHub>("/callback"); });
                     app.UseNetRpcSwagger();
                     app.UseNetRpcHttp();
+                })
+                .ConfigureLogging(logging =>
+                {
+                    logging.AddConsole();
                 })
                 .Build();
 
@@ -86,16 +91,18 @@ namespace Service
     internal class Service : IService
     {
         private readonly IClientProxyFactory _factory;
+        private readonly ILogger<Service> _logger;
 
-        public Service(IClientProxyFactory factory)
+        public Service(IClientProxyFactory factory, ILogger<Service> logger)
         {
             _factory = factory;
+            _logger = logger;
         }
 
         public async Task<Result> Call(string s)
         {
             GlobalTracer.Instance.ActiveSpan.SetTag(new StringTag("file"), "123.txt");
-            Console.WriteLine($"Receive: {s}");
+            _logger.LogInformation($"Receive: {s}");
             var obj = new SendObj
             {
                 InnerObj = new InnerObj
@@ -120,7 +127,7 @@ namespace Service
             }
 
             await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1(obj, 101, true,
-                i => { Console.WriteLine($"tid:{GlobalTracer.Instance?.ActiveSpan.Context.TraceId}, callback:{i}"); }, default);
+                i => { _logger.LogInformation($"tid:{GlobalTracer.Instance?.ActiveSpan.Context.TraceId}, callback:{i}"); }, default);
             await _factory.CreateProxy<IService_2>("grpc2").Proxy.Call_2(false);
             return new Result();
         }

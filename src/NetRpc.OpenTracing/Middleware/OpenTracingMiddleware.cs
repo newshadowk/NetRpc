@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using OpenTracing;
 using OpenTracing.Propagation;
 using OpenTracing.Tag;
-using OpenTracing.Util;
 
 namespace NetRpc.OpenTracing
 {
@@ -19,7 +18,13 @@ namespace NetRpc.OpenTracing
 
         public async Task InvokeAsync(ActionExecutingContext context, ITracer tracer, IOptions<OpenTracingOptions> options)
         {
-            using var scope = GetScope(context, tracer);
+            if (context.ContractMethod.IsTracerIgnore)
+            {
+                await _next(context);
+                return;
+            }
+
+            using var scope = GetScope(context, tracer, options.Value);
 
             try
             {
@@ -36,7 +41,7 @@ namespace NetRpc.OpenTracing
             }
         }
 
-        private static IScope GetScope(ActionExecutingContext context, ITracer tracer)
+        private static IScope GetScope(ActionExecutingContext context, ITracer tracer, OpenTracingOptions options)
         {
             //get spanContext
             ISpanContext spanContext;
@@ -48,13 +53,17 @@ namespace NetRpc.OpenTracing
             //get scope
             IScope scope;
             if (spanContext == null)
+            {
                 scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.ReceiveStr}")
                     .StartActive(true);
+                context.Properties[ConstValue.IsLogSendStream] = true;
+            }
             else
             {
                 scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.ReceiveStr}")
                     .AsChildOf(spanContext).StartActive(true);
                 spanContext.CopyBaggageItemsTo(scope.Span);
+                context.Properties[ConstValue.IsLogSendStream] = options.ForceLogSendStream;
             }
 
             return scope;

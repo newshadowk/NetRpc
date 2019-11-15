@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using NetRpc;
 using NetRpc.OpenTracing;
 
@@ -22,6 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 i.UseMiddleware<ClientStreamTracingMiddleware>();
                 i.UseMiddleware<ClientOpenTracingMiddleware>();
             });
+            services.AddSingleton<ILoggerProvider, SpanLoggerProvider>();
             return services;
         }
     }

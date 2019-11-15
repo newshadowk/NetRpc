@@ -38,7 +38,6 @@ namespace DataContract
         public string P2 { get; set; } = "p2 value;";
     }
 
-
     public interface IService
     {
         Task<Result> Call(string s);
@@ -49,6 +48,7 @@ namespace DataContract
     [HttpRoute("ReService", true)]
     public interface IService_1
     {
+        [TracerIgnore]
         Task<Result> Call_1(SendObj s, int i1, bool b1, Action<int> cb, CancellationToken token);
 
         Task<Stream> Echo_1(Stream stream);

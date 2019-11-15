@@ -16,7 +16,7 @@ namespace NetRpc.Jaeger
 
         public async Task InvokeAsync(ActionExecutingContext context, ITracer tracer, IOptions<ServiceSwaggerOptions> options)
         {
-            if (options.Value.IsPropertiesDefault() || context.ContractMethod.IsJaegerIgnore)
+            if (options.Value.IsPropertiesDefault())
             {
                 await _next(context);
                 return;
@@ -25,7 +25,7 @@ namespace NetRpc.Jaeger
             //http://localhost:5001/swagger/index.html#/IService/post_IService_Call
             var info = context.ContractMethod.HttpRoutInfo;
             var requestUrl = Helper.GetRequestUrl(options.Value.HostPath.FormatUrl(), options.Value.ApiPath, info.ContractPath, info.MethodPath);
-            tracer.ActiveSpan.SetTag(new StringTag("Url"), requestUrl);
+            tracer.ActiveSpan?.SetTag(new StringTag("Url"), requestUrl);
 
             await _next(context);
         }
@@ -44,7 +44,7 @@ namespace NetRpc.Jaeger
         {
             var opt = options.Get(context.OptionsName);
 
-            if (opt.IsPropertiesDefault() || context.ContractMethod.IsJaegerIgnore)
+            if (opt.IsPropertiesDefault())
             {
                 await _next(context);
                 return;
@@ -52,7 +52,7 @@ namespace NetRpc.Jaeger
 
             var info = context.ContractMethod.HttpRoutInfo;
             var requestUrl = Helper.GetRequestUrl(opt.HostPath.FormatUrl(), opt.ApiPath, info.ContractPath, info.MethodPath);
-            tracer.ActiveSpan.SetTag(new StringTag("Url"), requestUrl);
+            tracer.ActiveSpan?.SetTag(new StringTag("Url"), requestUrl);
 
             await _next(context);
         }

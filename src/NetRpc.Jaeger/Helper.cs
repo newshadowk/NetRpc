@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
-using Jaeger;
-using OpenTracing;
-using OpenTracing.Util;
 
 namespace NetRpc.Jaeger
 {
@@ -11,13 +8,13 @@ namespace NetRpc.Jaeger
     {
         public static string FormatUrl(this string url)
         {
-            url = GetUrl(url, "localhost"); 
+            url = GetUrl(url, "localhost");
             return GetUrl(url, "0.0.0.0");
         }
 
         public static string GetRequestUrl(string hostPath, string apiPath, string contractPath, string methodPath)
         {
-            string apiStr = "";
+            var apiStr = "";
             if (!string.IsNullOrEmpty(apiPath))
                 apiStr = $"_{apiPath}";
 
@@ -31,6 +28,7 @@ namespace NetRpc.Jaeger
                 var localIpAddress = GetLocalIPAddress();
                 return url.Replace("localhost", localIpAddress);
             }
+
             return url;
         }
 

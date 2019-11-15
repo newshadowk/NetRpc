@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using OpenTracing;
 using OpenTracing.Util;
@@ -17,28 +16,41 @@ namespace NetRpc.OpenTracing
 
         public async Task InvokeAsync(ClientActionExecutingContext context, IOptions<OpenTracingOptions> options)
         {
+            if (context.ContractMethod.IsTracerIgnore)
+            {
+                await _next(context);
+                return;
+            }
+
             bool isLogDetails = Helper.GetIsLogDetails(options.Value);
-            var currSpan = GlobalTracer.Instance.ActiveSpan;
             if (isLogDetails)
-                SetTracingBefore(context, currSpan);
+                SetTracingBefore(context);
             await _next(context);
-            SetTracingAfter(context, currSpan);
+            SetTracingAfter(context);
         }
 
-        private static void SetTracingBefore(ClientActionExecutingContext context, ISpan currSpan)
+        private static void SetTracingBefore(ClientActionExecutingContext context)
         {
-            var spanBuilder = GlobalTracer.Instance.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.ClientStream} {ConstValue.SendStr}").AsChildOf(currSpan);
+            if (context.Stream == null || GlobalTracer.Instance.ActiveSpan == null)
+                return;
+
+            var spanBuilder = GlobalTracer.Instance.BuildSpan(
+                $"{ConstValue.ClientStream} {Helper.SizeSuffix(context.Stream.Length)} {ConstValue.SendStr}").AsChildOf(GlobalTracer.Instance.ActiveSpan);
             ISpan span = null;
             context.OnceCall.SendRequestStreamStarted += (s, e) => span = spanBuilder.Start();
             context.OnceCall.SendRequestStreamFinished += (s, e) => span?.Finish();
         }
 
-        private static void SetTracingAfter(ClientActionExecutingContext context, ISpan currSpan)
+        private static void SetTracingAfter(ClientActionExecutingContext context)
         {
+            if (GlobalTracer.Instance.ActiveSpan == null)
+                return;
+
             if (context.Result.TryGetStream(out var outStream, out _))
             {
                 var bbs = (BufferBlockStream)outStream;
-                var spanBuilder = GlobalTracer.Instance.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.ClientStream} {ConstValue.ReceiveStr}").AsChildOf(currSpan);
+                var spanBuilder = GlobalTracer.Instance.BuildSpan(
+                    $"{ConstValue.ClientStream} {Helper.SizeSuffix(bbs.Length)} {ConstValue.ReceiveStr}").AsChildOf(GlobalTracer.Instance.ActiveSpan);
                 ISpan span = null;
                 bbs.Started += (s, e) => span = spanBuilder.Start();
                 bbs.Finished += (s, e) => span?.Finish();

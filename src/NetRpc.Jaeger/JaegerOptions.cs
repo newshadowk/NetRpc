@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace NetRpc.Jaeger
+﻿namespace NetRpc.Jaeger
 {
     public class JaegerOptions
     {

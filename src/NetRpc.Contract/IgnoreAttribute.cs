@@ -27,9 +27,9 @@ namespace NetRpc
     }
 
     [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, Inherited = false)]
-    public class JaegerIgnoreAttribute : Attribute
+    public class TracerIgnoreAttribute : Attribute
     {
-        public JaegerIgnoreAttribute()
+        public TracerIgnoreAttribute()
         {
         }
     }

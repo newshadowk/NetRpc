@@ -7,7 +7,13 @@ namespace NetRpc.OpenTracing
     {
         public static IScope BuildChild(string name)
         {
-            return GlobalTracer.Instance.BuildSpan(name).AsChildOf(GlobalTracer.Instance.ActiveSpan).StartActive(true);
+            var span = GlobalTracer.Instance.ActiveSpan;
+            if (span != null)
+            {
+                return GlobalTracer.Instance.BuildSpan(name).AsChildOf(span).StartActive(true);
+            }
+
+            return GlobalTracer.Instance.BuildSpan(name).StartActive(true);
         }
     }
 }
