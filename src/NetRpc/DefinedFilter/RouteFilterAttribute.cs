@@ -57,25 +57,8 @@ namespace NetRpc
                 srcObj is Action ||
                 Helper.IsSystemType(srcObj.GetType()))
                 return srcObj;
-            return CloneParam(srcObj, tgtObjType);
-        }
 
-        private static object CloneParam(object srcObj, Type tgtObjType)
-        {
-            var srcPs = srcObj.GetType().GetProperties();
-            if (srcPs.Length == 0)
-                return Helper.GetDefaultValue(tgtObjType);
-
-            var tgtObj = Activator.CreateInstance(tgtObjType);
-            var tgtPs = tgtObjType.GetProperties();
-            foreach (var srcP in srcPs)
-            {
-                var foundTgtP = tgtPs.FirstOrDefault(i => srcP.Name == i.Name);
-                if (foundTgtP != null) 
-                    foundTgtP.SetValue(tgtObj, srcP.GetValue(srcObj, null), null);
-            }
-
-            return tgtObj;
+            return srcObj.CreateAndCopy(tgtObjType);
         }
     }
 }

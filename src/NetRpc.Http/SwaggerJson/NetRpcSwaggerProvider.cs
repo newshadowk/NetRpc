@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Extensions;
 using Microsoft.OpenApi.Models;
 using NetRpc.Http.Client;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -27,39 +25,52 @@ namespace NetRpc.Http
             _options = optionsAccessor.Value;
             _doc = new OpenApiDocument();
         }
-        OpenApiSecurityScheme ApiKeySecurityScheme;
 
         private void Process(string apiRootPath, List<Contract> contracts)
         {
-            //tag
-            contracts.ForEach(i => _doc.Tags.Add(new OpenApiTag {Name = i.ContractInfo.Route}));
-
-            ApiKeySecurityScheme = new OpenApiSecurityScheme
-            {
-                Description = "description1",
-                Name = "sid",
-                Type = SecuritySchemeType.ApiKey,
-                In = ParameterLocation.Header,
-                UnresolvedReference = false
-            };
+            //tags
+            ProcessTags(contracts);
 
             //path
             ProcessPath(apiRootPath, contracts);
 
             //Components
+            ProcessComponents(contracts);
+        }
+
+        private void ProcessTags(List<Contract> contracts)
+        {
+            List<string> tags = new List<string>();
+            contracts.ForEach(i => i.ContractInfo.TagAttributes.ForEach(j => tags.Add(j.Name)));
+            contracts.ForEach(i => tags.Add(i.ContractInfo.Route));
+            var distTags = tags.Distinct();
+            foreach (var distTag in distTags) 
+                _doc.Tags.Add(new OpenApiTag {Name = distTag});
+        }
+
+        private void ProcessComponents(List<Contract> contracts)
+        {
+            //Schemas
             _doc.Components = new OpenApiComponents
             {
                 Schemas = _schemaRepository.Schemas
             };
 
-            //var docSecurityRequirements = new List<OpenApiSecurityRequirement>();
-            //OpenApiSecurityRequirement r = new OpenApiSecurityRequirement() { };
-
-
-            //r[ApiKeySecurityScheme] = new List<string>();
-            //docSecurityRequirements.Add(r);
-            //_doc.SecurityRequirements = docSecurityRequirements;
-            _doc.Components.SecuritySchemes["myToken"] = ApiKeySecurityScheme;
+            //SecurityScheme
+            var dic = new Dictionary<string, SecurityApiKeyDefineAttribute>();
+            contracts.ForEach(i => i.ContractInfo.SecurityApiKeyDefineAttributes.ForEach(j => dic[j.Key] = j));
+            foreach (var item in dic.Values)
+            {
+                var scheme = new OpenApiSecurityScheme
+                {
+                    Description = item.Description,
+                    Name = item.Name,
+                    Type = SecuritySchemeType.ApiKey,
+                    In = ParameterLocation.Header,
+                    UnresolvedReference = false
+                };
+                _doc.Components.SecuritySchemes[item.Key] = scheme;
+            }
         }
 
         private void ProcessPath(string apiRootPath, List<Contract> contracts)
@@ -75,7 +86,7 @@ namespace NetRpc.Http
                     //Operation
                     var operation = new OpenApiOperation
                     {
-                        Tags = GenerateTags(contract.ContractInfo.Route),
+                        Tags = GenerateTags(contract, contractMethod),
                         RequestBody = GenerateRequestBody(contractMethod.MergeArgType.Type, contractMethod.MergeArgType.StreamName),
                         Responses = GenerateResponses(contractMethod, contractMethod.MergeArgType.CancelToken != null)
                     };
@@ -100,24 +111,28 @@ namespace NetRpc.Http
                         });
                     }
 
-                    //Path
-                    var openApiPathItem = new OpenApiPathItem();
-                    var r = new OpenApiSecurityRequirement
+                    //ApiSecurity
+                    foreach (var apiKey in contractMethod.SecurityApiKeyAttributes)
                     {
+                        var r = new OpenApiSecurityRequirement
                         {
-                            new OpenApiSecurityScheme
                             {
-                                Reference = new OpenApiReference()
+                                new OpenApiSecurityScheme
                                 {
-                                    Id = "myToken",
-                                    Type = ReferenceType.SecurityScheme
+                                    Reference = new OpenApiReference
+                                    {
+                                        Id = apiKey.Key,
+                                        Type = ReferenceType.SecurityScheme
+                                    },
+                                    UnresolvedReference = true
                                 },
-                                UnresolvedReference = true
-                            },
-                            new List<string>()
-                        }
-                    };
-                    operation.Security.Add(r);
+                                new List<string>()
+                            }
+                        };
+                        operation.Security.Add(r);
+                    }
+
+                    var openApiPathItem = new OpenApiPathItem();
                     openApiPathItem.AddOperation(OperationType.Post, operation);
                     var key = $"{apiRootPath}/{contractMethod.HttpRoutInfo}";
                     _doc.Paths.Add(key, openApiPathItem);
@@ -125,9 +140,12 @@ namespace NetRpc.Http
             }
         }
 
-        private static List<OpenApiTag> GenerateTags(string tagName)
+        private static List<OpenApiTag> GenerateTags(Contract contract, ContractMethod method)
         {
-            return new List<OpenApiTag> {new OpenApiTag {Name = tagName}};
+            var tags = new List<OpenApiTag>();
+            tags.Add(new OpenApiTag {Name = contract.ContractInfo.Route});
+            method.TagAttributes.ForEach(i => tags.Add(new OpenApiTag {Name = i.Name}));
+            return tags;
         }
 
         private OpenApiResponses GenerateResponses(ContractMethod method, bool hasCancel)
@@ -192,8 +210,6 @@ namespace NetRpc.Http
 
         private static string AppendSummaryByCallbackAndCancel(string oldDes, TypeName action, TypeName cancelToken)
         {
-            return "";
-
             if (oldDes == null)
                 oldDes = "";
 

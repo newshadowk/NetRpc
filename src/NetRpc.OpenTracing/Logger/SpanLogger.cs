@@ -11,7 +11,7 @@ namespace NetRpc.OpenTracing
             var span = GlobalTracer.Instance.ActiveSpan;
             if (span != null)
             {
-                var msg = (formatter ?? Format).Invoke(state, exception);
+                var msg = Format(state, exception);
                 span.Log(msg);
             }
         }

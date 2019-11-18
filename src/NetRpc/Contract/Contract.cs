@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -81,15 +80,17 @@ namespace NetRpc
         public List<MethodParameter> Parameters { get; }
 
         public ContractMethod(Type contractType, MethodInfo methodInfo, List<MethodParameter> parameters, List<FaultExceptionAttribute> faultExceptionAttributes,
-            List<HttpHeaderAttribute> httpHeaderAttributes, List<ResponseTextAttribute> responseTextAttributes)
+            List<HttpHeaderAttribute> httpHeaderAttributes, List<ResponseTextAttribute> responseTextAttributes, List<SecurityApiKeyAttribute> securityApiKeyAttributes)
         {
             MethodInfo = methodInfo;
             Parameters = parameters;
             FaultExceptionAttributes = faultExceptionAttributes;
             HttpHeaderAttributes = httpHeaderAttributes;
             ResponseTextAttributes = responseTextAttributes;
+            SecurityApiKeyAttributes = securityApiKeyAttributes;
             MergeArgType = GetMergeArgType(methodInfo);
             HttpRoutInfo = GetHttpRoutInfo(contractType, methodInfo);
+            TagAttributes = methodInfo.GetCustomAttributes<TagAttribute>(true).ToList();
 
             //IgnoreAttribute
             IsGrpcIgnore = GetCustomAttribute<GrpcIgnoreAttribute>(contractType, methodInfo) != null;
@@ -105,6 +106,8 @@ namespace NetRpc
         public MergeArgType MergeArgType { get; }
 
         public HttpRoutInfo HttpRoutInfo { get; }
+
+        public List<TagAttribute> TagAttributes { get; }
 
         public bool IsTracerArgsIgnore { get; }
 
@@ -125,6 +128,8 @@ namespace NetRpc
         public List<HttpHeaderAttribute> HttpHeaderAttributes { get; }
 
         public List<ResponseTextAttribute> ResponseTextAttributes { get; }
+
+        public List<SecurityApiKeyAttribute> SecurityApiKeyAttributes { get; }
 
         private static MergeArgType GetMergeArgType(MethodInfo m)
         {
@@ -265,22 +270,40 @@ namespace NetRpc
             Type = type;
 
             HttpRoute = type.GetCustomAttribute<HttpRouteAttribute>(true);
+            SecurityApiKeyDefineAttributes = type.GetCustomAttributes<SecurityApiKeyDefineAttribute>(true).ToList();
             Methods = new List<ContractMethod>();
 
             var methodInfos = type.GetInterfaceMethods().ToList();
-            var faultsDic = GetFaults(type, methodInfos);
-            var headerDic = GetAttributes<HttpHeaderAttribute>(type, methodInfos);
-            var textDic = GetAttributes<ResponseTextAttribute>(type, methodInfos);
+            var faultDic = GetItemsFromDefines<FaultExceptionAttribute, FaultExceptionDefineAttribute>(type, methodInfos, 
+                (i, define) => i.DetailType == define.DetailType);
+            var apiKeysDic = GetItemsFromDefines<SecurityApiKeyAttribute, SecurityApiKeyDefineAttribute>(type, methodInfos,
+                (i, define) => i.Key == define.Key);
+            var httpHeaderDic = GetAttributes<HttpHeaderAttribute>(type, methodInfos);
+            var responseTextDic = GetAttributes<ResponseTextAttribute>(type, methodInfos);
 
-            foreach (var f in faultsDic) 
-                Methods.Add(new ContractMethod(type, f.Key, GetMethodParameters(f.Key), f.Value, headerDic[f.Key], textDic[f.Key]));
+            foreach (var f in faultDic) 
+                Methods.Add(new ContractMethod(type, 
+                    f.Key, 
+                    GetMethodParameters(f.Key), 
+                    f.Value, 
+                    httpHeaderDic[f.Key],
+                    responseTextDic[f.Key],
+                    apiKeysDic[f.Key]));
+
+            var tagDic = new Dictionary<string, TagAttribute>();
+            Methods.ForEach(i => i.TagAttributes.ForEach(j => tagDic[j.Name] = j));
+            TagAttributes = tagDic.Values.ToList();
         }
 
         public Type Type { get; }
 
+        public List<SecurityApiKeyDefineAttribute> SecurityApiKeyDefineAttributes { get; }
+
         public List<ContractMethod> Methods { get; }
 
         public HttpRouteAttribute HttpRoute { get; }
+
+        public List<TagAttribute> TagAttributes { get; }
 
         public string Route
         {
@@ -308,29 +331,27 @@ namespace NetRpc
             return ret;
         }
 
-        private static Dictionary<MethodInfo, List<FaultExceptionAttribute>> GetFaults(Type type, IEnumerable<MethodInfo> methodInfos)
+        private static Dictionary<MethodInfo, List<T>> GetItemsFromDefines<T, TDefine>(Type contractType, IEnumerable<MethodInfo> methodInfos, 
+            Func<T, TDefine, bool> match)
+            where T : Attribute
+            where TDefine : Attribute
         {
-            var dic = new Dictionary<MethodInfo, List<FaultExceptionAttribute>>();
-            var cDefines = type.GetCustomAttributes<FaultExceptionDefineAttribute>(true).ToList();
-            var cFaults = type.GetCustomAttributes<FaultExceptionAttribute>(true).ToList();
+            var dic = new Dictionary<MethodInfo, List<T>>();
+            var defines = contractType.GetCustomAttributes<TDefine>(true).ToList();
+            var items = contractType.GetCustomAttributes<T>(true).ToList();
 
             foreach (var m in methodInfos)
             {
-                //Faults
-                var faults = m.GetCustomAttributes<FaultExceptionAttribute>(true).ToList();
-                faults.AddRange(cFaults);
-                foreach (var f in faults)
+                var tempItems = m.GetCustomAttributes<T>(true).ToList();
+                tempItems.AddRange(items);
+                foreach (var f in tempItems)
                 {
-                    var foundF = cDefines.FirstOrDefault(i => i.DetailType == f.DetailType);
+                    var foundF = defines.FirstOrDefault(i => match(f, i));
                     if (foundF != null)
-                    {
-                        f.StatusCode = foundF.StatusCode;
-                        f.ErrorCode = foundF.ErrorCode;
-                        f.Description = foundF.Description;
-                    }
+                        f.CopyPropertiesFrom(foundF);
                 }
 
-                dic[m] = faults;
+                dic[m] = tempItems;
             }
 
             return dic;

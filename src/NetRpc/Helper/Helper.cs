@@ -357,5 +357,28 @@ namespace NetRpc
 
             return returnTypeDefinition;
         }
+
+        public static object CreateAndCopy(this object srcObj, Type tgtObjType)
+        {
+            var tgtObj = Activator.CreateInstance(tgtObjType);
+            srcObj.CopyPropertiesFrom(tgtObj);
+            return tgtObj;
+        }
+
+        public static void CopyPropertiesFrom(this object toObj, object fromObj)
+        {
+            var srcPs = fromObj.GetType().GetProperties();
+            if (srcPs.Length == 0)
+                return;
+
+            var tgtPs = toObj.GetType().GetProperties().ToList();
+            tgtPs.RemoveAll(i => !i.CanWrite);
+            foreach (var srcP in srcPs)
+            {
+                var foundTgtP = tgtPs.FirstOrDefault(i => srcP.Name == i.Name);
+                if (foundTgtP != null)
+                    foundTgtP.SetValue(toObj, srcP.GetValue(fromObj, null), null);
+            }
+        }
     }
 }

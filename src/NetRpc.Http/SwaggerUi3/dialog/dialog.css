@@ -1,23 +1,26 @@
-#showBtn {
-    bottom: 410px;
-    left: 10px;
+.my-custom-feature {
     position: fixed;
+    bottom: 0px;
+    left: 10px;
+    height: 420px;
+    z-index: 2019;
+}
+
+.my-custom-feature .show-btn {
+    height: 20px;
     width: 70px;
 }
 
-#viewDialog {
+.my-custom-feature .dialog {
     background-color: #fff;
     border-radius: 5px;
     bottom: 10px;
     box-shadow: 0 0 5px #000;
     height: 400px;
-    left: 10px;
-    position: fixed;
     width: 500px;
-    z-index: 999;
 }
 
-.viewTextarea {
+.my-custom-feature .dialog .textarea {
     border: none;
     height: calc(100% - 40px);
     outline: none;
@@ -25,9 +28,11 @@
     width: 100%;
 }
 
-button {
+.my-custom-feature .dialog .cancel-btn {
     height: 30px;
     width: 100%;
 }
 
-.viewHide { display: none; }
+.hidden {
+    display: none;
+}
