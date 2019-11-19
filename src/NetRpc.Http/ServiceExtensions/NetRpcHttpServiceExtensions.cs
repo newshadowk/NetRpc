@@ -17,7 +17,13 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddNetRpcSwagger(this IServiceCollection services)
         {
             var paths = Helper.GetCommentsXmlPaths();
-            services.AddSwaggerGen(i => paths.ForEach(path => i.IncludeXmlComments(path)));
+            services.AddSwaggerGen(i => paths.ForEach(path =>
+            {
+#pragma warning disable 618
+                i.DescribeAllEnumsAsStrings();
+#pragma warning restore 618 
+                i.IncludeXmlComments(path);
+            }));
             services.TryAddTransient<INetRpcSwaggerProvider, NetRpcSwaggerProvider>();
             return services;
         }

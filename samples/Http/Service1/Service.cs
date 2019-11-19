@@ -13,9 +13,10 @@ namespace Service
     {
         public async Task<CustomObj> CallAsync(string p1, int p2)
         {
-            var retObj = new CustomObj {Date = DateTime.Now, Name = NameEnum.John};
+            var retObj = new CustomObj { Date = DateTime.Now, Name = NameEnum.John };
             var h = GlobalActionExecutingContext.Context.Header;
             //Console.WriteLine($"[Call]...receive:{p1}, {p2}, h1:{h["h1"]}, h2:{h["h2"]} return:{retObj}");
+            Console.WriteLine($"[Call]...receive:{p1}, {p2}, return:{retObj}");
             return retObj;
         }
 
@@ -53,7 +54,7 @@ namespace Service
             for (var i = 1; i <= 3; i++)
             {
                 Console.Write($"{i}, ");
-                cb(new CustomCallbackObj {Progress = i});
+                cb(new CustomCallbackObj { Progress = i });
                 await Task.Delay(1000, token);
             }
 

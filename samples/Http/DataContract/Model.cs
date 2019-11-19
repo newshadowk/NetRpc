@@ -33,7 +33,7 @@ namespace DataContract
         }
     }
 
-    [JsonConverter(typeof(StringEnumConverter))]
+    //[JsonConverter(typeof(StringEnumConverter))]
     public enum NameEnum
     {
         John,

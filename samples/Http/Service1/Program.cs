@@ -30,7 +30,7 @@ namespace Service
 
                     services.AddSignalR();
                     services.AddNetRpcSwagger();
-                    services.AddNetRpcHttpService();
+                    services.AddNetRpcHttpService(i => i.ApiRootPath = "/api");
                     services.AddNetRpcContractSingleton<IServiceAsync, ServiceAsync>();
                 })
                 .Configure(app =>

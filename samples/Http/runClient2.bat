@@ -1,0 +1,1 @@
+@%~dp0\Client2\bin\Debug\net461\client2.exe
