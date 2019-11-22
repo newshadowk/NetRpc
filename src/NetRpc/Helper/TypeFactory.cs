@@ -22,6 +22,13 @@ namespace NetRpc
         {
         }
 
+        public CustomsPropertyInfo(Type type, string propertyName, IList<CustomAttributeData> attributes)
+        {
+            Type = type;
+            PropertyName = propertyName;
+            Attributes = attributes;
+        }
+
         public CustomsPropertyInfo(Type type, string propertyName)
         {
             Type = type;
@@ -29,6 +36,8 @@ namespace NetRpc
         }
 
         public Type Type { get; set; }
+
+        public IList<CustomAttributeData> Attributes { get; set; } = new List<CustomAttributeData>();
 
         public string PropertyName { get; set; }
 
@@ -53,7 +62,7 @@ namespace NetRpc
 
         public TypeInfo BuildType(string typeName, List<CustomsPropertyInfo> ps)
         {
-            return _dicType.GetOrAdd(typeName,s => BuildTypeInner(s, ps));
+            return _dicType.GetOrAdd(typeName, s => BuildTypeInner(s, ps));
         }
 
         public TypeInfo BuildTypeInner(string typeName, List<CustomsPropertyInfo> ps)
@@ -81,7 +90,6 @@ namespace NetRpc
                     cpi.Type,
                     null);
 
-
                 var getPropertyMethodNameBuilder = myTypeBuilder.DefineMethod(cpi.GetPropertyMethodName,
                     getSetAttr,
                     cpi.Type,
@@ -105,7 +113,46 @@ namespace NetRpc
 
                 propertyNameBuilder.SetGetMethod(getPropertyMethodNameBuilder);
                 propertyNameBuilder.SetSetMethod(setPropertyMethodNameBuilder);
+
+                var customAttributeBuilders = GetCustomAttributeBuilder(cpi.Attributes);
+                customAttributeBuilders.ForEach(i => propertyNameBuilder.SetCustomAttribute(i));
             }
+        }
+
+        private static List<CustomAttributeBuilder> GetCustomAttributeBuilder(IList<CustomAttributeData> customAttributeData)
+        {
+            var ret = new List<CustomAttributeBuilder>();
+            foreach (CustomAttributeData att in customAttributeData)
+            {
+                var namedFieldValues = new List<object>();
+                var fields = new List<FieldInfo>();
+                var constructorArguments = new List<object>();
+                foreach (var arg in att.ConstructorArguments)
+                    constructorArguments.Add(arg.Value);
+
+                if (att.NamedArguments != null && att.NamedArguments.Count > 0)
+                {
+                    FieldInfo[] possibleFields = att.GetType().GetFields();
+
+                    foreach (CustomAttributeNamedArgument arg in att.NamedArguments)
+                    {
+                        foreach (var filed in possibleFields)
+                        {
+                            if (string.Compare(filed.Name, arg.MemberInfo.Name, StringComparison.Ordinal) == 0)
+                            {
+                                fields.Add(filed);
+                                namedFieldValues.Add(arg.TypedValue.Value);
+                            }
+                        }
+                    }
+                }
+
+                if (namedFieldValues.Count > 0)
+                    ret.Add(new CustomAttributeBuilder(att.Constructor, constructorArguments.ToArray(), fields.ToArray(), namedFieldValues.ToArray()));
+                else
+                    ret.Add(new CustomAttributeBuilder(att.Constructor, constructorArguments.ToArray()));
+            }
+            return ret;
         }
     }
 }

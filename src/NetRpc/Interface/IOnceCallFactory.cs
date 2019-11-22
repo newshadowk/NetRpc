@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace NetRpc
 {
     public interface IOnceCallFactory : IDisposable
     {
-        IOnceCall Create(int timeoutInterval);
+        Task<IOnceCall> CreateAsync(int timeoutInterval);
     }
 }

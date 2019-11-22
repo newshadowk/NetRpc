@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+﻿using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace NetRpc.Http.Client
 {
@@ -8,18 +11,18 @@ namespace NetRpc.Http.Client
         private HubConnection _connection;
         private HubCallBackNotifier _notifier;
         private volatile string _connectionId;
-        private readonly object _lockInit = new object();
+        private readonly AsyncLock _lockInit = new AsyncLock();
 
         public HttpOnceCallFactory(HttpClientOptions options)
         {
             _options = options;
         }
 
-        private string InitConnection()
+        private async Task<string> InitConnectionAsync()
         {
             if (_connection == null)
             {
-                lock (_lockInit)
+                using (await _lockInit.LockAsync())
                 {
                     if (_connection == null)
                     {
@@ -38,18 +41,19 @@ namespace NetRpc.Http.Client
             // ReSharper disable once PossibleNullReferenceException
             if (_connection.State == HubConnectionState.Disconnected)
             {
-                lock (_options)
+                using (await _lockInit.LockAsync())
                 {
                     if (_connection.State == HubConnectionState.Disconnected)
                     {
                         try
                         {
-                            _connection.StartAsync().Wait();
-                            _connectionId = _connection.InvokeAsync<string>("GetConnectionId").Result;
+                            await _connection.StartAsync();
+                            _connectionId = await _connection.InvokeAsync<string>("GetConnectionId");
                             return _connectionId;
                         }
-                        catch
+                        catch (Exception e)
                         {
+                            Debug.WriteLine("_connection.StartAsync() failed. " + e.Message);
                         }
                     }
                 }
@@ -68,9 +72,9 @@ namespace NetRpc.Http.Client
             _connection.StopAsync().Wait();
         }
 
-        public IOnceCall Create(int timeoutInterval)
+        public async Task<IOnceCall> CreateAsync(int timeoutInterval)
         {
-            var cid = InitConnection();
+            var cid = await InitConnectionAsync();
             var convert = new HttpClientOnceApiConvert(_options.ApiUrl, cid, _notifier, timeoutInterval);
             return new OnceCall(convert, timeoutInterval);
         }

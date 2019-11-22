@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using DataContract;
+using FileUtils.DataContract;
 using NetRpc;
 using NetRpc.Http.Client;
 using RestSharp.Extensions;
@@ -18,18 +19,33 @@ namespace Client
 
         static async Task Main(string[] args)
         {
-            _proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(new HttpClientOptions
+            //_proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(new HttpClientOptions
+            //{
+            //    SignalRHubUrl = "http://localhost:5000/callback",
+            //    ApiUrl = "http://localhost:5000/api"
+            //}).Proxy;
+
+            //await Test_CallAsync();
+            //await Test_CallByCancelAsync();
+            //await Test_CallByCustomExceptionAsync();
+            //await Test_CallByDefaultExceptionAsync();
+            //await Test_CallByResponseTextExceptionAsync();
+            //await Test_ComplexCallAsync();
+
+            var p = NetRpcManager.CreateClientProxy<IFileAppService>(new HttpClientOptions
             {
-                SignalRHubUrl = "http://localhost:5000/callback",
-                ApiUrl = "http://localhost:5000/api"
+                SignalRHubUrl = "http://ctc4:5500/callback",
+                ApiUrl = "http://ctc4:5500"
             }).Proxy;
 
-            await Test_CallAsync();
-            await Test_CallByCancelAsync();
-            await Test_CallByCustomExceptionAsync();
-            await Test_CallByDefaultExceptionAsync();
-            await Test_CallByResponseTextExceptionAsync();
-            await Test_ComplexCallAsync();
+            //using (var fs = File.OpenRead(@"D:\AClientPath\src\zs_en\Pdf_Docx.pdf"))
+            using (var fs = File.OpenRead(@"C:\TempF\1\1扫描件.pdf.docx"))
+            {
+                var ddd = await p.GetPageNumAsync(new AccessInput
+                {
+                    SourceExt = ".docx"
+                }, fs, d => { }, CancellationToken.None);
+            }
 
             Console.Read();
         }

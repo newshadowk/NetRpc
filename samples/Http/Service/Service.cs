@@ -20,6 +20,11 @@ namespace Service
             return retObj;
         }
 
+        public Task<CustomObj> Call2Async(CustomObj obj)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task CallByCustomExceptionAsync()
         {
             Console.WriteLine("[CallByCustomExceptionAsync]...");

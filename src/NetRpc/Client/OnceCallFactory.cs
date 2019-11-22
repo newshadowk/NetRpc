@@ -1,4 +1,6 @@
-﻿namespace NetRpc
+﻿using System.Threading.Tasks;
+
+namespace NetRpc
 {
     internal sealed class OnceCallFactory : IOnceCallFactory
     {
@@ -14,9 +16,9 @@
             _factory?.Dispose();
         }
 
-        public IOnceCall Create(int timeoutInterval)
+        public Task<IOnceCall> CreateAsync(int timeoutInterval)
         {
-            return new OnceCall(new BufferClientOnceApiConvert(_factory.Create()), timeoutInterval);
+            return Task.FromResult<IOnceCall>(new OnceCall(new BufferClientOnceApiConvert(_factory.Create()), timeoutInterval));
         }
     }
 }

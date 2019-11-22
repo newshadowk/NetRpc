@@ -14,32 +14,36 @@ namespace DataContract
     [SecurityApiKeyDefine("tokenKey2", "t2", "t2 des")]
     public interface IServiceAsync
     {
-        /// <summary>
-        /// summary of Call
-        /// </summary>
-        /// <response code="201">Returns the newly created item</response>
-        [HttpRoute("Service1/Call2")]
-        [HttpHeader("h2", "h2 des.")]
-        [SecurityApiKey("tokenKey")]
-        Task<CustomObj> CallAsync(string p1, int p2);
+        Task<CustomObj> Call2Async(CustomObj obj);
 
-        /// <summary>
-        /// summary of Call
-        /// </summary>
-        [FaultException(typeof(CustomException))]
-        [FaultException(typeof(CustomException2))]
-        [Tag("A1")]
-        [Tag("A2")]
-        Task CallByCustomExceptionAsync();
 
-        Task CallByDefaultExceptionAsync();
+        ///// <summary>
+        ///// summary of Call
+        ///// </summary>
+        ///// <response code="201">Returns the newly created item</response>
+        //[HttpRoute("Service1/Call2")]
+        //[HttpHeader("h2", "h2 des.")]
+        //[SecurityApiKey("tokenKey")]
+        //Task<CustomObj> CallAsync(string p1, int p2);
 
-        [Tag("A1")]
-        Task CallByCancelAsync(CancellationToken token);
 
-        /// <response code="701">return the pain text.</response>
-        [ResponseText(701)]
-        Task CallByResponseTextExceptionAsync();
+        ///// <summary>
+        ///// summary of Call
+        ///// </summary>
+        //[FaultException(typeof(CustomException))]
+        //[FaultException(typeof(CustomException2))]
+        //[Tag("A1")]
+        //[Tag("A2")]
+        //Task CallByCustomExceptionAsync();
+
+        //Task CallByDefaultExceptionAsync();
+
+        //[Tag("A1")]
+        //Task CallByCancelAsync(CancellationToken token);
+
+        ///// <response code="701">return the pain text.</response>
+        //[ResponseText(701)]
+        //Task CallByResponseTextExceptionAsync();
 
         Task<ComplexStream> ComplexCallAsync(CustomObj obj, string p1, Stream stream, Action<CustomCallbackObj> cb, CancellationToken token);
     }

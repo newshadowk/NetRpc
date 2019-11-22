@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace NetRpc.Grpc
+namespace NetRpc
 {
     internal class AsyncSemaphore
     {

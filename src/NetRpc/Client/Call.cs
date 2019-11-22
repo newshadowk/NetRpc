@@ -42,7 +42,7 @@ namespace NetRpc
 
         public async Task<object> CallAsync(MethodInfo methodInfo, Action<object> callback, CancellationToken token, Stream stream, params object[] pureArgs)
         {
-            var call = _factory.Create(_timeoutInterval);
+            var call = await _factory.CreateAsync(_timeoutInterval);
             await call.StartAsync();
 
             var contractMethod = _contract.Methods.Find(i => i.MethodInfo == methodInfo);

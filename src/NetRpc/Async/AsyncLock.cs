@@ -2,9 +2,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NetRpc.Grpc
+namespace NetRpc
 {
-    internal class AsyncLock
+    public class AsyncLock
     {
         private readonly AsyncSemaphore _semaphore;
         private readonly Task<Release> _release;

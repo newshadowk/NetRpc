@@ -22,6 +22,7 @@ namespace DataContract
         /// </summary>
         public DateTime Date { get; set; }
 
+        /// <example>00000000-0000-0000-0000-000000000000</example>
         [DefaultValue("This defalut value of P1")]
         public string P1 { get; set; }
 

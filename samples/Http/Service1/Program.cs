@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Net;
+using System.Threading.Tasks;
 using DataContract;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
@@ -15,6 +16,7 @@ namespace Service
         static async Task Main(string[] args)
         {
             var webHost = WebHost.CreateDefaultBuilder(null)
+                .ConfigureKestrel(i => i.Listen(IPAddress.Parse("0.0.0.0"), 5000))
                 .ConfigureServices(services =>
                 {
                     services.AddCors(op =>

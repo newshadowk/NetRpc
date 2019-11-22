@@ -4,20 +4,6 @@
         <name>DataContract</name>
     </assembly>
     <members>
-        <member name="M:DataContract.IServiceAsync.CallAsync(System.String,System.Int32)">
-            <summary>
-            summary of Call
-            </summary>
-            <response code="201">Returns the newly created item</response>
-        </member>
-        <member name="M:DataContract.IServiceAsync.CallByCustomExceptionAsync">
-            <summary>
-            summary of Call
-            </summary>
-        </member>
-        <member name="M:DataContract.IServiceAsync.CallByResponseTextExceptionAsync">
-            <response code="701">return the pain text.</response>
-        </member>
         <member name="T:DataContract.CustomObj">
             <summary>
             a CustomObj
@@ -32,6 +18,9 @@
             <summary>
             a Date
             </summary>
+        </member>
+        <member name="P:DataContract.CustomObj.P1">
+            <example>00000000-0000-0000-0000-000000000000</example>
         </member>
         <member name="T:DataContract.CustomException">
             <summary>
