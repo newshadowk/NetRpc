@@ -53,7 +53,7 @@ namespace NetRpc.OpenTracing
             {
                 span.SetTagMethodObj(context, 0, true);
                 span.SetTagReturn(context, 0, true);
-                span.SetTag(new StringTag("Exception"), Helper.GetException(e));
+                span.SetTag(new StringTag("Exception"), e.ExceptionToString());
                 span.Finish();
                 throw;
             }
@@ -78,7 +78,7 @@ namespace NetRpc.OpenTracing
             {
                 scope.Span.SetTagMethodObj(context, 0, true);
                 scope.Span.SetTagReturn(context, 0, true);
-                scope.Span.SetTag(new StringTag("Exception"), Helper.GetException(e));
+                scope.Span.SetTag(new StringTag("Exception"), e.ExceptionToString());
                 throw;
             }
         }

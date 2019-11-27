@@ -18,7 +18,7 @@ namespace NetRpc.OpenTracing
 
         private static string Format<TState>(TState state, Exception e)
         {
-            return $"{state}{Helper.GetException(e)}";
+            return $"{state}{e.ExceptionToString()}";
         }
 
         public bool IsEnabled(LogLevel logLevel)

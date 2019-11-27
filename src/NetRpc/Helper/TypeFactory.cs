@@ -29,6 +29,13 @@ namespace NetRpc
             Attributes = attributes;
         }
 
+        public CustomsPropertyInfo(Type type, string propertyName, CustomAttributeData attribute)
+        {
+            Type = type;
+            PropertyName = propertyName;
+            Attributes = new List<CustomAttributeData> {attribute};
+        }
+
         public CustomsPropertyInfo(Type type, string propertyName)
         {
             Type = type;

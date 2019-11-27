@@ -94,29 +94,6 @@ namespace NetRpc.OpenTracing
             return propertyInfos.Any(i => i.PropertyType == typeof(Stream));
         }
 
-        public static string GetException(Exception e)
-        {
-            if (e == null)
-                return "";
-
-            var msgContent = new StringBuilder($"\r\n\r\n[{e.GetType().Name}]\r\n");
-            msgContent.Append(GetMsgContent(e));
-
-            List<Exception> lastE = new List<Exception>();
-            Exception currE = e.InnerException;
-            lastE.Add(e);
-            lastE.Add(currE);
-            while (currE != null && !lastE.Contains(currE))
-            {
-                msgContent.Append($"\r\n[{currE.GetType().Name}]\r\n");
-                msgContent.Append(GetMsgContent(e.InnerException));
-                currE = currE.InnerException;
-                lastE.Add(currE);
-            }
-
-            return msgContent.ToString();
-        }
-
         public static void CopyBaggageItemsTo(this ISpanContext spanContext, ISpan span)
         {
             foreach (var pair in spanContext.GetBaggageItems()) 
@@ -132,15 +109,6 @@ namespace NetRpc.OpenTracing
             if (isLogDetailsStr == null)
                 return options.IsLogDetails;
             return bool.Parse(isLogDetailsStr);
-        }
-
-        private static string GetMsgContent(Exception ee)
-        {
-            string ret = ee.Message;
-            if (!string.IsNullOrEmpty(ee.StackTrace))
-                ret += "\r\n" + ee.StackTrace;
-            ret += "\r\n";
-            return ret;
         }
     }
 }

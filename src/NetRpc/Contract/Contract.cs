@@ -88,9 +88,9 @@ namespace NetRpc
             HttpHeaderAttributes = httpHeaderAttributes;
             ResponseTextAttributes = responseTextAttributes;
             SecurityApiKeyAttributes = securityApiKeyAttributes;
-            MergeArgType = GetMergeArgType(methodInfo);
             HttpRoutInfo = GetHttpRoutInfo(contractType, methodInfo);
             TagAttributes = methodInfo.GetCustomAttributes<TagAttribute>(true).ToList();
+            MergeArgType = GetMergeArgType(methodInfo);
 
             //IgnoreAttribute
             IsGrpcIgnore = GetCustomAttribute<GrpcIgnoreAttribute>(contractType, methodInfo) != null;
@@ -141,6 +141,7 @@ namespace NetRpc
             var typeName = $"{m.DeclaringType.Namespace}_{m.DeclaringType.Name}_{m.Name}Param";
             var cis = new List<CustomsPropertyInfo>();
 
+            var attributeData = CustomAttributeData.GetCustomAttributes(m).Where(i => i.AttributeType == typeof(ExampleAttribute)).ToList();
             var addedCallId = false;
             foreach (var p in m.GetParameters())
             {
@@ -160,7 +161,6 @@ namespace NetRpc
                     };
 
                     addedCallId = true;
-
                     continue;
                 }
 
@@ -174,11 +174,15 @@ namespace NetRpc
                     };
 
                     addedCallId = true;
-
                     continue;
                 }
 
-                cis.Add(new CustomsPropertyInfo(p.ParameterType, p.Name));
+                //ExampleAttribute
+                var found = attributeData.Find(i => (string) i.ConstructorArguments[0].Value == p.Name);
+                if (found != null)
+                    cis.Add(new CustomsPropertyInfo(p.ParameterType, p.Name, found));
+                else
+                    cis.Add(new CustomsPropertyInfo(p.ParameterType, p.Name));
             }
 
             //connectionId callId

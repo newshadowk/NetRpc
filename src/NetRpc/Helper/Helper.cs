@@ -191,13 +191,6 @@ namespace NetRpc
             }
         }
 
-        private static string GetTypeName(Type t)
-        {
-            if (IsSystemType(t))
-                return t.FullName;
-            return t.AssemblyQualifiedName;
-        }
-
         public static bool IsSystemType(Type t)
         {
             var sn = t.Module.ScopeName;
@@ -379,6 +372,45 @@ namespace NetRpc
                 if (foundTgtP != null)
                     foundTgtP.SetValue(toObj, srcP.GetValue(fromObj, null), null);
             }
+        }
+
+        public static string ExceptionToString(this Exception e)
+        {
+            if (e == null)
+                return "";
+
+            var msgContent = new StringBuilder($"\r\n\r\n[{e.GetType().Name}]\r\n");
+            msgContent.Append(GetMsgContent(e));
+
+            List<Exception> lastE = new List<Exception>();
+            Exception currE = e.InnerException;
+            lastE.Add(e);
+            lastE.Add(currE);
+            while (currE != null && !lastE.Contains(currE))
+            {
+                msgContent.Append($"\r\n[{currE.GetType().Name}]\r\n");
+                msgContent.Append(GetMsgContent(e.InnerException));
+                currE = currE.InnerException;
+                lastE.Add(currE);
+            }
+
+            return msgContent.ToString();
+        }
+
+        private static string GetMsgContent(Exception ee)
+        {
+            string ret = ee.Message;
+            if (!string.IsNullOrEmpty(ee.StackTrace))
+                ret += "\r\n" + ee.StackTrace;
+            ret += "\r\n";
+            return ret;
+        }
+
+        private static string GetTypeName(Type t)
+        {
+            if (IsSystemType(t))
+                return t.FullName;
+            return t.AssemblyQualifiedName;
         }
     }
 }

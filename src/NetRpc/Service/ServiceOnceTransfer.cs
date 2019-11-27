@@ -55,6 +55,10 @@ namespace NetRpc
             }
             catch (Exception e)
             {
+#if DEBUG
+                Console.WriteLine($"HandleRequestAsync ex. {e.ExceptionToString()}");
+#endif
+
                 //if Post, do not need send back to client.
                 if (context != null && context.ContractMethod.IsMQPost)
                     return;

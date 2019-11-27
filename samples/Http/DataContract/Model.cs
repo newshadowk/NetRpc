@@ -1,12 +1,20 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
+using System.Net.NetworkInformation;
 using System.Runtime.Serialization;
+using NetRpc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace DataContract
 {
+    public class CObj
+    {
+        [Example("123")]
+        public string P1 { get; set; }
+    }
+
     /// <summary>
     /// a CustomObj
     /// </summary>
@@ -25,6 +33,9 @@ namespace DataContract
         /// <example>00000000-0000-0000-0000-000000000000</example>
         [DefaultValue("This defalut value of P1")]
         public string P1 { get; set; }
+
+        [Example(null)]
+        public int? I1 { get; set; }
 
         public InnerObj InnerObj { get; set; } = new InnerObj();
 

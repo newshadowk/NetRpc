@@ -23,6 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 i.DescribeAllEnumsAsStrings();
 #pragma warning restore 618 
                 i.IncludeXmlComments(path);
+                i.SchemaFilter<ExampleSchemaFilter>();
             }));
             services.TryAddTransient<INetRpcSwaggerProvider, NetRpcSwaggerProvider>();
             return services;

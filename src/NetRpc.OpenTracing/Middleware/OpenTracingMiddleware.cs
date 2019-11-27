@@ -36,7 +36,7 @@ namespace NetRpc.OpenTracing
             {
                 scope.Span.SetTagMethodObj(context, options.Value.LogActionInfoMaxLength, true);
                 scope.Span.SetTagReturn(context, options.Value.LogActionInfoMaxLength, true);
-                scope.Span.SetTag(new StringTag("Exception"), Helper.GetException(e));
+                scope.Span.SetTag(new StringTag("Exception"), e.ExceptionToString());
                 throw;
             }
         }
