@@ -140,6 +140,14 @@ namespace NetRpc.Http.Client
                 _notifier.Callback -= Notifier_Callback;
         }
 
+#if NETSTANDARD2_1
+        public ValueTask DisposeAsync()
+        {
+            Dispose();
+            return new ValueTask();
+        }
+#endif
+
         private static void TryThrowFault(MethodContext methodContext, IRestResponse res)
         {
             //OperationCanceledException
@@ -199,10 +207,5 @@ namespace NetRpc.Http.Client
 
             return Helper.WarpException(ex);
         }
-
-        //    private void OnFault(EventArgsT<object> e)
-        //    {
-        //        Fault?.Invoke(this, e);
-        //    }
     }
 }

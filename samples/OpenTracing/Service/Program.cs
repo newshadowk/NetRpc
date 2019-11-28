@@ -56,18 +56,17 @@ namespace Service
                     services.Configure<ClientSwaggerOptions>("grpc1", i => i.HostPath = "http://localhost:5002/swagger");
                     services.Configure<ClientSwaggerOptions>("grpc2", i => i.HostPath = "http://localhost:5003/swagger");
 
-                    //services.AddNetRpcJaeger(i =>
-                    //{
-                    //    i.Host = "jaeger.yx.com";
-                    //    i.Port = 6831;
-                    //    i.ServiceName = "Service";
-                    //}, i =>
-                    //{
-                    //    i.LogActionInfoMaxLength = 10;
-                    //    i.IsLogDetails = false;
-                    //});
+                    services.AddNetRpcJaeger(i =>
+                    {
+                        i.Host = "jaeger.yx.com";
+                        i.Port = 6831;
+                        i.ServiceName = "Service";
+                    }, i =>
+                    {
+                        i.LogActionInfoMaxLength = 10;
+                        i.IsLogDetails = false;
+                    });
 
-                    //services.AddNetRpcOpenTracing();
                 })
                 .Configure(app =>
                 {

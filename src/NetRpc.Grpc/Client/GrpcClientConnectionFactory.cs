@@ -26,6 +26,13 @@ namespace NetRpc.Grpc
             _client?.Dispose();
         }
 
+#if NETSTANDARD2_1
+        public System.Threading.Tasks.ValueTask DisposeAsync()
+        {
+            return _client.DisposeAsync();
+        }
+#endif
+
         public IClientConnection Create()
         {
             return new GrpcClientConnection(_client);

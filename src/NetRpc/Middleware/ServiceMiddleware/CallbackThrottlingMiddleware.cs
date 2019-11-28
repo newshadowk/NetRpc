@@ -17,16 +17,14 @@ namespace NetRpc
 
         public async Task InvokeAsync(ActionExecutingContext context)
         {
-            using (var ra = new ThrottlingAction(_callbackThrottlingInterval))
+            using var ra = new ThrottlingAction(_callbackThrottlingInterval);
+            var rawAction = context.Callback;
+            context.Callback = o =>
             {
-                var rawAction = context.Callback;
-                context.Callback = o =>
-                {
-                    // ReSharper disable once AccessToDisposedClosure
-                    ra.Post(() => rawAction(o));
-                };
-                await _next(context);
-            }
+                // ReSharper disable once AccessToDisposedClosure
+                ra.Post(() => rawAction(o));
+            };
+            await _next(context);
         }
     }
 

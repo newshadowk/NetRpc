@@ -28,6 +28,20 @@ namespace NetRpc.Grpc
             }
         }
 
+#if NETSTANDARD2_1
+        public async ValueTask DisposeAsync()
+        {
+            try
+            {
+                if (_api?.RequestStream != null) 
+                    await _api.RequestStream.CompleteAsync();
+            }
+            catch
+            {
+            }
+        }
+#endif
+
         public event EventHandler<EventArgsT<byte[]>> Received;
 
         public async Task SendAsync(byte[] buffer, bool isPost = false)

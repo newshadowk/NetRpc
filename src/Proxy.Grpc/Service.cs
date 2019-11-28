@@ -4,7 +4,11 @@ using Grpc.Core;
 
 namespace Grpc.Base
 {
+#if NETSTANDARD2_1
+    public class Service : IDisposable, IAsyncDisposable
+#else
     public sealed class Service : IDisposable
+#endif
     {
         private readonly Server _server;
         private volatile bool _disposed;
@@ -32,5 +36,15 @@ namespace Grpc.Base
             _server.KillAsync().Wait();
             _disposed = true;
         }
+
+#if NETSTANDARD2_1
+        public async System.Threading.Tasks.ValueTask DisposeAsync()
+        {
+            if (_disposed)
+                return;
+            await _server.KillAsync();
+            _disposed = true;
+        }
+#endif
     }
 }

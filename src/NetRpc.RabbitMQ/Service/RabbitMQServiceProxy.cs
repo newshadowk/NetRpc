@@ -41,8 +41,11 @@ namespace NetRpc.RabbitMQ
             Interlocked.Increment(ref _handlingCount);
             try
             {
-                using (var connection = new RabbitMQServiceConnection(e.Value))
-                    await _requestHandler.HandleAsync(connection);
+#if NETSTANDARD2_1
+                await
+#endif
+                using var connection = new RabbitMQServiceConnection(e.Value);
+                await _requestHandler.HandleAsync(connection);
             }
             finally
             {

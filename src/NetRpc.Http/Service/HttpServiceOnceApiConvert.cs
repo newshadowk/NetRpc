@@ -134,6 +134,14 @@ namespace NetRpc.Http
             CallbackHub.Canceled -= CallbackHubCanceled;
         }
 
+#if NETCOREAPP3_0
+        public ValueTask DisposeAsync()
+        {
+            Dispose();
+            return new ValueTask();
+        }
+#endif
+
         public bool NotMatched { get; private set; }
 
         private ActionInfo GetActionInfo()

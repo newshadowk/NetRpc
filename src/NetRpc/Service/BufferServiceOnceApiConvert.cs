@@ -152,5 +152,14 @@ namespace NetRpc
             _connection?.Dispose();
             _cts?.Dispose();
         }
+
+#if NETSTANDARD2_1
+        public async ValueTask DisposeAsync()
+        {
+            if (_connection != null)
+                await _connection.DisposeAsync();
+            _cts?.Dispose();
+        }
+#endif
     }
 }

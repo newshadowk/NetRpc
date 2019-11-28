@@ -72,6 +72,13 @@ namespace NetRpc.Http.Client
             _connection.StopAsync().Wait();
         }
 
+#if NETSTANDARD2_1
+        public async ValueTask DisposeAsync()
+        {
+            await _connection.StopAsync();
+        }
+#endif
+
         public async Task<IOnceCall> CreateAsync(int timeoutInterval)
         {
             var cid = await InitConnectionAsync();

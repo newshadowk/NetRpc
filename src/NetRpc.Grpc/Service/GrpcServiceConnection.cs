@@ -23,6 +23,13 @@ namespace NetRpc.Grpc
         {
         }
 
+#if NETSTANDARD2_1
+        public ValueTask DisposeAsync()
+        {
+            return new ValueTask();
+        }
+#endif
+
         public event EventHandler<EventArgsT<byte[]>> Received;
 
         public async Task SendAsync(byte[] buffer)

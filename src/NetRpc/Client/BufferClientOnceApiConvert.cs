@@ -197,5 +197,14 @@ namespace NetRpc
         {
             _connection?.Dispose();
         }
+
+#if NETSTANDARD2_1
+        public ValueTask DisposeAsync()
+        {
+            if (_connection != null)
+                return _connection.DisposeAsync();
+            return new ValueTask();
+        }
+#endif
     }
 }

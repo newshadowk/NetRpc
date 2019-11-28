@@ -25,6 +25,14 @@ namespace NetRpc.RabbitMQ
             _call.Dispose();
         }
 
+#if NETSTANDARD2_1
+        public ValueTask DisposeAsync()
+        {
+            Dispose();
+            return new ValueTask();
+        }
+#endif
+
         public event EventHandler<EventArgsT<byte[]>> Received;
 
         public Task SendAsync(byte[] buffer, bool isPost)

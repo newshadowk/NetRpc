@@ -80,18 +80,16 @@ namespace NetRpc.Http
         {
             var stream = typeof(SwaggerUiIndexMiddleware).GetTypeInfo().Assembly.GetManifestResourceStream($"{ConstValue.SwaggerUi3Base}{resourcePath}");
             // ReSharper disable once AssignNullToNotNullAttribute
-            using (var reader = new StreamReader(stream))
-                return await reader.ReadToEndAsync();
+            using var reader = new StreamReader(stream);
+            return await reader.ReadToEndAsync();
         }
 
         public static string ToJson(OpenApiDocument doc)
         {
-            using (var textWriter = new StringWriter())
-            {
-                var jsonWriter = new OpenApiJsonWriter(textWriter);
-                doc.SerializeAsV3(jsonWriter);
-                return textWriter.ToString();
-            }
+            using var textWriter = new StringWriter();
+            var jsonWriter = new OpenApiJsonWriter(textWriter);
+            doc.SerializeAsV3(jsonWriter);
+            return textWriter.ToString();
         }
     }
 }

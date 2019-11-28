@@ -16,6 +16,15 @@ namespace NetRpc
             _factory?.Dispose();
         }
 
+#if NETSTANDARD2_1
+        public ValueTask DisposeAsync()
+        {
+            if (_factory != null)
+                return _factory.DisposeAsync();
+            return new ValueTask();
+        }
+#endif
+
         public Task<IOnceCall> CreateAsync(int timeoutInterval)
         {
             return Task.FromResult<IOnceCall>(new OnceCall(new BufferClientOnceApiConvert(_factory.Create()), timeoutInterval));

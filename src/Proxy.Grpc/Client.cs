@@ -3,7 +3,11 @@ using Grpc.Core;
 
 namespace Grpc.Base
 {
+#if NETSTANDARD2_1
+    public class Client : IDisposable, IAsyncDisposable
+#else
     public sealed class Client : IDisposable
+#endif
     {
         private readonly Channel _channel;
         private volatile bool _disposed;
@@ -27,5 +31,15 @@ namespace Grpc.Base
             _channel?.ShutdownAsync().Wait();
             _disposed = true;
         }
+
+#if NETSTANDARD2_1
+        public async System.Threading.Tasks.ValueTask DisposeAsync()
+        {
+            if (_disposed)
+                return;
+            await _channel?.ShutdownAsync();
+            _disposed = true;
+        }
+#endif
     }
 }

@@ -5,7 +5,11 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
+#if NETSTANDARD2_1
+    public interface IClientOnceApiConvert : IDisposable, IAsyncDisposable
+#else
     public interface IClientOnceApiConvert : IDisposable
+#endif
     {
         Task StartAsync();
 

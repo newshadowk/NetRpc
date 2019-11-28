@@ -29,6 +29,14 @@ namespace NetRpc.RabbitMQ
             _connection?.Dispose();
         }
 
+#if NETSTANDARD2_1
+        public System.Threading.Tasks.ValueTask DisposeAsync()
+        {
+            Dispose();
+            return new System.Threading.Tasks.ValueTask();
+        }
+#endif
+
         public IClientConnection Create()
         {
             lock (_lockObj)
