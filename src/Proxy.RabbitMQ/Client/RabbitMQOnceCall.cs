@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using Microsoft.Extensions.Logging;
 using NetRpc;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -14,16 +15,18 @@ namespace RabbitMQ.Base
         private volatile IModel _model;
         private readonly IConnection _connect;
         private readonly string _rpcQueue;
+        private readonly ILogger _logger;
         private string _serviceToClientQueue;
         private string _clientToServiceQueue;
         private readonly CheckWriteOnceBlock<string> _clientToServiceQueueOnceBlock = new CheckWriteOnceBlock<string>();
         private bool isFirstSend = true;
         public event EventHandler<EventArgsT<byte[]>> Received;
 
-        public RabbitMQOnceCall(IConnection connect, string rpcQueue)
+        public RabbitMQOnceCall(IConnection connect, string rpcQueue, ILogger logger)
         {
             _connect = connect;
             _rpcQueue = rpcQueue;
+            _logger = logger;
         }
 
         public void CreateChannel()
@@ -52,7 +55,7 @@ namespace RabbitMQ.Base
                 var cid = Guid.NewGuid().ToString();
                 p.CorrelationId = cid;
 
-                CancellationTokenSource cts = new CancellationTokenSource();
+                var cts = new CancellationTokenSource();
 
                 _model.BasicReturn += (sender, args) =>
                 {
@@ -65,13 +68,12 @@ namespace RabbitMQ.Base
                 try
                 {
                     _clientToServiceQueue = await _clientToServiceQueueOnceBlock.WriteOnceBlock.ReceiveAsync(cts.Token);
+                    isFirstSend = false;
                 }
                 catch (OperationCanceledException)
                 {
-                    throw new MessageDeliverException($"Message has not sent to queue, check queue if exist : {_rpcQueue}.");
+                    throw new InvalidOperationException($"Message has not sent to queue, check queue if exist : {_rpcQueue}.");;
                 }
-
-                isFirstSend = false;
             }
             else
             {

@@ -4,27 +4,31 @@ using System.Threading.Tasks;
 using Google.Protobuf;
 using Grpc.Base;
 using Grpc.Core;
+using Microsoft.Extensions.Logging;
 
 namespace NetRpc.Grpc
 {
     public class GrpcClientConnection : IClientConnection
     {
         private readonly Client _client;
+        private readonly ILogger _logger;
         private AsyncDuplexStreamingCall<StreamBuffer, StreamBuffer> _api;
 
-        public GrpcClientConnection(Client client)
+        public GrpcClientConnection(Client client, ILogger logger)
         {
             _client = client;
+            _logger = logger;
         }
 
         public void Dispose()
         {
             try
             {
-                _api?.RequestStream?.CompleteAsync();
+                _api?.RequestStream?.CompleteAsync().Wait();
             }
-            catch
+            catch (Exception e)
             {
+                _logger.LogWarning(e, null);
             }
         }
 
@@ -36,8 +40,9 @@ namespace NetRpc.Grpc
                 if (_api?.RequestStream != null) 
                     await _api.RequestStream.CompleteAsync();
             }
-            catch
+            catch (Exception e)
             {
+                _logger.LogWarning(e, null);
             }
         }
 #endif

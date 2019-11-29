@@ -4,12 +4,14 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using Microsoft.Extensions.Logging;
 
 namespace NetRpc
 {
     internal sealed class BufferServiceOnceApiConvert : IServiceOnceApiConvert
     {
         private readonly IServiceConnection _connection;
+        private readonly ILogger _logger;
         private CancellationTokenSource _cts;
 
         private readonly BufferBlock<(byte[], BufferType)> _block =
@@ -17,9 +19,10 @@ namespace NetRpc
 
         private readonly WriteOnceBlock<Request> _cmdReq = new WriteOnceBlock<Request>(null);
 
-        public BufferServiceOnceApiConvert(IServiceConnection connection)
+        public BufferServiceOnceApiConvert(IServiceConnection connection, ILogger logger)
         {
             _connection = connection;
+            _logger = logger;
         }
 
         public async Task StartAsync(CancellationTokenSource cts)
@@ -142,8 +145,9 @@ namespace NetRpc
             {
                 await _connection.SendAsync(reply.All);
             }
-            catch
+            catch (Exception e)
             {
+                _logger.LogWarning(e, null);
             }
         }
 

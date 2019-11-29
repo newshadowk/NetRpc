@@ -7,9 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NetRpc.Grpc;
 using NetRpc.Http;
-using NetRpc.RabbitMQ;
 using Helper = TestHelper.Helper;
 
 namespace Service

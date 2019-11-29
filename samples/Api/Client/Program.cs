@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
 using Grpc.Core;
+using Microsoft.Extensions.Logging.Abstractions;
 using NetRpc;
 using NetRpc.Grpc;
 using NetRpc.RabbitMQ;
@@ -23,7 +24,7 @@ namespace Client
         {
             //RabbitMQ
             Console.WriteLine("---  [RabbitMQ]  ---");
-            var mqF = new RabbitMQClientConnectionFactoryOptions(Helper.GetMQOptions());
+            var mqF = new RabbitMQClientConnectionFactoryOptions(Helper.GetMQOptions(), NullLoggerFactory.Instance);
             _clientProxy = NetRpcManager.CreateClientProxy<IService>(mqF);
             _clientProxy.Connected += (s, e) => Console.WriteLine("[event] Connected");
             _clientProxy.DisConnected += (s, e) => Console.WriteLine("[event] DisConnected");

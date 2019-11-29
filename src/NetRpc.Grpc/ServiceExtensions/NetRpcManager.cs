@@ -2,6 +2,7 @@
 using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace NetRpc.Grpc
 {
@@ -45,7 +46,7 @@ namespace NetRpc.Grpc
                         TimeoutInterval = timeoutInterval,
                         HearbeatInterval = hearbeatInterval
                     }
-                ), null);
+                ), null, NullLoggerFactory.Instance);
         }
 
         public static ClientProxy<TService> CreateClientProxy<TService>(string host, int port, string publicKey, string sslTargetName,

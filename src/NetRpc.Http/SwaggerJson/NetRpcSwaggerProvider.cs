@@ -234,16 +234,8 @@ namespace NetRpc.Http
         private void GenerateRequestBodyByForm(OpenApiRequestBody body, params TypeName[] typeNames)
         {
             var properties = new Dictionary<string, OpenApiSchema>();
-            try
-            {
-                foreach (var typeName in typeNames)
-                    properties.Add(typeName.Name, GenerateSchema(typeName.Type));
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+            foreach (var typeName in typeNames)
+                properties.Add(typeName.Name, GenerateSchema(typeName.Type));
 
             var openApiSchema = new OpenApiSchema
             {

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace NetRpc
 {
@@ -15,16 +16,18 @@ namespace NetRpc
         private readonly MiddlewareBuilder _middlewareBuilder;
         private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
         private readonly ChannelType _channelType;
+        private readonly ILogger _logger;
         private readonly CancellationTokenSource _serviceCts = new CancellationTokenSource();
 
         public ServiceOnceTransfer(List<Instance> instances, IServiceProvider serviceProvider, IServiceOnceApiConvert convert,
-            MiddlewareBuilder middlewareBuilder, IActionExecutingContextAccessor actionExecutingContextAccessor, ChannelType channelType)
+            MiddlewareBuilder middlewareBuilder, IActionExecutingContextAccessor actionExecutingContextAccessor, ChannelType channelType, ILogger logger)
         {
             _instances = instances;
             _serviceProvider = serviceProvider;
             _middlewareBuilder = middlewareBuilder;
             _actionExecutingContextAccessor = actionExecutingContextAccessor;
             _channelType = channelType;
+            _logger = logger;
             _convert = convert;
         }
 
@@ -55,9 +58,7 @@ namespace NetRpc
             }
             catch (Exception e)
             {
-#if DEBUG
-                Console.WriteLine($"HandleRequestAsync ex. {e.ExceptionToString()}");
-#endif
+                _logger.LogWarning(e, null);
 
                 //if Post, do not need send back to client.
                 if (context != null && context.ContractMethod.IsMQPost)

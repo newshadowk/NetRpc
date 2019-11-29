@@ -21,28 +21,19 @@ namespace NetRpc.Grpc
         public override async Task DuplexStreamingServerMethod(IAsyncStreamReader<StreamBuffer> requestStream, IServerStreamWriter<StreamBuffer> responseStream,
             ServerCallContext context)
         {
+            Interlocked.Increment(ref _handlingCount);
             try
             {
-                Interlocked.Increment(ref _handlingCount);
-                try
-                {
 #if NETSTANDARD2_1
-                    await
+                await
 #endif
                     using var connection = new GrpcServiceConnection(requestStream, responseStream);
-                    await _requestHandler.HandleAsync(connection);
-                }
-                finally
-                {
-                    Interlocked.Decrement(ref _handlingCount);
-                }
+                await _requestHandler.HandleAsync(connection);
             }
-            catch (Exception e)
+            finally
             {
-                Console.WriteLine(e);
-                throw;
+                Interlocked.Decrement(ref _handlingCount);
             }
-           
         }
     }
 }

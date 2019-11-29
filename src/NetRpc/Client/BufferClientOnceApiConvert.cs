@@ -1,16 +1,17 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using Microsoft.Extensions.Logging;
 
 namespace NetRpc
 {
     internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
     {
         private readonly IClientConnection _connection;
+        private readonly ILogger _logger;
 
         private readonly BufferBlock<(byte[], BufferType)> _block =
             new BufferBlock<(byte[], BufferType)>(new DataflowBlockOptions {BoundedCapacity = Helper.StreamBufferCount});
@@ -22,9 +23,10 @@ namespace NetRpc
         public event EventHandler<EventArgsT<object>> Callback;
         public event EventHandler<EventArgsT<object>> Fault;
 
-        public BufferClientOnceApiConvert(IClientConnection connection)
+        public BufferClientOnceApiConvert(IClientConnection connection, ILogger logger)
         {
             _connection = connection;
+            _logger = logger;
             _connection.Received += ConnectionReceived;
         }
 
@@ -161,21 +163,22 @@ namespace NetRpc
             ResultStream?.Invoke(this, e);
         }
 
-        private static bool TryToObject(byte[] body, out object obj)
+        private bool TryToObject(byte[] body, out object obj)
         {
             try
             {
                 obj = body.ToObject<object>();
                 return true;
             }
-            catch
+            catch (Exception e)
             {
+                _logger.LogWarning(e, null);
                 obj = default;
                 return false;
             }
         }
 
-        private static bool TryToObject<T>(byte[] body, out T obj)
+        private bool TryToObject<T>(byte[] body, out T obj)
         {
             if (TryToObject(body, out var obj2))
             {

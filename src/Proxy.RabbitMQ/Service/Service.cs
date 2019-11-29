@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 
 namespace RabbitMQ.Base
@@ -12,13 +13,15 @@ namespace RabbitMQ.Base
         private readonly ConnectionFactory _factory;
         private readonly string _rpcQueue;
         private readonly int _prefetchCount;
+        private readonly ILogger _logger;
         public ServiceInner Inner { get; private set; }
 
-        public Service(ConnectionFactory factory, string rpcQueue, int prefetchCount)
+        public Service(ConnectionFactory factory, string rpcQueue, int prefetchCount, ILogger logger)
         {
             _factory = factory;
             _rpcQueue = rpcQueue;
             _prefetchCount = prefetchCount;
+            _logger = logger;
         }
 
         public void Open()
@@ -41,8 +44,9 @@ namespace RabbitMQ.Base
                 ResetService();
                 OnRecoverySucceeded();
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning(ex, null);
             }
         }
 

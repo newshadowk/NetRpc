@@ -1,16 +1,19 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
 namespace NetRpc.RabbitMQ
 {
     public class RabbitMQClientConnectionFactory : IClientConnectionFactory
     {
+        private readonly ILogger _logger;
         private IConnection _connection;
         private MQOptions _options;
         private readonly object _lockObj = new object();
 
-        public RabbitMQClientConnectionFactory(IOptionsMonitor<RabbitMQClientOptions> options)
+        public RabbitMQClientConnectionFactory(IOptionsMonitor<RabbitMQClientOptions> options, ILoggerFactory factory)
         {
+            _logger = factory.CreateLogger("NetRpc");
             _options = options.CurrentValue;
             _connection = _options.CreateConnectionFactory().CreateConnection();
             options.OnChange(i =>
@@ -40,7 +43,7 @@ namespace NetRpc.RabbitMQ
         public IClientConnection Create()
         {
             lock (_lockObj)
-                return new RabbitMQClientConnection(_connection, _options.RpcQueue);
+                return new RabbitMQClientConnection(_connection, _options.RpcQueue, _logger);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace NetRpc.RabbitMQ
 {
@@ -34,12 +35,12 @@ namespace NetRpc.RabbitMQ
             {
                 HearbeatInterval = hearbeatInterval,
                 TimeoutInterval = timeoutInterval
-            }), null);
+            }), null, NullLoggerFactory.Instance);
         }
 
         public static ClientProxy<TService> CreateClientProxy<TService>(MQOptions options, int timeoutInterval = 1200000, int hearbeatInterval = 10000)
         {
-            var opt = new RabbitMQClientConnectionFactoryOptions(options);
+            var opt = new RabbitMQClientConnectionFactoryOptions(options, NullLoggerFactory.Instance);
             return CreateClientProxy<TService>(opt, timeoutInterval, hearbeatInterval);
         }
     }

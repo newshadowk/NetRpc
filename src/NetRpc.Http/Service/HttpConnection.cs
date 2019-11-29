@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NetRpc.Http.Client;
 
@@ -17,11 +19,13 @@ namespace NetRpc.Http
     {
         private readonly HttpContext _context;
         private readonly IHubContext<CallbackHub, ICallback> _hub;
+        private readonly ILogger _logger;
 
-        public HttpConnection(HttpContext context, IHubContext<CallbackHub, ICallback> hub)
+        public HttpConnection(HttpContext context, IHubContext<CallbackHub, ICallback> hub, ILogger logger)
         {
             _context = context;
             _hub = hub;
+            _logger = logger;
         }
 
         public string ConnectionId { get; set; }
@@ -35,8 +39,9 @@ namespace NetRpc.Http
                 if (ConnectionId != null)
                     await _hub.Clients.Client(ConnectionId).Callback(CallId, callbackObj.ToDtoJson());
             }
-            catch
+            catch (Exception e)
             {
+                _logger.LogWarning(e, null);
             }
         }
 

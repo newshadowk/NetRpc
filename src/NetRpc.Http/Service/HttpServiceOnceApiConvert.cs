@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using NetRpc.Http.Client;
 
 namespace NetRpc.Http
@@ -24,9 +25,10 @@ namespace NetRpc.Http
         public HttpServiceOnceApiConvert(List<Contract> contracts, HttpContext context, string rootPath, bool ignoreWhenNotMatched, IHubContext<CallbackHub, ICallback> hub,
             IServiceProvider serviceProvider)
         {
+            var logger = ((ILoggerFactory)serviceProvider.GetService(typeof(ILoggerFactory))).CreateLogger("NetRpc");
             _contracts = contracts;
             _context = context;
-            _connection = new HttpConnection(context, hub);
+            _connection = new HttpConnection(context, hub, logger);
             _rootPath = rootPath;
             _ignoreWhenNotMatched = ignoreWhenNotMatched;
             _serviceProvider = serviceProvider;

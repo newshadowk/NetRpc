@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace NetRpc.Http.Client
@@ -8,13 +9,15 @@ namespace NetRpc.Http.Client
         private readonly IOptionsMonitor<HttpClientOptions> _httpClientOptions;
         private readonly IOptionsMonitor<NetRpcClientOption> _netRpcClientOption;
         private readonly IServiceProvider _serviceProvider;
+        private readonly ILoggerFactory _loggerFactory;
 
         public HttpClientProxyProvider(IOptionsMonitor<HttpClientOptions> httpClientOptions, IOptionsMonitor<NetRpcClientOption> netRpcClientOption,
-            IServiceProvider serviceProvider)
+            IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         {
             _httpClientOptions = httpClientOptions;
             _netRpcClientOption = netRpcClientOption;
             _serviceProvider = serviceProvider;
+            _loggerFactory = loggerFactory;
         }
 
         protected override ClientProxy<TService> CreateProxyInner<TService>(string optionsName)
@@ -23,8 +26,8 @@ namespace NetRpc.Http.Client
             if (options.IsPropertiesDefault())
                 return null;
 
-            var f = new HttpOnceCallFactory(options);
-            var clientProxy = new ClientProxy<TService>(f, _netRpcClientOption, _serviceProvider, optionsName);
+            var f = new HttpOnceCallFactory(options, _loggerFactory.CreateLogger("NetRpc"));
+            var clientProxy = new ClientProxy<TService>(f, _netRpcClientOption, _serviceProvider, _loggerFactory, optionsName);
             return clientProxy;
         }
     }

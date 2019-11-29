@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Base;
 using RabbitMQ.Client;
 
@@ -9,9 +10,9 @@ namespace NetRpc.RabbitMQ
     {
         private readonly RabbitMQOnceCall _call;
 
-        public RabbitMQClientConnection(IConnection connect, string rpcQueue)
+        public RabbitMQClientConnection(IConnection connect, string rpcQueue, ILogger logger)
         {
-            _call = new RabbitMQOnceCall(connect, rpcQueue);
+            _call = new RabbitMQOnceCall(connect, rpcQueue, logger);
             _call.Received += CallReceived;
         }
 

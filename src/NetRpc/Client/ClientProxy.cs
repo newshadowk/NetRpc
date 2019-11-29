@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Timers;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace NetRpc
@@ -17,6 +18,7 @@ namespace NetRpc
         public event Func<IClientProxy, Task> Heartbeat;
         private readonly object _lockObj = new object();
         private readonly IOnceCallFactory _factory;
+        private readonly ILogger _logger;
         private bool _isConnected;
         private readonly Timer _tHearbeat;
         private readonly Call _call;
@@ -27,9 +29,10 @@ namespace NetRpc
             set => _call.AdditionHeader = value;
         }
 
-        public ClientProxy(IOnceCallFactory factory, IOptionsMonitor<NetRpcClientOption> options, IServiceProvider serviceProvider, string optionsName = null)
+        public ClientProxy(IOnceCallFactory factory, IOptionsMonitor<NetRpcClientOption> options, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, string optionsName = null)
         {
             _factory = factory;
+            _logger = loggerFactory.CreateLogger("NetRpc");
             _call = new Call(serviceProvider, new ContractInfo(typeof(TService)), factory, options.CurrentValue.TimeoutInterval, optionsName);
             var invoker = new ClientMethodInvoker(_call);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
@@ -44,8 +47,8 @@ namespace NetRpc
             });
         }
 
-        public ClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options, IServiceProvider serviceProvider, string optionsName = null)
-            : this(new OnceCallFactory(factory), options, serviceProvider, optionsName)
+        public ClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, string optionsName = null)
+            : this(new OnceCallFactory(factory, loggerFactory), options, serviceProvider, loggerFactory, optionsName)
         {
         }
 
@@ -108,8 +111,9 @@ namespace NetRpc
                 await OnHeartbeat();
                 IsConnected = true;
             }
-            catch
+            catch (Exception e)
             {
+                _logger.LogWarning(e, null);
             }
         }
 

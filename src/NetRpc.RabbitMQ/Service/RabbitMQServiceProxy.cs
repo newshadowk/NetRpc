@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Base;
 
@@ -12,9 +13,11 @@ namespace NetRpc.RabbitMQ
         private RequestHandler _requestHandler;
         private Service _service;
         private volatile int _handlingCount;
+        private readonly ILogger _logger;
 
-        public RabbitMQServiceProxy(IOptionsMonitor<RabbitMqServiceOptions> mqOptions, IServiceProvider serviceProvider)
+        public RabbitMQServiceProxy(IOptionsMonitor<RabbitMqServiceOptions> mqOptions, IServiceProvider serviceProvider, ILoggerFactory factory)
         {
+            _logger = factory.CreateLogger("NetRpc");
             Reset(mqOptions.CurrentValue, serviceProvider);
             mqOptions.OnChange(i =>
             {
@@ -31,7 +34,7 @@ namespace NetRpc.RabbitMQ
                 _service.Received -= ServiceReceived;
             }
 
-            _service = new Service(opt.CreateConnectionFactory(), opt.RpcQueue, opt.PrefetchCount);
+            _service = new Service(opt.CreateConnectionFactory(), opt.RpcQueue, opt.PrefetchCount, _logger);
             _requestHandler = new RequestHandler(serviceProvider, ChannelType.RabbitMQ);
             _service.Received += ServiceReceived;
         }

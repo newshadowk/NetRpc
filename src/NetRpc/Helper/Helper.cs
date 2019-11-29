@@ -400,6 +400,8 @@ namespace NetRpc
         private static string GetMsgContent(Exception ee)
         {
             string ret = ee.Message;
+            if (ee.TargetSite != null)
+                ret += $"\r\nTargetSite:{ee.TargetSite.DeclaringType?.Name}.{ee.TargetSite.Name}";
             if (!string.IsNullOrEmpty(ee.StackTrace))
                 ret += "\r\n" + ee.StackTrace;
             ret += "\r\n";

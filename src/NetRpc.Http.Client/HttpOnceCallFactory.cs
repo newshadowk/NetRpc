@@ -2,20 +2,23 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Logging;
 
 namespace NetRpc.Http.Client
 {
     internal sealed class HttpOnceCallFactory : IOnceCallFactory
     {
         private readonly HttpClientOptions _options;
+        private readonly ILogger _logger;
         private HubConnection _connection;
         private HubCallBackNotifier _notifier;
         private volatile string _connectionId;
         private readonly AsyncLock _lockInit = new AsyncLock();
 
-        public HttpOnceCallFactory(HttpClientOptions options)
+        public HttpOnceCallFactory(HttpClientOptions options, ILogger logger)
         {
             _options = options;
+            _logger = logger;
         }
 
         private async Task<string> InitConnectionAsync()
@@ -53,7 +56,7 @@ namespace NetRpc.Http.Client
                         }
                         catch (Exception e)
                         {
-                            Debug.WriteLine("_connection.StartAsync() failed. " + e.Message);
+                            _logger.LogWarning(e, "_connection.StartAsync() failed.");
                         }
                     }
                 }
