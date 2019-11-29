@@ -36,6 +36,9 @@
         <member name="P:DataContract.CustomObj.P1">
             <example>00000000-0000-0000-0000-000000000000</example>
         </member>
+        <member name="T:DataContract.NameEnum">
+            <example>Mary</example>
+        </member>
         <member name="T:DataContract.CustomException">
             <summary>
             summary of CustomException

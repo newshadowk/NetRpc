@@ -31,23 +31,7 @@
     <EmbeddedResource Include="SwaggerUi3\swagger-ui.js" />
     <EmbeddedResource Include="SwaggerUi3\swagger-ui.js.map" />
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="SwaggerUi3\dialog.css" />
-    <None Remove="SwaggerUi3\dialog.js" />
-    <None Remove="SwaggerUi3\dialog\session.js" />
-    <None Remove="SwaggerUi3\favicon-16x16.png" />
-    <None Remove="SwaggerUi3\favicon-32x32.png" />
-    <None Remove="SwaggerUi3\index.html" />
-    <None Remove="SwaggerUi3\oauth2-redirect.html" />
-    <None Remove="SwaggerUi3\swagger-ui-bundle.js" />
-    <None Remove="SwaggerUi3\swagger-ui-bundle.js.map" />
-    <None Remove="SwaggerUi3\swagger-ui-standalone-preset.js" />
-    <None Remove="SwaggerUi3\swagger-ui-standalone-preset.js.map" />
-    <None Remove="SwaggerUi3\swagger-ui.css" />
-    <None Remove="SwaggerUi3\swagger-ui.css.map" />
-    <None Remove="SwaggerUi3\swagger-ui.js" />
-    <None Remove="SwaggerUi3\swagger-ui.js.map" />
-  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\NetRpc.Contract\NetRpc.Contract.csproj" />
     <ProjectReference Include="..\NetRpc.Http.Client\NetRpc.Http.Client.csproj" />

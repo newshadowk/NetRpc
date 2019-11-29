@@ -11,8 +11,8 @@ namespace DataContract
 {
     public class CObj
     {
-        [Example("123")]
-        public string P1 { get; set; }
+        [Example(NameEnum.Mary)]
+        public NameEnum Name { get; set; }
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ namespace DataContract
         }
     }
 
-    //[JsonConverter(typeof(StringEnumConverter))]
+    /// <example>Mary</example>
     public enum NameEnum
     {
         John,

@@ -55,6 +55,7 @@ namespace NetRpc.Http
             // api/swagger/swagger.json
             else if (IsUrl(requestPath, swaggerFilePath))
             {
+                //_json = File.ReadAllText(@"d:\7\test.json");
                 await context.Response.WriteAsync(_json);
             }
             //api/swagger/dialog/session.js
