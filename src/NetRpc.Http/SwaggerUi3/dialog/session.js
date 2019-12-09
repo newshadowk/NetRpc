@@ -20,7 +20,7 @@ connection.on("Callback",
 
 //Cancel
 //arg0 is callId, if set "" means cancel all methods.
-document.getElementById("cancelBtn").addEventListener("click",
+document.querySelector(".cancel-btn").addEventListener("click",
     function(event) {
         connection.invoke("Cancel", "").catch(function(err) {
             return console.error(err.toString());
