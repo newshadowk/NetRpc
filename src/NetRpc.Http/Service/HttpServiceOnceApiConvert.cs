@@ -136,7 +136,7 @@ namespace NetRpc.Http
             CallbackHub.Canceled -= CallbackHubCanceled;
         }
 
-#if NETCOREAPP3_0
+#if NETCOREAPP3_1
         public ValueTask DisposeAsync()
         {
             Dispose();

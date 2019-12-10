@@ -1,35 +1,30 @@
-﻿using System.Net;
+﻿using System.Data;
+using System.Net;
 using System.Threading.Tasks;
 using DataContract;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using NetRpc.Http;
 
 namespace Service
 {
     class Program
     {
-        const string origins = "_myAllowSpecificOrigins";
-
         static async Task Main(string[] args)
         {
             var webHost = WebHost.CreateDefaultBuilder(null)
-                .ConfigureKestrel(i => i.Listen(IPAddress.Parse("0.0.0.0"), 5000))
+                .ConfigureKestrel(i =>
+                {
+                    i.Listen(IPAddress.Parse("0.0.0.0"), 5000);
+                    i.Listen(IPAddress.Parse("0.0.0.0"), 5001, listenOptions => { listenOptions.UseHttps(
+                        @"1.pfx", "aaaa1111"); });
+                })
                 .ConfigureServices(services =>
                 {
-                    services.AddCors(op =>
-                    {
-                        op.AddPolicy(origins, set =>
-                        {
-                            set.SetIsOriginAllowed(origin => true)
-                                .AllowAnyHeader()
-                                .AllowAnyMethod()
-                                .AllowCredentials();
-                        });
-                    });
-
+                    services.AddCors();
                     services.AddSignalR();
                     services.AddNetRpcSwagger();
                     services.AddNetRpcHttpService(i => i.ApiRootPath = "/api");
@@ -37,8 +32,26 @@ namespace Service
                 })
                 .Configure(app =>
                 {
-                    app.UseCors(origins);
-                    app.UseSignalR(routes => { routes.MapHub<CallbackHub>("/callback"); });
+
+                    app.UseStaticFiles(new StaticFileOptions()
+                    {
+                        FileProvider = new PhysicalFileProvider(@"d:\"),
+                        RequestPath = "/doc",
+                    });
+
+                    app.UseCors(set =>
+                    {
+                        set.SetIsOriginAllowed(origin => true)
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .AllowCredentials();
+                    });
+
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapHub<CallbackHub>("/callback");
+                    });
                     app.UseNetRpcSwagger();
                     app.UseNetRpcHttp();
                 })

@@ -79,5 +79,18 @@ namespace Service
 
             return ret;
         }
+
+        public async Task<string> ComplexCall2Async(Action<CustomCallbackObj> cb, CancellationToken token)
+        {
+            Console.WriteLine($"[ComplexCallAsync]...");
+            for (var i = 1; i <= 3; i++)
+            {
+                Console.Write($"{i}, ");
+                cb(new CustomCallbackObj { Progress = i });
+                await Task.Delay(1000, token);
+            }
+            Console.WriteLine($"[ComplexCallAsync]...end");
+            return "ret0";
+        }
     }
 }

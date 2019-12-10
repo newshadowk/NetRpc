@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.2;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
     <SignAssembly>true</SignAssembly>
     <Description>Provide Http channel implementation for NetRpc.</Description>
   </PropertyGroup>

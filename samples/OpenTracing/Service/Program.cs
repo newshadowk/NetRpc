@@ -22,8 +22,6 @@ namespace Service
 {
     class Program
     {
-        const string origins = "_myAllowSpecificOrigins";
-
         static async Task Main(string[] args)
         {
             var h = WebHost.CreateDefaultBuilder(null)
@@ -32,13 +30,7 @@ namespace Service
                 {
                     services.AddCors(op =>
                     {
-                        op.AddPolicy(origins, set =>
-                        {
-                            set.SetIsOriginAllowed(origin => true)
-                                .AllowAnyHeader()
-                                .AllowAnyMethod()
-                                .AllowCredentials();
-                        });
+                        op.AddPolicy();
                     });
 
                     services.AddSignalR();
@@ -70,7 +62,13 @@ namespace Service
                 })
                 .Configure(app =>
                 {
-                    app.UseCors(origins);
+                    app.UseCors(set =>
+                    {
+                        set.SetIsOriginAllowed(origin => true)
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .AllowCredentials();
+                    });
                     app.UseSignalR(routes => { routes.MapHub<CallbackHub>("/callback"); });
                     app.UseNetRpcSwagger();
                     app.UseNetRpcHttp();

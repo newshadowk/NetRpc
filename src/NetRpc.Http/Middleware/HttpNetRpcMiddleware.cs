@@ -20,7 +20,7 @@ namespace NetRpc.Http
             IOptionsSnapshot<HttpServiceOptions> httpOptions, RequestHandler requestHandler, IServiceProvider serviceProvider)
         {
             bool notMatched;
-#if NETCOREAPP3_0
+#if NETCOREAPP3_1
            await
 #endif
             using (var convert = new HttpServiceOnceApiConvert(contractOptions.Value.Contracts, httpContext,

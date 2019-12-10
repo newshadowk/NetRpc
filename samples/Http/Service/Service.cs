@@ -51,7 +51,7 @@ namespace Service
         {
             Console.WriteLine($"[ComplexCallAsync]...receive:{obj}, p1:{p1}, streamLength:{stream.Length}");
 
-            for (var i = 1; i <= 3; i++)
+            for (var i = 1; i <= 10; i++)
             {
                 Console.Write($"{i}, ");
                 cb(new CustomCallbackObj {Progress = i});
@@ -73,6 +73,11 @@ namespace Service
             };
 
             return ret;
+        }
+
+        public Task<string> ComplexCall2Async(Action<CustomCallbackObj> cb, CancellationToken token)
+        {
+            throw new NotImplementedException();
         }
 
         public Task<CustomObj> Call2Async(CObj obj, string s1, string s2)

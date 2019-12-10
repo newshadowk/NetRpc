@@ -16,24 +16,13 @@ namespace Service_1
 {
     class Program
     {
-        const string origins = "_myAllowSpecificOrigins";
-
         static async Task Main(string[] args)
         {
             var h = WebHost.CreateDefaultBuilder(null)
                 .ConfigureKestrel(options => { options.ListenAnyIP(5002); })
                 .ConfigureServices(services =>
                 {
-                    services.AddCors(op =>
-                    {
-                        op.AddPolicy(origins, set =>
-                        {
-                            set.SetIsOriginAllowed(origin => true)
-                                .AllowAnyHeader()
-                                .AllowAnyMethod()
-                                .AllowCredentials();
-                        });
-                    });
+                    services.AddCors();
 
                     services.AddSignalR();
                     services.AddNetRpcSwagger();
@@ -55,7 +44,13 @@ namespace Service_1
                 })
                 .Configure(app =>
                 {
-                    app.UseCors(origins);
+                    app.UseCors(set =>
+                    {
+                        set.SetIsOriginAllowed(origin => true)
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .AllowCredentials();
+                    });
                     app.UseSignalR(routes => { routes.MapHub<CallbackHub>("/callback"); });
                     app.UseNetRpcSwagger();
                     app.UseNetRpcHttp();

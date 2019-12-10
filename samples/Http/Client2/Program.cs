@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using DataContract;
-using FileUtils.DataContract;
 using NetRpc;
 using NetRpc.Http.Client;
 using RestSharp.Extensions;
@@ -31,21 +30,6 @@ namespace Client
             //await Test_CallByDefaultExceptionAsync();
             //await Test_CallByResponseTextExceptionAsync();
             //await Test_ComplexCallAsync();
-
-            var p = NetRpcManager.CreateClientProxy<IFileAppService>(new HttpClientOptions
-            {
-                SignalRHubUrl = "http://ctc4:5500/callback",
-                ApiUrl = "http://ctc4:5500"
-            }).Proxy;
-
-            //using (var fs = File.OpenRead(@"D:\AClientPath\src\zs_en\Pdf_Docx.pdf"))
-            using (var fs = File.OpenRead(@"C:\TempF\1\1扫描件.pdf.docx"))
-            {
-                var ddd = await p.GetPageNumAsync(new AccessInput
-                {
-                    SourceExt = ".docx"
-                }, fs, d => { }, CancellationToken.None);
-            }
 
             Console.Read();
         }

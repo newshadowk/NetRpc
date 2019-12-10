@@ -47,5 +47,7 @@ namespace DataContract
         Task CallByResponseTextExceptionAsync();
 
         Task<ComplexStream> ComplexCallAsync(CustomObj obj, string p1, Stream stream, Action<CustomCallbackObj> cb, CancellationToken token);
+
+        Task<string> ComplexCall2Async(Action<CustomCallbackObj> cb, CancellationToken token);
     }
 }

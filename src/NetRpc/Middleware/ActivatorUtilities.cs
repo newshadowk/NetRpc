@@ -393,7 +393,7 @@ namespace NetRpc
                     }
                 }
 
-#if NETCOREAPP3_0
+#if NETCOREAPP3_1
                 return _constructor.Invoke(BindingFlags.DoNotWrapExceptions, binder: null, parameters: _parameterValues, culture: null);
 #else
                 try
