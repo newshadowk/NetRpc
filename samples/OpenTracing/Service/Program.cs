@@ -28,11 +28,7 @@ namespace Service
                 .ConfigureKestrel(options => { options.ListenAnyIP(5001); })
                 .ConfigureServices(services =>
                 {
-                    services.AddCors(op =>
-                    {
-                        op.AddPolicy();
-                    });
-
+                    services.AddCors();
                     services.AddSignalR();
                     services.AddNetRpcSwagger();
                     services.AddNetRpcHttpService();

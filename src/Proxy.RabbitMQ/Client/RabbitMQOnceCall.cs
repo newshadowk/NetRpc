@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Logging;
-using NetRpc;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -44,7 +43,7 @@ namespace RabbitMQ.Base
             {
                 var p = _model.CreateBasicProperties();
                 _model.BasicPublish("", _rpcQueue, p, buffer);
-                OnReceived(new EventArgsT<byte[]>(NullReply.All));
+                OnReceived(new EventArgsT<byte[]>(null));
                 return;
             }
 
