@@ -41,6 +41,7 @@ namespace NetRpc.Http.Client
                 }
             }
 
+#if !NETCOREAPP2_1
             // ReSharper disable once PossibleNullReferenceException
             if (_connection.State == HubConnectionState.Disconnected)
             {
@@ -61,6 +62,18 @@ namespace NetRpc.Http.Client
                     }
                 }
             }
+#else
+            try
+            {
+                await _connection.StartAsync();
+                _connectionId = await _connection.InvokeAsync<string>("GetConnectionId");
+                return _connectionId;
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, "_connection.StartAsync() failed.");
+            }
+#endif
 
             return _connectionId;
         }

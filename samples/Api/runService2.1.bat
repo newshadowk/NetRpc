@@ -1,0 +1,1 @@
+@dotnet %~dp0\Service\bin\Debug\netcoreapp2.1\service.dll

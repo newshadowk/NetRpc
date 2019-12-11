@@ -18,7 +18,10 @@ namespace NetRpc.RabbitMQ
 
         private void CallReceived(object sender, global::RabbitMQ.Base.EventArgsT<byte[]> e)
         {
-            OnReceived(new EventArgsT<byte[]>(e.Value));
+            if (e.Value == null)
+                OnReceived(new EventArgsT<byte[]>(NullReply.All));
+            else
+                OnReceived(new EventArgsT<byte[]>(e.Value));
         }
 
         public void Dispose()

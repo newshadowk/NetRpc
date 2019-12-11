@@ -11,8 +11,4 @@
     <PackageReference Include="Grpc" Version="2.25.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Message\" />
-  </ItemGroup>
-
 </Project>

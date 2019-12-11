@@ -12,7 +12,11 @@ namespace NetRpc.Http
             params Contract[] contracts)
         {
             return WebHost.CreateDefaultBuilder(null)
+#if NETCOREAPP2_1
+                .UseKestrel(options => { options.ListenAnyIP(port); })
+#else
                 .ConfigureKestrel(options => { options.ListenAnyIP(port); })
+#endif
                 .ConfigureServices(services =>
                 {
                     services.AddCors();
