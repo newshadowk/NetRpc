@@ -5,6 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using DataContract;
+using Grpc.Core;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using NetRpc;
 using NetRpc.Http.Client;
 using RestSharp.Extensions;
@@ -14,33 +17,78 @@ namespace Client
 {
     class Program
     {
-        private static IServiceAsync _proxyAsync;
-
         static async Task Main(string[] args)
         {
-            _proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(new HttpClientOptions
-            {
-                SignalRHubUrl = "http://localhost:5000/callback",
-                ApiUrl = "http://localhost:5000/api"
-            }).Proxy;
+            var host = new HostBuilder()
+                .ConfigureServices((context, services) =>
+                {
+                    services.AddHostedService<HostedService>();
+                    services.AddNetRpcHttpClient(i =>
+                    {
+                        i.SignalRHubUrl = "http://localhost:5000/callback";
+                        i.ApiUrl = "http://localhost:5000/api";
+                    });
+                   
+                    services.AddNetRpcClientContract<IServiceAsync>();
+                })
+                .Build();
 
-            await Test_CallAsync();
-            await Test_CallByCancelAsync();
-            await Test_CallByCustomExceptionAsync();
-            await Test_CallByDefaultExceptionAsync();
-            await Test_CallByResponseTextExceptionAsync();
-            await Test_ComplexCallAsync();
+            await host.RunAsync();
 
-            Console.Read();
+            //_proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(new HttpClientOptions
+            //{
+            //    SignalRHubUrl = "http://localhost:5000/callback",
+            //    ApiUrl = "http://localhost:5000/api"
+            //}).Proxy;
+
+            //await Test_CallAsync();
+            //await Test_CallByCancelAsync();
+            //await Test_CallByCustomExceptionAsync();
+            //await Test_CallByDefaultExceptionAsync();
+            //await Test_CallByResponseTextExceptionAsync();
+            //await Test_ComplexCallAsync();
+
+            //Console.Read();
+        }
+    }
+
+    public class HostedService : IHostedService
+    {
+        private readonly IClientProxy<IServiceAsync> _client;
+        private readonly IServiceAsync _proxyAsync;
+
+        public HostedService(IClientProxy<IServiceAsync> client, IServiceAsync service) //DI client here.
+        {
+            _client = client;
+            _proxyAsync = service;
         }
 
-        private static async Task Test_CallAsync()
+        public Task StartAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            Task.Run(async() =>
+            {
+                await Test_CallAsync();
+                await Test_CallByCancelAsync();
+                await Test_CallByCustomExceptionAsync();
+                await Test_CallByDefaultExceptionAsync();
+                await Test_CallByResponseTextExceptionAsync();
+                await Test_ComplexCallAsync();
+            });
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            return Task.CompletedTask;
+        }
+
+        private async Task Test_CallAsync()
         {
             Console.WriteLine("[CallAsync]...123, 123");
             await _proxyAsync.CallAsync("123", 123);
         }
 
-        private static async Task Test_CallByCancelAsync()
+        private async Task Test_CallByCancelAsync()
         {
             Console.Write("[CallByCancelAsync]...");
             var cts = new CancellationTokenSource();
@@ -55,7 +103,7 @@ namespace Client
             }
         }
 
-        private static async Task Test_CallByCustomExceptionAsync()
+        private async Task Test_CallByCustomExceptionAsync()
         {
             Console.Write("[CallByCustomExceptionAsync]...");
 
@@ -73,7 +121,7 @@ namespace Client
             }
         }
 
-        private static async Task Test_CallByDefaultExceptionAsync()
+        private async Task Test_CallByDefaultExceptionAsync()
         {
             Console.Write("[CallByDefaultExceptionAsync]...");
 
@@ -87,7 +135,7 @@ namespace Client
             }
         }
 
-        private static async Task Test_CallByResponseTextExceptionAsync()
+        private async Task Test_CallByResponseTextExceptionAsync()
         {
             Console.Write("[CallByResponseTextExceptionAsync]...");
 
@@ -101,14 +149,14 @@ namespace Client
             }
         }
 
-        private static async Task Test_ComplexCallAsync()
+        private async Task Test_ComplexCallAsync()
         {
             using (var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 Console.Write("[ComplexCallAsync]...Send TestFile.txt...");
 
                 var complexStream = await _proxyAsync.ComplexCallAsync(
-                    new CustomObj {Date = DateTime.Now, Name = NameEnum.John},
+                    new CustomObj { Date = DateTime.Now, Name = NameEnum.John },
                     "123",
                     stream,
                     i => Console.Write(", " + i.Progress),

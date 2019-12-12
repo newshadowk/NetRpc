@@ -26,7 +26,7 @@ namespace NetRpc.Http.Client
             if (options.IsPropertiesDefault())
                 return null;
 
-            var f = new HttpOnceCallFactory(options, _loggerFactory.CreateLogger("NetRpc"));
+            var f = new HttpOnceCallFactory(new SimpleOptionsMonitor<HttpClientOptions>(options), _loggerFactory);
             var clientProxy = new ClientProxy<TService>(f, _netRpcClientOption, _serviceProvider, _loggerFactory, optionsName);
             return clientProxy;
         }
