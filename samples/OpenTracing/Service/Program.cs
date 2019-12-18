@@ -52,7 +52,6 @@ namespace Service
                     }, i =>
                     {
                         i.LogActionInfoMaxLength = 10;
-                        i.IsLogDetails = false;
                     });
 
                 })

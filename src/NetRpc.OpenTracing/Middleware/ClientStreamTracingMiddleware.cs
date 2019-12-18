@@ -22,9 +22,7 @@ namespace NetRpc.OpenTracing
                 return;
             }
 
-            bool isLogDetails = Helper.GetIsLogDetails(options.Value);
-            if (isLogDetails)
-                SetTracingBefore(context);
+            SetTracingBefore(context);
             await _next(context);
             SetTracingAfter(context);
         }
