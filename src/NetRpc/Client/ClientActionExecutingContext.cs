@@ -34,7 +34,7 @@ namespace NetRpc
 
         public CancellationToken CancellationToken { get; }
 
-        public Stream Stream { get; }
+        public ReadStream Stream { get; }
 
         /// <summary>
         /// Args of invoked action without stream and action.
@@ -51,7 +51,7 @@ namespace NetRpc
             CancellationToken token,
             ContractInfo contractInfo,
             ContractMethod contractMethod,
-            Stream stream, 
+            ReadStream stream, 
             object[] pureArgs)
         {
             ServiceProvider = serviceProvider;

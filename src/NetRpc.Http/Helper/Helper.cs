@@ -9,16 +9,34 @@ namespace NetRpc.Http
 {
     internal static class Helper
     {
-        public static object ToObjectForHttp(string str, Type t)
+        public static HttpDataObj ToHttpDataObj(string json, Type t)
+        {
+            var obj = ToObjectForHttp(json, t);
+            if (obj == null)
+                return null;
+
+            var (connectionId, callId, streamLength) = GetAdditionData(obj);
+
+            return new HttpDataObj
+            {
+                StreamLength = streamLength,
+                Value = obj,
+                CallId = callId,
+                ConnectionId = connectionId,
+                Type = t
+            };
+        }
+
+        public static object ToObjectForHttp(string json, Type t)
         {
             object dataObj;
             try
             {
-                dataObj = str.ToDtoObject(t);
+                dataObj = json.ToDtoObject(t);
             }
             catch (Exception e)
             {
-                throw new HttpFailedException($"{e.Message}, str:\r\n{str}");
+                throw new HttpFailedException($"{e.Message}, str:\r\n{json}");
             }
 
             return dataObj;
@@ -39,42 +57,6 @@ namespace NetRpc.Http
                 return ret.ToArray();
             foreach (var p in dataObjType.GetProperties())
                 ret.Add(GetPropertyValue(dataObj, p.Name));
-            return ret.ToArray();
-        }
-
-        public static object[] GetArgsFromQuery(IQueryCollection query, Type dataObjType)
-        {
-            if (dataObjType == null)
-                return new object[0];
-
-            var ret = new List<object>();
-            foreach (var p in dataObjType.GetProperties())
-            {
-                if (query.TryGetValue(p.Name, out var values))
-                {
-                    try
-                    {
-                        if (p.PropertyType == typeof(string))
-                        {
-                            ret.Add(values[0]);
-                            continue;
-                        }
-
-                        // ReSharper disable once PossibleNullReferenceException
-                        var v = p.PropertyType.GetMethod("Parse", new[] {typeof(string)}).Invoke(null, new object[] {values[0]});
-                        ret.Add(v);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new HttpNotMatchedException($"'{p.Name}' is not valid value, {ex.Message}");
-                    }
-                }
-                else
-                {
-                    ret.Add(NetRpc.Helper.GetDefaultValue(p.PropertyType));
-                }
-            }
-
             return ret.ToArray();
         }
 
@@ -118,6 +100,24 @@ namespace NetRpc.Http
                 null, classInstance, new object[] { });
         }
 
+        private static (string connectionId, string callId, long streamLength) GetAdditionData(object dataObj)
+        {
+            if (dataObj == null)
+                return (null, null, 0);
 
+            var connectionId = (string) GetValue(dataObj, ClientConstValue.ConnectionIdName);
+            var callId = (string) GetValue(dataObj, ClientConstValue.CallIdName);
+            var streamLengthObj = GetValue(dataObj, ClientConstValue.StreamLength);
+            var streamLength = (long?) streamLengthObj ?? 0;
+            return (connectionId, callId, streamLength);
+        }
+
+        private static object GetValue(object obj, string propertyName)
+        {
+            var pi = obj.GetType().GetProperty(propertyName);
+            if (pi == null)
+                return null;
+            return pi.GetValue(obj);
+        }
     }
 }

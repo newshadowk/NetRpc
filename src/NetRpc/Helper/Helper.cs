@@ -176,10 +176,10 @@ namespace NetRpc
             return t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Task<>);
         }
 
-        public static long? GetLength(this Stream stream)
+        public static long GetLength(this Stream stream)
         {
             if (stream == null)
-                return null;
+                return 0;
 
             try
             {
@@ -187,7 +187,7 @@ namespace NetRpc
             }
             catch
             {
-                return null;
+                return 0;
             }
         }
 
@@ -395,6 +395,14 @@ namespace NetRpc
             }
 
             return msgContent.ToString();
+        }
+
+        private static Stream BytesToStream(byte[] bytes)
+        {
+            if (bytes == null)
+                return null;
+            Stream stream = new MemoryStream(bytes);
+            return stream;
         }
 
         private static string GetMsgContent(Exception ee)

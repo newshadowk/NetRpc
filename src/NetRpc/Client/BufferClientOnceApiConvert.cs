@@ -56,7 +56,7 @@ namespace NetRpc
             return true;
         }
 
-        private BufferBlockStream GetRequestStream(long? length)
+        private BufferBlockStream GetRequestStream(long length)
         {
             _stream = new BufferBlockStream(_block, length);
 
@@ -77,7 +77,7 @@ namespace NetRpc
             {
                 case ReplyType.ResultStream:
                 {
-                    if (TryToObject(r.Body, out long? body))
+                    if (TryToObject(r.Body, out long body))
                         OnResultStream(new EventArgsT<object>(GetRequestStream(body)));
                     else
                         OnFaultSerializationException();
@@ -201,7 +201,7 @@ namespace NetRpc
             _connection?.Dispose();
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP3_1
         public ValueTask DisposeAsync()
         {
             if (_connection != null)

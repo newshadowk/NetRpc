@@ -31,7 +31,7 @@ namespace NetRpc
 
         CancellationToken CancellationToken { get; }
 
-        Stream Stream { get; }
+        ReadStream Stream { get; }
 
         /// <summary>
         /// Args of invoked action without stream and action.

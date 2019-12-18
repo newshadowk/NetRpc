@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP3_1
     public interface IClientConnection : IDisposable, IAsyncDisposable
 #else
     public interface IClientConnection : IDisposable
@@ -15,7 +15,7 @@ namespace NetRpc
 
         Task StartAsync();
     }
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP3_1
     public interface IServiceConnection : IDisposable, IAsyncDisposable
 #else
     public interface IServiceConnection : IDisposable

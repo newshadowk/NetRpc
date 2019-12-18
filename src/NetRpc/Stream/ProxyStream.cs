@@ -1,32 +1,36 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 
 namespace NetRpc
 {
-    public sealed class BufferBlockStream : ReadStream
+    public sealed class ProxyStream : ReadStream
     {
-        private long _length;
-        private readonly BufferBlockReader _reader;
+        private readonly Stream _stream;
+        private readonly long _length;
 
-        public BufferBlockStream(BufferBlock<(byte[], BufferType)> block, long length)
+        public ProxyStream(Stream stream)
         {
-            _reader = new BufferBlockReader(block);
+            _stream = stream;
+        }
+
+        public ProxyStream(Stream stream, long length)
+        {
+            _stream = stream;
             _length = length;
         }
 
         public override void Flush()
         {
+            _stream.Flush();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
             InvokeStart();
 
-            var readCount = _reader.Read(buffer, count);
-            Position += readCount;
+            var readCount = _stream.Read(buffer, offset, count);
+
             OnProgress(Position);
 
             if (readCount < count)
@@ -39,8 +43,8 @@ namespace NetRpc
         {
             InvokeStart();
 
-            var readCount =  await _reader.ReadAsync(buffer, count, cancellationToken);
-            Position += readCount;
+            var readCount = await _stream.ReadAsync(buffer, offset, count, cancellationToken);
+
             OnProgress(Position);
 
             if (readCount < count)
@@ -51,35 +55,30 @@ namespace NetRpc
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            throw new NotImplementedException();
+            return _stream.Seek(offset, origin);
         }
 
         public override void SetLength(long value)
         {
-            _length = value;
+            _stream.SetLength(value);
         }
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            throw new NotImplementedException();
+            _stream.Write(buffer, offset, count);
         }
 
-        public override bool CanRead { get; } = true;
+        public override bool CanRead => _stream.CanRead;
+        public override bool CanSeek => _stream.CanSeek;
+        public override bool CanWrite => _stream.CanWrite;
 
-        public override bool CanSeek { get; } = false;
-
-        public override bool CanWrite { get; } = false;
-
+        // ReSharper disable once ConvertToAutoProperty
         public override long Length => _length;
 
-        public override long Position { get; set; }
-
-        protected override void Dispose(bool disposing)
+        public override long Position
         {
-            if (disposing)
-                InvokeFinish();
-
-            base.Dispose(disposing);
+            get => _stream.Position;
+            set => _stream.Position = value;
         }
     }
 }

@@ -45,10 +45,13 @@ namespace NetRpc
             var call = await _factory.CreateAsync(_timeoutInterval);
             await call.StartAsync();
 
+            //stream
             var contractMethod = _contract.Methods.Find(i => i.MethodInfo == methodInfo);
             var instanceMethod = new InstanceMethod(methodInfo);
             var methodContext = new MethodContext(contractMethod, instanceMethod);
-            var clientContext = new ClientActionExecutingContext(_serviceProvider, _optionsName, call, instanceMethod, callback, token, _contract, contractMethod, stream, pureArgs);
+            var readStream = GetReadStream(stream);
+            var clientContext = new ClientActionExecutingContext(_serviceProvider, _optionsName, call, instanceMethod, callback, token, _contract,
+                contractMethod, readStream, pureArgs);
 
             //header
             var header = AdditionHeader;
@@ -66,6 +69,25 @@ namespace NetRpc
 
             //onceTransfer will dispose after stream translate finished in OnceCall.
             return await call.CallAsync(header, methodContext, callback, token, stream, pureArgs);
+        }
+
+        private static ReadStream GetReadStream(Stream stream)
+        {
+            ReadStream readStream;
+            switch (stream)
+            {
+                case null:
+                    readStream = null;
+                    break;
+                case ReadStream rs:
+                    readStream = rs;
+                    break;
+                default:
+                    readStream = new ProxyStream(stream);
+                    break;
+            }
+
+            return readStream;
         }
     }
 }

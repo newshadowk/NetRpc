@@ -74,6 +74,13 @@ namespace NetRpc.Http.Client
             client.Timeout = _timeoutInterval;
             var req = new RestRequest(Method.POST);
 
+            //header
+            if (callParam.Header != null)
+            {
+                foreach (var pair in callParam.Header)
+                    req.AddHeader(pair.Key, pair.Value.ToString());
+            }
+
             //request
             if (methodContext.ContractMethod.MergeArgType.StreamName != null)
             {
@@ -140,7 +147,7 @@ namespace NetRpc.Http.Client
                 _notifier.Callback -= Notifier_Callback;
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP3_1
         public ValueTask DisposeAsync()
         {
             Dispose();

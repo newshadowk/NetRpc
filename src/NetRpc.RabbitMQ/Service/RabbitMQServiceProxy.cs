@@ -44,7 +44,7 @@ namespace NetRpc.RabbitMQ
             Interlocked.Increment(ref _handlingCount);
             try
             {
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP3_1
                 await
 #endif
                 using var connection = new RabbitMQServiceConnection(e.Value);

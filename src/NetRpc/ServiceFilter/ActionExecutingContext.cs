@@ -71,7 +71,7 @@ namespace NetRpc
 
         public CancellationToken CancellationToken { get; }
 
-        public Stream Stream { get; }
+        public ReadStream Stream { get; }
 
         public object[] Args { get; }
 
@@ -95,7 +95,7 @@ namespace NetRpc
             object[] args,
             object[] pureArgs,
             ActionInfo actionInfo,
-            Stream stream,
+            ReadStream stream,
             Contract contract,
             ChannelType channelType,
             Action<object> callback,
