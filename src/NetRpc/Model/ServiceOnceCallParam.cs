@@ -4,28 +4,25 @@ using System.Collections.Generic;
 namespace NetRpc
 {
     [Serializable]
-    public sealed class OnceCallParam
+    public sealed class ServiceOnceCallParam
     {
         public ActionInfo Action { get; set; }
 
         public object[] PureArgs { get; set; }
-        
-        public bool HasStream { get; set; }
 
         public long StreamLength { get; set; }
 
-        public byte[] PostStream { get; set; }
+        public ReadStream Stream { get; set; }
 
         public Dictionary<string, object> Header { get; set; }
 
-        public OnceCallParam(Dictionary<string, object> header, ActionInfo action, bool hasStream, byte[] postStream, long streamLength, object[] pureArgs)
+        public ServiceOnceCallParam(ActionInfo action, object[] pureArgs, long streamLength, ReadStream stream, Dictionary<string, object> header)
         {
-            HasStream = hasStream;
             Action = action;
             PureArgs = pureArgs;
-            Header = header;
             StreamLength = streamLength;
-            PostStream = postStream;
+            Stream = stream;
+            Header = header;
         }
 
         public override string ToString()

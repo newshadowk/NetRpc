@@ -176,10 +176,10 @@ namespace NetRpc
             return t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Task<>);
         }
 
-        public static long? GetLength(this Stream stream)
+        public static long GetLength(this Stream stream)
         {
             if (stream == null)
-                return null;
+                return 0;
 
             try
             {
@@ -187,7 +187,7 @@ namespace NetRpc
             }
             catch
             {
-                return null;
+                return 0;
             }
         }
 
@@ -272,14 +272,13 @@ namespace NetRpc
                 return;
 
             //http channel stream is ref read stream.
-            if (!(context.Stream is BufferBlockStream))
+            if (context.Stream == null || context.Stream.Length == 0)
                 return;
 
             var rate = (double)progressCount / 100;
-            var bbs = (BufferBlockStream)context.Stream;
-            var totalCount = bbs.Length;
-          
-            bbs.Progress += (s, e) =>
+            var totalCount = context.Stream.Length;
+
+            context.Stream.Progress += (s, e) =>
             {
                 var p = (double)e / totalCount;
                 if (p == 0)
@@ -395,6 +394,14 @@ namespace NetRpc
             }
 
             return msgContent.ToString();
+        }
+
+        private static Stream BytesToStream(byte[] bytes)
+        {
+            if (bytes == null)
+                return null;
+            Stream stream = new MemoryStream(bytes);
+            return stream;
         }
 
         private static string GetMsgContent(Exception ee)

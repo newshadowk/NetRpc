@@ -12,7 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Update="1.pfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="TestFile.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

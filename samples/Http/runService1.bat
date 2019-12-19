@@ -1,1 +1,2 @@
-@dotnet %~dp0\Service1\bin\Debug\netcoreapp3.0\service1.dll
+pushd %~dp0\Service1\bin\Debug\netcoreapp3.1\
+service1.exe

@@ -54,10 +54,24 @@ namespace NetRpc
             }
         }
 
-        public async Task<OnceCallParam> GetOnceCallParamAsync()
+        public async Task<ServiceOnceCallParam> GetServiceOnceCallParamAsync()
         {
             var r = await _cmdReq.ReceiveAsync();
-            return r.Body.ToObject<OnceCallParam>();
+            var ocp = r.Body.ToObject<OnceCallParam>();
+
+            //stream
+            ReadStream rs;
+            if (ocp.HasStream)
+            {
+                if (ocp.PostStream != null)
+                    rs = new ProxyStream(new MemoryStream(ocp.PostStream));
+                else
+                    rs = new BufferBlockStream(_block, ocp.StreamLength);
+            }
+            else
+                rs = null;
+
+            return new ServiceOnceCallParam(ocp.Action, ocp.PureArgs, ocp.StreamLength, rs, ocp.Header);
         }
 
         public async Task<bool> SendResultAsync(CustomResult result, Stream stream, string streamName, ActionExecutingContext context)
@@ -134,11 +148,6 @@ namespace NetRpc
             return SafeSendAsync(reply);
         }
 
-        public Stream GetRequestStream(long? length)
-        {
-            return new BufferBlockStream(_block, length);
-        }
-
         private async Task SafeSendAsync(Reply reply)
         {
             try
@@ -157,7 +166,7 @@ namespace NetRpc
             _cts?.Dispose();
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP3_1
         public async ValueTask DisposeAsync()
         {
             if (_connection != null)

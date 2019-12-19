@@ -6,8 +6,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using NetRpc.Http.Client;
 
 namespace NetRpc.Http
@@ -21,6 +24,7 @@ namespace NetRpc.Http
         private readonly bool _ignoreWhenNotMatched;
         private readonly IServiceProvider _serviceProvider;
         private CancellationTokenSource _cts;
+        private readonly FormOptions _defaultFormOptions = new FormOptions();
 
         public HttpServiceOnceApiConvert(List<Contract> contracts, HttpContext context, string rootPath, bool ignoreWhenNotMatched, IHubContext<CallbackHub, ICallback> hub,
             IServiceProvider serviceProvider)
@@ -61,13 +65,18 @@ namespace NetRpc.Http
             return Task.CompletedTask;
         }
 
-        public async Task<OnceCallParam> GetOnceCallParamAsync()
+        public async Task<ServiceOnceCallParam> GetServiceOnceCallParamAsync()
         {
             var actionInfo = GetActionInfo();
             var header = GetHeader();
-            var pureArgs = await GetPureArgsAsync(actionInfo);
-            var param = new OnceCallParam(header, actionInfo, null, null, pureArgs);
-            return param;
+            var (dataObj, stream) = await GetHttpDataObjAndStream(actionInfo);
+
+            _connection.CallId = dataObj.CallId;
+            _connection.ConnectionId = dataObj.ConnectionId;
+
+            var pureArgs = Helper.GetPureArgsFromDataObj(dataObj.Type, dataObj.Value);
+
+            return new ServiceOnceCallParam(actionInfo, pureArgs, dataObj.StreamLength, stream, header);
         }
 
         public async Task<bool> SendResultAsync(CustomResult result, Stream stream, string streamName, ActionExecutingContext context)
@@ -116,19 +125,37 @@ namespace NetRpc.Http
             return _connection.CallBack(callbackObj);
         }
 
-        public Stream GetRequestStream(long? length)
+        public async Task<(HttpDataObj obj, ProxyStream stream)> GetFromFormDataAsync(Type dataObjType)
         {
-            if (_context.Request.ContentType == null ||
-                !_context.Request.ContentType.StartsWith("multipart/form-data"))
-                return null;
+            var boundary = MultipartRequestHelper.GetBoundary(
+                MediaTypeHeaderValue.Parse(_context.Request.ContentType),
+                _defaultFormOptions.MultipartBoundaryLengthLimit);
+            var reader = new MultipartReader(boundary, _context.Request.Body);
+            var section = await reader.ReadNextSectionAsync();
 
-            if (_context.Request.Form.Files.Count > 0)
-            {
-                var formFile = _context.Request.Form.Files[0];
-                return formFile.OpenReadStream();
-            }
+            //body
+            ValidateSection(section);
+            MemoryStream ms = new MemoryStream();
+            section.Body.CopyTo(ms);
+            var body = Encoding.UTF8.GetString(ms.ToArray());
+            var dataObj = Helper.ToHttpDataObj(body, dataObjType);
 
-            return null;
+            //stream
+            section = await reader.ReadNextSectionAsync();
+            ValidateSection(section);
+            var proxyStream = new ProxyStream(section.Body, dataObj.StreamLength);
+
+            return (dataObj, proxyStream);
+        }
+
+        private static void ValidateSection(MultipartSection section)
+        {
+            var hasContentDispositionHeader =
+                ContentDispositionHeaderValue.TryParse(
+                    section.ContentDisposition, out _);
+
+            if (!hasContentDispositionHeader)
+                throw new HttpFailedException("Has not ContentDispositionHeader.");
         }
 
         public void Dispose()
@@ -169,7 +196,7 @@ namespace NetRpc.Http
             return ret;
         }
 
-        private async Task<object[]> GetPureArgsAsync(ActionInfo ai)
+        private async Task<(HttpDataObj dataObj, ProxyStream stream)> GetHttpDataObjAndStream(ActionInfo ai)
         {
             //dataObjType
             var method = ApiWrapper.GetMethodInfo(ai, _contracts, _serviceProvider);
@@ -180,15 +207,7 @@ namespace NetRpc.Http
                 //multipart/form-data
                 if (_context.Request.ContentType.StartsWith("multipart/form-data"))
                 {
-                    if (!_context.Request.Form.TryGetValue("data", out var data))
-                        return new object[0];
-
-                    if (data.Count == 0)
-                        throw new HttpFailedException("multipart/form-data, 'data' have no data.");
-
-                    var dataObj = Helper.ToObjectForHttp(data[0], dataObjType);
-                    (_connection.ConnectionId, _connection.CallId) = GetConnectionIdCallId(dataObj);
-                    return Helper.GetPureArgsFromDataObj(dataObjType, dataObj);
+                    return await GetFromFormDataAsync(dataObjType);
                 }
 
                 //application/json
@@ -198,14 +217,9 @@ namespace NetRpc.Http
                     using (var sr = new StreamReader(_context.Request.Body, Encoding.UTF8))
                         body = await sr.ReadToEndAsync();
 
-                    var dataObj = Helper.ToObjectForHttp(body, dataObjType);
-                    (_connection.ConnectionId, _connection.CallId) = GetConnectionIdCallId(dataObj);
-                    return Helper.GetPureArgsFromDataObj(dataObjType, dataObj);
+                    var dataObj = Helper.ToHttpDataObj(body, dataObjType);
+                    return (dataObj, null);
                 }
-            }
-            else
-            {
-                return Helper.GetArgsFromQuery(_context.Request.Query, dataObjType);
             }
 
             throw new HttpFailedException($"ContentType:'{_context.Request.ContentType}' is not supported.");
@@ -215,24 +229,6 @@ namespace NetRpc.Http
         {
             if (_connection.CallId == e || string.IsNullOrEmpty(e))
                 _cts.Cancel();
-        }
-
-        private static object GetValue(object obj, string propertyName)
-        {
-            var pi = obj.GetType().GetProperty(propertyName);
-            if (pi == null)
-                return null;
-            return pi.GetValue(obj);
-        }
-
-        private static (string connectionId, string callId) GetConnectionIdCallId(object dataObj)
-        {
-            if (dataObj == null)
-                return (null, null);
-
-            var connectionId = (string) GetValue(dataObj, ClientConstValue.ConnectionIdName);
-            var callId = (string) GetValue(dataObj, ClientConstValue.CallIdName);
-            return (connectionId, callId);
         }
 
         private ActionInfo GetActionInfo(string requestPath)

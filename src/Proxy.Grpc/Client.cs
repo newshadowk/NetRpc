@@ -3,7 +3,7 @@ using Grpc.Core;
 
 namespace Grpc.Base
 {
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP3_1
     public class Client : IDisposable, IAsyncDisposable
 #else
     public sealed class Client : IDisposable
@@ -32,7 +32,7 @@ namespace Grpc.Base
             _disposed = true;
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP3_1
         public async System.Threading.Tasks.ValueTask DisposeAsync()
         {
             if (_disposed)

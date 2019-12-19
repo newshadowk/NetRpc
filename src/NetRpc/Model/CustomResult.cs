@@ -7,11 +7,11 @@ namespace NetRpc
     {
         public object Result { get; set; }
 
-        public long? StreamLength { get; set; }
+        public long StreamLength { get; set; }
 
         public bool HasStream { get; set; }
 
-        public CustomResult(object result, bool hasStream, long? streamLength = null)
+        public CustomResult(object result, bool hasStream, long streamLength)
         {
             Result = result;
             HasStream = hasStream;

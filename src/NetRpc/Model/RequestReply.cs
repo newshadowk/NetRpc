@@ -4,7 +4,7 @@ namespace NetRpc
 {
     public static class NullReply
     {
-        public static byte[] All { get; } = Reply.FromResult(new CustomResult(null, false)).All;
+        public static byte[] All { get; } = Reply.FromResult(new CustomResult(null, false, 0)).All;
     }
 
     internal class Message

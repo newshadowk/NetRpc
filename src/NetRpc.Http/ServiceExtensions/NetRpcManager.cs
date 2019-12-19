@@ -59,8 +59,6 @@ namespace NetRpc.Http
                     app.UseSignalR(routes => { routes.MapHub<CallbackHub>(hubPath); });
 #endif
 
-
-
                     if (isSwagger)
                         app.UseNetRpcSwagger();
                     app.UseNetRpcHttp();

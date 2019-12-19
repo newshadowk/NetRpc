@@ -29,16 +29,24 @@ namespace NetRpc
 
         public async Task HandleAsync(IServiceOnceApiConvert convert)
         {
-            var contractOptions = _serviceProvider.GetRequiredService<IOptions<ContractOptions>>();
-            var rpcContextAccessor = _serviceProvider.GetRequiredService<IActionExecutingContextAccessor>();
+            try
+            {
+                var contractOptions = _serviceProvider.GetRequiredService<IOptions<ContractOptions>>();
+                var rpcContextAccessor = _serviceProvider.GetRequiredService<IActionExecutingContextAccessor>();
 
-            using var scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
-            GlobalServiceProvider.Provider = _serviceProvider;
-            GlobalServiceProvider.ScopeProvider = scope.ServiceProvider;
-            var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
-            var onceTransfer = new ServiceOnceTransfer(instances, scope.ServiceProvider, convert, _middlewareBuilder, rpcContextAccessor, _channelType, _logger);
-            await onceTransfer.StartAsync();
-            await onceTransfer.HandleRequestAsync();
+                using var scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
+                GlobalServiceProvider.Provider = _serviceProvider;
+                GlobalServiceProvider.ScopeProvider = scope.ServiceProvider;
+                var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
+                var onceTransfer = new ServiceOnceTransfer(instances, scope.ServiceProvider, convert, _middlewareBuilder, rpcContextAccessor, _channelType, _logger);
+                await onceTransfer.StartAsync();
+                await onceTransfer.HandleRequestAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical(e, null);
+                throw;
+            }
         }
     }
 }

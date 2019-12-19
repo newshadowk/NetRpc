@@ -53,7 +53,7 @@ namespace NetRpc.OpenTracing
             if (context.ContractMethod.MethodInfo.GetParameters().Length == 0)
                 return span;
 
-            var mergeArgTypeObj = context.ContractMethod.CreateMergeArgTypeObj(null, null, context.PureArgs);
+            var mergeArgTypeObj = context.ContractMethod.CreateMergeArgTypeObj(null, null, 0, context.PureArgs);
             span.SetTag(new StringTag("Args"), mergeArgTypeObj.ToDisplayJson(maxLength));
             return span;
         }
@@ -98,17 +98,6 @@ namespace NetRpc.OpenTracing
         {
             foreach (var pair in spanContext.GetBaggageItems()) 
                 span.SetBaggageItem(pair.Key, pair.Value);
-        }
-
-        public static bool GetIsLogDetails(OpenTracingOptions options)
-        {
-            if (GlobalTracer.Instance.ActiveSpan == null)
-                return true;
-
-            var isLogDetailsStr = GlobalTracer.Instance.ActiveSpan.GetBaggageItem(ConstValue.IsLogDetails);
-            if (isLogDetailsStr == null)
-                return options.IsLogDetails;
-            return bool.Parse(isLogDetailsStr);
         }
     }
 }

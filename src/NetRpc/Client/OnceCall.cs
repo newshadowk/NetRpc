@@ -50,7 +50,8 @@ namespace NetRpc
                 {
                     //Send cmd
                     var postStream = methodContext.ContractMethod.IsMQPost ? stream.StreamToBytes() : null;
-                    var p = new OnceCallParam(header, action, postStream, stream.GetLength(), pureArgs);
+                    var p = new OnceCallParam(header, action, postStream != null || stream != null,
+                        postStream, stream.GetLength(), pureArgs);
                     if (token.IsCancellationRequested)
                     {
                         SetCancel(tcs);

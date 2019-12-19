@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP3_1
     public interface IServiceOnceApiConvert : IDisposable, IAsyncDisposable
 #else
     public interface IServiceOnceApiConvert : IDisposable
@@ -21,7 +21,7 @@ namespace NetRpc
 
         Task StartAsync(CancellationTokenSource cts);
 
-        Task<OnceCallParam> GetOnceCallParamAsync();
+        Task<ServiceOnceCallParam> GetServiceOnceCallParamAsync();
 
         /// <returns>True need send stream next, otherwise false.</returns>
         Task<bool> SendResultAsync(CustomResult result, Stream stream, string streamName, ActionExecutingContext context);
@@ -29,7 +29,5 @@ namespace NetRpc
         Task SendFaultAsync(Exception body, ActionExecutingContext context);
 
         Task SendCallbackAsync(object callbackObj);
-
-        Stream GetRequestStream(long? length);
     }
 }

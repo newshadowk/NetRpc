@@ -22,26 +22,21 @@ namespace NetRpc.OpenTracing
                 return;
             }
 
-            bool isLogDetails = Helper.GetIsLogDetails(options.Value);
             SetTracingBefore(context);
             await _next(context);
-
-            var isRoot = (bool)context.Properties[ConstValue.IsLogSendStream];
-            if (isLogDetails || isRoot)
-                SetTracingAfter(context);
+            SetTracingAfter(context);
         }
 
         private static void SetTracingBefore(ActionExecutingContext context)
         {
-            if (!(context.Stream is BufferBlockStream) || GlobalTracer.Instance.ActiveSpan == null)
+            if (context.Stream == null || context.Stream.Length == 0 || GlobalTracer.Instance.ActiveSpan == null)
                 return;
 
-            var bbs = (BufferBlockStream)context.Stream;
             var spanBuilder = GlobalTracer.Instance.BuildSpan(
-                $"{ConstValue.ServiceStream} {Helper.SizeSuffix(bbs.Length)} {ConstValue.ReceiveStr}").AsChildOf(GlobalTracer.Instance.ActiveSpan);
+                $"{ConstValue.ServiceStream} {Helper.SizeSuffix(context.Stream.Length)} {ConstValue.ReceiveStr}").AsChildOf(GlobalTracer.Instance.ActiveSpan);
             ISpan span = null;
-            bbs.Started += (s, e) => span = spanBuilder.Start();
-            bbs.Finished += (s, e) => { span?.Finish(); };
+            context.Stream.Started += (s, e) => span = spanBuilder.Start();
+            context.Stream.Finished += (s, e) => { span?.Finish(); };
         }
 
         private static void SetTracingAfter(ActionExecutingContext context)

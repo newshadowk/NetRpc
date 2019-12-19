@@ -24,7 +24,7 @@ namespace NetRpc.RabbitMQ
             _callSession.Dispose();
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP3_1
         public ValueTask DisposeAsync()
         {
             Dispose();

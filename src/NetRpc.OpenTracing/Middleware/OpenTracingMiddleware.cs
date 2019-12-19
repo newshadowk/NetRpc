@@ -56,14 +56,12 @@ namespace NetRpc.OpenTracing
             {
                 scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.ReceiveStr}")
                     .StartActive(true);
-                context.Properties[ConstValue.IsLogSendStream] = true;
             }
             else
             {
                 scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.ReceiveStr}")
                     .AsChildOf(spanContext).StartActive(true);
                 spanContext.CopyBaggageItemsTo(scope.Span);
-                context.Properties[ConstValue.IsLogSendStream] = options.ForceLogSendStream;
             }
 
             return scope;

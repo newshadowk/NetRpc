@@ -48,6 +48,6 @@ namespace DataContract
 
         Task<ComplexStream> ComplexCallAsync(CustomObj obj, string p1, Stream stream, Action<CustomCallbackObj> cb, CancellationToken token);
 
-        Task<string> ComplexCall2Async(Action<CustomCallbackObj> cb, CancellationToken token);
+        Task<int> UploadAsync(Stream stream, string p1, Action<int> cb, CancellationToken token);
     }
 }

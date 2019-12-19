@@ -40,8 +40,18 @@ namespace NetRpc.Http.Client
                     }
                 }
             }
-
-#if !NETCOREAPP2_1
+#if NETCOREAPP2_1
+            try
+            {
+                await _connection.StartAsync();
+                _connectionId = await _connection.InvokeAsync<string>("GetConnectionId");
+                return _connectionId;
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, "_connection.StartAsync() failed.");
+            }
+#else
             // ReSharper disable once PossibleNullReferenceException
             if (_connection.State == HubConnectionState.Disconnected)
             {
@@ -62,19 +72,7 @@ namespace NetRpc.Http.Client
                     }
                 }
             }
-#else
-            try
-            {
-                await _connection.StartAsync();
-                _connectionId = await _connection.InvokeAsync<string>("GetConnectionId");
-                return _connectionId;
-            }
-            catch (Exception e)
-            {
-                _logger.LogWarning(e, "_connection.StartAsync() failed.");
-            }
 #endif
-
             return _connectionId;
         }
 
@@ -88,7 +86,7 @@ namespace NetRpc.Http.Client
             _connection.StopAsync().Wait();
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP3_1
         public async ValueTask DisposeAsync()
         {
             await _connection.StopAsync();

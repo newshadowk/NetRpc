@@ -22,9 +22,7 @@ namespace NetRpc.OpenTracing
                 return;
             }
 
-            bool isLogDetails = Helper.GetIsLogDetails(options.Value);
-            if (isLogDetails)
-                SetTracingBefore(context);
+            SetTracingBefore(context);
             await _next(context);
             SetTracingAfter(context);
         }
@@ -48,12 +46,12 @@ namespace NetRpc.OpenTracing
 
             if (context.Result.TryGetStream(out var outStream, out _))
             {
-                var bbs = (BufferBlockStream)outStream;
+                var readStream = (ReadStream)outStream;
                 var spanBuilder = GlobalTracer.Instance.BuildSpan(
-                    $"{ConstValue.ClientStream} {Helper.SizeSuffix(bbs.Length)} {ConstValue.ReceiveStr}").AsChildOf(GlobalTracer.Instance.ActiveSpan);
+                    $"{ConstValue.ClientStream} {Helper.SizeSuffix(readStream.Length)} {ConstValue.ReceiveStr}").AsChildOf(GlobalTracer.Instance.ActiveSpan);
                 ISpan span = null;
-                bbs.Started += (s, e) => span = spanBuilder.Start();
-                bbs.Finished += (s, e) => span?.Finish();
+                readStream.Started += (s, e) => span = spanBuilder.Start();
+                readStream.Finished += (s, e) => span?.Finish();
             }
         }
     }

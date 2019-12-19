@@ -24,7 +24,7 @@ namespace NetRpc.Grpc
             Interlocked.Increment(ref _handlingCount);
             try
             {
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP3_1
                 await
 #endif
                     using var connection = new GrpcServiceConnection(requestStream, responseStream);
