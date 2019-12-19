@@ -75,6 +75,11 @@ namespace Service
             return ret;
         }
 
+        public Task<int> UploadAsync(Stream stream, string p1, Action<int> cb, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<string> ComplexCall2Async(Action<CustomCallbackObj> cb, CancellationToken token)
         {
             throw new NotImplementedException();

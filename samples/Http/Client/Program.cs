@@ -20,16 +20,19 @@ namespace Client
         {
             _proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(new HttpClientOptions
             {
-                SignalRHubUrl = "http://localhost:5000/callback",
-                ApiUrl = "http://localhost:5000/api"
+                //SignalRHubUrl = "http://localhost:5000/callback",
+                //ApiUrl = "http://localhost:5000/api"
+                SignalRHubUrl = "https://localhost:5001/callback",
+                ApiUrl = "https://localhost:5001/api"
             }).Proxy;
 
-            await Test_CallAsync();
-            await Test_CallByCancelAsync();
-            await Test_CallByCustomExceptionAsync();
-            await Test_CallByDefaultExceptionAsync();
-            await Test_CallByResponseTextExceptionAsync();
-            await Test_ComplexCallAsync();
+            //await Test_CallAsync();
+            //await Test_CallByCancelAsync();
+            //await Test_CallByCustomExceptionAsync();
+            //await Test_CallByDefaultExceptionAsync();
+            //await Test_CallByResponseTextExceptionAsync();
+            //await Test_ComplexCallAsync();
+            await Test_UploadAsync();
 
             Console.Read();
         }
@@ -116,6 +119,17 @@ namespace Client
                 using (var stream2 = complexStream.Stream)
                     Console.Write($", receive length:{stream.Length}, {Helper.ReadStr(stream2)}");
                 Console.WriteLine($", innerObj:{complexStream.InnerObj}");
+            }
+        }
+
+        private static async Task Test_UploadAsync()
+        {
+            using (var stream = File.Open(@"d:\testfile\400MB.exe", FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                Console.WriteLine("[Test_UploadAsync]...Send file...");
+                CancellationTokenSource cts = new CancellationTokenSource();
+                var ret = await _proxyAsync.UploadAsync(stream, "123", Console.WriteLine, cts.Token);
+                Console.WriteLine($"ret:{ret}");
             }
         }
     }

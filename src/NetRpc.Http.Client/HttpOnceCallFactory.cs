@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace NetRpc.Http.Client
 {
@@ -15,10 +16,10 @@ namespace NetRpc.Http.Client
         private volatile string _connectionId;
         private readonly AsyncLock _lockInit = new AsyncLock();
 
-        public HttpOnceCallFactory(HttpClientOptions options, ILogger logger)
+        public HttpOnceCallFactory(IOptionsMonitor<HttpClientOptions> options, ILoggerFactory factory)
         {
-            _options = options;
-            _logger = logger;
+            _options = options.CurrentValue;
+            _logger = factory.CreateLogger("NetRpc");
         }
 
         private async Task<string> InitConnectionAsync()

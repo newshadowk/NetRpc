@@ -53,7 +53,7 @@ namespace NetRpc.OpenTracing
             if (context.ContractMethod.MethodInfo.GetParameters().Length == 0)
                 return span;
 
-            var mergeArgTypeObj = context.ContractMethod.CreateMergeArgTypeObj(null, null, context.PureArgs);
+            var mergeArgTypeObj = context.ContractMethod.CreateMergeArgTypeObj(null, null, 0, context.PureArgs);
             span.SetTag(new StringTag("Args"), mergeArgTypeObj.ToDisplayJson(maxLength));
             return span;
         }

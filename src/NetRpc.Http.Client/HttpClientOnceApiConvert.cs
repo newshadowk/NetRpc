@@ -65,7 +65,7 @@ namespace NetRpc.Http.Client
         public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream stream, bool isPost, CancellationToken token)
         {
             _callbackAction = methodContext.ContractMethod.MergeArgType.CallbackAction;
-            var postObj = methodContext.ContractMethod.CreateMergeArgTypeObj(_callId, _connectionId, callParam.PureArgs);
+            var postObj = methodContext.ContractMethod.CreateMergeArgTypeObj(_callId, _connectionId, stream?.Length ?? 0, callParam.PureArgs);
             var actionPath = methodContext.ContractMethod.HttpRoutInfo.ToString();
             var reqUrl = $"{_apiUrl}/{actionPath}";
 

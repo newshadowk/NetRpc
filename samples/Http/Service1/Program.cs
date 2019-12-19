@@ -18,8 +18,9 @@ namespace Service
             var webHost = WebHost.CreateDefaultBuilder(null)
                 .ConfigureKestrel(i =>
                 {
-                    i.Listen(IPAddress.Parse("0.0.0.0"), 5000);
-                    i.Listen(IPAddress.Parse("0.0.0.0"), 5001, listenOptions => { listenOptions.UseHttps(
+                    i.Limits.MaxRequestBodySize = 10737418240;   //10G
+                    i.ListenAnyIP(5000);
+                    i.ListenAnyIP(5001, listenOptions => { listenOptions.UseHttps(
                         @"1.pfx", "aaaa1111"); });
                 })
                 .ConfigureServices(services =>

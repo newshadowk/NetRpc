@@ -70,6 +70,10 @@ namespace NetRpc.Http
             var actionInfo = GetActionInfo();
             var header = GetHeader();
             var (dataObj, stream) = await GetHttpDataObjAndStream(actionInfo);
+
+            _connection.CallId = dataObj.CallId;
+            _connection.ConnectionId = dataObj.ConnectionId;
+
             var pureArgs = Helper.GetPureArgsFromDataObj(dataObj.Type, dataObj.Value);
 
             return new ServiceOnceCallParam(actionInfo, pureArgs, dataObj.StreamLength, stream, header);

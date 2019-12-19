@@ -11,7 +11,7 @@ namespace NetRpc
 
         public bool HasStream { get; set; }
 
-        public CustomResult(object result, bool hasStream, long streamLength = 0)
+        public CustomResult(object result, bool hasStream, long streamLength)
         {
             Result = result;
             HasStream = hasStream;

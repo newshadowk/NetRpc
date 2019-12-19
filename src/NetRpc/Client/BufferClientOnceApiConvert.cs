@@ -62,7 +62,7 @@ namespace NetRpc
 
             void OnEnd(object sender, EventArgs e)
             {
-                ((BufferBlockStream) sender).Finished -= OnEnd;
+                ((ReadStream) sender).Finished -= OnEnd;
                 Dispose();
             }
 

@@ -80,6 +80,27 @@ namespace Service
             return ret;
         }
 
+        public async Task<int> UploadAsync(Stream stream, string p1, Action<int> cb, CancellationToken token)
+        {
+            Console.WriteLine($"UploadAsync, {p1}");
+            string path = @"d:\testfile\tgt.rar";
+            File.Delete(path);
+            using (var fs = File.OpenWrite(path))
+            {
+                const int ReadBuffSize = 81920;
+                byte[] buffer = new byte[ReadBuffSize];
+                var readCount = await stream.ReadAsync(buffer, 0, ReadBuffSize, token);
+                while (readCount > 0)
+                {
+                    await fs.WriteAsync(buffer, 0, readCount, token);
+                    cb.Invoke(readCount);
+                    readCount = await stream.ReadAsync(buffer, 0, ReadBuffSize, token);
+                }
+            }
+
+            return 100;
+        }
+
         public async Task<string> ComplexCall2Async(Action<CustomCallbackObj> cb, CancellationToken token)
         {
             Console.WriteLine($"[ComplexCallAsync]...");

@@ -143,11 +143,14 @@ namespace NetRpc
 
             var attributeData = CustomAttributeData.GetCustomAttributes(m).Where(i => i.AttributeType == typeof(ExampleAttribute)).ToList();
             var addedCallId = false;
+            var addedStream = false;
             foreach (var p in m.GetParameters())
             {
+                //Stream
                 if (p.ParameterType == typeof(Stream))
                 {
                     streamName = p.Name;
+                    addedStream = true;
                     continue;
                 }
 
@@ -191,7 +194,11 @@ namespace NetRpc
                 cis.Add(new CustomsPropertyInfo(typeof(string), CallConst.ConnectionIdName));
                 cis.Add(new CustomsPropertyInfo(typeof(string), CallConst.CallIdName));
             }
-            
+
+            //StreamLength
+            if (addedStream)
+                cis.Add(new CustomsPropertyInfo(typeof(long), CallConst.StreamLength));
+
             var t = TypeFactory.BuildType(typeName, cis);
             if (cis.Count == 0)
                 return new MergeArgType(null, null, null, null);
@@ -199,7 +206,7 @@ namespace NetRpc
             return new MergeArgType(t, streamName, action, cancelToken);
         }
 
-        public object CreateMergeArgTypeObj(string callId, string connectionId, object[] args)
+        public object CreateMergeArgTypeObj(string callId, string connectionId, long streamLength, object[] args)
         {
             if (MergeArgType.Type == null)
                 return null;
@@ -207,9 +214,10 @@ namespace NetRpc
             var instance = Activator.CreateInstance(MergeArgType.Type);
             var newArgs = args.ToList();
 
-            //_connectionId _callId
+            //_connectionId _callId streamLength
             newArgs.Add(connectionId);
             newArgs.Add(callId);
+            newArgs.Add(streamLength);
 
             var i = 0;
             foreach (var p in MergeArgType.Type.GetProperties())
