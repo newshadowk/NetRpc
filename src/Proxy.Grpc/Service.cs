@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Grpc.Core;
 
-namespace Grpc.Base
+namespace Proxy.Grpc
 {
 #if NETSTANDARD2_1 || NETCOREAPP3_1
     public class Service : IDisposable, IAsyncDisposable

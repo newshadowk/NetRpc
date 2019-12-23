@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Protobuf;
-using Grpc.Base;
+using Proxy.Grpc;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Reflection;
-using System.Runtime.ExceptionServices;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace NetRpc
 {
@@ -13,7 +10,7 @@ namespace NetRpc
 
         public async Task InvokeAsync(ActionExecutingContext context)
         {
-            ActionInvoker ai = new ActionInvoker(context);
+            var ai = new ActionInvoker(context);
             await ai.InvokeAsync();
         }
     }

@@ -1,6 +1,4 @@
-﻿using System.Data;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using DataContract;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
@@ -33,7 +31,6 @@ namespace Service
                 })
                 .Configure(app =>
                 {
-
                     app.UseStaticFiles(new StaticFileOptions()
                     {
                         FileProvider = new PhysicalFileProvider(@"d:\"),

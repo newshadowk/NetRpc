@@ -1,8 +1,14 @@
-﻿using Grpc.Base;
-using Grpc.Core;
+﻿using Proxy.Grpc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+
+#if NETCOREAPP3_1
+using Channel = Grpc.Net.Client.GrpcChannel;
+#else
+using Channel = Grpc.Core.Channel;
+#endif
+
 
 namespace NetRpc.Grpc
 {

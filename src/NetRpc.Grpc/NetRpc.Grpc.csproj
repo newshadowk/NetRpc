@@ -5,6 +5,7 @@
     <SignAssembly>true</SignAssembly>
     <Description>Provide Grpc channel implementation for NetRpc.</Description>
   </PropertyGroup>
+
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'netcoreapp2.2'">
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="[2.2.0, 3.0.0)" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[2.2.0, 3.0.0)" />
@@ -15,15 +16,21 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[2.1.1, 2.2.0)" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="[2.1.0, 2.2.0)" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1' OR '$(TargetFramework)' == 'netcoreapp3.1'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.0" />
   </ItemGroup>
-
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+    <PackageReference Include="Grpc.AspNetCore" Version="2.25.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.0" />
+  </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Proxy.Grpc\Proxy.Grpc.csproj" />
     <ProjectReference Include="..\NetRpc\NetRpc.csproj" />
+    <ProjectReference Include="..\Proxy.Grpc\Proxy.Grpc.csproj" />
   </ItemGroup>
 
 </Project>

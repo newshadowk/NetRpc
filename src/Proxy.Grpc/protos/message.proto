@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package Grpc.Base;
+package Proxy.Grpc;
 
 service MessageCall {
   rpc DuplexStreamingServerMethod (stream StreamBuffer) returns (stream StreamBuffer) {}

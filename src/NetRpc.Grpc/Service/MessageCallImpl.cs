@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Grpc.Base;
 using Grpc.Core;
+using Proxy.Grpc;
 
 namespace NetRpc.Grpc
 {
@@ -22,16 +22,16 @@ namespace NetRpc.Grpc
             ServerCallContext context)
         {
             Interlocked.Increment(ref _handlingCount);
+            GrpcServiceConnection connection = null;
             try
             {
-#if NETSTANDARD2_1 || NETCOREAPP3_1
-                await
-#endif
-                    using var connection = new GrpcServiceConnection(requestStream, responseStream);
+                connection = new GrpcServiceConnection(requestStream, responseStream);
                 await _requestHandler.HandleAsync(connection);
             }
             finally
             {
+                if (connection != null) 
+                    await connection.AllDisposeAsync();
                 Interlocked.Decrement(ref _handlingCount);
             }
         }

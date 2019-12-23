@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Grpc.Base;
+using Proxy.Grpc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 

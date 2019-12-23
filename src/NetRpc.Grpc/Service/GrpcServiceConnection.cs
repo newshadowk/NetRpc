@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Net.NetworkInformation;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using Google.Protobuf;
-using Grpc.Base;
+using Proxy.Grpc;
 using Grpc.Core;
 
 namespace NetRpc.Grpc
@@ -12,6 +14,7 @@ namespace NetRpc.Grpc
         private readonly AsyncLock _sendLock = new AsyncLock();
         private readonly IAsyncStreamReader<StreamBuffer> _requestStream;
         private readonly IServerStreamWriter<StreamBuffer> _responseStream;
+        private readonly WriteOnceBlock<int> _end = new WriteOnceBlock<int>(i => i);
 
         public GrpcServiceConnection(IAsyncStreamReader<StreamBuffer> requestStream, IServerStreamWriter<StreamBuffer> responseStream)
         {
@@ -24,11 +27,19 @@ namespace NetRpc.Grpc
         }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_1
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            return new ValueTask();
+            
         }
 #endif
+
+        public async Task AllDisposeAsync()
+        {
+            //before dispose requestStream need to
+            //wait 10 second to receive 'completed' from client side.
+            await Task.WhenAny(Task.Delay(10000),
+                _end.ReceiveAsync());
+        }
 
         public event EventHandler<EventArgsT<byte[]>> Received;
 
@@ -43,8 +54,15 @@ namespace NetRpc.Grpc
             Task.Run(async () =>
             {
                 //MoveNext will have a Exception when client is disconnected.
-                while (await _requestStream.MoveNext(CancellationToken.None))
-                    OnReceived(new EventArgsT<byte[]>(_requestStream.Current.Body.ToByteArray()));
+                try
+                {
+                    while (await _requestStream.MoveNext(CancellationToken.None))
+                        OnReceived(new EventArgsT<byte[]>(_requestStream.Current.Body.ToByteArray()));
+                }
+                finally
+                {
+                    _end.Post(1);
+                }
             });
 
             return Task.CompletedTask;

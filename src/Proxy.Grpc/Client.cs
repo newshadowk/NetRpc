@@ -1,7 +1,12 @@
 ﻿using System;
-using Grpc.Core;
 
-namespace Grpc.Base
+#if NETCOREAPP3_1
+using Channel = Grpc.Net.Client.GrpcChannel;
+#else
+using Channel = Grpc.Core.Channel;
+#endif
+
+namespace Proxy.Grpc
 {
 #if NETSTANDARD2_1 || NETCOREAPP3_1
     public class Client : IDisposable, IAsyncDisposable
@@ -24,22 +29,30 @@ namespace Grpc.Base
             CallClient = new MessageCall.MessageCallClient(_channel);
         }
 
-        public void Dispose()
-        {
-            if (_disposed)
-                return;
-            _channel?.ShutdownAsync().Wait();
-            _disposed = true;
-        }
-
 #if NETSTANDARD2_1 || NETCOREAPP3_1
         public async System.Threading.Tasks.ValueTask DisposeAsync()
         {
             if (_disposed)
                 return;
+#if NETCOREAPP3_1
+            _channel?.Dispose();
+#else
             await _channel?.ShutdownAsync();
+#endif
             _disposed = true;
         }
 #endif
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+
+#if NETCOREAPP3_1
+            _channel?.Dispose();
+#else
+            _channel?.ShutdownAsync().Wait();
+#endif
+            _disposed = true;
+        }
     }
 }
