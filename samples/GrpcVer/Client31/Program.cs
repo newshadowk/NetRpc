@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Text;
 using System.Threading.Tasks;
 using DataContract;
+using Google.Protobuf;
 using Grpc.Net.Client;
+using GrpcService1;
 using NetRpc.Grpc;
+using Proxy.Grpc;
 
 namespace Client
 {
@@ -10,15 +14,22 @@ namespace Client
     {
         static async Task Main(string[] args)
         {
-            var c = GrpcChannel.ForAddress("https://localhost:5001");
-            //var c = GrpcChannel.ForAddress("http://localhost:5000");
+            AppContext.SetSwitch(
+                "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+            //var c = GrpcChannel.ForAddress("https://localhost:5001");
+            var c = GrpcChannel.ForAddress("http://localhost:5000");
             var p = NetRpcManager.CreateClientProxy<IService>(c);
             await p.Proxy.Call("hello world.");
 
             //var channel = GrpcChannel.ForAddress("https://localhost:5001");
+            //var channel = GrpcChannel.ForAddress("http://localhost:5000");
+            //var client = new Greeter.GreeterClient(channel);
+            //var r = client.SayHello(new HelloRequest() {Name = "n1"});
+
+
             //var client = new MessageCall.MessageCallClient(channel);
             //var m = client.DuplexStreamingServerMethod();
-            //await m.RequestStream.WriteAsync(new StreamBuffer() {Body = ByteString.CopyFrom("123", Encoding.UTF8)});
+            //await m.RequestStream.WriteAsync(new StreamBuffer() { Body = ByteString.CopyFrom("123", Encoding.UTF8) });
             //Console.WriteLine("delay 1000");
             //await Task.Delay(1000);
             //Console.WriteLine("CompleteAsync");

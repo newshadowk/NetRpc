@@ -53,7 +53,6 @@ namespace Service
                     {
                         i.LogActionInfoMaxLength = 1000;
                     });
-
                 })
                 .Configure(app =>
                 {

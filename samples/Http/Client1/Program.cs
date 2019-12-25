@@ -1,13 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using DataContract;
 using NetRpc;
 using NetRpc.Http.Client;
-using RestSharp.Extensions;
 using Helper = TestHelper.Helper;
 
 namespace Client

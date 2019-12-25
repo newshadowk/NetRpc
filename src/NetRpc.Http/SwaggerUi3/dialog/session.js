@@ -15,7 +15,13 @@ connection.start().then(function() {
 //Callback
 connection.on("Callback",
     function(callId, data) {
-        addText("callback, callId:" + callId + ", data:" + data);
+        addText("callback, callId:" + callId + ", " + data);
+    });
+
+//Progress
+connection.on("UploadProgress",
+    function (callId, percent, speed, speedStr) {
+        addText("UploadProgress, callId:" + callId + ", " + percent + ", " + speed + ", " + speedStr);
     });
 
 //Cancel

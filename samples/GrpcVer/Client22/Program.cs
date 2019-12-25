@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using DataContract;
 using Grpc.Core;
+using GrpcService1;
 using NetRpc.Grpc;
 
 namespace Client
@@ -28,9 +30,16 @@ WYJb2q9GVF4h9vhJavosI1adlar05sZcLmkQCP1YtU8=
 -----END CERTIFICATE-----";
         static async Task Main(string[] args)
         {
+            HttpClient c = new HttpClient();
+            var res = await c.GetAsync("http://localhost:5000/11");
+
             //var p = NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 5000, ChannelCredentials.Insecure));
             var p = NetRpcManager.CreateClientProxy<IService>("localhost", 5001, PublicKey);
-            await p.Proxy.Call("hello world.");
+            //await p.Proxy.Call("hello world.");
+
+            var channel = new Channel("localhost", 5000, ChannelCredentials.Insecure);
+            var client = new Greeter.GreeterClient(channel);
+            var r = await client.SayHelloAsync(new HelloRequest() {Name = "n1"});
             Console.Read();
         }
     }

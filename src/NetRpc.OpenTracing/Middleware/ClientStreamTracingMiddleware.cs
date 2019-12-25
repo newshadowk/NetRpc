@@ -33,7 +33,7 @@ namespace NetRpc.OpenTracing
                 return;
 
             var spanBuilder = GlobalTracer.Instance.BuildSpan(
-                $"{ConstValue.ClientStream} {Helper.SizeSuffix(context.Stream.Length)} {ConstValue.SendStr}").AsChildOf(GlobalTracer.Instance.ActiveSpan);
+                $"{ConstValue.ClientStream} {NetRpc.Helper.SizeSuffix(context.Stream.Length)} {ConstValue.SendStr}").AsChildOf(GlobalTracer.Instance.ActiveSpan);
             ISpan span = null;
             context.OnceCall.SendRequestStreamStarted += (s, e) => span = spanBuilder.Start();
             context.OnceCall.SendRequestStreamFinished += (s, e) => span?.Finish();
@@ -48,7 +48,7 @@ namespace NetRpc.OpenTracing
             {
                 var readStream = (ReadStream)outStream;
                 var spanBuilder = GlobalTracer.Instance.BuildSpan(
-                    $"{ConstValue.ClientStream} {Helper.SizeSuffix(readStream.Length)} {ConstValue.ReceiveStr}").AsChildOf(GlobalTracer.Instance.ActiveSpan);
+                    $"{ConstValue.ClientStream} {NetRpc.Helper.SizeSuffix(readStream.Length)} {ConstValue.ReceiveStr}").AsChildOf(GlobalTracer.Instance.ActiveSpan);
                 ISpan span = null;
                 readStream.Started += (s, e) => span = spanBuilder.Start();
                 readStream.Finished += (s, e) => span?.Finish();

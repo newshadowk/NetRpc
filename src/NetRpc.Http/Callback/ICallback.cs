@@ -7,6 +7,8 @@ namespace NetRpc.Http
     public interface ICallback
     {
         Task Callback(string callId, string data);
+
+        Task UploadProgress(string callId, double percent, long completedSize, long speed, string speedStr);
     }
 
     public sealed class CallbackHub : Hub<ICallback>
