@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <SignAssembly>true</SignAssembly>
-    <Description>Provide Jaeger support for NetRpc.</Description>
+    <Description>Provide jaeger support for NetRpc.</Description>
   </PropertyGroup>
 
   <ItemGroup>

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1;netcoreapp2.1;netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
     <SignAssembly>true</SignAssembly>
-    <Description>Provide OpenTracing support for NetRpc.</Description>
+    <Description>Provide openTracing support for NetRpc.</Description>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'netcoreapp2.2'">
     <PackageReference Include="Microsoft.Extensions.Logging" Version="[2.2.0, 3.0.0)" />

@@ -19,9 +19,16 @@ namespace NetRpc.Http
         public async Task Invoke(HttpContext httpContext, IOptionsSnapshot<ContractOptions> contractOptions, IHubContext<CallbackHub, ICallback> hub,
             IOptionsSnapshot<HttpServiceOptions> httpOptions, RequestHandler requestHandler, IServiceProvider serviceProvider)
         {
+            //if grpc channel message go to next.
+            if (httpContext.Request.Path.Value.EndsWith("DuplexStreamingServerMethod"))
+            {
+                await _next(httpContext);
+                return;
+            }
+
             bool notMatched;
 #if NETCOREAPP3_1
-           await
+            await
 #endif
             using (var convert = new HttpServiceOnceApiConvert(contractOptions.Value.Contracts, httpContext,
                 httpOptions.Value.ApiRootPath, httpOptions.Value.IgnoreWhenNotMatched, hub, serviceProvider))

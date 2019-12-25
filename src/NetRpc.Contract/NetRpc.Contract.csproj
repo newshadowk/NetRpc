@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Description>Contract Attribute define for NetRpc.</Description>
+    <Description>Contract attribute define for NetRpc.</Description>
     <RootNamespace>NetRpc</RootNamespace>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
