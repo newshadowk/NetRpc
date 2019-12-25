@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
@@ -24,11 +25,9 @@ namespace Service
             var host = WebHost.CreateDefaultBuilder(null)
                 .ConfigureKestrel(i =>
                 {
-                    //i.ConfigureEndpointDefaults(i => i.Protocols = HttpProtocols.Http2);
-                    //i.ConfigureEndpointDefaults(i => i.Protocols = HttpProtocols.Http1);
-                    i.Limits.MaxRequestBodySize = 10737418240; //10G
-                    i.ListenAnyIP(5000, o => o.Protocols = HttpProtocols.Http2);
-                    i.ListenAnyIP(5001, o =>o.Protocols = HttpProtocols.Http1);
+                    //i.Limits.MaxRequestBodySize = 10737418240; //10G
+                    //i.ListenAnyIP(5000, o => o.Protocols = HttpProtocols.Http2);
+                    //i.ListenAnyIP(5001, o =>o.Protocols = HttpProtocols.Http1);
                     //i.ListenAnyIP(5001, listenOptions =>
                     //{
                     //    listenOptions.UseHttps(
@@ -42,7 +41,8 @@ namespace Service
                     services.AddNetRpcSwagger();
                     services.AddNetRpcHttpService();
                     services.AddNetRpcContractSingleton<IService, Service>();
-                    services.AddNetRpcGrpcService();
+                    services.AddNetRpcRabbitMQService(i => i.CopyFrom(TestHelper.Helper.GetMQOptions()));
+                    //services.AddNetRpcGrpcService();
 
                 })
                 .Configure(app =>
@@ -64,43 +64,10 @@ namespace Service
                     app.UseNetRpcSwagger();
                     app.UseNetRpcHttp();
                     app.UseMiddleware<SwaggerUiIndexMiddleware>();
-                    app.UseNetRpcGrpc();
+                    //app.UseNetRpcGrpc();
                 }).Build();
 
             await host.RunAsync();
-
-            //var host = Host.CreateDefaultBuilder(null)
-            //    .ConfigureWebHostDefaults(i =>
-            //    {
-            //        i.UseStartup<Startup>();
-            //    })
-            //    .Build();
-
-            //var host = WebHost.CreateDefaultBuilder(null)
-            //    .ConfigureKestrel(i =>
-            //    {
-            //        i.ListenAnyIP(5000);
-            //        i.Limits.MaxRequestBodySize = 10737418240; //10G
-            //    })
-            //    .ConfigureServices(services =>
-            //    {
-            //        services.AddGrpc();
-            //    })
-            //    .Configure(app =>
-            //    {
-            //        app.UseRouting();
-            //        app.UseEndpoints(endpoints =>
-            //        {
-            //            endpoints.MapGrpcService<MessageCallImpl2>();
-            //            endpoints.MapGet("/", async context =>
-            //            {
-            //                await context.Response.WriteAsync("Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
-            //            });
-            //        });
-            //    })
-            //    .Build();
-
-            //await host.RunAsync();
         }
     }
 
@@ -109,6 +76,19 @@ namespace Service
         public async Task Call(string s)
         {
             Console.WriteLine($"Receive: {s}");
+        }
+
+        public async Task<Stream> Echo(Stream s)
+        {
+            //using (var fw = File.OpenWrite(@"d:\testfile\servertgt.db"))
+            //{
+            //    await s.CopyToAsync(fw);
+            //}
+
+            MemoryStream ms = new MemoryStream();
+            await s.CopyToAsync(ms);
+            ms.Seek(0, SeekOrigin.Begin);
+            return ms;
         }
     }
 

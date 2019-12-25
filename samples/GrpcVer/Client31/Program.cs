@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using DataContract;
@@ -7,6 +8,7 @@ using Grpc.Net.Client;
 using GrpcService1;
 using NetRpc.Grpc;
 using Proxy.Grpc;
+using NetRpcManager = NetRpc.RabbitMQ.NetRpcManager;
 
 namespace Client
 {
@@ -14,12 +16,12 @@ namespace Client
     {
         static async Task Main(string[] args)
         {
-            AppContext.SetSwitch(
-                "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+            //AppContext.SetSwitch(
+            //    "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
             //var c = GrpcChannel.ForAddress("https://localhost:5001");
-            var c = GrpcChannel.ForAddress("http://localhost:5000");
-            var p = NetRpcManager.CreateClientProxy<IService>(c);
-            await p.Proxy.Call("hello world.");
+            //var c = GrpcChannel.ForAddress("http://localhost:5000");
+            //var p = NetRpcManager.CreateClientProxy<IService>(c);
+            //await p.Proxy.Call("hello world.");
 
             //var channel = GrpcChannel.ForAddress("https://localhost:5001");
             //var channel = GrpcChannel.ForAddress("http://localhost:5000");
@@ -35,6 +37,17 @@ namespace Client
             //Console.WriteLine("CompleteAsync");
             //await m.RequestStream.CompleteAsync();
             //Console.WriteLine("end");
+
+            var clientProxy = NetRpcManager.CreateClientProxy<IService>(TestHelper.Helper.GetMQOptions());
+            using (var fs = File.OpenRead(@"d:\testfile\10mb.db"))
+            {
+                var stream = await clientProxy.Proxy.Echo(fs);
+                using (var fw = File.OpenWrite(@"d:\testfile\tgt.db"))
+                {
+                    await stream.CopyToAsync(fw);
+                }
+            }
+
             Console.Read();
         }
     }

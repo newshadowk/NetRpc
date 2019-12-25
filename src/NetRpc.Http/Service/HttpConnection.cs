@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using System.Timers;
 using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,11 +15,13 @@ using NetRpc.Http.Client;
 
 namespace NetRpc.Http
 {
-    internal sealed class HttpConnection
+    internal sealed class HttpConnection : IDisposable
     {
         private readonly HttpContext _context;
         private readonly IHubContext<CallbackHub, ICallback> _hub;
         private readonly ILogger _logger;
+        private readonly RateAction _ra = new RateAction(1000);
+        private readonly ProgressEvent _progressEvent = new ProgressEvent();
 
         public HttpConnection(HttpContext context, IHubContext<CallbackHub, ICallback> hub, ILogger logger)
         {
@@ -34,32 +34,26 @@ namespace NetRpc.Http
 
         public string CallId { get; set; }
 
-        //public ProxyStream Stream
-        //{
-        //    set
-        //    {
-        //        value.Progress += (s, e) =>
-        //        {
-        //            double percent;
-        //            if (value.Length == 0)
-        //                percent = 0;
-        //            else
-        //            {
-        //                var p = (double)e / value.Length;
-        //                if (p == 0)
-        //                    return;
-
-        //                percent = p * 100;
-        //            }
-
-        //            UploadProgress(percent, e, )
-        //        };
-        //    }
-        //}
-
-        private void Value_Progress(object sender, long e)
+        public ProxyStream Stream
         {
-            throw new NotImplementedException();
+            set
+            {
+                value.Progress += (s, e) =>
+                {
+                    ProgressEventArgs args;
+                    if (value.Length == 0)
+                        args = _progressEvent.DownLoaderProgress(e.Value, long.MaxValue);
+                    else
+                        args = _progressEvent.DownLoaderProgress(e.Value, value.Length);
+
+                    _ra.Post(() =>
+                    {
+#pragma warning disable 4014
+                        UploadProgress(args);
+#pragma warning restore 4014
+                    });
+                };
+            }
         }
 
         public async Task CallBack(object callbackObj)
@@ -75,12 +69,12 @@ namespace NetRpc.Http
             }
         }
 
-        private async Task UploadProgress(double percent, long completedSize, long speed)
+        private async Task UploadProgress(ProgressEventArgs args)
         {
             try
             {
                 if (ConnectionId != null)
-                    await _hub.Clients.Client(ConnectionId).UploadProgress(CallId, percent, completedSize, speed, NetRpc.Helper.SizeSuffix(speed));
+                    await _hub.Clients.Client(ConnectionId).UploadProgress(CallId, args.ToDtoJson());
             }
             catch (Exception e)
             {
@@ -121,96 +115,11 @@ namespace NetRpc.Http
                 s = result.Ret.ToDtoJson();
             await _context.Response.WriteAsync(s ?? "");
         }
+
+        public void Dispose()
+        {
+            _ra?.Dispose();
+            _progressEvent?.Dispose();
+        }
     }
-
-    //public class ProgressCounter
-    //{
-    //    private readonly BusyTimer _tSpeed = new BusyTimer(1000);
-    //    private long _currSize;
-    //    private readonly object _lockObj = new object();
-    //    private readonly long _totalSize;
-    //    private int _speed;
-    //    private TimeSpan _leftTimeSpan;
-    //    private readonly Queue<long> _qOldSize = new Queue<long>();
-    //    private const int GapSecs = 3;
-
-    //    public int Speed
-    //    {
-    //        get
-    //        {
-    //            lock (_lockObj)
-    //            {
-    //                return _speed;
-    //            }
-    //        }
-    //    }
-
-    //    public TimeSpan LeftTime
-    //    {
-    //        get
-    //        {
-    //            lock (_lockObj)
-    //            {
-    //                return _leftTimeSpan;
-    //            }
-    //        }
-    //    }
-
-    //    public ProgressCounter(long totalSize)
-    //    {
-    //        _totalSize = totalSize;
-    //        _tSpeed.Start();
-    //        _tSpeed.Elapsed += TSpeedElapsed;
-    //    }
-
-    //    private void TSpeedElapsed(object sender, ElapsedEventArgs e)
-    //    {
-    //        lock (_lockObj)
-    //        {
-    //            if (_qOldSize.Count == 0)
-    //            {
-    //                _qOldSize.Enqueue(_currSize);
-    //                return;
-    //            }
-
-    //            var (spanSecs, oldSize) = GetDataFromQueue(_qOldSize);
-    //            var (speed, leftTimeSpan) = Count(_currSize, _totalSize, oldSize, spanSecs);
-    //            _speed = speed;
-    //            _leftTimeSpan = leftTimeSpan;
-    //            _qOldSize.Enqueue(_currSize);
-    //        }
-    //    }
-
-    //    private static (int spanSecs, long oldSize) GetDataFromQueue(Queue<long> q)
-    //    {
-    //        if (q.Count < GapSecs)
-    //            return (q.Count, q.Peek());
-
-    //        if (q.Count == GapSecs)
-    //            return (3, q.Dequeue());
-
-    //        throw new ArgumentOutOfRangeException("", $"ProgessCounter.GetDataFromQueue() failed. q.Count is greater than {GapSecs} ");
-    //    }
-
-    //    private static (int speed, TimeSpan leftTimeSpan) Count(long currSize, long totalSize, long oldSize, int spanSecs)
-    //    {
-    //        var speed = (int)(currSize - oldSize) / spanSecs;
-    //        long leftSec;
-    //        if (speed == 0)
-    //            leftSec = (long)TimeSpan.MaxValue.TotalSeconds;
-    //        else
-    //            leftSec = (totalSize - currSize) / speed;
-    //        var leftTimeSpan = TimeSpan.FromSeconds(leftSec);
-
-    //        return (speed, leftTimeSpan);
-    //    }
-
-    //    public void Update(long currSize)
-    //    {
-    //        lock (_lockObj)
-    //        {
-    //            _currSize = currSize;
-    //        }
-    //    }
-    //}
 }

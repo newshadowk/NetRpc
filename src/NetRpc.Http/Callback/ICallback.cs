@@ -8,7 +8,7 @@ namespace NetRpc.Http
     {
         Task Callback(string callId, string data);
 
-        Task UploadProgress(string callId, double percent, long completedSize, long speed, string speedStr);
+        Task UploadProgress(string callId, string data);
     }
 
     public sealed class CallbackHub : Hub<ICallback>

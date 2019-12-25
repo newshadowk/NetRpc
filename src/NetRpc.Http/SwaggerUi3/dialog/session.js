@@ -20,8 +20,8 @@ connection.on("Callback",
 
 //Progress
 connection.on("UploadProgress",
-    function (callId, percent, speed, speedStr) {
-        addText("UploadProgress, callId:" + callId + ", " + percent + ", " + speed + ", " + speedStr);
+    function (callId, data) {
+        addText("progress, callId:" + callId + ", " + data);
     });
 
 //Cancel

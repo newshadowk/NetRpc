@@ -73,6 +73,7 @@ namespace NetRpc.Http
 
             _connection.CallId = dataObj.CallId;
             _connection.ConnectionId = dataObj.ConnectionId;
+            _connection.Stream = stream;
 
             var pureArgs = Helper.GetPureArgsFromDataObj(dataObj.Type, dataObj.Value);
 
@@ -161,6 +162,7 @@ namespace NetRpc.Http
         public void Dispose()
         {
             CallbackHub.Canceled -= CallbackHubCanceled;
+            _connection.Dispose();
         }
 
 #if NETCOREAPP3_1

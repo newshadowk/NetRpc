@@ -24,13 +24,21 @@ namespace NetRpc
         public override int Read(byte[] buffer, int offset, int count)
         {
             InvokeStart();
-
-            var readCount = _reader.Read(buffer, count);
-            Position += readCount;
-            OnProgress(Position);
+            int readCount;
+            try
+            {
+                readCount = _reader.Read(buffer, count);
+                Position += readCount;
+                OnProgress(new SizeEventArgs(Position));
+            }
+            catch
+            {
+                InvokeFinish(new SizeEventArgs(Position));
+                throw;
+            }
 
             if (readCount < count)
-                InvokeFinish();
+                InvokeFinish(new SizeEventArgs(Position));
 
             return readCount;
         }
@@ -38,13 +46,21 @@ namespace NetRpc
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             InvokeStart();
-
-            var readCount =  await _reader.ReadAsync(buffer, count, cancellationToken);
-            Position += readCount;
-            OnProgress(Position);
+            int readCount;
+            try
+            {
+                readCount = await _reader.ReadAsync(buffer, count, cancellationToken);
+                Position += readCount;
+                OnProgress(new SizeEventArgs(Position));
+            }
+            catch 
+            {
+                InvokeFinish(new SizeEventArgs(Position));
+                throw;
+            }
 
             if (readCount < count)
-                InvokeFinish();
+                InvokeFinish(new SizeEventArgs(Position));
 
             return readCount;
         }
@@ -77,7 +93,7 @@ namespace NetRpc
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-                InvokeFinish();
+                InvokeFinish(new SizeEventArgs(Position));
 
             base.Dispose(disposing);
         }

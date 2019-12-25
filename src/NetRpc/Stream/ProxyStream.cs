@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,12 +30,20 @@ namespace NetRpc
         {
             InvokeStart();
 
-            var readCount = _stream.Read(buffer, offset, count);
-
-            OnProgress(Position);
+            int readCount;
+            try
+            {
+                readCount = _stream.Read(buffer, offset, count);
+                OnProgress(new SizeEventArgs(Position));
+            }
+            catch
+            {
+                InvokeFinish(new SizeEventArgs(Position));
+                throw;
+            }
 
             if (readCount < count)
-                InvokeFinish();
+                InvokeFinish(new SizeEventArgs(Position));
 
             return readCount;
         }
@@ -42,13 +51,21 @@ namespace NetRpc
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             InvokeStart();
+            int readCount;
 
-            var readCount = await _stream.ReadAsync(buffer, offset, count, cancellationToken);
-
-            OnProgress(Position);
+            try
+            {
+                readCount = await _stream.ReadAsync(buffer, offset, count, cancellationToken);
+                OnProgress(new SizeEventArgs(Position));
+            }
+            catch
+            {
+                InvokeFinish(new SizeEventArgs(Position));
+                throw;
+            }
 
             if (readCount < count)
-                InvokeFinish();
+                InvokeFinish(new SizeEventArgs(Position));
 
             return readCount;
         }

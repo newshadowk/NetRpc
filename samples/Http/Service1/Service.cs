@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
 using NetRpc;
+using NetRpc.Http;
 using NetRpc.Http.Client;
 using Helper = TestHelper.Helper;
 
@@ -85,6 +86,7 @@ namespace Service
             Console.WriteLine($"UploadAsync, {p1}");
             string path = @"d:\testfile\tgt.rar";
             File.Delete(path);
+            
             using (var fs = File.OpenWrite(path))
             {
                 const int ReadBuffSize = 81920;
@@ -93,7 +95,7 @@ namespace Service
                 while (readCount > 0)
                 {
                     await fs.WriteAsync(buffer, 0, readCount, token);
-                    cb.Invoke(readCount);
+                    //cb.Invoke(readCount);
                     readCount = await stream.ReadAsync(buffer, 0, ReadBuffSize, token);
                 }
             }

@@ -4,8 +4,8 @@ namespace NetRpc
 {
     public interface IProgress
     {
-        event EventHandler Finished;
+        event EventHandler<SizeEventArgs> Finished;
         event EventHandler Started;
-        event EventHandler<long> Progress;
+        event EventHandler<SizeEventArgs> Progress;
     }
 }

@@ -5,18 +5,18 @@ namespace NetRpc
 {
     public abstract class ReadStream : Stream, IProgress
     {
-        public event EventHandler Finished;
+        public event EventHandler<SizeEventArgs> Finished;
         public event EventHandler Started;
-        public event EventHandler<long> Progress;
+        public event EventHandler<SizeEventArgs> Progress;
         private volatile bool _isStarted;
         private volatile bool _isFinished;
 
-        protected void InvokeFinish()
+        protected void InvokeFinish(SizeEventArgs e)
         {
             if (!_isFinished)
             {
                 _isFinished = true;
-                OnFinished();
+                OnFinished(e);
             }
         }
 
@@ -29,19 +29,19 @@ namespace NetRpc
             }
         }
 
-        protected void OnFinished()
-        {
-            Finished?.Invoke(this, EventArgs.Empty);
-        }
-
-        protected void OnProgress(long e)
-        {
-            Progress?.Invoke(this, e);
-        }
-
         protected void OnStarted()
         {
             Started?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected virtual void OnFinished(SizeEventArgs e)
+        {
+            Finished?.Invoke(this, e);
+        }
+
+        protected virtual void OnProgress(SizeEventArgs e)
+        {
+            Progress?.Invoke(this, e);
         }
     }
 }

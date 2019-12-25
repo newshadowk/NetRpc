@@ -308,7 +308,7 @@ namespace NetRpc
 
             context.Stream.Progress += (s, e) =>
             {
-                var p = (double)e / totalCount;
+                var p = (double)e.Value / totalCount;
                 if (p == 0)
                     return;
 
