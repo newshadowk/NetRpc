@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,6 +11,14 @@ namespace NetRpc
 
         public ProxyStream(Stream stream)
         {
+            try
+            {
+                _length = stream.Length;
+            }
+            catch
+            {
+            }
+
             _stream = stream;
         }
 

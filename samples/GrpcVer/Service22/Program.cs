@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using DataContract;
 using Microsoft.Extensions.DependencyInjection;
@@ -78,6 +79,11 @@ WYJb2q9GVF4h9vhJavosI1adlar05sZcLmkQCP1YtU8=
         public async Task Call(string s)
         {
             Console.WriteLine($"Receive: {s}");
+        }
+
+        public Task<Stream> Echo(Stream s)
+        {
+            throw new NotImplementedException();
         }
     }
 }
