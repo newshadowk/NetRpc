@@ -1,4 +1,5 @@
-﻿using Grpc.Core;
+﻿using System.Collections.Generic;
+using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -55,12 +56,21 @@ namespace NetRpc.Grpc
         }
 
 #if !NETCOREAPP3_1
-        public static ClientProxy<TService> CreateClientProxy<TService>(string host, int port, string publicKey, int timeoutInterval = 1200000, int hearbeatInterval = 10000)
+        public static ClientProxy<TService> CreateClientProxy<TService>(string host, int port, string publicKey, string sslTargetName = null, int timeoutInterval = 1200000, int hearbeatInterval = 10000)
         {
             var ssl = new SslCredentials(publicKey);
-            //var options = new List<ChannelOption>();
-            //options.Add(new ChannelOption(ChannelOptions.SslTargetNameOverride, sslTargetName));
-            var channel = new Channel(host, port, ssl);
+            Channel channel;
+            if (sslTargetName == null)
+            {
+                channel = new Channel(host, port, ssl);
+            }
+            else
+            {
+                var options = new List<ChannelOption>();
+                options.Add(new ChannelOption(ChannelOptions.SslTargetNameOverride, sslTargetName));
+                channel = new Channel(host, port, ssl, options);
+            }
+
             return CreateClientProxy<TService>(channel, timeoutInterval, hearbeatInterval);
         }
 #endif

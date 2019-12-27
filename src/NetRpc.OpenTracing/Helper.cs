@@ -13,10 +13,13 @@ namespace NetRpc.OpenTracing
 
         public static ISpan SetTagMethodObj(this ISpan span, IActionExecutingContext context, int maxLength, bool isForce = false)
         {
-            if (!isForce && context.ContractMethod.IsTracerArgsIgnore)
-                return span;
-
             span.SetTag(new StringTag("Name"), context.ContractMethod.MethodInfo.ToFullMethodName());
+
+            if (!isForce && context.ContractMethod.IsTracerArgsIgnore)
+            {
+                span.SetTag(new StringTag("Args"), "[Ignore]");
+                return span;
+            }
 
             if (context.ContractMethod.MethodInfo.GetParameters().Length == 0)
                 return span;
@@ -29,7 +32,10 @@ namespace NetRpc.OpenTracing
         public static ISpan SetTagReturn(this ISpan span, IActionExecutingContext context, int maxLength, bool isForce = false)
         {
             if (!isForce && context.ContractMethod.IsTraceReturnIgnore)
+            {
+                span.SetTag(new StringTag("Result"), "[Ignore]");
                 return span;
+            }
 
             if (context.ContractMethod.MethodInfo.ReturnType != typeof(void))
                 span.SetTag(new StringTag("Result"), context.Result.ToDisplayJson(maxLength));
@@ -43,9 +49,7 @@ namespace NetRpc.OpenTracing
                 return null;
 
             if (obj is Stream)
-            {
                 return "Stream";
-            }
 
             var s = JsonConvert.SerializeObject(obj, Js);
             if (maxLength > 0 && s.Length > maxLength)
