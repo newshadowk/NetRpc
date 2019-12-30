@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -9,6 +10,7 @@ namespace RabbitMQ.Base
     {
         private readonly IModel _mainModel;
         private readonly BasicDeliverEventArgs _e;
+        private readonly ILogger _logger;
 
         private readonly IModel _clientToServiceModel;
         private readonly string _serviceToClientQueue;
@@ -18,13 +20,14 @@ namespace RabbitMQ.Base
 
         public event EventHandler<EventArgsT<byte[]>> Received;
 
-        public CallSession(IConnection connection, IModel mainModel, BasicDeliverEventArgs e)
+        public CallSession(IConnection connection, IModel mainModel, BasicDeliverEventArgs e, ILogger logger)
         {
             _clientToServiceModel = connection.CreateModel();
             _isPost = e.BasicProperties.ReplyTo == null;
             _serviceToClientQueue = e.BasicProperties.ReplyTo;
             _mainModel = mainModel;
             _e = e;
+            _logger = logger;
         }
 
         public void Start()
@@ -49,14 +52,21 @@ namespace RabbitMQ.Base
 
         public void Dispose()
         {
-            if (_disposed)
-                return;
-            _disposed = true;
-            _mainModel.BasicAck(_e.DeliveryTag, false);
-            if (_clientToServiceQueue != null)
+            try
             {
-                _clientToServiceModel.Close();
-                _clientToServiceModel.Dispose();
+                if (_disposed)
+                    return;
+                _disposed = true;
+                _mainModel.BasicAck(_e.DeliveryTag, false);
+                if (_clientToServiceQueue != null)
+                {
+                    _clientToServiceModel.Close();
+                    _clientToServiceModel.Dispose();
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, null);
             }
         }
 

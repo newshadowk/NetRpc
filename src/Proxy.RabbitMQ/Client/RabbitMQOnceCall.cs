@@ -103,8 +103,15 @@ namespace RabbitMQ.Base
 
         public void Dispose()
         {
-            _model?.Close();
-            _model?.Dispose();
+            try
+            {
+                _model?.Close();
+                _model?.Dispose();
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, null);
+            }
         }
 
         private void OnReceived(EventArgsT<byte[]> e)

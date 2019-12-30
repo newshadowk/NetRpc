@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -9,14 +10,16 @@ namespace RabbitMQ.Base
         public event EventHandler<EventArgsT<CallSession>> Received;
         private readonly string _rpcQueueName;
         private readonly int _prefetchCount;
+        private readonly ILogger _logger;
         private readonly IConnection _connect;
         private volatile IModel _mainModel;
 
-        public ServiceInner(IConnection connect, string rpcQueueName, int prefetchCount)
+        public ServiceInner(IConnection connect, string rpcQueueName, int prefetchCount, ILogger logger)
         {
             _connect = connect;
             _rpcQueueName = rpcQueueName;
             _prefetchCount = prefetchCount;
+            _logger = logger;
         }
 
         public void CreateChannel()
@@ -31,13 +34,20 @@ namespace RabbitMQ.Base
 
         private void ConsumerReceived(object sender, BasicDeliverEventArgs e)
         {
-            OnReceived(new EventArgsT<CallSession>(new CallSession(_connect, _mainModel, e)));
+            OnReceived(new EventArgsT<CallSession>(new CallSession(_connect, _mainModel, e, _logger)));
         }
 
         public void Dispose()
         {
-            _mainModel?.Close();
-            _mainModel?.Dispose();
+            try
+            {
+                _mainModel?.Close();
+                _mainModel?.Dispose();
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, null);
+            }
         }
 
         private void OnReceived(EventArgsT<CallSession> e)

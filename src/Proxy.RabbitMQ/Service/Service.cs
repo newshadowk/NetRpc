@@ -53,7 +53,7 @@ namespace RabbitMQ.Base
         private void ResetService()
         {
             Inner?.Dispose();
-            Inner = new ServiceInner(_connection, _rpcQueue, _prefetchCount);
+            Inner = new ServiceInner(_connection, _rpcQueue, _prefetchCount, _logger);
             Inner.CreateChannel();
             Inner.Received += InnerReceived;
         }
