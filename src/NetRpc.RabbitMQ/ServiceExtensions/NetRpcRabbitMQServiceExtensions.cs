@@ -18,23 +18,39 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddNetRpcRabbitMQClient(this IServiceCollection services,
             Action<RabbitMQClientOptions> mQClientConfigureOptions = null,
-            Action<NetRpcClientOption> clientConfigureOptions = null)
+            Action<NetRpcClientOption> clientConfigureOptions = null,
+            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
             if (mQClientConfigureOptions != null)
                 services.Configure(mQClientConfigureOptions);
-            services.AddNetRpcClientByClientConnectionFactory<RabbitMQClientConnectionFactory>(clientConfigureOptions);
-            services.AddSingleton<IClientProxyProvider, RabbitMqClientProxyProvider>();
+            services.AddNetRpcClientByClientConnectionFactory<RabbitMQClientConnectionFactory>(clientConfigureOptions, serviceLifetime);
+            switch (serviceLifetime)
+            {
+                case ServiceLifetime.Singleton:
+                    services.AddSingleton<IClientProxyProvider, RabbitMqClientProxyProvider>();
+                    break;
+                case ServiceLifetime.Scoped:
+                    services.AddScoped<IClientProxyProvider, RabbitMqClientProxyProvider>();
+                    break;
+                case ServiceLifetime.Transient:
+                    services.AddTransient<IClientProxyProvider, RabbitMqClientProxyProvider>();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
+            }
             return services;
         }
 
         public static IServiceCollection AddNetRpcRabbitMQGateway<TService>(this IServiceCollection services,
             Action<RabbitMQClientOptions> mQClientConfigureOptions = null,
-            Action<NetRpcClientOption> clientConfigureOptions = null)
+            Action<NetRpcClientOption> clientConfigureOptions = null,
+            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
-            services.AddNetRpcRabbitMQClient(mQClientConfigureOptions, clientConfigureOptions);
-            services.AddNetRpcClientContract<TService>();
-            services.AddNetRpcContractSingleton(typeof(TService),
-                p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))).Proxy);
+            services.AddNetRpcRabbitMQClient(mQClientConfigureOptions, clientConfigureOptions, serviceLifetime);
+            services.AddNetRpcClientContract<TService>(serviceLifetime);
+            services.AddNetRpcServiceContract(typeof(TService),
+                p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))).Proxy,
+                serviceLifetime);
             return services;
         }
     }

@@ -32,7 +32,11 @@ namespace Service
                     services.AddSignalR();
                     services.AddNetRpcSwagger();
                     services.AddNetRpcHttpService();
-                    services.AddNetRpcGrpcGateway<IService>(o => o.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
+                    services.AddNetRpcGrpcGateway<IService>(o =>
+                    {
+                        o.Host = "localhost";
+                        o.Port = 50001;
+                    });
                     services.AddNetRpcGrpcGateway<IService2>();
                 })
                 .Configure(app =>
@@ -60,7 +64,11 @@ namespace Service
                     //set single target by DI.
                     services.AddNetRpcRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
 
-                    services.AddNetRpcGrpcGateway<IService>(o => o.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
+                    services.AddNetRpcGrpcGateway<IService>(o =>
+                    {
+                        o.Host = "localhost";
+                        o.Port = 50001;
+                    });
                     services.AddNetRpcGrpcGateway<IService2>();
 
                     //set different target point.
@@ -80,7 +88,11 @@ namespace Service
                 .ConfigureServices((context, services) =>
                 {
                     services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50000));
-                    services.AddNetRpcGrpcGateway<IService>(o => o.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
+                    services.AddNetRpcGrpcGateway<IService>(o =>
+                    {
+                        o.Host = "localhost";
+                        o.Port = 50001;
+                    });
                     services.AddNetRpcGrpcGateway<IService2>();
                 })
                 .Build();

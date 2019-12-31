@@ -10,7 +10,11 @@ namespace Client
     {
         static async Task Main(string[] args)
         {
-            var p = NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure));
+            var p = NetRpcManager.CreateClientProxy<IService>(new GrpcClientOptions
+            {
+                Host = "localhost",
+                Port = 50001
+            });
             await p.Proxy.Call("hello world.");
             Console.Read();
         }

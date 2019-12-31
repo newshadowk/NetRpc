@@ -31,10 +31,14 @@ namespace Service_1
                     services.AddNetRpcHttpService();
 
                     services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50002); });
-                    services.AddNetRpcContractSingleton<IService_1, Service>();
+                    services.AddNetRpcServiceContract<IService_1, Service>();
 
                     services.Configure<GrpcClientOptions>("grpc",
-                        i => i.Channel = new Channel("localhost", 50004, ChannelCredentials.Insecure));
+                        i =>
+                        {
+                            i.Host = "localhost";
+                            i.Port = 50004;
+                        });
                     services.Configure<HttpClientOptions>("http",
                         i =>
                         {

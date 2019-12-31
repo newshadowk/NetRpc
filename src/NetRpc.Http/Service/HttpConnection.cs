@@ -38,6 +38,9 @@ namespace NetRpc.Http
         {
             set
             {
+                if (value == null)
+                    return;
+
                 value.Progress += (s, e) =>
                 {
                     ProgressEventArgs args;

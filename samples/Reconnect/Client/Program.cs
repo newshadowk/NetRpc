@@ -23,7 +23,11 @@ namespace Client
                     services.AddOptions();
                     services.AddHostedService<MyHost>();
                     services.Configure<RabbitMQClientOptions>("mq", i => i.CopyFrom(Helper.GetMQOptions()));
-                    services.Configure<GrpcClientOptions>("grpc", i => i.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
+                    services.Configure<GrpcClientOptions>("grpc", i =>
+                    {
+                        i.Host = "localhost";
+                        i.Port = 50001;
+                    });
                     services.AddNetRpcRabbitMQClient();
                     services.AddNetRpcGrpcClient();
                 })

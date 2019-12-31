@@ -1,13 +1,18 @@
 ﻿#if NETCOREAPP3_1
-using Channel = Grpc.Net.Client.GrpcChannel;
-#else
-using Channel = Grpc.Core.Channel;
+using Grpc.Net.Client;
 #endif
-
 namespace NetRpc.Grpc
 {
     public class GrpcClientOptions
     {
-        public Channel Channel { get; set; }
+#if NETCOREAPP3_1
+        public GrpcChannelOptions ChannelOptions { get; set; }
+        public string Url { get; set; }
+#else
+        public string Host { get; set; }
+        public int Port { get; set; }
+        public string PublicKey { get; set; }
+        public string SslTargetName { get; set; }
+#endif
     }
 }

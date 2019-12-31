@@ -1,14 +1,14 @@
-﻿using Proxy.Grpc;
+﻿using System.Collections.Generic;
+using Proxy.Grpc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 #if NETCOREAPP3_1
-using Channel = Grpc.Net.Client.GrpcChannel;
+using Grpc.Net.Client;
 #else
-using Channel = Grpc.Core.Channel;
+using Grpc.Core;
 #endif
-
 
 namespace NetRpc.Grpc
 {
@@ -23,14 +23,37 @@ namespace NetRpc.Grpc
                 _logger = NullLogger.Instance;
             else
                 _logger = loggerFactory.CreateLogger("NetRpc");
-            Reset(options.CurrentValue.Channel);
-            options.OnChange(i => Reset(i.Channel));
+            Reset(options.CurrentValue);
+            options.OnChange(Reset);
         }
 
-        public void Reset(Channel channel)
+        public void Reset(GrpcClientOptions opt)
         {
             Dispose();
-            _client = new Client(channel);
+            
+#if NETCOREAPP3_1
+            if (opt.ChannelOptions == null)
+                _client = new Client(GrpcChannel.ForAddress(opt.Url));
+            else
+                _client = new Client(GrpcChannel.ForAddress(opt.Url, opt.ChannelOptions));
+#else
+            if (string.IsNullOrEmpty(opt.PublicKey))
+                _client = new Client(new Channel(opt.Host, opt.Port, ChannelCredentials.Insecure));
+            else
+            {
+                Channel channel;
+                var ssl = new SslCredentials(opt.PublicKey);
+                if (string.IsNullOrEmpty(opt.SslTargetName))
+                    channel = new Channel(opt.Host, opt.Port, ssl);
+                else
+                {
+                    var options = new List<ChannelOption>();
+                    options.Add(new ChannelOption(ChannelOptions.SslTargetNameOverride, opt.SslTargetName));
+                    channel = new Channel(opt.Host, opt.Port, ssl, options);
+                }
+                _client = new Client(channel);
+            }
+#endif
             _client.Connect();
         }
 

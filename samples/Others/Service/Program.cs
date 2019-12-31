@@ -26,8 +26,12 @@ namespace Service
                 .ConfigureServices((context, services) =>
                 {
                     services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50001); });
-                    services.AddNetRpcContractSingleton<IService, Service>();
-                    services.AddNetRpcGrpcClient(i => i.Channel = new Channel("localhost", 50002, ChannelCredentials.Insecure));
+                    services.AddNetRpcServiceContract<IService, Service>();
+                    services.AddNetRpcGrpcClient(i =>
+                    {
+                        i.Host = "localhost";
+                        i.Port = 50002;
+                    });
                     services.AddNetRpcClientContract<IService1>();
                 })
                 .Build();

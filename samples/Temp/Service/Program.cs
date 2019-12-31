@@ -151,18 +151,19 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
 
         static async Task Main(string[] args)
         {
-            await RunMQAsync();
+            await RunAsync();
         }
 
-        static async Task RunMQAsync()
+        static async Task RunAsync()
         {
             var h = new HostBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddNetRpcGrpcService(i => 
-                        i.AddPort("localhost", 60001, PublicKey, PrivateKey));
-                    
-                    services.AddNetRpcContractSingleton<IService, Service>();
+                    //services.AddNetRpcGrpcService(i => 
+                    //    i.AddPort("localhost", 60001, PublicKey, PrivateKey));
+                    services.AddNetRpcGrpcService(i =>
+                        i.AddPort("0.0.0.0", 50000));
+                    services.AddNetRpcServiceContract<IService, Service>(ServiceLifetime.Scoped);
                 })
                 .Build();
             await h.RunAsync();

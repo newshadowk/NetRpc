@@ -34,16 +34,24 @@ namespace Service
                     services.AddNetRpcHttpService();
 
                     services.AddNetRpcRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
-                    services.AddNetRpcContractScoped<IService, Service>();
+                    services.AddNetRpcServiceContract<IService, Service>(ServiceLifetime.Scoped);
 
-                    services.Configure<GrpcClientOptions>("grpc1", i => i.Channel = new Channel("localhost", 50002, ChannelCredentials.Insecure));
-                    services.Configure<GrpcClientOptions>("grpc2", i => i.Channel = new Channel("localhost", 50003, ChannelCredentials.Insecure));
-                    services.AddNetRpcGrpcClient();
+                    services.Configure<GrpcClientOptions>("grpc1", i =>
+                    {
+                        i.Host = "localhost";
+                        i.Port = 50002;
+                    });
+                    services.Configure<GrpcClientOptions>("grpc2", i =>
+                    {
+                        i.Host = "localhost";
+                        i.Port = 50003;
+                    });
+                    services.AddNetRpcGrpcClient(null, null, ServiceLifetime.Scoped);
 
                     services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5001/swagger");
                     services.Configure<ClientSwaggerOptions>("grpc1", i => i.HostPath = "http://localhost:5002/swagger");
                     services.Configure<ClientSwaggerOptions>("grpc2", i => i.HostPath = "http://localhost:5003/swagger");
-
+                    
                     services.AddNetRpcJaeger(i =>
                     {
                         i.Host = "jaeger.yx.com";
@@ -129,10 +137,13 @@ namespace Service
                 _logger.LogError(e, "error msg");
             }
 
-            await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1(obj, 101, true,
-                i => { _logger.LogInformation($"tid:{GlobalTracer.Instance?.ActiveSpan.Context.TraceId}, callback:{i}"); }, default);
+            var p = _factory.CreateProxy<IService_1>("grpc1").Proxy;
+            //var p2 = _factory.CreateProxy<IService_1>("grpc1").Proxy;
 
-            await _factory.CreateProxy<IService_2>("grpc2").Proxy.Call_2(false);
+            //await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1(obj, 101, true,
+            //    i => { _logger.LogInformation($"tid:{GlobalTracer.Instance?.ActiveSpan.Context.TraceId}, callback:{i}"); }, default);
+
+            //await _factory.CreateProxy<IService_2>("grpc2").Proxy.Call_2(false);
             return new Result();
         }
 

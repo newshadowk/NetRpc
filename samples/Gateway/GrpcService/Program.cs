@@ -18,8 +18,8 @@ namespace Service
                 {
                     services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50001); });
 
-                    services.AddNetRpcContractSingleton<IService, Service>();
-                    services.AddNetRpcContractSingleton<IService2, Service2>();
+                    services.AddNetRpcServiceContract<IService, Service>();
+                    services.AddNetRpcServiceContract<IService2, Service2>();
                 })
                 .Build();
             await host.RunAsync();

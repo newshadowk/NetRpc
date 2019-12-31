@@ -35,8 +35,16 @@ namespace Client
                     services.AddNetRpcClientContract<IService>("mq1");
 
                     services.AddNetRpcGrpcClient();
-                    services.Configure<GrpcClientOptions>("grpc1", i => i.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
-                    services.Configure<GrpcClientOptions>("grpc2", i => i.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
+                    services.Configure<GrpcClientOptions>("grpc1", i =>
+                    {
+                        i.Host = "localhost";
+                        i.Port = 50001;
+                    });
+                    services.Configure<GrpcClientOptions>("grpc2", i =>
+                    {
+                        i.Host = "localhost";
+                        i.Port = 50001;
+                    });
                 })
                 .Build();
 

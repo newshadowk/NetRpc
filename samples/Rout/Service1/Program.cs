@@ -23,7 +23,7 @@ namespace Service
                 .ConfigureServices((context, services) =>
                 {
                     services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50002); });
-                    services.AddNetRpcContractSingleton<IService1, Service1>();
+                    services.AddNetRpcServiceContract<IService1, Service1>();
                 })
                 .Build();
 

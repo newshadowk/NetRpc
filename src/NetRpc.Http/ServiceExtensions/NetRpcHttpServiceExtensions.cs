@@ -40,12 +40,14 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddNetRpcHttpGateway<TService>(this IServiceCollection services,
             Action<HttpClientOptions> httpClientConfigureOptions = null,
-            Action<NetRpcClientOption> clientConfigureOptions = null)
+            Action<NetRpcClientOption> clientConfigureOptions = null,
+            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
-            services.AddNetRpcHttpClient(httpClientConfigureOptions, clientConfigureOptions);
-            services.AddNetRpcClientContract<TService>();
-            services.AddNetRpcContractSingleton(typeof(TService),
-                p => ((ClientProxy<TService>) p.GetService(typeof(ClientProxy<TService>))).Proxy);
+            services.AddNetRpcHttpClient(httpClientConfigureOptions, clientConfigureOptions, serviceLifetime);
+            services.AddNetRpcClientContract<TService>(serviceLifetime);
+            services.AddNetRpcServiceContract(typeof(TService),
+                p => ((ClientProxy<TService>) p.GetService(typeof(ClientProxy<TService>))).Proxy,
+                serviceLifetime);
             return services;
         }
 

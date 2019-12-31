@@ -47,7 +47,7 @@ namespace Client
             //Grpc
             Console.WriteLine("\r\n--- [Grpc]  ---");
             var grpcF = new GrpcClientConnectionFactoryOptions(
-                new GrpcClientOptions { Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure) });
+                new GrpcClientOptions { Host = "localhost", Port = 50001 });
             _clientProxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(grpcF);
             _proxy = _clientProxy.Proxy;
             _proxyAsync = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IServiceAsync>(grpcF).Proxy;

@@ -23,7 +23,7 @@ namespace Client
             //var p = NetRpcManager.CreateClientProxy<IService>(c);
             //await p.Proxy.Call("hello world.");
 
-            //var channel = GrpcChannel.ForAddress("https://localhost:5001");
+            var channel = Grpc.Net.Client.GrpcChannel.ForAddress("https://localhost:5001", new GrpcChannelOptions(){});
             //var channel = GrpcChannel.ForAddress("http://localhost:5000");
             //var client = new Greeter.GreeterClient(channel);
             //var r = client.SayHello(new HelloRequest() {Name = "n1"});

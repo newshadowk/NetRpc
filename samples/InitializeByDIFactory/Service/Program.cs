@@ -22,7 +22,7 @@ namespace Service
                 {
                     services.AddNetRpcRabbitMQService(i => { i.CopyFrom(Helper.GetMQOptions()); });
                     services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50001));
-                    services.AddNetRpcContractSingleton<IService, Service>();
+                    services.AddNetRpcServiceContract<IService, Service>();
                 })
                 .Build();
             await h.RunAsync();

@@ -28,7 +28,7 @@ namespace Service
                     services.AddSignalR();
                     services.AddNetRpcSwagger();
                     services.AddNetRpcHttpService(i => i.ApiRootPath = "/api");
-                    services.AddNetRpcContractSingleton<IServiceAsync, ServiceAsync>();
+                    services.AddNetRpcServiceContract<IServiceAsync, ServiceAsync>();
                 })
                 .Configure(app =>
                 {

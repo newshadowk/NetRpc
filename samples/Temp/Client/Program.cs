@@ -5,6 +5,8 @@ using DataContract;
 using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using NetRpc;
 using Console = System.Console;
 
@@ -69,25 +71,46 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
 
         static async Task Main(string[] args)
         {
-            var h = new HostBuilder()
-                .ConfigureServices((context, services) =>
+            ServiceCollection sc = new ServiceCollection();
+            sc.AddNetRpcGrpcClient(i =>
+            {
+                i.Host = "localhost";
+                i.Port = 50000;
+            }, null, ServiceLifetime.Scoped);
+            sc.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            sc.AddNetRpcClientContract<IService>(ServiceLifetime.Scoped);
+            var buildServiceProvider = sc.BuildServiceProvider();
+
+            while (true)
+            {
+                using (var scope = buildServiceProvider.CreateScope())
                 {
-                    var ssl = new SslCredentials(PublicKey);
-                    //var options = new List<ChannelOption>();
-                    //options.Add(new ChannelOption(ChannelOptions.SslTargetNameOverride, "CTCRootCA"));
-                    //var channel = new Channel("localhost", 50001, ssl, options);
-                    var channel = new Channel("localhost", 60001, ssl);
+                    var service = scope.ServiceProvider.GetService<IService>();
+                    await service.CallAsync("1");
+                    await Task.Delay(1000);
+                }
+            }
 
-                    //var channel = new Channel("localhost", 50001, new SslCredentials());
+            //var h = new HostBuilder()
+            //    .ConfigureServices((context, services) =>
+            //    {
+            //        //var ssl = new SslCredentials(PublicKey);
+            //        //var options = new List<ChannelOption>();
+            //        //options.Add(new ChannelOption(ChannelOptions.SslTargetNameOverride, "CTCRootCA"));
+            //        //var channel = new Channel("localhost", 50001, ssl, options);
+            //        //var channel = new Channel("localhost", 60001, ssl);
+            //        var channel = new Channel("localhost", 50000, ChannelCredentials.Insecure);
 
-                    services.AddNetRpcGrpcClient(i =>
-                        i.Channel = channel);
-                    services.AddNetRpcClientContract<IService>();
-                    services.AddHostedService<MyHost>();
-                })
-                .Build();
+            //        //var channel = new Channel("localhost", 50001, new SslCredentials());
 
-            await h.RunAsync();
+            //        services.AddNetRpcGrpcClient(i =>
+            //            i.Channel = channel);
+            //        services.AddNetRpcClientContract<IService>();
+            //        services.AddHostedService<MyHost>();
+            //    })
+            //    .Build();
+
+            //await h.RunAsync();
         }
     }
 

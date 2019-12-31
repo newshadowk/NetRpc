@@ -19,7 +19,11 @@ namespace Client
             var host = new HostBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.Configure<GrpcClientOptions>("grpc", i => i.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
+                    services.Configure<GrpcClientOptions>("grpc", i =>
+                    {
+                        i.Host = "localhost";
+                        i.Port = 50001;
+                    });
                     services.AddNetRpcGrpcClient();
                     services.AddNetRpcClientContract<IService>("grpc");
 

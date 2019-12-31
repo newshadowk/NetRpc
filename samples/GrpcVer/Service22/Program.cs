@@ -67,7 +67,7 @@ WYJb2q9GVF4h9vhJavosI1adlar05sZcLmkQCP1YtU8=
                         i.AddPort("0.0.0.0", 5001, PublicKey, PrivateKey);
                     });
                    
-                    services.AddNetRpcContractSingleton<IService, Service>();
+                    services.AddNetRpcServiceContract<IService, Service>();
                 })
                 .Build();
             await host.RunAsync();

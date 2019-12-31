@@ -40,7 +40,7 @@ namespace Service
                     services.AddSignalR();
                     services.AddNetRpcSwagger();
                     services.AddNetRpcHttpService();
-                    services.AddNetRpcContractSingleton<IService, Service>();
+                    services.AddNetRpcServiceContract<IService, Service>();
                     services.AddNetRpcRabbitMQService(i => i.CopyFrom(TestHelper.Helper.GetMQOptions()));
                     //services.AddNetRpcGrpcService();
 

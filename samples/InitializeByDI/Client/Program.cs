@@ -17,7 +17,10 @@ namespace Client
                 {
                     services.AddHostedService<GrpcHostedService>();
                     services.AddNetRpcGrpcClient(i =>
-                        i.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
+                    {
+                        i.Host = "localhost";
+                        i.Port = 50001;
+                    });
                     services.AddNetRpcClientContract<IService>();
                 })
                 .Build();
