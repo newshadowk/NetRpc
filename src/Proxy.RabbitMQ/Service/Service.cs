@@ -65,8 +65,15 @@ namespace RabbitMQ.Base
 
         public void Dispose()
         {
-            _connection?.Close();
-            _connection?.Dispose();
+            try
+            {
+                _connection?.Close();
+                _connection?.Dispose();
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, null);
+            }
         }
 
         private void OnConnectionShutdown(ShutdownEventArgs e)

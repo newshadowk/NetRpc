@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
@@ -28,8 +29,15 @@ namespace NetRpc.RabbitMQ
 
         public void Dispose()
         {
-            _connection?.Close();
-            _connection?.Dispose();
+            try
+            {
+                _connection?.Close();
+                _connection?.Dispose();
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, null);
+            }
         }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_1
