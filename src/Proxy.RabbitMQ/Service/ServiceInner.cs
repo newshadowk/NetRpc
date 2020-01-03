@@ -13,6 +13,8 @@ namespace RabbitMQ.Base
         private readonly ILogger _logger;
         private readonly IConnection _connect;
         private volatile IModel _mainModel;
+        private volatile bool _disposed;
+
 
         public ServiceInner(IConnection connect, string rpcQueueName, int prefetchCount, ILogger logger)
         {
@@ -39,6 +41,10 @@ namespace RabbitMQ.Base
 
         public void Dispose()
         {
+            if (_disposed)
+                return;
+            _disposed = true;
+
             try
             {
                 _mainModel?.Close();

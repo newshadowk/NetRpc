@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
+using Microsoft.Extensions.Logging;
 using Proxy.Grpc;
 
 namespace NetRpc.Grpc
@@ -10,10 +11,12 @@ namespace NetRpc.Grpc
     {
         private readonly RequestHandler _requestHandler;
         private int _handlingCount;
+        private readonly ILogger _logger;
 
-        public MessageCallImpl(IServiceProvider serviceProvider)
+        public MessageCallImpl(IServiceProvider serviceProvider, ILogger logger)
         {
             _requestHandler = new RequestHandler(serviceProvider, ChannelType.Grpc);
+            _logger = logger;
         }
 
         public bool IsHanding => _handlingCount > 0;
@@ -25,7 +28,7 @@ namespace NetRpc.Grpc
             GrpcServiceConnection connection = null;
             try
             {
-                connection = new GrpcServiceConnection(requestStream, responseStream);
+                connection = new GrpcServiceConnection(requestStream, responseStream, _logger);
                 await _requestHandler.HandleAsync(connection);
             }
             finally

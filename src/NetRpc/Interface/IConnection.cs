@@ -11,7 +11,7 @@ namespace NetRpc
     {
         event EventHandler<EventArgsT<byte[]>> Received;
 
-        Task SendAsync(byte[] buffer, bool isPost = false);
+        Task SendAsync(byte[] buffer, bool isEnd = false, bool isPost = false);
 
         Task StartAsync();
     }

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Proxy.Grpc;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace NetRpc.Grpc
@@ -12,9 +13,10 @@ namespace NetRpc.Grpc
         private Service _service;
         private readonly MessageCallImpl _messageCallImpl;
 
-        public GrpcServiceProxy(IOptionsMonitor<GrpcServiceOptions> options, IServiceProvider serviceProvider)
+        public GrpcServiceProxy(IOptionsMonitor<GrpcServiceOptions> options, IServiceProvider serviceProvider, ILoggerFactory factory)
         {
-            _messageCallImpl = new MessageCallImpl(serviceProvider);
+            var logger = factory.CreateLogger("NetRpc");
+            _messageCallImpl = new MessageCallImpl(serviceProvider, logger);
             _service = new Service(options.CurrentValue.Ports, _messageCallImpl);
             options.OnChange(i =>
             {

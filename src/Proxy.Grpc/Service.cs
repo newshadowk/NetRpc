@@ -33,8 +33,8 @@ namespace Proxy.Grpc
         {
             if (_disposed)
                 return;
-            _server.KillAsync().Wait();
             _disposed = true;
+            _server.KillAsync().Wait();
         }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_1

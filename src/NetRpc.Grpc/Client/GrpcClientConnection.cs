@@ -8,11 +8,12 @@ using Microsoft.Extensions.Logging;
 
 namespace NetRpc.Grpc
 {
-    public class GrpcClientConnection : IClientConnection
+    public sealed class GrpcClientConnection : IClientConnection
     {
         private readonly Client _client;
         private readonly ILogger _logger;
         private AsyncDuplexStreamingCall<StreamBuffer, StreamBuffer> _api;
+        private volatile bool _isEnd;
 
         public GrpcClientConnection(Client client, ILogger logger)
         {
@@ -22,36 +23,30 @@ namespace NetRpc.Grpc
 
         public void Dispose()
         {
-            try
-            {
-                _api?.RequestStream?.CompleteAsync().Wait();
-            }
-            catch (Exception e)
-            {
-                _logger.LogWarning(e, null);
-            }
+           
         }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_1
         public async ValueTask DisposeAsync()
         {
-            try
-            {
-                if (_api?.RequestStream != null) 
-                    await _api.RequestStream.CompleteAsync();
-            }
-            catch (Exception e)
-            {
-                _logger.LogWarning(e, null);
-            }
+          
         }
 #endif
 
-        public event EventHandler<EventArgsT<byte[]>> Received;
+        public event EventHandler<EventArgsT<byte[]>> Received;  //todo....
 
-        public async Task SendAsync(byte[] buffer, bool isPost = false)
+        public async Task SendAsync(byte[] buffer, bool isEnd = false, bool isPost = false)
         {
+            if (_isEnd)
+                return;
+
             await _api.RequestStream.WriteAsync(new StreamBuffer {Body = ByteString.CopyFrom(buffer)});
+
+            if (isEnd)
+            {
+                _isEnd = true;
+                await _api.RequestStream.CompleteAsync();
+            }
         }
 
 #pragma warning disable 1998
@@ -68,7 +63,7 @@ namespace NetRpc.Grpc
             });
         }
 
-        protected virtual void OnReceived(EventArgsT<byte[]> e)
+        private void OnReceived(EventArgsT<byte[]> e)
         {
             Received?.Invoke(this, e);
         }

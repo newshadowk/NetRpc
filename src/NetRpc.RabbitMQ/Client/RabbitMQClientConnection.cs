@@ -39,7 +39,7 @@ namespace NetRpc.RabbitMQ
 
         public event EventHandler<EventArgsT<byte[]>> Received;
 
-        public Task SendAsync(byte[] buffer, bool isPost)
+        public Task SendAsync(byte[] buffer, bool isEnd = false, bool isPost = false)
         {
             return _call.Send(buffer, isPost);
         }

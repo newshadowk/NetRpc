@@ -14,6 +14,8 @@ namespace RabbitMQ.Base
         private readonly string _rpcQueue;
         private readonly int _prefetchCount;
         private readonly ILogger _logger;
+        private volatile bool _disposed;
+
         public ServiceInner Inner { get; private set; }
 
         public Service(ConnectionFactory factory, string rpcQueue, int prefetchCount, ILogger logger)
@@ -65,6 +67,10 @@ namespace RabbitMQ.Base
 
         public void Dispose()
         {
+            if (_disposed)
+                return;
+            _disposed = true;
+
             try
             {
                 _connection?.Close();

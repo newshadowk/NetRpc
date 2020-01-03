@@ -138,6 +138,7 @@ namespace NetRpc.Http.Client
             }
 
             //Dispose: all stream data already received.
+            //When Exception occur before will dispose outside.
             Dispose();
             return false;
         }

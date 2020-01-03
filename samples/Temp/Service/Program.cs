@@ -172,10 +172,10 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
 
     internal class Service : IService
     {
-        public Task CallAsync(string s)
+        public async Task<string> CallAsync(string s)
         {
-            Console.WriteLine($"CallAsync {s}");
-            return Task.CompletedTask;
+            //Console.WriteLine($"CallAsync {s}");
+            return "1";
         }
     }
 

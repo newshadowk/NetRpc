@@ -18,6 +18,7 @@ namespace RabbitMQ.Base
         private string _serviceToClientQueue;
         private string _clientToServiceQueue;
         private readonly CheckWriteOnceBlock<string> _clientToServiceQueueOnceBlock = new CheckWriteOnceBlock<string>();
+        private volatile bool _disposed;
         private bool isFirstSend = true;
         public event EventHandler<EventArgsT<byte[]>> Received;
 
@@ -103,6 +104,10 @@ namespace RabbitMQ.Base
 
         public void Dispose()
         {
+            if (_disposed)
+                return;
+            _disposed = true;
+
             try
             {
                 _model?.Close();

@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Net.NetworkInformation;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Google.Protobuf;
 using Proxy.Grpc;
 using Grpc.Core;
+using Microsoft.Extensions.Logging;
 
 namespace NetRpc.Grpc
 {
@@ -14,12 +14,14 @@ namespace NetRpc.Grpc
         private readonly AsyncLock _sendLock = new AsyncLock();
         private readonly IAsyncStreamReader<StreamBuffer> _requestStream;
         private readonly IServerStreamWriter<StreamBuffer> _responseStream;
+        private readonly ILogger _logger;
         private readonly WriteOnceBlock<int> _end = new WriteOnceBlock<int>(i => i);
 
-        public GrpcServiceConnection(IAsyncStreamReader<StreamBuffer> requestStream, IServerStreamWriter<StreamBuffer> responseStream)
+        public GrpcServiceConnection(IAsyncStreamReader<StreamBuffer> requestStream, IServerStreamWriter<StreamBuffer> responseStream, ILogger logger)
         {
             _requestStream = requestStream;
             _responseStream = responseStream;
+            _logger = logger;
         }
 
         public void Dispose()
@@ -27,17 +29,17 @@ namespace NetRpc.Grpc
         }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_1
-        public async ValueTask DisposeAsync()
+        public ValueTask DisposeAsync()
         {
-            
+            return new ValueTask();
         }
 #endif
 
         public async Task AllDisposeAsync()
         {
             //before dispose requestStream need to
-            //wait 10 second to receive 'completed' from client side.
-            await Task.WhenAny(Task.Delay(10000),
+            //wait 60 second to receive 'completed' from client side.
+            await Task.WhenAny(Task.Delay(1000*60),
                 _end.ReceiveAsync());
         }
 
@@ -58,6 +60,10 @@ namespace NetRpc.Grpc
                 {
                     while (await _requestStream.MoveNext(CancellationToken.None))
                         OnReceived(new EventArgsT<byte[]>(_requestStream.Current.Body.ToByteArray()));
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning(e, null);
                 }
                 finally
                 {

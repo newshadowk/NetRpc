@@ -46,13 +46,13 @@ namespace Proxy.Grpc
         {
             if (_disposed)
                 return;
+            _disposed = true;
 
 #if NETCOREAPP3_1
             _channel?.Dispose();
 #else
             _channel?.ShutdownAsync().Wait();
 #endif
-            _disposed = true;
         }
     }
 }

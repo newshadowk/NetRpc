@@ -57,11 +57,12 @@ namespace NetRpc
                         SetCancel(tcs);
                         return;
                     }
-
                     var sendStreamNext = await _convert.SendCmdAsync(p, methodContext, stream, methodContext.ContractMethod.IsMQPost, token);
-                    if (!sendStreamNext)
+                    if (!sendStreamNext || stream == null)
                         return;
 
+                    //Continue send stream
+                    //cancel token
                     _reg = token.Register(async () =>
                     {
                         try
@@ -87,13 +88,9 @@ namespace NetRpc
                     {
                         SetFault(tcs, new TimeoutException($"Service is not response over {_timeoutInterval} ms, time out."));
                     }, _timeOutCts.Token);
-
-                    //Continue send stream
-                    if (stream != null)
-                    {
-                        await Helper.SendStreamAsync(_convert.SendBufferAsync, _convert.SendBufferEndAsync, stream, token, OnSendRequestStreamStarted);
-                        OnSendRequestStreamFinished();
-                    }
+                  
+                    await Helper.SendStreamAsync(_convert.SendBufferAsync, _convert.SendBufferEndAsync, stream, token, OnSendRequestStreamStarted);
+                    OnSendRequestStreamFinished();
                 }
                 catch (Exception e)
                 {

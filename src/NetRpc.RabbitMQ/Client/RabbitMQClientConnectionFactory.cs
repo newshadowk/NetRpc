@@ -11,6 +11,7 @@ namespace NetRpc.RabbitMQ
         private IConnection _connection;
         private MQOptions _options;
         private readonly object _lockObj = new object();
+        private volatile bool _disposed;
 
         public RabbitMQClientConnectionFactory(IOptionsMonitor<RabbitMQClientOptions> options, ILoggerFactory factory)
         {
@@ -29,6 +30,10 @@ namespace NetRpc.RabbitMQ
 
         public void Dispose()
         {
+            if (_disposed)
+                return;
+            _disposed = true;
+
             try
             {
                 _connection?.Close();

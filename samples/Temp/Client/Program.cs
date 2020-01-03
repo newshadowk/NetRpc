@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
@@ -76,20 +77,45 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
             {
                 i.Host = "localhost";
                 i.Port = 50000;
-            }, null, ServiceLifetime.Scoped);
+            });
             sc.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            sc.AddNetRpcClientContract<IService>(ServiceLifetime.Scoped);
-            var buildServiceProvider = sc.BuildServiceProvider();
+            sc.AddNetRpcClientContract<IService>();
+            var sp = sc.BuildServiceProvider();
 
-            while (true)
+            //var service = sp.GetService<IService>();
+            //while (true)
+            //{
+            //    try
+            //    {
+            //        var r = await service.CallAsync("1");
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        Console.WriteLine(e);
+            //    }
+            //}
+
+            for (int i = 0; i < 20; i++)
             {
-                using (var scope = buildServiceProvider.CreateScope())
+                var service = sp.GetService<IService>();
+
+                Task.Run(async () =>
                 {
-                    var service = scope.ServiceProvider.GetService<IService>();
-                    await service.CallAsync("1");
-                    await Task.Delay(1000);
-                }
+                    while (true)
+                    {
+                        try
+                        {
+                            await service.CallAsync("1");
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+                    }
+                });
             }
+
+            Console.ReadLine();
 
             //var h = new HostBuilder()
             //    .ConfigureServices((context, services) =>

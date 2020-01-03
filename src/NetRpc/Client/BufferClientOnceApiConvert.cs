@@ -37,7 +37,7 @@ namespace NetRpc
 
         public Task SendCancelAsync()
         {
-            return _connection.SendAsync(new Request(RequestType.Cancel).All);
+            return _connection.SendAsync(new Request(RequestType.Cancel).All, true);
         }
 
         public Task SendBufferAsync(byte[] body)
@@ -47,12 +47,12 @@ namespace NetRpc
 
         public Task SendBufferEndAsync()
         {
-            return _connection.SendAsync(new Request(RequestType.BufferEnd).All);
+            return _connection.SendAsync(new Request(RequestType.BufferEnd).All, true);
         }
 
         public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream stream, bool isPost, CancellationToken token)
         {
-            await _connection.SendAsync(new Request(RequestType.Cmd, callParam.ToBytes()).All, isPost);
+            await _connection.SendAsync(new Request(RequestType.Cmd, callParam.ToBytes()).All, stream == null, isPost);
             return true;
         }
 
@@ -100,7 +100,6 @@ namespace NetRpc
                     }
                     else
                         OnFaultSerializationException();
-
                     break;
                 }
                 case ReplyType.Callback:
@@ -120,7 +119,6 @@ namespace NetRpc
                     }
                     else
                         OnFaultSerializationException();
-
                     break;
                 }
                 case ReplyType.Buffer:
