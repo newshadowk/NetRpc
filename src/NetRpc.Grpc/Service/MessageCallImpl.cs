@@ -13,10 +13,10 @@ namespace NetRpc.Grpc
         private int _handlingCount;
         private readonly ILogger _logger;
 
-        public MessageCallImpl(IServiceProvider serviceProvider, ILogger logger)
+        public MessageCallImpl(IServiceProvider serviceProvider, ILoggerFactory factory)
         {
             _requestHandler = new RequestHandler(serviceProvider, ChannelType.Grpc);
-            _logger = logger;
+            _logger = factory.CreateLogger("NetRpc");
         }
 
         public bool IsHanding => _handlingCount > 0;

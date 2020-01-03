@@ -15,8 +15,7 @@ namespace NetRpc.Grpc
 
         public GrpcServiceProxy(IOptionsMonitor<GrpcServiceOptions> options, IServiceProvider serviceProvider, ILoggerFactory factory)
         {
-            var logger = factory.CreateLogger("NetRpc");
-            _messageCallImpl = new MessageCallImpl(serviceProvider, logger);
+            _messageCallImpl = new MessageCallImpl(serviceProvider, factory);
             _service = new Service(options.CurrentValue.Ports, _messageCallImpl);
             options.OnChange(i =>
             {
