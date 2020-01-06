@@ -72,71 +72,29 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
 
         static async Task Main(string[] args)
         {
-            ServiceCollection sc = new ServiceCollection();
-            sc.AddNetRpcGrpcClient(i =>
-            {
-                i.Host = "localhost";
-                i.Port = 50000;
-            });
-            sc.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            sc.AddNetRpcClientContract<IService>();
-            var sp = sc.BuildServiceProvider();
 
-            //var service = sp.GetService<IService>();
-            //while (true)
-            //{
-            //    try
-            //    {
-            //        var r = await service.CallAsync("1");
-            //    }
-            //    catch (Exception e)
-            //    {
-            //        Console.WriteLine(e);
-            //    }
-            //}
 
-            for (int i = 0; i < 20; i++)
-            {
-                var service = sp.GetService<IService>();
-
-                Task.Run(async () =>
+            var h = new HostBuilder()
+                .ConfigureServices((context, services) =>
                 {
-                    while (true)
-                    {
-                        try
+                    //var ssl = new SslCredentials(PublicKey);
+                    //var options = new List<ChannelOption>();
+                    //options.Add(new ChannelOption(ChannelOptions.SslTargetNameOverride, "CTCRootCA"));
+                    //var channel = new Channel("localhost", 50001, ssl, options);
+                    //var channel = new Channel("localhost", 60001, ssl);
+                    //var channel = new Channel("localhost", 50001, new SslCredentials());
+                    services.AddNetRpcGrpcClient(i =>
                         {
-                            await service.CallAsync("1");
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine(e);
-                        }
-                    }
-                });
-            }
+                            i.Host = "localhost";
+                            i.Port = 50000;
+                        });
 
-            Console.ReadLine();
+                    services.AddNetRpcClientContract<IService>();
+                    services.AddHostedService<MyHost>();
+                })
+                .Build();
 
-            //var h = new HostBuilder()
-            //    .ConfigureServices((context, services) =>
-            //    {
-            //        //var ssl = new SslCredentials(PublicKey);
-            //        //var options = new List<ChannelOption>();
-            //        //options.Add(new ChannelOption(ChannelOptions.SslTargetNameOverride, "CTCRootCA"));
-            //        //var channel = new Channel("localhost", 50001, ssl, options);
-            //        //var channel = new Channel("localhost", 60001, ssl);
-            //        var channel = new Channel("localhost", 50000, ChannelCredentials.Insecure);
-
-            //        //var channel = new Channel("localhost", 50001, new SslCredentials());
-
-            //        services.AddNetRpcGrpcClient(i =>
-            //            i.Channel = channel);
-            //        services.AddNetRpcClientContract<IService>();
-            //        services.AddHostedService<MyHost>();
-            //    })
-            //    .Build();
-
-            //await h.RunAsync();
+            await h.RunAsync();
         }
     }
 
@@ -152,7 +110,8 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             Console.WriteLine("start");
-            await _service.CallAsync("test");
+            //await _service.Call2Async("123", Console.WriteLine);
+            await _service.Call2Async("123", null);
             Console.WriteLine("end");
         }
 

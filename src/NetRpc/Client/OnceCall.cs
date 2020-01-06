@@ -28,7 +28,8 @@ namespace NetRpc
         public event EventHandler SendRequestStreamStarted;
         public event EventHandler SendRequestStreamFinished;
 
-        public Task<object> CallAsync(Dictionary<string, object> header, MethodContext methodContext, Action<object> callback, CancellationToken token, Stream stream,
+        public Task<object> CallAsync(Dictionary<string, object> header, MethodContext methodContext, Action<object> callback, CancellationToken token,
+            Stream stream,
             params object[] pureArgs)
         {
             if (callback != null)
@@ -41,8 +42,8 @@ namespace NetRpc
                 _convert.ResultStream += (s, e) => { SetStreamResult(tcs, e.Value); };
                 _convert.Result += (s, e) => { SetResult(tcs, e.Value); };
 
-                // ReSharper disable once PossibleNullReferenceException
-                _convert.Callback += (s, e) => _callbackDispatcher.BeginInvoke(() => callback(e.Value)) ;
+                if (callback != null)
+                    _convert.Callback += (s, e) => _callbackDispatcher.BeginInvoke(() => callback(e.Value));
 
                 _convert.Fault += (s, e) => { SetFault(tcs, e.Value); };
 
@@ -57,6 +58,7 @@ namespace NetRpc
                         SetCancel(tcs);
                         return;
                     }
+
                     var sendStreamNext = await _convert.SendCmdAsync(p, methodContext, stream, methodContext.ContractMethod.IsMQPost, token);
                     if (!sendStreamNext || stream == null)
                         return;
@@ -88,7 +90,7 @@ namespace NetRpc
                     {
                         SetFault(tcs, new TimeoutException($"Service is not response over {_timeoutInterval} ms, time out."));
                     }, _timeOutCts.Token);
-                  
+
                     await Helper.SendStreamAsync(_convert.SendBufferAsync, _convert.SendBufferEndAsync, stream, token, OnSendRequestStreamStarted);
                     OnSendRequestStreamFinished();
                 }

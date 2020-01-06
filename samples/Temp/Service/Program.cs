@@ -172,10 +172,18 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
 
     internal class Service : IService
     {
+        private IService _serviceImplementation;
+
         public async Task<string> CallAsync(string s)
         {
             //Console.WriteLine($"CallAsync {s}");
             return "1";
+        }
+
+        public async Task<string> Call2Async(string s, Action<int> cb)
+        {
+            cb.Invoke(1);
+            return "ret;";
         }
     }
 
