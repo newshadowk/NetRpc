@@ -11,7 +11,7 @@ namespace Client
         {
             var p = NetRpcManager.CreateClientProxy<IService>(new GrpcClientOptions
             {
-                Host = "localhost",
+                Host = "lj",
                 Port = 50001
             });
             await p.Proxy.Call("hello world.");
