@@ -137,13 +137,11 @@ namespace Service
                 _logger.LogError(e, "error msg");
             }
 
-            var p = _factory.CreateProxy<IService_1>("grpc1").Proxy;
-            //var p2 = _factory.CreateProxy<IService_1>("grpc1").Proxy;
+            await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1(obj, 101, true,
+                i => { _logger.LogInformation($"tid:{GlobalTracer.Instance?.ActiveSpan.Context.TraceId}, callback:{i}"); }, default);
 
-            //await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1(obj, 101, true,
-            //    i => { _logger.LogInformation($"tid:{GlobalTracer.Instance?.ActiveSpan.Context.TraceId}, callback:{i}"); }, default);
+            await _factory.CreateProxy<IService_2>("grpc2").Proxy.Call_2(false);
 
-            //await _factory.CreateProxy<IService_2>("grpc2").Proxy.Call_2(false);
             return new Result();
         }
 

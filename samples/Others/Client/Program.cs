@@ -1,15 +1,15 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using DataContract;
-using Grpc.Core;
+using DataContract1;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetRpc.Grpc;
 using NetRpc.RabbitMQ;
 using Helper = TestHelper.Helper;
+
 //using NetRpcManager = NetRpc.Grpc.NetRpcManager;
 
 namespace Client
@@ -24,10 +24,10 @@ namespace Client
                     services.Configure<GrpcClientOptions>("grpc", i =>
                     {
                         i.Host = "localhost";
-                        i.Port = 50001;
+                        i.Port = 50002;
                     });
                     services.AddNetRpcGrpcClient();
-                    services.AddNetRpcClientContract<IService>("grpc");
+                    services.AddNetRpcClientContract<IService1>("grpc");
 
                     services.Configure<RabbitMQClientOptions>("mq", i =>
                     {
@@ -48,39 +48,48 @@ namespace Client
 
     public class H : IHostedService
     {
-        private readonly IService _s1;
+        private readonly IService1 _s1;
 
-        public H(IService s1)
+        public H(IService1 s1)
         {
             _s1 = s1;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            //await _s1.Call()
-            try
-            {
-                var ret = await _s1.Call(
-                    new InParam() { P1 = "123" }, 100,
-                    File.OpenRead(Helper.GetTestFilePath()),
-                    Console.WriteLine,
-                    CancellationToken.None);
-                Console.WriteLine($"ret:{ret.P1}");
-
-                using (var fs = File.OpenWrite(@"d:\1.rar"))
+                try
                 {
-                    ret.Stream.CopyTo(fs);
-                }
-                
-                //Console.WriteLine($"ret:{ret.P1}, {Helper.ReadStr(ret.Stream)}");
+                    Console.WriteLine("start");
+                    Stopwatch sw = new Stopwatch();
+                    sw.Start();
+                    using (var fr = File.OpenRead(@"d:\testfile\testfile.txt"))
+                    {
+                        var ret = await _s1.Call(
+                            new InParam() {P1 = "123"}, 100,
+                            //File.OpenRead(Helper.GetTestFilePath()),
+                            fr,
+                            Console.WriteLine,
+                            CancellationToken.None);
+                        Console.WriteLine($"ret:{ret.P1}");
+
+                        using (var fs = File.OpenWrite(@"D:\TestFile\tgt.rar"))
+                        {
+                            ret.Stream.CopyTo(fs);
+                        }
+                    }
+
+                    sw.Stop();
+                    Console.WriteLine(sw.ElapsedMilliseconds);
+
+                    //Console.WriteLine($"ret:{ret.P1}, {Helper.ReadStr(ret.Stream)}");
 
                 //await _s1.Call2("123");
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)

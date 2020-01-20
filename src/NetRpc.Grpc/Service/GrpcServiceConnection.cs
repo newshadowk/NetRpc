@@ -47,6 +47,7 @@ namespace NetRpc.Grpc
 
         public async Task SendAsync(byte[] buffer)
         {
+            //add a lock here will not slowdown send speed.
             using (await _sendLock.LockAsync())
                 await _responseStream.WriteAsync(new StreamBuffer {Body = ByteString.CopyFrom(buffer)});
         }

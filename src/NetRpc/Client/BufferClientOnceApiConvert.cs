@@ -30,6 +30,8 @@ namespace NetRpc
             _connection.Received += ConnectionReceived;
         }
 
+        public ConnectionInfo ConnectionInfo => _connection.ConnectionInfo;
+
         public async Task StartAsync()
         {
             await _connection.StartAsync();
@@ -52,7 +54,10 @@ namespace NetRpc
 
         public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream stream, bool isPost, CancellationToken token)
         {
-            await _connection.SendAsync(new Request(RequestType.Cmd, callParam.ToBytes()).All, stream == null, isPost);
+            await _connection.SendAsync(
+                new Request(RequestType.Cmd, callParam.ToBytes()).All,
+                stream == null && token == CancellationToken.None,
+                isPost);
             return true;
         }
 

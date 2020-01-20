@@ -37,7 +37,6 @@ namespace NetRpc
 
         public async Task HandleRequestAsync()
         {
-            object ret;
             ActionExecutingContext context = null;
 
             try
@@ -49,36 +48,42 @@ namespace NetRpc
                 _actionExecutingContextAccessor.Context = context;
 
                 //middleware Invoke
-                ret = await _middlewareBuilder.InvokeAsync(context);
+                var ret = await _middlewareBuilder.InvokeAsync(context);
 
                 //if Post, do not need send back to client.
                 if (context.ContractMethod.IsMQPost)
                     return;
+
+                var hasStream = ret.TryGetStream(out var retStream, out var retStreamName);
+
+                //send result
+                var sendStreamNext = await _convert.SendResultAsync(new CustomResult(ret, hasStream, retStream.GetLength()), retStream, retStreamName, context);
+                if (!sendStreamNext)
+                    return;
+
+                //send stream
+                await SendStreamAsync(context, hasStream, retStream);
+
+                context.OnSendResultStreamFinished();
             }
             catch (Exception e)
             {
-                _logger.LogWarning(e, null);
+                _logger.LogWarning(e, "HandleRequestAsync");
 
                 //if Post, do not need send back to client.
                 if (context != null && context.ContractMethod.IsMQPost)
                     return;
 
                 //send fault
-                await _convert.SendFaultAsync(e, context);
-                return;
+                try
+                {
+                    await _convert.SendFaultAsync(e, context);
+                }
+                catch (Exception e2)
+                {
+                    _logger.LogWarning(e2, "HandleRequestAsync SendFaultAsync");
+                }
             }
-
-            var hasStream = ret.TryGetStream(out var retStream, out var retStreamName);
-
-            //send result
-            var sendStreamNext = await _convert.SendResultAsync(new CustomResult(ret, hasStream, retStream.GetLength()), retStream, retStreamName, context);
-            if (!sendStreamNext)
-                return;
-
-            //send stream
-            await SendStreamAsync(context, hasStream, retStream);
-
-            context.OnSendResultStreamFinished();
         }
 
         private async Task<ActionExecutingContext> GetContext()
@@ -117,17 +122,25 @@ namespace NetRpc
             {
                 try
                 {
+#if NETSTANDARD2_1 || NETCOREAPP3_1
+                    await
+#endif
+
                     using (retStream)
                     {
-                        await Helper.SendStreamAsync(i => _convert.SendBufferAsync(i), () =>
-                            _convert.SendBufferEndAsync(), retStream, context.CancellationToken, context.OnSendResultStreamStarted);
+                        await Helper.SendStreamAsync(
+                            i => _convert.SendBufferAsync(i), 
+                            () => _convert.SendBufferEndAsync(), 
+                            retStream, 
+                            context.CancellationToken, 
+                            context.OnSendResultStreamStarted);
                     }
                 }
                 catch (TaskCanceledException)
                 {
                     await _convert.SendBufferCancelAsync();
                 }
-                catch (Exception)
+                catch
                 {
                     await _convert.SendBufferFaultAsync();
                 }

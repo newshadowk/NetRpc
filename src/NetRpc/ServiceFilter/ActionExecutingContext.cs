@@ -18,6 +18,8 @@ namespace NetRpc
 
         public ChannelType ChannelType { get; }
 
+        public DateTimeOffset StartTime { get; }
+
         public IServiceProvider ServiceProvider { get; }
 
         public Dictionary<string, object> Header { get; }
@@ -101,6 +103,7 @@ namespace NetRpc
             Action<object> callback,
             CancellationToken cancellationToken)
         {
+            StartTime = DateTimeOffset.Now;
             ServiceProvider = serviceProvider;
             ChannelType = channelType;
             Header = header;

@@ -20,10 +20,10 @@ namespace Client
         private static IService _proxy;
         private static IServiceAsync _proxyAsync;
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             //RabbitMQ
-            Console.WriteLine("---  [RabbitMQ]  ---");
+            Console.WriteLine("--- Client RabbitMQ  ---");
             var mqF = new RabbitMQClientConnectionFactoryOptions(Helper.GetMQOptions(), NullLoggerFactory.Instance);
             _clientProxy = NetRpcManager.CreateClientProxy<IService>(mqF);
             _clientProxy.Connected += (s, e) => Console.WriteLine("[event] Connected");
@@ -42,17 +42,17 @@ namespace Client
             _proxy = _clientProxy.Proxy;
             _proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(mqF).Proxy;
             RunTest();
-            RunTestAsync().Wait();
+            await RunTestAsync();
 
             //Grpc
-            Console.WriteLine("\r\n--- [Grpc]  ---");
+            Console.WriteLine("\r\n--- Client Grpc  ---");
             var grpcF = new GrpcClientConnectionFactoryOptions(
                 new GrpcClientOptions { Host = "localhost", Port = 50001 });
             _clientProxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(grpcF);
             _proxy = _clientProxy.Proxy;
             _proxyAsync = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IServiceAsync>(grpcF).Proxy;
             RunTest();
-            RunTestAsync().Wait();
+            await RunTestAsync();
 
             Console.WriteLine("Test end.");
             Console.Read();
@@ -212,6 +212,7 @@ namespace Client
         {
             var cts = new CancellationTokenSource();
             cts.CancelAfter(500);
+            //cts.Cancel();
             try
             {
                 Console.Write("[CallWithCancelAsync], cancel after 500 ms, ");

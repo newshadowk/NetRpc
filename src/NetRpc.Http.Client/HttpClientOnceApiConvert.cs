@@ -42,6 +42,22 @@ namespace NetRpc.Http.Client
             OnCallback(new EventArgsT<object>(obj));
         }
 
+        public ConnectionInfo ConnectionInfo
+        {
+            get
+            {
+                var host = new Uri(_apiUrl).Host;
+                var port = new Uri(_apiUrl).Port;
+                return new ConnectionInfo
+                {
+                    Host = host,
+                    Port = port,
+                    Description = _apiUrl,
+                    ChannelType = ChannelType.Http
+                };
+            }
+        }
+
         public Task StartAsync()
         {
             return Task.CompletedTask;

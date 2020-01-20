@@ -7,6 +7,8 @@ namespace NetRpc
 {
     public interface IActionExecutingContext
     {
+        DateTimeOffset StartTime { get; }
+
         IServiceProvider ServiceProvider { get; }
         
         /// <summary>

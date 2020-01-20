@@ -8,6 +8,8 @@ namespace NetRpc
 {
     public interface IOnceCall
     {
+        ConnectionInfo ConnectionInfo { get; }
+
         Task<object> CallAsync(Dictionary<string, object> header, MethodContext methodContext, Action<object> callback, CancellationToken token, Stream stream,
             params object[] pureArgs);
 

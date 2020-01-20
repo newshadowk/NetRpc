@@ -78,7 +78,7 @@ namespace NetRpc
         {
             if (result.Result is Stream s)
             {
-                await SafeSendAsync(Reply.FromResultStream(s.GetLength()));
+                await SendAsync(Reply.FromResultStream(s.GetLength()));
                 return true;
             }
 
@@ -93,7 +93,7 @@ namespace NetRpc
                 return true;
             }
 
-            await SafeSendAsync(reply);
+            await SendAsync(reply);
             return true;
         }
 
@@ -103,34 +103,34 @@ namespace NetRpc
             {
                 var warpEx = Helper.WarpException(body, context);
                 var reply = Reply.FromFault(warpEx);
-                return SafeSendAsync(reply);
+                return SendAsync(reply);
             }
             catch (Exception e)
             {
                 var se = new SerializationException($"{e.Message}");
                 var fse = new FaultException<SerializationException>(se);
-                return SafeSendAsync(Reply.FromFault(fse));
+                return SendAsync(Reply.FromFault(fse));
             }
         }
 
         public Task SendBufferAsync(byte[] buffer)
         {
-            return SafeSendAsync(Reply.FromBuffer(buffer));
+            return SendAsync(Reply.FromBuffer(buffer));
         }
 
         public Task SendBufferEndAsync()
         {
-            return SafeSendAsync(Reply.FromBufferEnd());
+            return SendAsync(Reply.FromBufferEnd());
         }
 
         public Task SendBufferCancelAsync()
         {
-            return SafeSendAsync(Reply.FromBufferCancel());
+            return SendAsync(Reply.FromBufferCancel());
         }
 
         public Task SendBufferFaultAsync()
         {
-            return SafeSendAsync(Reply.FromBufferFault());
+            return SendAsync(Reply.FromBufferFault());
         }
 
         public Task SendCallbackAsync(object callbackObj)
@@ -145,19 +145,12 @@ namespace NetRpc
                 return SendFaultAsync(e, null);
             }
 
-            return SafeSendAsync(reply);
+            return SendAsync(reply);
         }
 
-        private async Task SafeSendAsync(Reply reply)
+        private async Task SendAsync(Reply reply)
         {
-            try
-            {
-                await _connection.SendAsync(reply.All);
-            }
-            catch (Exception e)
-            {
-                _logger.LogWarning(e, null);
-            }
+            await _connection.SendAsync(reply.All);
         }
 
         public void Dispose()

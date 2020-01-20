@@ -20,7 +20,6 @@ namespace NetRpc
         public object Invoke(MethodInfo targetMethod, object[] args)
         {
             var (callback, token, stream, otherArgs) = GetArgs(args);
-            token.ThrowIfCancellationRequested();
             try
             {
                 return _call.CallAsync(targetMethod, callback, token, stream, otherArgs).Result;
@@ -37,11 +36,11 @@ namespace NetRpc
             }
         }
 
-        public Task InvokeAsync(MethodInfo targetMethod, object[] args)
+        public async Task InvokeAsync(MethodInfo targetMethod, object[] args)
         {
             var (callback, token, stream, otherArgs) = GetArgs(args);
             token.ThrowIfCancellationRequested();
-            return _call.CallAsync(targetMethod, callback, token, stream, otherArgs);
+            await _call.CallAsync(targetMethod, callback, token, stream, otherArgs);
         }
 
         public async Task<T> InvokeAsyncT<T>(MethodInfo targetMethod, object[] args)

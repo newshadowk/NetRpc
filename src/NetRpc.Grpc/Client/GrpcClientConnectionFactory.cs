@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 #if NETCOREAPP3_1
+using System;
 using Grpc.Net.Client;
 #else
 using Grpc.Core;
@@ -32,13 +33,16 @@ namespace NetRpc.Grpc
             Dispose();
             
 #if NETCOREAPP3_1
+            var host = new Uri(opt.Url).Host;
+            var port = new Uri(opt.Url).Port;
+            
             if (opt.ChannelOptions == null)
-                _client = new Client(GrpcChannel.ForAddress(opt.Url));
+                _client = new Client(GrpcChannel.ForAddress(opt.Url), host, port, opt.ToString());
             else
-                _client = new Client(GrpcChannel.ForAddress(opt.Url, opt.ChannelOptions));
+                _client = new Client(GrpcChannel.ForAddress(opt.Url, opt.ChannelOptions), host, port, opt.ToString());
 #else
             if (string.IsNullOrEmpty(opt.PublicKey))
-                _client = new Client(new Channel(opt.Host, opt.Port, ChannelCredentials.Insecure));
+                _client = new Client(new Channel(opt.Host, opt.Port, ChannelCredentials.Insecure), opt.Host, opt.Port, opt.ToString());
             else
             {
                 Channel channel;
@@ -51,7 +55,7 @@ namespace NetRpc.Grpc
                     options.Add(new ChannelOption(ChannelOptions.SslTargetNameOverride, opt.SslTargetName));
                     channel = new Channel(opt.Host, opt.Port, ssl, options);
                 }
-                _client = new Client(channel);
+                _client = new Client(channel, opt.Host, opt.Port, opt.ToString());
             }
 #endif
             _client.Connect();

@@ -28,9 +28,10 @@ namespace NetRpc
         public event EventHandler SendRequestStreamStarted;
         public event EventHandler SendRequestStreamFinished;
 
+        public ConnectionInfo ConnectionInfo => _convert.ConnectionInfo;
+
         public Task<object> CallAsync(Dictionary<string, object> header, MethodContext methodContext, Action<object> callback, CancellationToken token,
-            Stream stream,
-            params object[] pureArgs)
+            Stream stream, params object[] pureArgs)
         {
             if (callback != null)
                 _callbackDispatcher = new AsyncDispatcher();
@@ -53,17 +54,16 @@ namespace NetRpc
                     var postStream = methodContext.ContractMethod.IsMQPost ? stream.StreamToBytes() : null;
                     var p = new OnceCallParam(header, action, postStream != null || stream != null,
                         postStream, stream.GetLength(), pureArgs);
+
                     if (token.IsCancellationRequested)
                     {
                         SetCancel(tcs);
                         return;
                     }
 
+                    //sendCmd
                     var sendStreamNext = await _convert.SendCmdAsync(p, methodContext, stream, methodContext.ContractMethod.IsMQPost, token);
-                    if (!sendStreamNext || stream == null)
-                        return;
 
-                    //Continue send stream
                     //cancel token
                     _reg = token.Register(async () =>
                     {
@@ -77,11 +77,8 @@ namespace NetRpc
                         }
                     });
 
-                    if (token.IsCancellationRequested)
-                    {
-                        SetCancel(tcs);
+                    if (!sendStreamNext || stream == null)
                         return;
-                    }
 
                     //timeout
 #pragma warning disable 4014
@@ -91,6 +88,7 @@ namespace NetRpc
                         SetFault(tcs, new TimeoutException($"Service is not response over {_timeoutInterval} ms, time out."));
                     }, _timeOutCts.Token);
 
+                    //send stream
                     await Helper.SendStreamAsync(_convert.SendBufferAsync, _convert.SendBufferEndAsync, stream, token, OnSendRequestStreamStarted);
                     OnSendRequestStreamFinished();
                 }

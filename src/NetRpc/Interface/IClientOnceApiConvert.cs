@@ -11,6 +11,8 @@ namespace NetRpc
     public interface IClientOnceApiConvert : IDisposable
 #endif
     {
+        ConnectionInfo ConnectionInfo { get; }
+
         Task StartAsync();
 
         Task SendCancelAsync();

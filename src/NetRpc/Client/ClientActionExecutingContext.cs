@@ -8,6 +8,10 @@ namespace NetRpc
 {
     public sealed class ClientActionExecutingContext : IActionExecutingContext
     {
+        public Guid ClientProxyId { get; }
+
+        public DateTimeOffset StartTime { get; }
+
         public IServiceProvider ServiceProvider { get; }
 
         public IOnceCall OnceCall { get; }
@@ -43,7 +47,8 @@ namespace NetRpc
 
         public string OptionsName { get; }
 
-        public ClientActionExecutingContext(IServiceProvider serviceProvider, 
+        public ClientActionExecutingContext(Guid clientProxyId,
+            IServiceProvider serviceProvider, 
             string optionsName,
             IOnceCall onceCall,
             InstanceMethod instanceMethod, 
@@ -54,6 +59,8 @@ namespace NetRpc
             ReadStream stream, 
             object[] pureArgs)
         {
+            ClientProxyId = clientProxyId;
+            StartTime = DateTimeOffset.Now;
             ServiceProvider = serviceProvider;
             OnceCall = onceCall;
             InstanceMethod = instanceMethod;

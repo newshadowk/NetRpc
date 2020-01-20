@@ -9,6 +9,8 @@ namespace NetRpc
     public interface IClientConnection : IDisposable
 #endif
     {
+        ConnectionInfo ConnectionInfo { get; }
+
         event EventHandler<EventArgsT<byte[]>> Received;
 
         Task SendAsync(byte[] buffer, bool isEnd = false, bool isPost = false);

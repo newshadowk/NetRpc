@@ -13,6 +13,9 @@ namespace NetRpc
 
         protected void InvokeFinish(SizeEventArgs e)
         {
+            if (!_isStarted)
+                return;
+
             if (!_isFinished)
             {
                 _isFinished = true;

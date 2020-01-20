@@ -10,6 +10,7 @@ namespace NetRpc.Grpc
 {
     public sealed class GrpcClientConnection : IClientConnection
     {
+        private readonly AsyncLock _sendLock = new AsyncLock();
         private readonly Client _client;
         private readonly ILogger _logger;
         private AsyncDuplexStreamingCall<StreamBuffer, StreamBuffer> _api;
@@ -33,14 +34,24 @@ namespace NetRpc.Grpc
         }
 #endif
 
-        public event EventHandler<EventArgsT<byte[]>> Received;  //todo....
+        public ConnectionInfo ConnectionInfo => new ConnectionInfo
+        {
+            Port = _client.Port,
+            Description = _client.ConnectionDescription,
+            Host = _client.Host, 
+            ChannelType =  ChannelType.Grpc
+        };
+
+        public event EventHandler<EventArgsT<byte[]>> Received;
 
         public async Task SendAsync(byte[] buffer, bool isEnd = false, bool isPost = false)
         {
             if (_isEnd)
                 return;
 
-            await _api.RequestStream.WriteAsync(new StreamBuffer {Body = ByteString.CopyFrom(buffer)});
+            //add a lock here will not slowdown send speed.
+            using (await _sendLock.LockAsync())
+                await _api.RequestStream.WriteAsync(new StreamBuffer {Body = ByteString.CopyFrom(buffer)});
 
             if (isEnd)
             {

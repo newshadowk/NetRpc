@@ -17,7 +17,7 @@
     <ProjectReference Include="..\..\..\src\NetRpc.Http.Client\NetRpc.Http.Client.csproj" />
     <ProjectReference Include="..\..\..\src\NetRpc.RabbitMQ\NetRpc.RabbitMQ.csproj" />
     <ProjectReference Include="..\..\TestHelper\TestHelper.csproj" />
-    <ProjectReference Include="..\DataContract\DataContract.csproj" />
+    <ProjectReference Include="..\DataContract1\DataContract1.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -22,6 +22,7 @@ namespace NetRpc
         private bool _isConnected;
         private readonly Timer _tHearbeat;
         private readonly Call _call;
+        public Guid Id { get; } = Guid.NewGuid();
 
         public Dictionary<string, object> AdditionHeader
         {
@@ -33,7 +34,7 @@ namespace NetRpc
         {
             _factory = factory;
             _logger = loggerFactory.CreateLogger("NetRpc");
-            _call = new Call(serviceProvider, new ContractInfo(typeof(TService)), factory, options.CurrentValue.TimeoutInterval, optionsName);
+            _call = new Call(Id, serviceProvider, new ContractInfo(typeof(TService)), factory, options.CurrentValue.TimeoutInterval, optionsName);
             var invoker = new ClientMethodInvoker(_call);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
             ((SimpleDispatchProxyAsync)(object)Proxy).ExceptionInvoked += ProxyExceptionInvoked;

@@ -15,7 +15,6 @@ namespace RabbitMQ.Base
         private volatile IModel _mainModel;
         private volatile bool _disposed;
 
-
         public ServiceInner(IConnection connect, string rpcQueueName, int prefetchCount, ILogger logger)
         {
             _connect = connect;

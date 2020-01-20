@@ -1,5 +1,4 @@
 ﻿using System;
-
 #if NETCOREAPP3_1
 using Channel = Grpc.Net.Client.GrpcChannel;
 #else
@@ -19,10 +18,19 @@ namespace Proxy.Grpc
 
         public MessageCall.MessageCallClient CallClient { get; private set; }
 
-        public Client(Channel channel)
+        public Client(Channel channel, string host, int port, string connectionDescription)
         {
             _channel = channel;
+            Host = host;
+            Port = port;
+            ConnectionDescription = connectionDescription;
         }
+
+        public string Host { get; }
+
+        public int Port { get; }
+
+        public string ConnectionDescription { get; }
 
         public void Connect()
         {

@@ -8,11 +8,13 @@ namespace NetRpc.RabbitMQ
 {
     public class RabbitMQClientConnection : IClientConnection
     {
+        private readonly MQOptions _opt;
         private readonly RabbitMQOnceCall _call;
 
-        public RabbitMQClientConnection(IConnection connect, string rpcQueue, ILogger logger)
+        public RabbitMQClientConnection(IConnection connect, MQOptions opt, ILogger logger)
         {
-            _call = new RabbitMQOnceCall(connect, rpcQueue, logger);
+            _opt = opt;
+            _call = new RabbitMQOnceCall(connect, opt.RpcQueue, logger);
             _call.Received += CallReceived;
         }
 
@@ -36,6 +38,14 @@ namespace NetRpc.RabbitMQ
             return new ValueTask();
         }
 #endif
+
+        public ConnectionInfo ConnectionInfo => new ConnectionInfo
+        {
+            Host = _opt.Host,
+            Port = _opt.Port,
+            Description = _opt.ToString(),
+            ChannelType = ChannelType.RabbitMQ
+        };
 
         public event EventHandler<EventArgsT<byte[]>> Received;
 

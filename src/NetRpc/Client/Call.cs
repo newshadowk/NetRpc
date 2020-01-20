@@ -11,6 +11,7 @@ namespace NetRpc
 {
     internal sealed class Call : ICall
     {
+        private readonly Guid _clientProxyId;
         private readonly IServiceProvider _serviceProvider;
         private readonly ContractInfo _contract;
         private readonly IOnceCallFactory _factory;
@@ -18,8 +19,9 @@ namespace NetRpc
         private readonly string _optionsName;
         private readonly ClientMiddlewareBuilder _middlewareBuilder;
 
-        public Call(IServiceProvider serviceProvider, ContractInfo contract, IOnceCallFactory factory, int timeoutInterval, string optionsName)
+        public Call(Guid clientProxyId, IServiceProvider serviceProvider, ContractInfo contract, IOnceCallFactory factory, int timeoutInterval, string optionsName)
         {
+            _clientProxyId = clientProxyId;
             _serviceProvider = serviceProvider;
             _contract = contract;
             _factory = factory;
@@ -50,7 +52,7 @@ namespace NetRpc
             var instanceMethod = new InstanceMethod(methodInfo);
             var methodContext = new MethodContext(contractMethod, instanceMethod);
             var readStream = GetReadStream(stream);
-            var clientContext = new ClientActionExecutingContext(_serviceProvider, _optionsName, call, instanceMethod, callback, token, _contract,
+            var clientContext = new ClientActionExecutingContext(_clientProxyId, _serviceProvider, _optionsName, call, instanceMethod, callback, token, _contract,
                 contractMethod, readStream, pureArgs);
 
             //header

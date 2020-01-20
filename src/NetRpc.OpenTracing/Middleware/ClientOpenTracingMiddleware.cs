@@ -34,6 +34,7 @@ namespace NetRpc.OpenTracing
             try
             {
                 await _next(context);
+                scope.Span.SetTag("Connection", context.OnceCall.ConnectionInfo.ToString());
                 scope.Span.SetTagReturn(context, options.Value.LogActionInfoMaxLength);
                 scope.Span.SetTagMethodObj(context, options.Value.LogActionInfoMaxLength);
             }
