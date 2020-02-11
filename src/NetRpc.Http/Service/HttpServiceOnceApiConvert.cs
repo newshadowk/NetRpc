@@ -222,9 +222,12 @@ namespace NetRpc.Http
                     var dataObj = Helper.ToHttpDataObj(body, dataObjType);
                     return (dataObj, null);
                 }
+
+                throw new HttpFailedException($"ContentType:'{_context.Request.ContentType}' is not supported.");
             }
 
-            throw new HttpFailedException($"ContentType:'{_context.Request.ContentType}' is not supported.");
+            //_context.Request.ContentType == null
+            return (new HttpDataObj(), null);
         }
 
         private void CallbackHubCanceled(object sender, string e)

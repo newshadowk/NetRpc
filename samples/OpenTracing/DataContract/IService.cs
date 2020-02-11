@@ -56,7 +56,7 @@ namespace DataContract
 
     public interface IService_1_1
     {
-        Task<Result> Call_1_1(int i1);
+        Task<Result> Call_1_1(int i1, Action<int> cb, CancellationToken token);
     }
 
     public interface IService_2

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
@@ -111,7 +112,13 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
         {
             Console.WriteLine("start");
             //await _service.Call2Async("123", Console.WriteLine);
-            await _service.Call2Async("123", null);
+            //await _service.Call2Async("123", null);
+
+            using (var s = File.OpenRead(@"D:\TestFile\zs\docx.docx"))
+            {
+                await _service.Call3Async(s, null);
+            }
+
             Console.WriteLine("end");
         }
 

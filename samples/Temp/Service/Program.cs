@@ -1,4 +1,5 @@
-﻿using System;  
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using DataContract;
 using Microsoft.Extensions.DependencyInjection;
@@ -163,6 +164,8 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
                     //    i.AddPort("localhost", 60001, PublicKey, PrivateKey));
                     services.AddNetRpcGrpcService(i =>
                         i.AddPort("0.0.0.0", 50000));
+                    services.AddNetRpcHttpService();
+                    services.AddNetRpcSwagger();
                     services.AddNetRpcServiceContract<IService, Service>(ServiceLifetime.Scoped);
                 })
                 .Build();
@@ -194,6 +197,13 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
             Console.WriteLine($"Call2Async {s}");
             cb.Invoke(1);
             return "ret;";
+        }
+
+        public async Task Call3Async(Stream s, Action<int> cb)
+        {
+            MemoryStream ms = new MemoryStream();
+            s.CopyTo(ms);
+            var array = ms.ToArray();
         }
     }
 

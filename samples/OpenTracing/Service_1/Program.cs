@@ -13,6 +13,7 @@ using NetRpc.Grpc;
 using NetRpc.Http;
 using NetRpc.Http.Client;
 using NetRpc.Jaeger;
+using OpenTracing.Util;
 
 namespace Service_1
 {
@@ -91,14 +92,19 @@ namespace Service_1
         public async Task<Result> Call_1(SendObj s, int i1, bool b1, Action<int> cb, CancellationToken token)
         {
             //throw new Exception();
-            for (var i = 0; i < 5; i++)
-            {
-                cb.Invoke(i);
-                await Task.Delay(100);
-            }
+            //for (var i = 0; i < 5; i++)
+            //{
+            //    cb.Invoke(i);
+            //    await Task.Delay(100);
+            //}
 
             Console.WriteLine($"Receive: {s}");
-            await _proxy.Proxy.Call_1_1(201);
+            Action<int> newCb = i =>
+            {
+                Console.WriteLine("tid:" + GlobalTracer.Instance.ActiveSpan.Context.TraceId);
+                cb(i);
+            };
+            await _proxy.Proxy.Call_1_1(201, newCb, token);
             return new Result();
         }
 

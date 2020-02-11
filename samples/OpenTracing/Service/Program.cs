@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using DataContract;
-using Grpc.Core;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -140,7 +139,7 @@ namespace Service
             await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1(obj, 101, true,
                 i => { _logger.LogInformation($"tid:{GlobalTracer.Instance?.ActiveSpan.Context.TraceId}, callback:{i}"); }, default);
 
-            await _factory.CreateProxy<IService_2>("grpc2").Proxy.Call_2(false);
+            //await _factory.CreateProxy<IService_2>("grpc2").Proxy.Call_2(false);
 
             return new Result();
         }
