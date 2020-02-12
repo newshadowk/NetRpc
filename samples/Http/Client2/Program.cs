@@ -18,18 +18,18 @@ namespace Client
 
         static async Task Main(string[] args)
         {
-            //_proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(new HttpClientOptions
-            //{
-            //    SignalRHubUrl = "http://localhost:5000/callback",
-            //    ApiUrl = "http://localhost:5000/api"
-            //}).Proxy;
+            _proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(new HttpClientOptions
+            {
+                SignalRHubUrl = "http://localhost:5000/callback",
+                ApiUrl = "http://localhost:5000/api"
+            }).Proxy;
 
-            //await Test_CallAsync();
-            //await Test_CallByCancelAsync();
-            //await Test_CallByCustomExceptionAsync();
-            //await Test_CallByDefaultExceptionAsync();
-            //await Test_CallByResponseTextExceptionAsync();
-            //await Test_ComplexCallAsync();
+            await Test_CallAsync();
+            await Test_CallByCancelAsync();
+            await Test_CallByCustomExceptionAsync();
+            await Test_CallByDefaultExceptionAsync();
+            await Test_CallByResponseTextExceptionAsync();
+            await Test_ComplexCallAsync();
 
             Console.Read();
         }

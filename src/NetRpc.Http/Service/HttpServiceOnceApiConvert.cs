@@ -71,10 +71,12 @@ namespace NetRpc.Http
             var header = GetHeader();
             var (dataObj, stream) = await GetHttpDataObjAndStream(actionInfo);
 
+            if (dataObj == null) 
+                dataObj = new HttpDataObj();
+
             _connection.CallId = dataObj.CallId;
             _connection.ConnectionId = dataObj.ConnectionId;
             _connection.Stream = stream;
-
             var pureArgs = Helper.GetPureArgsFromDataObj(dataObj.Type, dataObj.Value);
 
             return new ServiceOnceCallParam(actionInfo, pureArgs, dataObj.StreamLength, stream, header);
@@ -227,7 +229,7 @@ namespace NetRpc.Http
             }
 
             //_context.Request.ContentType == null
-            return (new HttpDataObj(), null);
+            return (null, null);
         }
 
         private void CallbackHubCanceled(object sender, string e)
