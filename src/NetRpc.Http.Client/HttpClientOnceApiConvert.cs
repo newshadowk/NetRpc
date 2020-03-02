@@ -126,7 +126,7 @@ namespace NetRpc.Http.Client
             });
 
             //ReSharper disable once MethodSupportsCancellation
-            var res = await client.ExecuteTaskAsync(req);
+            var res = await client.ExecuteAsync(req);
 
             //fault
             TryThrowFault(methodContext, res);
