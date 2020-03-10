@@ -49,6 +49,8 @@ namespace NetRpc.RabbitMQ
 
         public event EventHandler<EventArgsT<byte[]>> Received;
 
+        public event EventHandler<EventArgsT<Exception>> ReceiveDisconnected;
+
         public Task SendAsync(byte[] buffer, bool isEnd = false, bool isPost = false)
         {
             return _call.Send(buffer, isPost);

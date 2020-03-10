@@ -10,7 +10,7 @@ namespace Client
         {
             Console.WriteLine("start");
             Channel c = new Channel("localhost", 5001, ChannelCredentials.Insecure);
-           Console.WriteLine("end");
+            Console.WriteLine("end");
         }
     }
 }

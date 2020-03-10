@@ -24,7 +24,6 @@ namespace NetRpc.Grpc
 
         public void Dispose()
         {
-           
         }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_1
@@ -43,6 +42,8 @@ namespace NetRpc.Grpc
         };
 
         public event EventHandler<EventArgsT<byte[]>> Received;
+
+        public event EventHandler<EventArgsT<Exception>> ReceiveDisconnected;
 
         public async Task SendAsync(byte[] buffer, bool isEnd = false, bool isPost = false)
         {
@@ -69,14 +70,27 @@ namespace NetRpc.Grpc
             Task.Run(async () =>
 #pragma warning restore 4014
             {
-                while (await _api.ResponseStream.MoveNext(CancellationToken.None))
-                    OnReceived(new EventArgsT<byte[]>(_api.ResponseStream.Current.Body.ToByteArray()));
+                try
+                {
+                    while (await _api.ResponseStream.MoveNext(CancellationToken.None))
+                        OnReceived(new EventArgsT<byte[]>(_api.ResponseStream.Current.Body.ToByteArray()));
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning(e, "receive callback error.");
+                    OnReceiveDisconnected(new EventArgsT<Exception>(e));
+                }
             });
         }
 
         private void OnReceived(EventArgsT<byte[]> e)
         {
             Received?.Invoke(this, e);
+        }
+
+        private void OnReceiveDisconnected(EventArgsT<Exception> e)
+        {
+            ReceiveDisconnected?.Invoke(this, e);
         }
     }
 }

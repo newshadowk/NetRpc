@@ -13,6 +13,8 @@ namespace NetRpc
 
         event EventHandler<EventArgsT<byte[]>> Received;
 
+        event EventHandler<EventArgsT<Exception>> ReceiveDisconnected;
+
         Task SendAsync(byte[] buffer, bool isEnd = false, bool isPost = false);
 
         Task StartAsync();

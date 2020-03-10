@@ -14,10 +14,10 @@ namespace NetRpc.Http
             if (schema.Properties == null || schema.Properties.Count == 0)
                 return;
 
-            if (context.ApiModel == null || context.ApiModel.Type == null)
-                return;
+            //if (context.ApiModel == null || context.ApiModel.Type == null)
+            //    return;
 
-            var propertyInfos = context.ApiModel.Type.GetProperties();
+            var propertyInfos = context.Type.GetProperties();
             foreach (PropertyInfo propertyInfo in propertyInfos)
             {
                 var attribute = propertyInfo.GetCustomAttribute<ExampleAttribute>();
@@ -32,10 +32,12 @@ namespace NetRpc.Http
                                 property.Value.Example = new OpenApiNull();
                                 break;
                             }
-                            
-                            property.Value.Example = OpenApiAnyFactory.TryCreateFor(property.Value, attribute.Value, out IOpenApiAny openApiAny)
-                                ? openApiAny
-                                : null;
+
+                            property.Value.Example = OpenApiAnyFactory.CreateFor(property.Value, attribute.Value);
+
+                            //property.Value.Example = OpenApiAnyFactory.TryCreateFor(property.Value, attribute.Value, out IOpenApiAny openApiAny)
+                            //    ? openApiAny
+                            //    : null;
                         }
                     }
                 }

@@ -28,6 +28,7 @@ namespace NetRpc
             _connection = connection;
             _logger = logger;
             _connection.Received += ConnectionReceived;
+            _connection.ReceiveDisconnected += ConnectionReceiveDisconnected;
         }
 
         public ConnectionInfo ConnectionInfo => _connection.ConnectionInfo;
@@ -73,6 +74,12 @@ namespace NetRpc
 
             _stream.Finished += OnEnd;
             return _stream;
+        }
+
+        private void ConnectionReceiveDisconnected(object sender, EventArgsT<Exception> e)
+        {
+            OnFault(new EventArgsT<object>(new ReceiveDisconnectedException(e.Value.Message)));
+            Dispose();
         }
 
         private void ConnectionReceived(object sender, EventArgsT<byte[]> e)

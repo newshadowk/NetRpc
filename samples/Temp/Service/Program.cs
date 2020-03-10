@@ -195,7 +195,21 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
         public async Task<string> Call2Async(string s, Action<int> cb)
         {
             Console.WriteLine($"Call2Async {s}");
-            cb.Invoke(1);
+            for (int i = 0; i < 1000000; i++)
+            {
+                Console.WriteLine($"send {i}");
+                try
+                {
+                    cb(i);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+                await Task.Delay(1000);
+            }
+        
             return "ret;";
         }
 
