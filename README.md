@@ -123,8 +123,6 @@ public class MyHost : IHostedService
         var clientProxy = _factory.CreateProxy<IService>("grpc1");
 ...
 ```
-
-
 ## Serialization
 RabbitMQ, Grpc channel base on **BinaryFormatter**, make sure all contract model mark as **[Serializable]**.  
 ```c#
@@ -158,7 +156,7 @@ public interface IServiceAsync
     /// <exception cref="TaskCanceledException"></exception>
     Task CallByCancelAsync(CancellationToken token);
 
-    Task CallByCallBackAsync(Action<CustomCallbackObj> cb);
+    Task CallByCallBackAsync(Func<CustomCallbackObj, Task> cb);
 
     /// <exception cref="NotImplementedException"></exception>
     Task CallBySystemExceptionAsync();
@@ -175,7 +173,7 @@ public interface IServiceAsync
     Task<ComplexStream> GetComplexStreamAsync();
 
     /// <exception cref="TaskCanceledException"></exception>
-    Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Action<CustomCallbackObj> cb, CancellationToken token);
+    Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Func<CustomCallbackObj, Task> cb, CancellationToken token);
 }
 ```
 ## Sync/Async
@@ -222,10 +220,10 @@ client.Proxy.Call();
 ## ContractLifeTime
 ```c#
 //Singleton: create one instance for every request.
-services.AddNetRpcContractSingleton<IService, Service>();
+services.AddNetRpcContract<IService, Service>(ServiceLifetime.Singleton);
 
 //Scoped: create new instance for each request. 
-services.AddNetRpcContractScoped<IService,Service>();
+services.AddNetRpcContract<IService, Service>(ServiceLifetime.Scoped);
 ```
 ## Context
 On service side, **Midderware** or **Filter** can access **ActionExecutingContext**, it is
@@ -240,7 +238,7 @@ On service side, **Midderware** or **Filter** can access **ActionExecutingContex
 | ActionInfo       | ActionInfo                 | Warpped info of current invoked method.  |
 | Args             | object[]                   | Args of invoked action.  |
 | PureArgs        | object[]                   | Args of invoked action without stream and action.  |
-| Callback         | Action\<object>            | Callback of invoked action.  |
+| Callback         | Func\<object, Task>            | Callback of invoked action.  |
 | Token            | CancellationToken          | CancellationToken of invoked action.  |
 | Stream           | Stream                     | Stream of invoked action.  |
 | ServiceProvider  | IServiceProvider           | ServiceProvider of invoked action.  |
@@ -258,7 +256,7 @@ On client side, **Midderware** can access **ClientActionExecutingContext**, it i
 | Header           | Dictionary\<string object> | Header sent from client. |
 | OptionsName      | string                     | Config options name by DI. |
 | MethodInfo       | MethodInfo                 | Current invoked method.  |
-| Callback         | Action\<object>            | Callback of invoked action.  |
+| Callback         | Func\<object, Task>            | Callback of invoked action.  |
 | Token            | CancellationToken          | CancellationToken of invoked action.  |
 | ContractInfo     | ContractInfo               | ContractInfo.|
 | MethodObj        | MethodObj                  | MethodObj.|
@@ -387,7 +385,7 @@ Task CallByCancelAsync(CancellationToken token);
 ```
 ## Call back
 ```c#
-Task CallByCallBackAsync(Action<CustomCallbackObj> cb);
+Task CallByCallBackAsync(Func<CustomCallbackObj, Task> cb);
 ```
 
 Built-in **CallbackThrottlingMiddleware** is useful when callback is progress, normally progress do not need callback every time to client, also for saving network resources.
@@ -397,12 +395,12 @@ services.AddNetRpcMiddleware(i => i.UseCallbackThrottling(1000)); //limit to one
 //or this:
 services.AddNetRpcCallbackThrottling(1000);
 ...
-public async Task Call(Action<int> cb)
+public async Task Call(Func<int, Task> cb)
 {
     for (int i = 0; i <= 20; i++)
     {
         await Task.Delay(100);
-        cb.Invoke(i);
+        await cb(i);
         Console.WriteLine($"Send callback: {i}");
     }
 }
@@ -624,7 +622,7 @@ app.UseNetRpcSwagger();        // use NetRpcSwagger middleware
 The demo show how to call a method with callback and cancel:
 ![Alt text](images/swagger.png)
 
-If define Callback Action\<T> and CancelToken supported, need set **\_connectionId** and **_callId** when request.
+If define Callback Func\<T, Task> and CancelToken supported, need set **\_connectionId** and **_callId** when request.
 OperationCanceledException will receive respones with statuscode 600.  
 
 ![Alt text](images/callback.png)
@@ -645,9 +643,9 @@ public bool IgnoreWhenNotMatched { get; set; }
 
 ```
 ## [Http] Callback and Cancel
-Contract define the **Action\<T>** and **CancellationToken** to enable this feature.
+Contract define the **Func\<T, Task>** and **CancellationToken** to enable this feature.
 ```c#
-Task CallAsync(Action<int> cb, CancellationToken token);
+Task CallAsync(Func<int, Task> cb, CancellationToken token);
 ```
 Client code belows show how to get connectionId, how to receive callback, how to cancel a method.
 ```javascript
@@ -745,9 +743,9 @@ Set DefaultValue to contract, will effect to swagger.
 public string P1 { get; set; }
 ```
 ## Others
-* An contract args can only contains one **Action**, one **Stream**, same as return value.
+* An contract args can only contains one **Func<T, Task>**, one **Stream**, same as return value.
 ```c#
-ComplexStream Call(Stream data, Action<CustomCallbackObj> cb);
+ComplexStream Call(Stream data, Func<CustomCallbackObj, Task> cb);
 ```
 * **TimeoutInterval** of call is a mechanism of NetRpc owns, it do not use the Grpc or RabbitMQ timeout mechanism.
 ```c#
