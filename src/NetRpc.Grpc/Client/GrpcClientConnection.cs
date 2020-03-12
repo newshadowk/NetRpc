@@ -77,7 +77,7 @@ namespace NetRpc.Grpc
                 }
                 catch (Exception e)
                 {
-                    _logger.LogWarning(e, "receive callback error.");
+                    _logger.LogWarning(e, "_api.ResponseStream.MoveNext error");
                     OnReceiveDisconnected(new EventArgsT<Exception>(e));
                 }
             });

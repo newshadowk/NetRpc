@@ -113,7 +113,7 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
             Console.WriteLine("start");
             try
             {
-                await _service.Call2Async("123",  async i => Console.WriteLine(i));
+                await _service.CallAsync("123");
             }
             catch (Exception e)
             {
@@ -122,10 +122,19 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
 
             //await _service.Call2Async("123", null);
 
-            //using (var s = File.OpenRead(@"D:\TestFile\zs\docx.docx"))
-            //{
-            //    await _service.Call3Async(s, null);
-            //}
+
+            using (var s = File.OpenRead(@"D:\TestFile\2751275008.iso"))
+            {
+                try
+                {
+                    await _service.Call3Async(s, null);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+            }
 
             Console.WriteLine("end");
         }

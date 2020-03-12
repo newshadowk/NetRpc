@@ -188,7 +188,8 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
 
         public async Task<string> CallAsync(string s)
         {
-            //Console.WriteLine($"CallAsync {s}");
+            Console.WriteLine($"CallAsync {s}");
+            await Task.Delay(1000000);
             return "1";
         }
 
@@ -215,6 +216,7 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
 
         public async Task Call3Async(Stream s, Action<int> cb)
         {
+            Console.WriteLine("receive started.");
             MemoryStream ms = new MemoryStream();
             s.CopyTo(ms);
             var array = ms.ToArray();
