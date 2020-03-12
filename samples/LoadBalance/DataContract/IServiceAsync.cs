@@ -7,7 +7,7 @@ namespace DataContract
 {
     public interface IServiceAsync
     {
-        Task CallAsync(Action<int> cb, string s1);
+        Task CallAsync(Func<int, Task> cb, string s1);
 
         [MQPost]
         Task PostAsync(string s1, Stream stream);

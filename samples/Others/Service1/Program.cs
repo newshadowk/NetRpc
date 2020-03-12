@@ -34,7 +34,7 @@ namespace Service
 
     internal class Service1 : IService1
     {
-        public async Task<Ret> Call(InParam p, int i, Stream stream, Action<int> progs, CancellationToken token)
+        public async Task<Ret> Call(InParam p, int i, Stream stream, Func<int, Task> progs, CancellationToken token)
         {
             //Console.WriteLine($"{p}, {i}, {Helper.ReadStr(stream)}");
 

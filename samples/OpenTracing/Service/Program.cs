@@ -137,7 +137,7 @@ namespace Service
             }
 
             await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1(obj, 101, true,
-                i => { _logger.LogInformation($"tid:{GlobalTracer.Instance?.ActiveSpan.Context.TraceId}, callback:{i}"); }, default);
+                async i => { _logger.LogInformation($"tid:{GlobalTracer.Instance?.ActiveSpan.Context.TraceId}, callback:{i}"); }, default);
 
             //await _factory.CreateProxy<IService_2>("grpc2").Proxy.Call_2(false);
 

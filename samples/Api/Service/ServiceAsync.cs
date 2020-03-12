@@ -16,13 +16,13 @@ namespace Service
             return ret;
         }
 
-        public async Task CallByCallBackAsync(Action<CustomCallbackObj> cb)
+        public async Task CallByCallBackAsync(Func<CustomCallbackObj, Task> cb)
         {
             Console.Write("[CallByCallBackAsync]...");
             for (var i = 1; i <= 3; i++)
             {
                 Console.Write($"{i}, ");
-                cb(new CustomCallbackObj {Progress = i});
+                await cb(new CustomCallbackObj {Progress = i});
                 await Task.Delay(100);
             }
 
@@ -76,13 +76,13 @@ namespace Service
             };
         }
 
-        public async Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Action<CustomCallbackObj> cb, CancellationToken token)
+        public async Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Func<CustomCallbackObj, Task> cb, CancellationToken token)
         {
             Console.Write($"[ComplexCallAsync]...Received length:{data.Length}, {Helper.ReadStr(data)}, ");
             for (var i = 1; i <= 3; i++)
             {
                 Console.Write($"{i}, ");
-                cb(new CustomCallbackObj {Progress = i});
+                await cb(new CustomCallbackObj {Progress = i});
                 await Task.Delay(100, token);
             }
 

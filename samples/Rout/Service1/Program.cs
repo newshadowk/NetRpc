@@ -33,13 +33,13 @@ namespace Service
 
     internal class Service1 : IService1
     {
-        public async Task<Ret> Call(InParam p, int i, Stream stream, Action<int> progs, CancellationToken token)
+        public async Task<Ret> Call(InParam p, int i, Stream stream, Func<int, Task> progs, CancellationToken token)
         {
             Console.WriteLine($"{p}, {i}, {Helper.ReadStr(stream)}");
 
             for (int i1 = 0; i1 < 3; i1++)
             {
-                progs(i1);
+                await progs(i1);
                 await Task.Delay(100, token);
             }
 

@@ -33,7 +33,7 @@ namespace Client
             await Test_CallByResponseTextExceptionAsync();
             await Test_ComplexCallAsync();
             await Test_UploadAsync();
-
+            Console.WriteLine("test end");
             Console.Read();
         }
 
@@ -114,7 +114,7 @@ namespace Client
                     new CustomObj {Date = DateTime.Now, Name = NameEnum.John},
                     "123",
                     stream,
-                    i => Console.Write(", " + i.Progress),
+                    async i => Console.Write(", " + i.Progress),
                     default);
                 using (var stream2 = complexStream.Stream)
                     Console.Write($", receive length:{stream.Length}, {Helper.ReadStr(stream2)}");
@@ -128,7 +128,7 @@ namespace Client
             {
                 Console.WriteLine("[Test_UploadAsync]...Send file...");
                 CancellationTokenSource cts = new CancellationTokenSource();
-                var ret = await _proxyAsync.UploadAsync(stream, "123", Console.WriteLine, cts.Token);
+                var ret = await _proxyAsync.UploadAsync(stream, "123", async i => Console.WriteLine(i), cts.Token);
                 Console.WriteLine($"ret:{ret}");
             }
         }

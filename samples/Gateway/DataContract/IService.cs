@@ -9,7 +9,7 @@ namespace DataContract
     {
         Task Call(string s);
 
-        Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Action<CustomCallbackObj> cb, CancellationToken token);
+        Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Func<CustomCallbackObj, Task> cb, CancellationToken token);
     }
 
     public interface IService2

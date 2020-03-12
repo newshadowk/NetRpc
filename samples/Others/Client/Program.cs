@@ -29,10 +29,7 @@ namespace Client
                     services.AddNetRpcGrpcClient();
                     services.AddNetRpcClientContract<IService1>("grpc");
 
-                    services.Configure<RabbitMQClientOptions>("mq", i =>
-                    {
-                        i.CopyFrom(Helper.GetMQOptions());
-                    });
+                    services.Configure<RabbitMQClientOptions>("mq", i => { i.CopyFrom(Helper.GetMQOptions()); });
 
                     services.AddNetRpcRabbitMQClient();
 
@@ -57,39 +54,39 @@ namespace Client
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-                try
+            try
+            {
+                Console.WriteLine("start");
+                var sw = new Stopwatch();
+                sw.Start();
+                using (var fr = File.OpenRead(@"d:\testfile\testfile.txt"))
                 {
-                    Console.WriteLine("start");
-                    Stopwatch sw = new Stopwatch();
-                    sw.Start();
-                    using (var fr = File.OpenRead(@"d:\testfile\testfile.txt"))
+                    var ret = await _s1.Call(
+                        new InParam {P1 = "123"}, 100,
+                        //File.OpenRead(Helper.GetTestFilePath()),
+                        fr,
+                        async i => Console.WriteLine(i),
+                        CancellationToken.None);
+                    Console.WriteLine($"ret:{ret.P1}");
+
+                    using (var fs = File.OpenWrite(@"D:\TestFile\tgt.rar"))
                     {
-                        var ret = await _s1.Call(
-                            new InParam() {P1 = "123"}, 100,
-                            //File.OpenRead(Helper.GetTestFilePath()),
-                            fr,
-                            Console.WriteLine,
-                            CancellationToken.None);
-                        Console.WriteLine($"ret:{ret.P1}");
-
-                        using (var fs = File.OpenWrite(@"D:\TestFile\tgt.rar"))
-                        {
-                            ret.Stream.CopyTo(fs);
-                        }
+                        ret.Stream.CopyTo(fs);
                     }
+                }
 
-                    sw.Stop();
-                    Console.WriteLine(sw.ElapsedMilliseconds);
+                sw.Stop();
+                Console.WriteLine(sw.ElapsedMilliseconds);
 
-                    //Console.WriteLine($"ret:{ret.P1}, {Helper.ReadStr(ret.Stream)}");
+                //Console.WriteLine($"ret:{ret.P1}, {Helper.ReadStr(ret.Stream)}");
 
                 //await _s1.Call2("123");
             }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)

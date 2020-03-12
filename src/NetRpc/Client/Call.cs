@@ -42,7 +42,7 @@ namespace NetRpc
 
         public Dictionary<string, object> AdditionHeader { get; set; } = new Dictionary<string, object>();
 
-        public async Task<object> CallAsync(MethodInfo methodInfo, Action<object> callback, CancellationToken token, Stream stream, params object[] pureArgs)
+        public async Task<object> CallAsync(MethodInfo methodInfo, Func<object, Task> callback, CancellationToken token, Stream stream, params object[] pureArgs)
         {
             var call = await _factory.CreateAsync(_timeoutInterval);
             await call.StartAsync();

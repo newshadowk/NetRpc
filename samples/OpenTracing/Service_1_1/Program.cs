@@ -59,11 +59,11 @@ namespace Service
 
     internal class Service : IService_1_1
     {
-        public async Task<Result> Call_1_1(int i1, Action<int> cb, CancellationToken token)
+        public async Task<Result> Call_1_1(int i1, Func<int, Task> cb, CancellationToken token)
         {
             for (var i = 0; i < 5; i++)
             {
-                cb.Invoke(i);
+                await cb.Invoke(i);
                 await Task.Delay(100);
             }
 

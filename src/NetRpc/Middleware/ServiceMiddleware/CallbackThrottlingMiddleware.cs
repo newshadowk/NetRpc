@@ -17,75 +17,70 @@ namespace NetRpc
 
         public async Task InvokeAsync(ActionExecutingContext context)
         {
-            using var ra = new ThrottlingAction(_callbackThrottlingInterval);
+            using var ra = new ThrottlingFunc(_callbackThrottlingInterval);
             var rawAction = context.Callback;
-            context.Callback = o =>
+            context.Callback = async o =>
             {
                 // ReSharper disable once AccessToDisposedClosure
-                ra.Post(() => rawAction(o));
+                await ra.PostAsync(() => rawAction(o));
             };
             await _next(context);
         }
     }
 
-    internal sealed class ThrottlingAction : IDisposable
+    internal sealed class ThrottlingFunc : IDisposable
     {
+        private readonly AsyncLock _lock = new AsyncLock();
         private readonly BusyTimer _t;
-        private Action _action;
-        private Action _lastAction;
-
+        private Func<Task> _func;
+        private Func<Task> _lastFunc;
         private DateTime _lastTime;
-
         private bool _isEnd;
-        private readonly object _lockObj = new object();
 
-        public ThrottlingAction(int intervalMs)
+        public ThrottlingFunc(int intervalMs)
         {
             _t = new BusyTimer(intervalMs);
-            _t.Elapsed += TElapsed;
+            _t.ElapsedAsync = TElapsed;
             _t.Start();
         }
 
-        private void TElapsed(object sender, ElapsedEventArgs e)
+        private async Task TElapsed(ElapsedEventArgs e)
         {
-            Invoke();
+            await InvokeAsync();
         }
 
-        private void Invoke()
+        private async Task InvokeAsync()
         {
-            lock (_lockObj)
+            using (await _lock.LockAsync())
             {
                 if (_isEnd)
                     return;
 
-                if (_action == _lastAction)
+                if (_func == _lastFunc)
                     return;
 
-                _lastAction = _action;
-                _lastAction.Invoke();
+                _lastFunc = _func;
+                await _lastFunc();
                 _lastTime = DateTime.Now;
             }
         }
 
-        public void Post(Action action)
+        public async Task PostAsync(Func<Task> func)
         {
-            lock (_lockObj)
+            using (await _lock.LockAsync())
             {
-                _action = action;
-
-                if ((DateTime.Now - _lastTime).TotalMilliseconds >= _t.Interval)
-                    Invoke();
+                _func = func;
             }
+
+            if ((DateTime.Now - _lastTime).TotalMilliseconds >= _t.Interval)
+                await InvokeAsync();
         }
 
         public void Dispose()
         {
-            lock (_lockObj)
-            {
-                Invoke();
-                _isEnd = true;
-                _t?.Dispose();
-            }
+            InvokeAsync();
+            _isEnd = true;
+            _t?.Dispose();
         }
     }
 }

@@ -89,7 +89,7 @@ namespace Service_1
             _proxy = factory.CreateProxy<IService_1_1>("http");
         }
 
-        public async Task<Result> Call_1(SendObj s, int i1, bool b1, Action<int> cb, CancellationToken token)
+        public async Task<Result> Call_1(SendObj s, int i1, bool b1, Func<int, Task> cb, CancellationToken token)
         {
             //throw new Exception();
             //for (var i = 0; i < 5; i++)
@@ -99,10 +99,10 @@ namespace Service_1
             //}
 
             Console.WriteLine($"Receive: {s}");
-            Action<int> newCb = i =>
+            Func<int, Task> newCb = async i =>
             {
                 Console.WriteLine("tid:" + GlobalTracer.Instance.ActiveSpan.Context.TraceId);
-                cb(i);
+                await cb(i);
             };
             await _proxy.Proxy.Call_1_1(201, newCb, token);
             return new Result();

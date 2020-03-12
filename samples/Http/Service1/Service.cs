@@ -53,14 +53,14 @@ namespace Service
             throw new ResponseTextException("\"this is customs text.\"", 701);
         }
 
-        public async Task<ComplexStream> ComplexCallAsync(CustomObj obj, string p1, Stream stream, Action<CustomCallbackObj> cb, CancellationToken token)
+        public async Task<ComplexStream> ComplexCallAsync(CustomObj obj, string p1, Stream stream, Func<CustomCallbackObj, Task> cb, CancellationToken token)
         {
             Console.WriteLine($"[ComplexCallAsync]...receive:{obj}, p1:{p1}, streamLength:{stream.Length}");
 
             for (var i = 1; i <= 3; i++)
             {
                 Console.Write($"{i}, ");
-                cb(new CustomCallbackObj { Progress = i });
+                await cb(new CustomCallbackObj { Progress = i });
                 await Task.Delay(1000, token);
             }
 
@@ -81,7 +81,7 @@ namespace Service
             return ret;
         }
 
-        public async Task<int> UploadAsync(Stream stream, string p1, Action<int> cb, CancellationToken token)
+        public async Task<int> UploadAsync(Stream stream, string p1, Func<int, Task> cb, CancellationToken token)
         {
             Console.WriteLine($"UploadAsync, {p1}");
             string path = @"d:\testfile\tgt.rar";

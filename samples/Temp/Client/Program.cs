@@ -113,7 +113,7 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
             Console.WriteLine("start");
             try
             {
-                await _service.Call2Async("123", Console.WriteLine);
+                await _service.Call2Async("123",  async i => Console.WriteLine(i));
             }
             catch (Exception e)
             {

@@ -12,7 +12,7 @@ namespace DataContract
         /// <exception cref="TaskCanceledException"></exception>
         Task CallByCancelAsync(CancellationToken token);
 
-        Task CallByCallBackAsync(Action<CustomCallbackObj> cb);
+        Task CallByCallBackAsync(Func<CustomCallbackObj, Task> cb);
 
         /// <exception cref="NotImplementedException"></exception>
         Task CallBySystemExceptionAsync();
@@ -29,6 +29,6 @@ namespace DataContract
         Task<ComplexStream> GetComplexStreamAsync();
 
         /// <exception cref="TaskCanceledException"></exception>
-        Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Action<CustomCallbackObj> cb, CancellationToken token);
+        Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Func<CustomCallbackObj, Task> cb, CancellationToken token);
     }
 }

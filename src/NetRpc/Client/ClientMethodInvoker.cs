@@ -51,18 +51,18 @@ namespace NetRpc
             return (T) ret;
         }
 
-        private static (Action<object> callBack, CancellationToken token, Stream stream, object[] otherArgs) GetArgs(object[] args)
+        private static (Func<object, Task> callback, CancellationToken token, Stream stream, object[] otherArgs) GetArgs(object[] args)
         {
             var objs = args.ToList();
 
-            //cb
-            Action<object> retCallback = null;
+            //callback
+            Func<object, Task> retCallback = null;
             var found = objs.FirstOrDefault(i =>
                 i != null &&
-                i.GetType().IsActionT());
+                i.GetType().IsFuncT());
             if (found != null)
             {
-                retCallback = ActionHelper.ConvertAction(found);
+                retCallback = FuncHelper.ConvertFunc(found);
                 objs.Remove(found);
             }
 

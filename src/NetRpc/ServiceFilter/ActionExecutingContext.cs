@@ -36,7 +36,7 @@ namespace NetRpc
 
         public Type CallbackType { get; }
 
-        public Action<object> Callback
+        public Func<object, Task> Callback
         {
             get
             {
@@ -45,11 +45,11 @@ namespace NetRpc
                     if (i == null)
                         return false;
 
-                    return i.GetType().IsActionT();
+                    return i.GetType().IsFuncT();
                 });
                 if (found == null)
                     return null;
-                return ActionHelper.ConvertAction(found);
+                return FuncHelper.ConvertFunc(found);
             }
             set
             {
@@ -62,9 +62,9 @@ namespace NetRpc
                         continue;
 
                     var t = Args[i].GetType();
-                    if (t.IsActionT())
+                    if (t.IsFuncT())
                     {
-                        Args[i] = ActionHelper.ConvertAction(value, CallbackType);
+                        Args[i] = FuncHelper.ConvertFunc(value, CallbackType);
                         return;
                     }
                 }
@@ -100,7 +100,7 @@ namespace NetRpc
             ReadStream stream,
             Contract contract,
             ChannelType channelType,
-            Action<object> callback,
+            Func<object, Task> callback,
             CancellationToken cancellationToken)
         {
             StartTime = DateTimeOffset.Now;
@@ -112,13 +112,13 @@ namespace NetRpc
             Instance = instance;
             Args = args;
             PureArgs = pureArgs;
-            CallbackType = GetActionType(args);
+            CallbackType = GetFuncType(args);
             ActionInfo = actionInfo;
+            Callback = callback;
             Callback = callback;
             Stream = stream;
             Contract = contract;
             CancellationToken = cancellationToken;
-
             ResetProps();
         }
 
@@ -159,7 +159,7 @@ namespace NetRpc
             return $"Header:{DicToStringForDisplay(Header)}, MethodName:{InstanceMethod.MethodInfo.Name}, Args:{Helper.ListToStringForDisplay(Args, ",")}";
         }
 
-        private static Type GetActionType(object[] args)
+        private static Type GetFuncType(object[] args)
         {
             foreach (var i in args)
             {
@@ -167,7 +167,7 @@ namespace NetRpc
                     continue;
 
                 var t = i.GetType();
-                if (t.IsActionT())
+                if (t.IsFuncT())
                     return t.GetGenericArguments()[0];
             }
 

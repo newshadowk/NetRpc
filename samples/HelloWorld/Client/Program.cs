@@ -14,7 +14,9 @@ namespace Client
                 Host = "localhost",
                 Port = 50001
             });
+
             await p.Proxy.Call("hello world.");
+
             Console.Read();
         }
     }

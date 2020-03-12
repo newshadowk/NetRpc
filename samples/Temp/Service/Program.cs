@@ -192,7 +192,7 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
             return "1";
         }
 
-        public async Task<string> Call2Async(string s, Action<int> cb)
+        public async Task<string> Call2Async(string s, Func<int, Task> cb)
         {
             Console.WriteLine($"Call2Async {s}");
             for (int i = 0; i < 1000000; i++)
@@ -200,7 +200,7 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
                 Console.WriteLine($"send {i}");
                 try
                 {
-                    cb(i);
+                    await cb(i);
                 }
                 catch (Exception e)
                 {

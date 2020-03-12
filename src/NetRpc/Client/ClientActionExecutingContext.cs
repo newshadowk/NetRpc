@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace NetRpc
 {
@@ -34,7 +35,7 @@ namespace NetRpc
 
         public ContractInfo ContractInfo { get; }
 
-        public Action<object> Callback { get; }
+        public Func<object, Task> Callback { get; }
 
         public CancellationToken CancellationToken { get; }
 
@@ -51,8 +52,8 @@ namespace NetRpc
             IServiceProvider serviceProvider, 
             string optionsName,
             IOnceCall onceCall,
-            InstanceMethod instanceMethod, 
-            Action<object> callback, 
+            InstanceMethod instanceMethod,
+            Func<object, Task> callback,
             CancellationToken token,
             ContractInfo contractInfo,
             ContractMethod contractMethod,

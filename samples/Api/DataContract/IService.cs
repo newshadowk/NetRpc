@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using NetRpc;
 
 namespace DataContract
@@ -13,7 +14,7 @@ namespace DataContract
 
         CustomObj SetAndGetObj(CustomObj obj);
 
-        void CallByCallBack(Action<CustomCallbackObj> cb);
+        void CallByCallBack(Func<CustomCallbackObj, Task> cb);
 
         /// <exception cref="NotImplementedException"></exception>
         void CallBySystemException();
@@ -29,6 +30,6 @@ namespace DataContract
 
         ComplexStream GetComplexStream();
 
-        ComplexStream ComplexCall(CustomObj obj, Stream data, Action<CustomCallbackObj> cb);
+        ComplexStream ComplexCall(CustomObj obj, Stream data, Func<CustomCallbackObj, Task> cb);
     }
 }

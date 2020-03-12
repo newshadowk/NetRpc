@@ -92,7 +92,7 @@ namespace Client
         private static void Test_CallByCallBack()
         {
             Console.Write("[CallByCallBack]");
-            _proxy.CallByCallBack(i => Console.Write(", " + i.Progress));
+            _proxy.CallByCallBack(async i => Console.Write(", " + i.Progress));
             Console.WriteLine();
         }
 
@@ -174,7 +174,7 @@ namespace Client
                 var complexStream = _proxy.ComplexCall(
                     new CustomObj {Date = DateTime.Now, Name = "ComplexCall"},
                     stream,
-                    i => Console.Write(", " + i.Progress));
+                    async i => Console.Write(", " + i.Progress));
 
                 using (var stream2 = complexStream.Stream)
                     Console.Write($", receive length:{stream.Length}, {Helper.ReadStr(stream2)}");
@@ -227,7 +227,7 @@ namespace Client
         private static async Task Test_CallByCallBackAsync()
         {
             Console.Write("[CallByCallBackAsync]");
-            await _proxyAsync.CallByCallBackAsync(i => Console.Write(", " + i.Progress));
+            await _proxyAsync.CallByCallBackAsync(async i => Console.Write(", " + i.Progress));
             Console.WriteLine();
         }
 
@@ -298,7 +298,7 @@ namespace Client
                 var complexStream = await _proxyAsync.ComplexCallAsync(
                     new CustomObj {Date = DateTime.Now, Name = "ComplexCall"},
                     stream,
-                    i => Console.Write(", " + i.Progress),
+                    async i => Console.Write(", " + i.Progress),
                     default);
 
                 using (var stream2 = complexStream.Stream)

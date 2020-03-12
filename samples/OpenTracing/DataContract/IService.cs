@@ -49,14 +49,14 @@ namespace DataContract
     public interface IService_1
     {
         //[TracerIgnore]
-        Task<Result> Call_1(SendObj s, int i1, bool b1, Action<int> cb, CancellationToken token);
+        Task<Result> Call_1(SendObj s, int i1, bool b1, Func<int, Task> cb, CancellationToken token);
 
         Task<Stream> Echo_1(Stream stream);
     }
 
     public interface IService_1_1
     {
-        Task<Result> Call_1_1(int i1, Action<int> cb, CancellationToken token);
+        Task<Result> Call_1_1(int i1, Func<int, Task> cb, CancellationToken token);
     }
 
     public interface IService_2

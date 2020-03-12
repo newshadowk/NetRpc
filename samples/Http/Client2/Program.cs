@@ -111,7 +111,7 @@ namespace Client
                     new CustomObj {Date = DateTime.Now, Name = NameEnum.John},
                     "123",
                     stream,
-                    i => Console.Write(", " + i.Progress),
+                    async i => Console.Write(", " + i.Progress),
                     default);
                 using (var stream2 = complexStream.Stream)
                     Console.Write($", receive length:{stream.Length}, {Helper.ReadStr(stream2)}");

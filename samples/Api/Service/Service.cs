@@ -32,7 +32,7 @@ namespace Service
             return retObj;
         }
 
-        public void CallByCallBack(Action<CustomCallbackObj> cb)
+        public void CallByCallBack(Func<CustomCallbackObj, Task> cb)
         {
             Console.Write("[CallByCallBack]...");
             for (var i = 1; i <= 3; i++)
@@ -86,7 +86,7 @@ namespace Service
             };
         }
 
-        public ComplexStream ComplexCall(CustomObj obj, Stream data, Action<CustomCallbackObj> cb)
+        public ComplexStream ComplexCall(CustomObj obj, Stream data, Func<CustomCallbackObj, Task> cb)
         {
             Console.Write($"[ComplexCall]...Received length:{data.Length}, {Helper.ReadStr(data)}, ");
             for (var i = 1; i <= 3; i++)

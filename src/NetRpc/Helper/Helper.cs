@@ -25,7 +25,10 @@ namespace NetRpc
         {
             if (decimalPlaces < 0) { throw new ArgumentOutOfRangeException(nameof(decimalPlaces)); }
             if (value < 0) { return "-" + SizeSuffix(-value); }
+
+            // ReSharper disable FormatStringProblem
             if (value == 0) { return string.Format("{0:n" + decimalPlaces + "} bytes", 0); }
+            // ReSharper restore FormatStringProblem
 
             // mag is 0 for bytes, 1 for KB, 2, for MB, etc.
             int mag = (int)Math.Log(value, 1024);
@@ -42,9 +45,11 @@ namespace NetRpc
                 adjustedSize /= 1024;
             }
 
+            // ReSharper disable FormatStringProblem
             return string.Format("{0:n" + decimalPlaces + "} {1}",
                 adjustedSize,
                 SizeSuffixes[mag]);
+            // ReSharper restore FormatStringProblem
         }
 
         public static string ListToStringForDisplay(Array list, string split)
@@ -187,11 +192,11 @@ namespace NetRpc
             ex.Action = ex.Action.TrimEndString(", ");
         }
 
-        public static bool IsActionT(this Type t)
+        public static bool IsFuncT(this Type t)
         {
             if (t == null)
                 return false;
-            return t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Action<>);
+            return t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Func<,>);
         }
 
         public static bool IsCancellationToken(this Type t)
@@ -326,7 +331,7 @@ namespace NetRpc
                 else
                     retP = postP * (100 - progressCount) / 100 + progressCount;
 
-                rawAction(Convert.ChangeType(retP, context.CallbackType));
+                return rawAction(Convert.ChangeType(retP, context.CallbackType));
             };
         }
 
@@ -422,14 +427,6 @@ namespace NetRpc
             }
 
             return msgContent.ToString();
-        }
-
-        private static Stream BytesToStream(byte[] bytes)
-        {
-            if (bytes == null)
-                return null;
-            Stream stream = new MemoryStream(bytes);
-            return stream;
         }
 
         private static string GetMsgContent(Exception ee)

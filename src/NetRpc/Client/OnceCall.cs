@@ -30,7 +30,7 @@ namespace NetRpc
 
         public ConnectionInfo ConnectionInfo => _convert.ConnectionInfo;
 
-        public Task<object> CallAsync(Dictionary<string, object> header, MethodContext methodContext, Action<object> callback, CancellationToken token,
+        public Task<object> CallAsync(Dictionary<string, object> header, MethodContext methodContext, Func<object, Task> callback, CancellationToken token,
             Stream stream, params object[] pureArgs)
         {
             if (callback != null)

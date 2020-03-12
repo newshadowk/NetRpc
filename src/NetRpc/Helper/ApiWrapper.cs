@@ -11,16 +11,15 @@ namespace NetRpc
 {
     public static class ApiWrapper
     {
-        public static object[] GetArgs(ParameterInfo[] ps, object[] psValue, Action<object> callback, CancellationToken token, Stream stream)
+        public static object[] GetArgs(ParameterInfo[] ps, object[] psValue, Func<object, Task> callback, CancellationToken token, Stream stream)
         {
             var psList = ps.ToList();
-
             var dic = new Dictionary<int, object>();
 
-            //Action<>
-            var found = psList.FirstOrDefault(i => i.ParameterType.IsActionT());
-            if (found != null)
-                dic.Add(psList.IndexOf(found), ActionHelper.ConvertAction(callback, found.ParameterType.GetGenericArguments()[0]));
+            //Func<>
+            var found = psList.FirstOrDefault(i => i.ParameterType.IsFuncT());
+                if (found != null)
+                    dic.Add(psList.IndexOf(found), FuncHelper.ConvertFunc(callback, found.ParameterType.GetGenericArguments()[0]));
 
             //CancellationToken
             found = psList.FirstOrDefault(i => i.ParameterType.IsCancellationToken());

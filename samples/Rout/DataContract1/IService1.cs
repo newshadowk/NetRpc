@@ -7,7 +7,7 @@ namespace DataContract1
 {
     public interface IService1
     {
-        Task<Ret> Call(InParam p, int i, Stream stream, Action<int> progs, CancellationToken token);
+        Task<Ret> Call(InParam p, int i, Stream stream, Func<int, Task> progs, CancellationToken token);
     }
 
     [Serializable]

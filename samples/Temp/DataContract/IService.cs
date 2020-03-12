@@ -8,7 +8,7 @@ namespace DataContract
     {
         Task<string> CallAsync(string s);
 
-        Task<string> Call2Async(string s, Action<int> cb);
+        Task<string> Call2Async(string s, Func<int, Task> cb);
 
         Task Call3Async(Stream s, Action<int> cb);
     }

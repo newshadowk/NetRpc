@@ -57,7 +57,7 @@ namespace Client
                 var ret = await _s1.Call(
                     new InParam {P1 = "123"}, 100,
                     File.OpenRead(Helper.GetTestFilePath()),
-                    Console.WriteLine,
+                    async i => Console.WriteLine(i),
                     CancellationToken.None);
                 Console.WriteLine($"ret:{ret.P1}, {Helper.ReadStr(ret.Stream)}");
 

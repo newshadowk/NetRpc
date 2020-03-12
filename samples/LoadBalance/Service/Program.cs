@@ -26,13 +26,13 @@ namespace Service
 
     internal class ServiceAsync : IServiceAsync
     {
-        public async Task CallAsync(Action<int> cb, string s1)
+        public async Task CallAsync(Func<int, Task> cb, string s1)
         {
             Console.Write($"Receive: {s1}, start...");
             for (var i = 0; i < 10; i++)
             {
                 await Task.Delay(1000);
-                cb(i);
+                await cb(i);
                 Console.Write($"{i}, ");
             }
 

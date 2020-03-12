@@ -95,7 +95,7 @@ namespace NetRpc
             var parameters = contractMethod.MethodInfo.GetParameters();
 
             //callback
-            async void Callback(object i) => await _convert.SendCallbackAsync(i);
+            Task Callback(object i) => _convert.SendCallbackAsync(i);
 
             //args
             var args = ApiWrapper.GetArgs(parameters, onceCallParam.PureArgs, Callback, _serviceCts.Token, onceCallParam.Stream);

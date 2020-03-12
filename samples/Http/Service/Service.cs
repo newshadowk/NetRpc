@@ -47,7 +47,7 @@ namespace Service
             throw new ResponseTextException("\"this is customs text.\"", 701);
         }
 
-        public async Task<ComplexStream> ComplexCallAsync(CustomObj obj, string p1, Stream stream, Action<CustomCallbackObj> cb, CancellationToken token)
+        public async Task<ComplexStream> ComplexCallAsync(CustomObj obj, string p1, Stream stream, Func<CustomCallbackObj, Task> cb, CancellationToken token)
         {
             Console.WriteLine($"[ComplexCallAsync]...receive:{obj}, p1:{p1}, streamLength:{stream.Length}");
 
@@ -75,12 +75,12 @@ namespace Service
             return ret;
         }
 
-        public Task<int> UploadAsync(Stream stream, string p1, Action<int> cb, CancellationToken token)
+        public Task<int> UploadAsync(Stream stream, string p1, Func<int, Task> cb, CancellationToken token)
         {
             throw new NotImplementedException();
         }
 
-        public Task<string> ComplexCall2Async(Action<CustomCallbackObj> cb, CancellationToken token)
+        public Task<string> ComplexCall2Async(Func<CustomCallbackObj, Task> cb, CancellationToken token)
         {
             throw new NotImplementedException();
         }

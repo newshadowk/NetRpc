@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace NetRpc
 {
@@ -29,7 +30,7 @@ namespace NetRpc
 
         ContractInfo ContractInfo { get; }
 
-        Action<object> Callback { get; }
+        Func<object, Task> Callback { get; }
 
         CancellationToken CancellationToken { get; }
 

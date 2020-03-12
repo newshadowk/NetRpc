@@ -68,7 +68,7 @@ namespace Client
                 var complexStream = await _proxyAsync.ComplexCallAsync(
                     new CustomObj {Date = DateTime.Now, Name = "ComplexCall"},
                     stream,
-                    i => Console.Write(", " + i.Progress),
+                    async i => Console.Write(", " + i.Progress),
                     default);
 
                 using (var stream2 = complexStream.Stream)

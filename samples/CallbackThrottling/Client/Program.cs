@@ -10,7 +10,7 @@ namespace Client
         static async Task Main(string[] args)
         {
             var p = NetRpcManager.CreateClientProxy<IService>(new GrpcClientOptions {Host = "localhost", Port = 50001});
-            await p.Proxy.Call(i => Console.WriteLine($"receive callback: {i}"));
+            await p.Proxy.Call(async i => Console.WriteLine($"receive callback: {i}"));
             Console.Read();
         }
     }

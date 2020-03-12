@@ -22,12 +22,12 @@ namespace Service
 
     internal class Service : IService
     {
-        public async Task Call(Action<int> cb)
+        public async Task Call(Func<int, Task> cb)
         {
             for (var i = 0; i <= 20; i++)
             {
                 await Task.Delay(100);
-                cb.Invoke(i);
+                await cb.Invoke(i);
                 Console.WriteLine($"Send callback: {i}");
             }
         }

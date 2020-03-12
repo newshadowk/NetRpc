@@ -18,7 +18,7 @@ namespace Client
                 Task.Run(async () =>
                 {
                     Console.WriteLine($"Send {i1}");
-                    await proxy.CallAsync(Console.WriteLine, i1.ToString());
+                    await proxy.CallAsync(async p => Console.WriteLine(p), i1.ToString());
                 });
             }
 

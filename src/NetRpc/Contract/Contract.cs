@@ -155,7 +155,7 @@ namespace NetRpc
                 }
 
                 //callback
-                if (p.ParameterType.IsActionT())
+                if (p.ParameterType.IsFuncT())
                 {
                     action = new TypeName
                     {
@@ -334,7 +334,7 @@ namespace NetRpc
             foreach (var p in methodInfo.GetParameters())
             {
                 i++;
-                if (p.ParameterType.IsActionT() || p.ParameterType == typeof(Stream))
+                if (p.ParameterType.IsFuncT() || p.ParameterType == typeof(Stream))
                     continue;
 
                 ret.Add(new MethodParameter(i, p.Name));
