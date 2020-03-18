@@ -20,6 +20,7 @@ namespace RabbitMQ.Base
         private readonly CheckWriteOnceBlock<string> _clientToServiceQueueOnceBlock = new CheckWriteOnceBlock<string>();
         private volatile bool _disposed;
         private bool isFirstSend = true;
+
         public event EventHandler<EventArgsT<byte[]>> Received;
 
         public RabbitMQOnceCall(IConnection connect, string rpcQueue, ILogger logger)
@@ -38,7 +39,7 @@ namespace RabbitMQ.Base
             consumer.Received += ConsumerReceived;
         }
 
-        public async Task Send(byte[] buffer, bool isPost)
+        public async Task SendAsync(byte[] buffer, bool isPost)
         {
             if (isPost)
             {
@@ -72,7 +73,7 @@ namespace RabbitMQ.Base
                 }
                 catch (OperationCanceledException)
                 {
-                    throw new InvalidOperationException($"Message has not sent to queue, check queue if exist : {_rpcQueue}.");;
+                    throw new InvalidOperationException($"Message has not sent to queue, check queue if exist : {_rpcQueue}.");
                 }
             }
             else

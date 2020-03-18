@@ -20,14 +20,14 @@ namespace NetRpc
 
         public event EventHandler<EventArgsT<object>> ResultStream;
         public event EventHandler<EventArgsT<object>> Result;
-        public event EventHandler<EventArgsT<object>> Callback;
+        public event Func<object, EventArgsT<object>, Task> CallbackAsync;
         public event EventHandler<EventArgsT<object>> Fault;
 
         public BufferClientOnceApiConvert(IClientConnection connection, ILogger logger)
         {
             _connection = connection;
             _logger = logger;
-            _connection.Received += ConnectionReceived;
+            _connection.ReceivedAsync += ConnectionReceivedAsync;
             _connection.ReceiveDisconnected += ConnectionReceiveDisconnected;
         }
 
@@ -82,7 +82,7 @@ namespace NetRpc
             Dispose();
         }
 
-        private void ConnectionReceived(object sender, EventArgsT<byte[]> e)
+        private async Task ConnectionReceivedAsync(object sender, EventArgsT<byte[]> e)
         {
             var r = new Reply(e.Value);
             switch (r.Type)
@@ -117,7 +117,7 @@ namespace NetRpc
                 case ReplyType.Callback:
                 {
                     if (TryToObject(r.Body, out var body))
-                        OnCallback(new EventArgsT<object>(body));
+                        await OnCallbackAsync(new EventArgsT<object>(body));
                     else
                         OnFaultSerializationException();
                     break;
@@ -134,18 +134,18 @@ namespace NetRpc
                     break;
                 }
                 case ReplyType.Buffer:
-                    _block.SendAsync((r.Body, BufferType.Buffer)).Wait();
+                    await _block.SendAsync((r.Body, BufferType.Buffer));
                     break;
                 case ReplyType.BufferCancel:
-                    _block.SendAsync((default, BufferType.Cancel)).Wait();
+                    await _block.SendAsync((default, BufferType.Cancel));
                     Dispose();
                     break;
                 case ReplyType.BufferFault:
-                    _block.SendAsync((default, BufferType.Fault)).Wait();
+                    await _block.SendAsync((default, BufferType.Fault));
                     Dispose();
                     break;
                 case ReplyType.BufferEnd:
-                    _block.SendAsync((r.Body, BufferType.End)).Wait();
+                    await _block.SendAsync((r.Body, BufferType.End));
                     Dispose();
                     break;
                 default:
@@ -158,9 +158,9 @@ namespace NetRpc
             Result?.Invoke(this, e);
         }
 
-        private void OnCallback(EventArgsT<object> e)
+        private Task OnCallbackAsync(EventArgsT<object> e)
         {
-            Callback?.Invoke(this, e);
+            return CallbackAsync.InvokeAsync(this, e);
         }
 
         private void OnFault(EventArgsT<object> e)

@@ -94,8 +94,23 @@ namespace NetRpc
             //get parameters
             var parameters = contractMethod.MethodInfo.GetParameters();
 
-            //callback
-            Task Callback(object i) => _convert.SendCallbackAsync(i);
+            //callback, cancel when exception
+            async Task Callback(object i)
+            {
+                try
+                {
+                    if (!_serviceCts.IsCancellationRequested)
+                        await _convert.SendCallbackAsync(i);
+                    else
+                        _logger.LogWarning("Call back ignored, action is canceled.");
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning(e, "Callback error, cancel action.");
+                    _serviceCts.Cancel();
+                    throw;
+                }
+            }
 
             //args
             var args = ApiWrapper.GetArgs(parameters, onceCallParam.PureArgs, Callback, _serviceCts.Token, onceCallParam.Stream);

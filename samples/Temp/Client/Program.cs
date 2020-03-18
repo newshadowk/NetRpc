@@ -111,17 +111,18 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             Console.WriteLine("start");
-            try
-            {
-                await _service.CallAsync("123");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+            //try
+            //{
+            //    await _service.CallAsync("123");
+            //}
+            //catch (Exception e)
+            //{
+            //    Console.WriteLine(e);
+            //}
 
-            //await _service.Call2Async("123", null);
+            CancellationTokenSource cts = new CancellationTokenSource();
 
+            await _service.Call2Async("123", async i => Console.WriteLine(i), cts.Token);
 
             using (var s = File.OpenRead(@"D:\TestFile\2751275008.iso"))
             {

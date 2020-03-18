@@ -43,7 +43,7 @@ namespace NetRpc.Grpc
                 _end.ReceiveAsync());
         }
 
-        public event EventHandler<EventArgsT<byte[]>> Received;
+        public event Func<object, EventArgsT<byte[]>, Task> ReceivedAsync;
 
         public async Task SendAsync(byte[] buffer)
         {
@@ -60,7 +60,7 @@ namespace NetRpc.Grpc
                 try
                 {
                     while (await _requestStream.MoveNext(CancellationToken.None))
-                        OnReceived(new EventArgsT<byte[]>(_requestStream.Current.Body.ToByteArray()));
+                        await OnReceivedAsync(new EventArgsT<byte[]>(_requestStream.Current.Body.ToByteArray()));
                 }
                 catch (Exception e)
                 {
@@ -75,9 +75,9 @@ namespace NetRpc.Grpc
             return Task.CompletedTask;
         }
 
-        private void OnReceived(EventArgsT<byte[]> e)
-        {
-            Received?.Invoke(this, e);
+        private Task OnReceivedAsync(EventArgsT<byte[]> e)
+        { 
+            return ReceivedAsync.InvokeAsync(this, e);
         }
     }
 }

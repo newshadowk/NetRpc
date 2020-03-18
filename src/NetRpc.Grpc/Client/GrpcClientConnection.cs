@@ -22,6 +22,10 @@ namespace NetRpc.Grpc
             _logger = logger;
         }
 
+        public event Func<object, EventArgsT<byte[]>, Task> ReceivedAsync;
+
+        public event EventHandler<EventArgsT<Exception>> ReceiveDisconnected;
+
         public void Dispose()
         {
         }
@@ -29,7 +33,6 @@ namespace NetRpc.Grpc
 #if NETSTANDARD2_1 || NETCOREAPP3_1
         public async ValueTask DisposeAsync()
         {
-          
         }
 #endif
 
@@ -40,10 +43,6 @@ namespace NetRpc.Grpc
             Host = _client.Host, 
             ChannelType =  ChannelType.Grpc
         };
-
-        public event EventHandler<EventArgsT<byte[]>> Received;
-
-        public event EventHandler<EventArgsT<Exception>> ReceiveDisconnected;
 
         public async Task SendAsync(byte[] buffer, bool isEnd = false, bool isPost = false)
         {
@@ -73,7 +72,7 @@ namespace NetRpc.Grpc
                 try
                 {
                     while (await _api.ResponseStream.MoveNext(CancellationToken.None))
-                        OnReceived(new EventArgsT<byte[]>(_api.ResponseStream.Current.Body.ToByteArray()));
+                        await OnReceivedAsync(new EventArgsT<byte[]>(_api.ResponseStream.Current.Body.ToByteArray()));
                 }
                 catch (Exception e)
                 {
@@ -83,9 +82,9 @@ namespace NetRpc.Grpc
             });
         }
 
-        private void OnReceived(EventArgsT<byte[]> e)
+        private Task OnReceivedAsync(EventArgsT<byte[]> e)
         {
-            Received?.Invoke(this, e);
+            return ReceivedAsync.InvokeAsync(this, e);
         }
 
         private void OnReceiveDisconnected(EventArgsT<Exception> e)

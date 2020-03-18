@@ -17,7 +17,11 @@ namespace NetRpc
 
         public async Task InvokeAsync(ActionExecutingContext context)
         {
+#if NETSTANDARD2_1 || NETCOREAPP3_1
+            await 
+#endif
             using var ra = new ThrottlingFunc(_callbackThrottlingInterval);
+
             var rawAction = context.Callback;
             context.Callback = async o =>
             {
@@ -28,7 +32,11 @@ namespace NetRpc
         }
     }
 
+#if NETSTANDARD2_1 || NETCOREAPP3_1
+    internal sealed class ThrottlingFunc : IDisposable, IAsyncDisposable
+#else
     internal sealed class ThrottlingFunc : IDisposable
+#endif
     {
         private readonly AsyncLock _lock = new AsyncLock();
         private readonly BusyTimer _t;
@@ -36,15 +44,15 @@ namespace NetRpc
         private Func<Task> _lastFunc;
         private DateTime _lastTime;
         private bool _isEnd;
-
+        //todo
         public ThrottlingFunc(int intervalMs)
         {
             _t = new BusyTimer(intervalMs);
-            _t.ElapsedAsync = TElapsed;
+            _t.ElapsedAsync += TElapsed;
             _t.Start();
         }
 
-        private async Task TElapsed(ElapsedEventArgs e)
+        private async Task TElapsed(object sender, ElapsedEventArgs e)
         {
             await InvokeAsync();
         }
@@ -82,5 +90,14 @@ namespace NetRpc
             _isEnd = true;
             _t?.Dispose();
         }
+
+#if NETSTANDARD2_1 || NETCOREAPP3_1
+        public async ValueTask DisposeAsync()
+        {
+            await InvokeAsync();
+            _isEnd = true;
+            _t?.Dispose();
+        }
+#endif
     }
 }

@@ -28,11 +28,11 @@ namespace NetRpc
         public async Task StartAsync(CancellationTokenSource cts)
         {
             _cts = cts;
-            _connection.Received += ConnectionReceived;
+            _connection.ReceivedAsync += ConnectionReceivedAsync;
             await _connection.StartAsync();
         }
 
-        private void ConnectionReceived(object sender, EventArgsT<byte[]> e)
+        private async Task ConnectionReceivedAsync(object sender, EventArgsT<byte[]> e)
         {
             var r = new Request(e.Value);
             switch (r.Type)
@@ -41,10 +41,10 @@ namespace NetRpc
                     _cmdReq.Post(new Request(e.Value));
                     break;
                 case RequestType.Buffer:
-                    _block.SendAsync((r.Body, BufferType.Buffer)).Wait();
+                    await _block.SendAsync((r.Body, BufferType.Buffer));
                     break;
                 case RequestType.BufferEnd:
-                    _block.SendAsync((r.Body, BufferType.End)).Wait();
+                    await _block.SendAsync((r.Body, BufferType.End));
                     break;
                 case RequestType.Cancel:
                     _cts.Cancel();
@@ -89,6 +89,7 @@ namespace NetRpc
             }
             catch (Exception e)
             {
+
                 await SendFaultAsync(e, context);
                 return true;
             }
@@ -107,6 +108,7 @@ namespace NetRpc
             }
             catch (Exception e)
             {
+                _logger.LogWarning(e, "SendFaultAsync error");
                 var se = new SerializationException($"{e.Message}");
                 var fse = new FaultException<SerializationException>(se);
                 return SendAsync(Reply.FromFault(fse));
@@ -142,6 +144,7 @@ namespace NetRpc
             }
             catch (Exception e)
             {
+                _logger.LogWarning(e, "SendCallbackAsync error");
                 return SendFaultAsync(e, null);
             }
 

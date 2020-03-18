@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
 using Microsoft.Extensions.DependencyInjection;
@@ -193,7 +194,7 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
             return "1";
         }
 
-        public async Task<string> Call2Async(string s, Func<int, Task> cb)
+        public async Task<string> Call2Async(string s, Func<int, Task> cb, CancellationToken token)
         {
             Console.WriteLine($"Call2Async {s}");
             for (int i = 0; i < 1000000; i++)
@@ -201,12 +202,13 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
                 Console.WriteLine($"send {i}");
                 try
                 {
+                    if (token.IsCancellationRequested)
+                        Console.WriteLine("canceled");
                     await cb(i);
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    throw;
                 }
                 await Task.Delay(1000);
             }

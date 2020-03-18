@@ -4,7 +4,7 @@ using RabbitMQ.Base;
 
 namespace NetRpc.RabbitMQ
 {
-    internal class RabbitMQServiceConnection : IServiceConnection
+    internal sealed class RabbitMQServiceConnection : IServiceConnection
     {
         private readonly CallSession _callSession;
 
@@ -16,7 +16,7 @@ namespace NetRpc.RabbitMQ
 
         private void CallSessionReceived(object sender, global::RabbitMQ.Base.EventArgsT<byte[]> e)
         {
-            OnReceived(new EventArgsT<byte[]>(e.Value));
+            OnReceivedAsync(new EventArgsT<byte[]>(e.Value)).Wait();
         }
 
         public void Dispose()
@@ -32,7 +32,7 @@ namespace NetRpc.RabbitMQ
         }
 #endif
 
-        public event EventHandler<EventArgsT<byte[]>> Received;
+        public event Func<object, EventArgsT<byte[]>, Task> ReceivedAsync;
 
         public Task SendAsync(byte[] buffer)
         {
@@ -45,9 +45,9 @@ namespace NetRpc.RabbitMQ
             return Task.CompletedTask;
         }
 
-        protected virtual void OnReceived(EventArgsT<byte[]> e)
+        private Task OnReceivedAsync(EventArgsT<byte[]> e)
         {
-            Received?.Invoke(this, e);
+            return ReceivedAsync.InvokeAsync(this, e);
         }
     }
 }

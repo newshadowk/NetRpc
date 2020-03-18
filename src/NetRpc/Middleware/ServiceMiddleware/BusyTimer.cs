@@ -31,13 +31,11 @@ namespace NetRpc
             T.Stop();
         }
 
-        public Func<ElapsedEventArgs, Task> ElapsedAsync;
+        public event Func<object, ElapsedEventArgs, Task> ElapsedAsync;
 
-        private async Task OnElapsedAsync(ElapsedEventArgs e)
+        private Task OnElapsedAsync(ElapsedEventArgs e)
         {
-            if (ElapsedAsync == null)
-                return;
-            await ElapsedAsync(e);
+            return ElapsedAsync.InvokeAsync(this, e);
         }
 
         private async void T_Elapsed(object sender, ElapsedEventArgs e)

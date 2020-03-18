@@ -11,7 +11,7 @@ namespace NetRpc
     {
         ConnectionInfo ConnectionInfo { get; }
 
-        event EventHandler<EventArgsT<byte[]>> Received;
+        event Func<object, EventArgsT<byte[]>, Task> ReceivedAsync;
 
         event EventHandler<EventArgsT<Exception>> ReceiveDisconnected;
 
@@ -25,7 +25,7 @@ namespace NetRpc
     public interface IServiceConnection : IDisposable
 #endif
     {
-        event EventHandler<EventArgsT<byte[]>> Received;
+        event Func<object, EventArgsT<byte[]>, Task> ReceivedAsync;
 
         Task SendAsync(byte[] buffer);
 

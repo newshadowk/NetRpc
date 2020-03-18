@@ -43,10 +43,11 @@ namespace NetRpc
                 _convert.ResultStream += (s, e) => { SetStreamResult(tcs, e.Value); };
                 _convert.Result += (s, e) => { SetResult(tcs, e.Value); };
 
-                if (callback != null)
-                    _convert.Callback += (s, e) => _callbackDispatcher.BeginInvoke(() => callback(e.Value));
+                if (callback != null) 
+                    _convert.CallbackAsync += async (s, e) => 
+                        await _callbackDispatcher.InvokeAsync(() => callback(e.Value)).Unwrap();
 
-                _convert.Fault += (s, e) => { SetFault(tcs, e.Value); };
+                _convert.Fault += (s, e) => SetFault(tcs, e.Value);
 
                 try
                 {

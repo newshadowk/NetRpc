@@ -20,7 +20,7 @@ namespace NetRpc.Http.Client
 
         public event EventHandler<EventArgsT<object>> ResultStream;
         public event EventHandler<EventArgsT<object>> Result;
-        public event EventHandler<EventArgsT<object>> Callback;
+        public event Func<object, EventArgsT<object>, Task> CallbackAsync;
         public event EventHandler<EventArgsT<object>> Fault;
 
         public HttpClientOnceApiConvert(string apiUrl, string connectionId, HubCallBackNotifier notifier, int timeoutInterval)
@@ -39,7 +39,7 @@ namespace NetRpc.Http.Client
                 return;
             var argType = _callbackAction.Type.GenericTypeArguments[0];
             var obj = e.Data.ToDtoObject(argType);
-            OnCallback(new EventArgsT<object>(obj));
+            OnCallbackAsync(new EventArgsT<object>(obj)).Wait();
         }
 
         public ConnectionInfo ConnectionInfo
@@ -213,9 +213,9 @@ namespace NetRpc.Http.Client
             ResultStream?.Invoke(this, e);
         }
 
-        private void OnCallback(EventArgsT<object> e)
+        private Task OnCallbackAsync(EventArgsT<object> e)
         {
-            Callback?.Invoke(this, e);
+            return CallbackAsync.InvokeAsync(this, e);
         }
 
         private static Exception CreateException(Type exType, string msg)

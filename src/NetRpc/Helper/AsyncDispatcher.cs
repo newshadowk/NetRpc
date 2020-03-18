@@ -1,13 +1,27 @@
 ﻿using System;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 namespace NetRpc
 {
+    internal class InvokeFunc
+    {
+        public Func<object> Func { get; }
+
+        public WriteOnceBlock<(ExceptionDispatchInfo exceptionDispatchInfo, object result)> InvokedFlag { get; } =
+            new WriteOnceBlock<(ExceptionDispatchInfo exceptionDispatchInfo, object result)>(null);
+
+        public InvokeFunc(Func<object> func)
+        {
+            Func = func;
+        }
+    }
+
     public class AsyncDispatcher : IDisposable
     {
-        private readonly BufferBlock<InvokeAction> _actionQ = new BufferBlock<InvokeAction>();
+        private readonly BufferBlock<InvokeFunc> _funcQ = new BufferBlock<InvokeFunc>();
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
@@ -22,24 +36,53 @@ namespace NetRpc
         {
             while (!_cts.IsCancellationRequested)
             {
-                var action = await _actionQ.ReceiveAsync(_cts.Token);
-                action.Action.Invoke();
-                action.InvokedFlag.Post(true);
+                var action = await _funcQ.ReceiveAsync(_cts.Token);
+
+                try
+                {
+                    var ret = action.Func.Invoke();
+                    action.InvokedFlag.Post((null, ret));
+                }
+                catch (Exception e)
+                {
+                    action.InvokedFlag.Post((ExceptionDispatchInfo.Capture(e), null));
+                }
             }
         }
 
         public void Invoke(Action action)
         {
-            var invokeAction = new InvokeAction(action);
-            _actionQ.Post(invokeAction);
-            invokeAction.InvokedFlag.Receive();
+            var invokeFunc = new InvokeFunc(() =>
+            {
+                action.Invoke();
+                return null;
+            });
+
+            _funcQ.Post(invokeFunc);
+            (ExceptionDispatchInfo exceptionDispatchInfo, _) = invokeFunc.InvokedFlag.Receive();
+            exceptionDispatchInfo?.Throw();
         }
 
         public async Task InvokeAsync(Action action)
         {
-            var invokeAction = new InvokeAction(action);
-            _actionQ.Post(invokeAction);
-            await invokeAction.InvokedFlag.ReceiveAsync();
+            var invokeFunc = new InvokeFunc(() =>
+            {
+                action.Invoke();
+                return null;
+            });
+
+            _funcQ.Post(invokeFunc);
+            (ExceptionDispatchInfo exceptionDispatchInfo, _) = await invokeFunc.InvokedFlag.ReceiveAsync();
+            exceptionDispatchInfo?.Throw();
+        }
+
+        public async Task<TResult> InvokeAsync<TResult>(Func<TResult> callback)
+        {
+            var invokeFunc = new InvokeFunc(() => callback.Invoke());
+            _funcQ.Post(invokeFunc);
+            (ExceptionDispatchInfo exceptionDispatchInfo, object result) = await invokeFunc.InvokedFlag.ReceiveAsync();
+            exceptionDispatchInfo?.Throw();
+            return (TResult)result;
         }
 
         public Task BeginInvoke(Action action)
@@ -50,18 +93,6 @@ namespace NetRpc
         public void Dispose()
         {
             _cts.Cancel();
-        }
-
-        class InvokeAction
-        {
-            public Action Action { get; }
-
-            public WriteOnceBlock<bool> InvokedFlag { get; } = new WriteOnceBlock<bool>(null);
-
-            public InvokeAction(Action action)
-            {
-                Action = action;
-            }
         }
     }
 }

@@ -101,7 +101,7 @@ namespace NetRpc
             Contract contract,
             ChannelType channelType,
             Func<object, Task> callback,
-            CancellationToken cancellationToken)
+            CancellationToken token)
         {
             StartTime = DateTimeOffset.Now;
             ServiceProvider = serviceProvider;
@@ -118,7 +118,7 @@ namespace NetRpc
             Callback = callback;
             Stream = stream;
             Contract = contract;
-            CancellationToken = cancellationToken;
+            CancellationToken = token;
             ResetProps();
         }
 
