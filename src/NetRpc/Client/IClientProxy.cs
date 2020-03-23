@@ -19,6 +19,7 @@ namespace NetRpc
         object Proxy { get; }
         bool IsConnected { get; }
         void StartHeartbeat(bool isImmediate = false);
+        void StopHeartBeat();
         Task HeartbeatAsync();
     }
 }

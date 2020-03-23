@@ -99,6 +99,11 @@ namespace NetRpc
 #pragma warning restore 4014
         }
 
+        public void StopHeartBeat()
+        {
+            _tHearbeat.Stop();
+        }
+
         public async Task HeartbeatAsync()
         {
             await OnHeartbeat();
