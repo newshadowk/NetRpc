@@ -120,11 +120,11 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
             //    Console.WriteLine(e);
             //}
 
-            CancellationTokenSource cts = new CancellationTokenSource();
+            //CancellationTokenSource cts = new CancellationTokenSource();
 
-            await _service.Call2Async("123", async i => Console.WriteLine(i), cts.Token);
+            //await _service.Call2Async("123", async i => Console.WriteLine(i), cts.Token);
 
-            using (var s = File.OpenRead(@"D:\TestFile\2751275008.iso"))
+            using (var s = File.OpenRead(@"D:\TestFile\10MB.db"))
             {
                 try
                 {

@@ -28,11 +28,35 @@ namespace NetRpc.Grpc
 
         public void Dispose()
         {
+            if (_isEnd)
+                return;
+
+            _isEnd = true;
+            try
+            {
+                _api.RequestStream.CompleteAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, "GrpcClientConnection Dispose");
+            }
         }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_1
         public async ValueTask DisposeAsync()
         {
+            if (_isEnd)
+                return;
+
+            _isEnd = true;
+            try
+            {
+                await _api.RequestStream.CompleteAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, "GrpcClientConnection DisposeAsync");
+            }
         }
 #endif
 

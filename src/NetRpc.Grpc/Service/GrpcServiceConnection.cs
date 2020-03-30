@@ -64,7 +64,7 @@ namespace NetRpc.Grpc
                 }
                 catch (Exception e)
                 {
-                    _logger.LogWarning(e, null);
+                    _logger.LogWarning(e, "_requestStream.MoveNext");
                 }
                 finally
                 {

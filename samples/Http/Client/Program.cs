@@ -32,7 +32,7 @@ namespace Client
             await Test_CallByDefaultExceptionAsync();
             await Test_CallByResponseTextExceptionAsync();
             await Test_ComplexCallAsync();
-            await Test_UploadAsync();
+            //await Test_UploadAsync();
             Console.WriteLine("test end");
             Console.Read();
         }

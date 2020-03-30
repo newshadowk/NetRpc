@@ -42,7 +42,7 @@ namespace Service
                     services.AddNetRpcHttpService();
                     services.AddNetRpcServiceContract<IService, Service>();
                     services.AddNetRpcRabbitMQService(i => i.CopyFrom(TestHelper.Helper.GetMQOptions()));
-                    //services.AddNetRpcGrpcService();
+                    services.AddNetRpcGrpcService();
 
                 })
                 .Configure(app =>
@@ -64,7 +64,7 @@ namespace Service
                     app.UseNetRpcSwagger();
                     app.UseNetRpcHttp();
                     app.UseMiddleware<SwaggerUiIndexMiddleware>();
-                    //app.UseNetRpcGrpc();
+                    app.UseNetRpcGrpc();
                 }).Build();
 
             await host.RunAsync();
