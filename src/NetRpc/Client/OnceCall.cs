@@ -3,20 +3,23 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace NetRpc
 {
     public sealed class OnceCall : IOnceCall
     {
         private readonly int _timeoutInterval;
+        private readonly ILogger _logger;
         private readonly CancellationTokenSource _timeOutCts = new CancellationTokenSource();
         private AsyncDispatcher _callbackDispatcher;
         private CancellationTokenRegistration? _reg;
         private readonly IClientOnceApiConvert _convert;
 
-        public OnceCall(IClientOnceApiConvert convert, int timeoutInterval)
+        public OnceCall(IClientOnceApiConvert convert, int timeoutInterval, ILogger logger)
         {
             _timeoutInterval = timeoutInterval;
+            _logger = logger;
             _convert = convert;
         }
 
@@ -43,9 +46,19 @@ namespace NetRpc
                 _convert.ResultStream += (s, e) => { SetStreamResult(tcs, e.Value); };
                 _convert.Result += (s, e) => { SetResult(tcs, e.Value); };
 
-                if (callback != null) 
-                    _convert.CallbackAsync += async (s, e) => 
-                        await _callbackDispatcher.InvokeAsync(() => callback(e.Value)).Unwrap();
+                if (callback != null)
+                    _convert.CallbackAsync += async (s, e) =>
+                    {
+                        try
+                        {
+                            await _callbackDispatcher.InvokeAsync(() => callback(e.Value)).Unwrap();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "client callback");
+                            throw;
+                        }
+                    };
 
                 _convert.Fault += (s, e) => SetFault(tcs, e.Value);
 

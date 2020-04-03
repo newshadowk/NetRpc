@@ -30,7 +30,7 @@ namespace NetRpc
 
         public Task<IOnceCall> CreateAsync(int timeoutInterval)
         {
-            return Task.FromResult<IOnceCall>(new OnceCall(new BufferClientOnceApiConvert(_factory.Create(), _logger), timeoutInterval));
+            return Task.FromResult<IOnceCall>(new OnceCall(new BufferClientOnceApiConvert(_factory.Create(), _logger), timeoutInterval, _logger));
         }
     }
 }

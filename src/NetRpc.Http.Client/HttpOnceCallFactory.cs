@@ -97,7 +97,7 @@ namespace NetRpc.Http.Client
         {
             var cid = await InitConnectionAsync();
             var convert = new HttpClientOnceApiConvert(_options.ApiUrl, cid, _notifier, timeoutInterval);
-            return new OnceCall(convert, timeoutInterval);
+            return new OnceCall(convert, timeoutInterval, _logger);
         }
     }
 }
