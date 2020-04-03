@@ -1,4 +1,6 @@
-﻿namespace NetRpc.Grpc
+﻿using Microsoft.Extensions.Logging.Abstractions;
+
+namespace NetRpc.Grpc
 {
     public sealed class GrpcClientConnectionFactoryOptions
     {
@@ -6,7 +8,7 @@
 
         public GrpcClientConnectionFactoryOptions(GrpcClientOptions options)
         {
-            Factory = new GrpcClientConnectionFactory(new SimpleOptionsMonitor<GrpcClientOptions>(options));
+            Factory = new GrpcClientConnectionFactory(new SimpleOptionsMonitor<GrpcClientOptions>(options), NullLoggerFactory.Instance);
         }
     }
 }

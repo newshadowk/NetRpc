@@ -18,12 +18,9 @@ namespace NetRpc.Grpc
         private readonly ILogger _logger;
         private Client _client;
 
-        public GrpcClientConnectionFactory(IOptionsMonitor<GrpcClientOptions> options, ILoggerFactory loggerFactory = null)
+        public GrpcClientConnectionFactory(IOptionsMonitor<GrpcClientOptions> options, ILoggerFactory loggerFactory)
         {
-            if (loggerFactory == null)
-                _logger = NullLogger.Instance;
-            else
-                _logger = loggerFactory.CreateLogger("NetRpc");
+            _logger = loggerFactory.CreateLogger("NetRpc");
             Reset(options.CurrentValue);
             options.OnChange(Reset);
         }

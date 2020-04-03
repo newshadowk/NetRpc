@@ -25,8 +25,16 @@ namespace NetRpc
             var rawAction = context.Callback;
             context.Callback = async o =>
             {
+                try
+                {
+                    await ra.PostAsync(() => rawAction(o));
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
                 // ReSharper disable once AccessToDisposedClosure
-                await ra.PostAsync(() => rawAction(o));
             };
             await _next(context);
         }
