@@ -180,7 +180,7 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
                     services.AddNetRpcGrpcService();
 
                 })
-                .Configure(app =>
+                .Configure(app =>   
                 {
                     app.UseCors(set =>
                     {

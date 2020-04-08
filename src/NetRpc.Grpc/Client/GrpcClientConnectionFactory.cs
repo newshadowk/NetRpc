@@ -23,8 +23,8 @@ namespace NetRpc.Grpc
         public GrpcClientConnectionFactory(IOptionsMonitor<GrpcClientOptions> options, ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger("NetRpc");
-            Reset(options.CurrentValue);
             _optionDisposable = options.OnChange(Reset);
+            Reset(options.CurrentValue);
         }
 
         public void Reset(GrpcClientOptions opt)
