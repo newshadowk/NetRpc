@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Proxy.Grpc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -17,12 +18,13 @@ namespace NetRpc.Grpc
     {
         private readonly ILogger _logger;
         private Client _client;
+        private readonly IDisposable _optionDisposable;
 
         public GrpcClientConnectionFactory(IOptionsMonitor<GrpcClientOptions> options, ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger("NetRpc");
             Reset(options.CurrentValue);
-            options.OnChange(Reset);
+            _optionDisposable = options.OnChange(Reset);
         }
 
         public void Reset(GrpcClientOptions opt)
@@ -60,12 +62,14 @@ namespace NetRpc.Grpc
 
         public void Dispose()
         {
+            _optionDisposable.Dispose();
             _client?.Dispose();
         }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_1
         public System.Threading.Tasks.ValueTask DisposeAsync()
         {
+            _optionDisposable.Dispose();
             return _client.DisposeAsync();
         }
 #endif

@@ -87,7 +87,7 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
                     services.AddNetRpcGrpcClient(i =>
                         {
                             i.Host = "localhost";
-                            i.Port = 50000;
+                            i.Port = 5000;
                         });
 
                     services.AddNetRpcClientContract<IService>();
@@ -108,7 +108,7 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
             _service = service;
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public Task StartAsync(CancellationToken cancellationToken)
         {
             Console.WriteLine("start");
             //try
@@ -120,24 +120,33 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
             //    Console.WriteLine(e);
             //}
 
-            //CancellationTokenSource cts = new CancellationTokenSource();
-
             //await _service.Call2Async("123", async i => Console.WriteLine(i), cts.Token);
-
-            using (var s = File.OpenRead(@"D:\TestFile\10MB.db"))
+            Task.Run(async () =>
             {
-                try
+                CancellationTokenSource cts = new CancellationTokenSource();
+                while (true)
                 {
-                    await _service.Call3Async(s, null);
+                    using (var s = File.OpenRead(@"D:\TestFile\10MB.db"))
+                    {
+                        try
+                        {
+                            Console.WriteLine("call start");
+                            var r = await _service.Call3Async(s, async i => Console.WriteLine(i), cts.Token);
+                            MemoryStream ms = new MemoryStream();
+                            r.Stream.CopyTo(ms);
+                            r.Stream.Dispose();
+                            Console.WriteLine("call end");
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw;
+                        }
+                    }
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
-            }
-
-            Console.WriteLine("end");
+            });
+            
+            return Task.CompletedTask;
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)

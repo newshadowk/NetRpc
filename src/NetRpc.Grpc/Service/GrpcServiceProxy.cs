@@ -12,12 +12,13 @@ namespace NetRpc.Grpc
     {
         private Service _service;
         private readonly MessageCallImpl _messageCallImpl;
+        private readonly IDisposable _optionDisposable;
 
         public GrpcServiceProxy(IOptionsMonitor<GrpcServiceOptions> options, IServiceProvider serviceProvider, ILoggerFactory factory)
         {
             _messageCallImpl = new MessageCallImpl(serviceProvider, factory);
             _service = new Service(options.CurrentValue.Ports, _messageCallImpl);
-            options.OnChange(i =>
+            _optionDisposable = options.OnChange(i =>
             {
                 _service?.Dispose();
                 _service = new Service(i.Ports, _messageCallImpl);
@@ -33,6 +34,7 @@ namespace NetRpc.Grpc
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
+            _optionDisposable.Dispose();
             _service.Dispose();
             return Task.Run(() =>
             {

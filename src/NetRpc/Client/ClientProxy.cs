@@ -21,6 +21,7 @@ namespace NetRpc
         private readonly ILogger _logger;
         private bool _isConnected;
         private readonly Timer _tHearbeat;
+        private readonly IDisposable _optionsDisposable;
         private readonly Call _call;
         public Guid Id { get; } = Guid.NewGuid();
 
@@ -41,7 +42,7 @@ namespace NetRpc
             _tHearbeat = new Timer(options.CurrentValue.HearbeatInterval);
             _tHearbeat.Elapsed += THearbeatElapsed;
 
-            options.OnChange(i =>
+            _optionsDisposable = options.OnChange(i =>
             {
                 _call.Config(i.TimeoutInterval);
                 _tHearbeat.Interval = i.HearbeatInterval;
@@ -169,6 +170,7 @@ namespace NetRpc
 
         private void DisposeManaged()
         {
+            _optionsDisposable.Dispose();
             _tHearbeat?.Dispose();
             _factory.Dispose();
         }

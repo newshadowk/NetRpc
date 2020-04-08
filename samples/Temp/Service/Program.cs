@@ -3,9 +3,12 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using NetRpc;
+using NetRpc.Http;
 
 namespace Service
 {
@@ -153,39 +156,81 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
 
         static async Task Main(string[] args)
         {
-            await RunAsync();
-        }
-
-        static async Task RunAsync()
-        {
-            var h = new HostBuilder()
-                .ConfigureServices((context, services) =>
+            var host = WebHost.CreateDefaultBuilder(null)
+                .ConfigureKestrel(i =>
                 {
-                    //services.AddNetRpcGrpcService(i => 
-                    //    i.AddPort("localhost", 60001, PublicKey, PrivateKey));
-                    services.AddNetRpcGrpcService(i =>
-                        i.AddPort("0.0.0.0", 50000));
-                    services.AddNetRpcHttpService();
-                    services.AddNetRpcSwagger();
-                    services.AddNetRpcServiceContract<IService, Service>(ServiceLifetime.Scoped);
+                    //i.Limits.MaxRequestBodySize = 10737418240; //10G
+                    i.ListenAnyIP(5000, o => o.Protocols = HttpProtocols.Http2);
+                    //i.ListenAnyIP(5001, o => o.Protocols = HttpProtocols.Http1);
+                    //i.ListenAnyIP(5001, listenOptions =>
+                    //{
+                    //    listenOptions.UseHttps(
+                    //        @"1.pfx", "aaaa1111");
+                    //});
                 })
-                .Build();
-            await h.RunAsync();
-        }
-    }
+                .ConfigureServices(services =>
+                {
+                    services.AddCors();
+                    services.AddSignalR();
+                    services.AddNetRpcSwagger();
+                    services.AddNetRpcHttpService();
+                    services.AddNetRpcServiceContract<IService, Service>(ServiceLifetime.Scoped);
+                    services.AddNetRpcGrpcClientContract<IClientService>(ServiceLifetime.Scoped);
+                    services.AddNetRpcGrpcClient(o => { o.Url = "http://localhost:5000"; });
+                    services.AddNetRpcGrpcService();
 
-    public class C1
-    {
-        
+                })
+                .Configure(app =>
+                {
+                    app.UseCors(set =>
+                    {
+                        set.SetIsOriginAllowed(origin => true)
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .AllowCredentials();
+                    });
+
+
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapHub<CallbackHub>("/callback");
+                    });
+                    app.UseNetRpcSwagger();
+                    app.UseNetRpcHttp();
+                    app.UseMiddleware<SwaggerUiIndexMiddleware>();
+                    app.UseNetRpcGrpc();
+                }).Build();
+
+            await host.RunAsync();
+
+            //await RunAsync();
+        }
+
+        //static async Task RunAsync()
+        //{
+        //    var h = new HostBuilder()
+        //        .ConfigureServices((context, services) =>
+        //        {
+        //            //services.AddNetRpcGrpcService(i => 
+        //            //    i.AddPort("localhost", 60001, PublicKey, PrivateKey));
+        //            services.AddNetRpcGrpcService(i =>
+        //                i.AddPort("0.0.0.0", 50000));
+        //            services.AddNetRpcHttpService();
+        //            services.AddNetRpcSwagger();
+        //            services.AddNetRpcServiceContract<IService, Service>(ServiceLifetime.Scoped);
+        //        })
+        //        .Build();
+        //    await h.RunAsync();
+        //}
     }
 
     internal class Service : IService
     {
-        private IService _serviceImplementation;
+        public Service(IClientService service)
+        {
 
-        //public Service(C1 c)
-        //{
-        //}
+        }
 
         public async Task<string> CallAsync(string s)
         {
@@ -216,35 +261,19 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
             return "ret;";
         }
 
-        public async Task Call3Async(Stream s, Action<int> cb)
+        private static int _i = 0;
+
+        public async Task<RetObj> Call3Async(Stream s, Func<int, Task> cb, CancellationToken token)
         {
-            Console.WriteLine("receive started.");
+            Console.WriteLine($"{_i++}");
             MemoryStream ms = new MemoryStream();
             s.CopyTo(ms);
-            var array = ms.ToArray();
-        }
-    }
-
-    public class ExMiddleware
-    {
-        private readonly RequestDelegate _next;
-
-        public ExMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
-
-        public async Task InvokeAsync(ActionExecutingContext context)
-        {
-            try
+            var sss = File.OpenRead(@"D:\TestFile\10MB.db");
+            return new RetObj
             {
-                await _next(context);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+                Name = "a",
+                Stream = sss
+            };
         }
     }
 }
