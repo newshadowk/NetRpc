@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using DataContract;
 using Microsoft.Extensions.Hosting;
 using NetRpc;
@@ -9,7 +10,7 @@ namespace Service
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             //rabbitMq
             var mOpt = new MiddlewareOptions();

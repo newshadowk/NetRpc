@@ -21,6 +21,11 @@ namespace Service
     {
         public async Task Call(string s)
         {
+            for (int i = 0; i < 10000; i++)
+            {
+                Console.WriteLine(i);
+                await Task.Delay(1000);
+            }
             Console.WriteLine($"Receive: {s}");
         }
     }

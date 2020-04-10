@@ -26,7 +26,7 @@ namespace Service
                 .ConfigureKestrel(i =>
                 {
                     //i.Limits.MaxRequestBodySize = 10737418240; //10G
-                    //i.ListenAnyIP(5000, o => o.Protocols = HttpProtocols.Http2);
+                    i.ListenAnyIP(5000, o => o.Protocols = HttpProtocols.Http2);
                     //i.ListenAnyIP(5001, o =>o.Protocols = HttpProtocols.Http1);
                     //i.ListenAnyIP(5001, listenOptions =>
                     //{
@@ -36,38 +36,48 @@ namespace Service
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddCors();
-                    services.AddSignalR();
-                    services.AddNetRpcSwagger();
-                    services.AddNetRpcHttpService();
+                    services.AddOptions<HostOptions>().Configure(
+                        opts => opts.ShutdownTimeout = TimeSpan.FromSeconds(10));
+
+                    //services.AddCors();
+                    //services.AddSignalR();
+                    //services.AddNetRpcSwagger();
+                    //services.AddNetRpcHttpService();
                     services.AddNetRpcServiceContract<IService, Service>();
-                    services.AddNetRpcRabbitMQService(i => i.CopyFrom(TestHelper.Helper.GetMQOptions()));
+                    //services.AddNetRpcRabbitMQService(i => i.CopyFrom(TestHelper.Helper.GetMQOptions()));
                     services.AddNetRpcGrpcService();
 
                 })
                 .Configure(app =>
                 {
-                    app.UseCors(set =>
-                    {
-                        set.SetIsOriginAllowed(origin => true)
-                            .AllowAnyHeader()
-                            .AllowAnyMethod()
-                            .AllowCredentials();
-                    });
+                    //app.UseCors(set =>
+                    //{
+                    //    set.SetIsOriginAllowed(origin => true)
+                    //        .AllowAnyHeader()
+                    //        .AllowAnyMethod()
+                    //        .AllowCredentials();
+                    //});
 
-
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints =>
-                    {
-                        endpoints.MapHub<CallbackHub>("/callback");
-                    });
-                    app.UseNetRpcSwagger();
-                    app.UseNetRpcHttp();
-                    app.UseMiddleware<SwaggerUiIndexMiddleware>();
+                    //app.UseRouting();
+                    //app.UseEndpoints(endpoints =>
+                    //{
+                    //    endpoints.MapHub<CallbackHub>("/callback");
+                    //});
+                    //app.UseNetRpcSwagger();
+                    //app.UseNetRpcHttp();
+                    //app.UseMiddleware<SwaggerUiIndexMiddleware>();
                     app.UseNetRpcGrpc();
                 }).Build();
 
-            await host.RunAsync();
+            try
+            {
+                await host.RunAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
     }
 
@@ -75,6 +85,11 @@ namespace Service
     {
         public async Task Call(string s)
         {
+            for (int i = 0; i < 10000; i++)
+            {
+                Console.WriteLine(i);
+                await Task.Delay(1000);
+            }
             Console.WriteLine($"Receive: {s}");
         }
 
@@ -94,7 +109,6 @@ namespace Service
 
     public sealed class MessageCallImpl2 : MessageCall.MessageCallBase
     {
-
         public MessageCallImpl2()
         {
         }
@@ -164,7 +178,6 @@ namespace Service
             });
         }
     }
-
 
     public class AMiddleware
     {
