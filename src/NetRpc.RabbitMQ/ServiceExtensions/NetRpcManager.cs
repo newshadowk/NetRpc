@@ -31,7 +31,7 @@ namespace NetRpc.RabbitMQ
         public static ClientProxy<TService> CreateClientProxy<TService>(RabbitMQClientConnectionFactoryOptions options, int timeoutInterval = 1200000,
             int hearbeatInterval = 10000)
         {
-            return new ClientProxy<TService>(options.Factory, new SimpleOptionsMonitor<NetRpcClientOption>(new NetRpcClientOption
+            return new ClientProxy<TService>(options.Factory, new SimpleOptions<NetRpcClientOption>(new NetRpcClientOption
             {
                 HearbeatInterval = hearbeatInterval,
                 TimeoutInterval = timeoutInterval

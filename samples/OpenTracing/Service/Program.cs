@@ -24,6 +24,7 @@ namespace Service
         static async Task Main(string[] args)
         {
             var h = WebHost.CreateDefaultBuilder(null)
+                //.UseDefaultServiceProvider(i =>i.ValidateScopes = false)
                 .ConfigureKestrel(options => { options.ListenAnyIP(5001); })
                 .ConfigureServices(services =>
                 {

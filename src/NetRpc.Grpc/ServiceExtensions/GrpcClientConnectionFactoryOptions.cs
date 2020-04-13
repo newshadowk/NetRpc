@@ -8,7 +8,7 @@ namespace NetRpc.Grpc
 
         public GrpcClientConnectionFactoryOptions(GrpcClientOptions options)
         {
-            Factory = new GrpcClientConnectionFactory(new SimpleOptionsMonitor<GrpcClientOptions>(options), NullLoggerFactory.Instance);
+            Factory = new GrpcClientConnectionFactory(new SimpleOptions<GrpcClientOptions>(options), NullLoggerFactory.Instance);
         }
     }
 }

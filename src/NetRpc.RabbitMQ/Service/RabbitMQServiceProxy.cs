@@ -8,22 +8,22 @@ using RabbitMQ.Base;
 
 namespace NetRpc.RabbitMQ
 {
+    /// <summary>
+    /// for not .net3.1;
+    /// .net 3.1 have not implemented yet.
+    /// </summary>
     public sealed class RabbitMQServiceProxy : IHostedService
     {
+        private readonly BusyFlag _busyFlag;
         private RequestHandler _requestHandler;
         private Service _service;
-        private volatile int _handlingCount;
         private readonly ILogger _logger;
 
-        public RabbitMQServiceProxy(IOptionsMonitor<RabbitMqServiceOptions> mqOptions, IServiceProvider serviceProvider, ILoggerFactory factory)
+        public RabbitMQServiceProxy(IOptions<RabbitMqServiceOptions> mqOptions, BusyFlag busyFlag, IServiceProvider serviceProvider, ILoggerFactory factory)
         {
+            _busyFlag = busyFlag;
             _logger = factory.CreateLogger("NetRpc");
-            Reset(mqOptions.CurrentValue, serviceProvider);
-            mqOptions.OnChange(i =>
-            {
-                Reset(i, serviceProvider);
-                _service.Open();
-            });
+            Reset(mqOptions.Value, serviceProvider);
         }
 
         private void Reset(MQOptions opt, IServiceProvider serviceProvider)
@@ -41,22 +41,21 @@ namespace NetRpc.RabbitMQ
 
         private async void ServiceReceived(object sender, global::RabbitMQ.Base.EventArgsT<CallSession> e)
         {
-            Interlocked.Increment(ref _handlingCount);
+            _busyFlag.Increment();
             try
             {
 #if NETSTANDARD2_1 || NETCOREAPP3_1
                 await
-#endif
+#endif 
+
                 using var connection = new RabbitMQServiceConnection(e.Value);
                 await _requestHandler.HandleAsync(connection);
             }
             finally
             {
-                Interlocked.Decrement(ref _handlingCount);
+                _busyFlag.Decrement();
             }
         }
-
-        private bool IsHanding => _handlingCount > 0;
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
@@ -64,20 +63,24 @@ namespace NetRpc.RabbitMQ
             return Task.CompletedTask;
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        public async Task StopAsync(CancellationToken cancellationToken)
         {
-            _service?.Dispose();
-
-            return Task.Run(() =>
+            while (_busyFlag.IsHandling)
             {
-                while (IsHanding)
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                        break;
+                if (cancellationToken.IsCancellationRequested)
+                    break;
 
-                    Thread.Sleep(1000);
+                try
+                {
+                    await Task.Delay(10, cancellationToken);
                 }
-            }, cancellationToken);
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+            }
+
+            _service.Dispose();
         }
     }
 }

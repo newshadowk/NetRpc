@@ -11,6 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddNetRpcService(this IServiceCollection services)
         {
+            services.TryAddSingleton(typeof(BusyFlag));
             services.TryAddSingleton<IActionExecutingContextAccessor, ActionExecutingContextAccessor>();
             return services;
         }

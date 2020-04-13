@@ -5,6 +5,9 @@ using Grpc.Net.Client;
 #endif
 namespace NetRpc.Grpc
 {
+    /// <summary>
+    /// Support OptionName.
+    /// </summary>
     public class GrpcClientOptions
     {
 #if NETCOREAPP3_1

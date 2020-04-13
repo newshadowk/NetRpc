@@ -15,9 +15,9 @@ namespace NetRpc.Http.Client
         private volatile string _connectionId;
         private readonly AsyncLock _lockInit = new AsyncLock();
 
-        public HttpOnceCallFactory(IOptionsMonitor<HttpClientOptions> options, ILoggerFactory factory)
+        public HttpOnceCallFactory(IOptions<HttpClientOptions> options, ILoggerFactory factory)
         {
-            _options = options.CurrentValue;
+            _options = options.Value;
             _logger = factory.CreateLogger("NetRpc");
         }
 

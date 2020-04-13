@@ -26,8 +26,8 @@ namespace NetRpc.RabbitMQ
             if (options.IsPropertiesDefault())
                 return null;
             
-            var f = new RabbitMQClientConnectionFactory(new SimpleOptionsMonitor<RabbitMQClientOptions>(options), _loggerFactory);
-            var clientProxy = new ClientProxy<TService>(f, _netRpcClientOption, _serviceProvider, _loggerFactory);
+            var f = new RabbitMQClientConnectionFactory(new SimpleOptions<RabbitMQClientOptions>(options), _loggerFactory);
+            var clientProxy = new ClientProxy<TService>(f, new SimpleOptions<NetRpcClientOption>(_netRpcClientOption.CurrentValue), _serviceProvider, _loggerFactory);
             return clientProxy;
         }
     }

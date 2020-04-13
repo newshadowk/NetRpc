@@ -1,5 +1,8 @@
 ﻿namespace NetRpc.RabbitMQ
 {
+    /// <summary>
+    /// Support OptionName.
+    /// </summary>
     public class RabbitMQClientOptions : MQOptions
     {
         public RabbitMQClientOptions(string host, string virtualHost, string rpcQueue, int port, string user, string password, int prefetchCount = 1) : base(host, virtualHost, rpcQueue, port, user, password, prefetchCount)

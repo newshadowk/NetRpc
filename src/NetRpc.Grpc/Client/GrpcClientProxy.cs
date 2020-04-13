@@ -7,7 +7,8 @@ namespace NetRpc.Grpc
 {
     public sealed class GrpcClientProxy<TService> : ClientProxy<TService>
     {
-        public GrpcClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, string optionsName = null)
+        public GrpcClientProxy(IClientConnectionFactory factory, IOptions<NetRpcClientOption> options, IServiceProvider serviceProvider,
+            ILoggerFactory loggerFactory, string optionsName = null)
             : base(factory, options, serviceProvider, loggerFactory, optionsName)
         {
             ExceptionInvoked += GrpcClientProxy_ExceptionInvoked;

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -39,7 +40,7 @@ namespace NetRpc.Grpc
             int hearbeatInterval = 10000)
         {
             return new GrpcClientProxy<TService>(options.Factory,
-                new SimpleOptionsMonitor<NetRpcClientOption>(new NetRpcClientOption
+                new SimpleOptions<NetRpcClientOption>(new NetRpcClientOption
                     {
                         TimeoutInterval = timeoutInterval,
                         HearbeatInterval = hearbeatInterval

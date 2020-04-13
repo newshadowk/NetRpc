@@ -18,19 +18,16 @@ namespace NetRpc.Grpc
     {
         private readonly ILogger _logger;
         private Client _client;
-        private readonly IDisposable _optionDisposable;
 
-        public GrpcClientConnectionFactory(IOptionsMonitor<GrpcClientOptions> options, ILoggerFactory loggerFactory)
+        public GrpcClientConnectionFactory(IOptions<GrpcClientOptions> options, ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger("NetRpc");
-            _optionDisposable = options.OnChange(Reset);
-            Reset(options.CurrentValue);
+            Reset(options.Value);
         }
 
-        public void Reset(GrpcClientOptions opt)
+        private void Reset(GrpcClientOptions opt)
         {
-            Dispose();
-            
+
 #if NETCOREAPP3_1
             var host = new Uri(opt.Url).Host;
             var port = new Uri(opt.Url).Port;
@@ -62,14 +59,12 @@ namespace NetRpc.Grpc
 
         public void Dispose()
         {
-            _optionDisposable.Dispose();
             _client?.Dispose();
         }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_1
         public System.Threading.Tasks.ValueTask DisposeAsync()
         {
-            _optionDisposable.Dispose();
             return _client.DisposeAsync();
         }
 #endif

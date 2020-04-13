@@ -21,7 +21,7 @@ namespace NetRpc.Http
         }
 
         public async Task Invoke(HttpContext context, INetRpcSwaggerProvider netRpcSwaggerProvider,
-            IOptionsSnapshot<HttpServiceOptions> httpServiceOptions, IOptionsSnapshot<ContractOptions> contractOptions)
+            IOptions<HttpServiceOptions> httpServiceOptions, IOptions<ContractOptions> contractOptions)
         {
             var apiRootApi = httpServiceOptions.Value.ApiRootPath;
             var swaggerRootPath = httpServiceOptions.Value.ApiRootPath + "/swagger";

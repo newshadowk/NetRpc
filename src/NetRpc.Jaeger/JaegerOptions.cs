@@ -13,6 +13,9 @@
         public string ApiPath { get; set; }
     }
 
+    /// <summary>
+    /// Support OptionName.
+    /// </summary>
     public class ClientSwaggerOptions
     {
         public string HostPath { get; set; }

@@ -16,8 +16,8 @@ namespace NetRpc.Http
             _next = next;
         }
 
-        public async Task Invoke(HttpContext httpContext, IOptionsSnapshot<ContractOptions> contractOptions, IHubContext<CallbackHub, ICallback> hub,
-            IOptionsSnapshot<HttpServiceOptions> httpOptions, RequestHandler requestHandler, IServiceProvider serviceProvider)
+        public async Task Invoke(HttpContext httpContext, IOptions<ContractOptions> contractOptions, IHubContext<CallbackHub, ICallback> hub,
+            IOptions<HttpServiceOptions> httpOptions, RequestHandler requestHandler, IServiceProvider serviceProvider)
         {
             //if grpc channel message go to next.
             if (httpContext.Request.Path.Value.EndsWith("DuplexStreamingServerMethod"))

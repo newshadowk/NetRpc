@@ -21,7 +21,6 @@ namespace NetRpc
         private readonly ILogger _logger;
         private bool _isConnected;
         private readonly Timer _tHearbeat;
-        private readonly IDisposable _optionsDisposable;
         private readonly Call _call;
         public Guid Id { get; } = Guid.NewGuid();
 
@@ -31,25 +30,19 @@ namespace NetRpc
             set => _call.AdditionHeader = value;
         }
 
-        public ClientProxy(IOnceCallFactory factory, IOptionsMonitor<NetRpcClientOption> options, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, string optionsName = null)
+        public ClientProxy(IOnceCallFactory factory, IOptions<NetRpcClientOption> options, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, string optionsName = null)
         {
             _factory = factory;
             _logger = loggerFactory.CreateLogger("NetRpc");
-            _call = new Call(Id, serviceProvider, new ContractInfo(typeof(TService)), factory, options.CurrentValue.TimeoutInterval, optionsName);
+            _call = new Call(Id, serviceProvider, new ContractInfo(typeof(TService)), factory, options.Value.TimeoutInterval, optionsName);
             var invoker = new ClientMethodInvoker(_call);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
             ((SimpleDispatchProxyAsync)(object)Proxy).ExceptionInvoked += ProxyExceptionInvoked;
-            _tHearbeat = new Timer(options.CurrentValue.HearbeatInterval);
+            _tHearbeat = new Timer(options.Value.HearbeatInterval);
             _tHearbeat.Elapsed += THearbeatElapsed;
-
-            _optionsDisposable = options.OnChange(i =>
-            {
-                _call.Config(i.TimeoutInterval);
-                _tHearbeat.Interval = i.HearbeatInterval;
-            });
         }
 
-        public ClientProxy(IClientConnectionFactory factory, IOptionsMonitor<NetRpcClientOption> options, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, string optionsName = null)
+        public ClientProxy(IClientConnectionFactory factory, IOptions<NetRpcClientOption> options, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, string optionsName = null)
             : this(new OnceCallFactory(factory, loggerFactory), options, serviceProvider, loggerFactory, optionsName)
         {
         }
@@ -170,7 +163,6 @@ namespace NetRpc
 
         private void DisposeManaged()
         {
-            _optionsDisposable.Dispose();
             _tHearbeat?.Dispose();
             _factory.Dispose();
         }

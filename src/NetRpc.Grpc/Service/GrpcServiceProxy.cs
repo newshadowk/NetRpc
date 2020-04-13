@@ -1,29 +1,24 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Proxy.Grpc;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Proxy.Grpc;
 
 namespace NetRpc.Grpc
 {
+    /// <summary>
+    /// for not .net 3.1
+    /// </summary>
     internal sealed class GrpcServiceProxy : IHostedService
     {
-        private Service _service;
-        private readonly MessageCallImpl _messageCallImpl;
-        private readonly IDisposable _optionDisposable;
+        private readonly Service _service;
+        private readonly BusyFlag _busyFlag;
 
-        public GrpcServiceProxy(IOptionsMonitor<GrpcServiceOptions> options, IServiceProvider serviceProvider, ILoggerFactory factory)
+        public GrpcServiceProxy(IOptions<GrpcServiceOptions> options, MessageCallImpl messageCall, BusyFlag busyFlag)
         {
-            _messageCallImpl = new MessageCallImpl(serviceProvider, factory);
-            _service = new Service(options.CurrentValue.Ports, _messageCallImpl);
-            _optionDisposable = options.OnChange(i =>
-            {
-                _service?.Dispose();
-                _service = new Service(i.Ports, _messageCallImpl);
-                _service.Open();
-            });
+            _busyFlag = busyFlag;
+            _service = new Service(options.Value.Ports, messageCall);
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -32,20 +27,23 @@ namespace NetRpc.Grpc
             return Task.CompletedTask;
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        public async Task StopAsync(CancellationToken cancellationToken)
         {
-            _optionDisposable.Dispose();
-            _service.Dispose();
-            return Task.Run(() =>
+            while (_busyFlag.IsHandling)
             {
-                while (_messageCallImpl.IsHanding)
+                if (cancellationToken.IsCancellationRequested)
+                    break;
+                try
                 {
-                    if (cancellationToken.IsCancellationRequested)
-                        break;
-
-                    Thread.Sleep(1000);
+                    await Task.Delay(10, cancellationToken);
                 }
-            }, cancellationToken);
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+            }
+
+            _service.Dispose();
         }
     }
 }

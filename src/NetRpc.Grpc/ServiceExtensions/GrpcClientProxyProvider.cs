@@ -28,8 +28,8 @@ namespace Microsoft.Extensions.DependencyInjection
             if (options.IsPropertiesDefault())
                 return null;
 
-            var f = new GrpcClientConnectionFactory(new SimpleOptionsMonitor<GrpcClientOptions>(options), _loggerFactory);
-            var clientProxy = new GrpcClientProxy<TService>(f, _netRpcClientOption, _serviceProvider, _loggerFactory, optionsName);
+            var f = new GrpcClientConnectionFactory(new SimpleOptions<GrpcClientOptions>(options), _loggerFactory);
+            var clientProxy = new GrpcClientProxy<TService>(f,  new SimpleOptions<NetRpcClientOption>(_netRpcClientOption.CurrentValue), _serviceProvider, _loggerFactory, optionsName);
             return clientProxy;
         }
     }

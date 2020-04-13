@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
@@ -9,22 +8,21 @@ namespace NetRpc.Grpc
 {
     internal sealed class MessageCallImpl : MessageCall.MessageCallBase
     {
+        private readonly BusyFlag _busyFlag;
         private readonly RequestHandler _requestHandler;
-        private int _handlingCount;
         private readonly ILogger _logger;
 
-        public MessageCallImpl(IServiceProvider serviceProvider, ILoggerFactory factory)
+        public MessageCallImpl(IServiceProvider serviceProvider, ILoggerFactory factory, BusyFlag busyFlag)
         {
+            _busyFlag = busyFlag;
             _requestHandler = new RequestHandler(serviceProvider, ChannelType.Grpc);
             _logger = factory.CreateLogger("NetRpc");
         }
 
-        public bool IsHanding => _handlingCount > 0;
-
         public override async Task DuplexStreamingServerMethod(IAsyncStreamReader<StreamBuffer> requestStream, IServerStreamWriter<StreamBuffer> responseStream,
             ServerCallContext context)
         {
-            Interlocked.Increment(ref _handlingCount);
+            _busyFlag.Increment();
             GrpcServiceConnection connection = null;
             try
             {
@@ -35,7 +33,7 @@ namespace NetRpc.Grpc
             {
                 if (connection != null) 
                     await connection.AllDisposeAsync();
-                Interlocked.Decrement(ref _handlingCount);
+                _busyFlag.Decrement();
             }
         }
     }

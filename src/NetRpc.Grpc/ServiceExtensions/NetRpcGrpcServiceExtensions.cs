@@ -20,8 +20,10 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddNetRpcService();
 #if NETCOREAPP3_1
             services.AddGrpc();
+            //services.AddHostedService<StopHostedService>();
 #else
             services.AddHostedService<GrpcServiceProxy>();
+            services.AddSingleton(typeof(MessageCallImpl));
 #endif
             return services;
         }

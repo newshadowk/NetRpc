@@ -32,7 +32,7 @@ namespace Service_1
                     services.AddNetRpcHttpService();
 
                     services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50002); });
-                    services.AddNetRpcServiceContract<IService_1, Service>(ServiceLifetime.Scoped);
+                    services.AddNetRpcServiceContract<IService_1, Service>();
 
                     services.Configure<GrpcClientOptions>("grpc",
                         i =>
@@ -47,8 +47,8 @@ namespace Service_1
                             i.SignalRHubUrl = "http://localhost:5004/callback";
                         });
 
-                    services.AddNetRpcGrpcClient(null, null, ServiceLifetime.Scoped);
-                    services.AddNetRpcHttpClient(null, null, ServiceLifetime.Scoped);
+                    services.AddNetRpcGrpcClient();
+                    services.AddNetRpcHttpClient();
 
                     services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5002/swagger");
                     services.Configure<ClientSwaggerOptions>(i => i.HostPath = "http://localhost:5004/swagger");

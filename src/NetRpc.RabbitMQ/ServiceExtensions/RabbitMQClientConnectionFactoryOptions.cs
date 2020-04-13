@@ -9,7 +9,7 @@ namespace NetRpc.RabbitMQ
         public RabbitMQClientConnectionFactoryOptions(MQOptions options, ILoggerFactory loggerFactory)
         {
             Factory = new RabbitMQClientConnectionFactory(
-                new SimpleOptionsMonitor<RabbitMQClientOptions>(new RabbitMQClientOptions(options)), loggerFactory);
+                new SimpleOptions<RabbitMQClientOptions>(new RabbitMQClientOptions(options)), loggerFactory);
         }
     }
 }
