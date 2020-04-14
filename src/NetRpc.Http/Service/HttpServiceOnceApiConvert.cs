@@ -188,8 +188,14 @@ namespace NetRpc.Http
                 rawPath = rawPath.Substring(startS.Length);
             }
 
-            var actionInfo = GetActionInfo(rawPath);
-            return actionInfo;
+            foreach (var contract in _contracts)
+            foreach (var contractMethod in contract.ContractInfo.Methods)
+            {
+                if (rawPath == contractMethod.HttpRoutInfo.ToString())
+                    return contractMethod.MethodInfo.ToActionInfo();
+            }
+
+            throw new HttpNotMatchedException($"Request url:'{_context.Request.Path.Value}' is not matched.");
         }
 
         private Dictionary<string, object> GetHeader()
@@ -240,12 +246,7 @@ namespace NetRpc.Http
 
         private ActionInfo GetActionInfo(string requestPath)
         {
-            foreach (var contract in _contracts)
-            foreach (var contractMethod in contract.ContractInfo.Methods)
-            {
-                if (requestPath == contractMethod.HttpRoutInfo.ToString())
-                    return contractMethod.MethodInfo.ToActionInfo();
-            }
+            
 
             return null;
         }
