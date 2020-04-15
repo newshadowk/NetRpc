@@ -12,21 +12,29 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class NetRpcGrpcServiceExtensions
     {
+#if !NETCOREAPP3_1
         public static IServiceCollection AddNetRpcGrpcService(this IServiceCollection services, Action<GrpcServiceOptions> configureOptions = null)
         {
             if (configureOptions != null)
                 services.Configure(configureOptions);
 
             services.AddNetRpcService();
-#if NETCOREAPP3_1
-            services.AddGrpc();
-            //services.AddHostedService<StopHostedService>();
-#else
             services.AddHostedService<GrpcServiceProxy>();
             services.AddSingleton(typeof(MessageCallImpl));
-#endif
             return services;
         }
+#else
+        public static IServiceCollection AddNetRpcGrpcService(this IServiceCollection services, Action<Grpc.AspNetCore.Server.GrpcServiceOptions> configureOptions = null)
+        {
+            if (configureOptions != null)
+                services.AddGrpc(configureOptions);
+            else
+                services.AddGrpc();
+
+            services.AddNetRpcService();
+            return services;
+        }
+#endif
 
 #if NETCOREAPP3_1
         public static IApplicationBuilder UseNetRpcGrpc(this IApplicationBuilder app)

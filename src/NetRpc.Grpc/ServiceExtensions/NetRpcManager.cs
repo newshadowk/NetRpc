@@ -7,6 +7,7 @@ namespace NetRpc.Grpc
 {
     public static class NetRpcManager
     {
+#if !NETCOREAPP3_1
         public static IHost CreateHost(GrpcServiceOptions grpcServiceOptions, MiddlewareOptions middlewareOptions, params Contract[] contracts)
         {
             return new HostBuilder()
@@ -28,6 +29,7 @@ namespace NetRpc.Grpc
                 })
                 .Build();
         }
+#endif
 
         public static ClientProxy<TService> CreateClientProxy<TService>(GrpcClientOptions options, int timeoutInterval = 1200000,
             int hearbeatInterval = 10000)
