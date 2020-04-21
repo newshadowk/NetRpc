@@ -25,6 +25,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 i.IncludeXmlComments(path);
                 i.SchemaFilter<ExampleSchemaFilter>();
             }));
+
+#if NETCOREAPP3_1
+            services.AddControllers();
+#endif
             services.TryAddTransient<INetRpcSwaggerProvider, NetRpcSwaggerProvider>();
             return services;
         }
