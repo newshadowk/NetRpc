@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -17,17 +18,18 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddNetRpcSwagger(this IServiceCollection services)
         {
             var paths = Helper.GetCommentsXmlPaths();
-            services.AddSwaggerGen(i => paths.ForEach(path =>
+            services.AddSwaggerGen(i =>
             {
-#pragma warning disable 618
+#if !NETCOREAPP3_1
                 i.DescribeAllEnumsAsStrings();
-#pragma warning restore 618 
-                i.IncludeXmlComments(path);
+#endif
+                paths.ForEach(path => { i.IncludeXmlComments(path); });
                 i.SchemaFilter<ExampleSchemaFilter>();
-            }));
+            });
 
 #if NETCOREAPP3_1
-            services.AddControllers();
+            services.AddControllers().AddJsonOptions(options =>
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 #endif
             services.TryAddTransient<INetRpcSwaggerProvider, NetRpcSwaggerProvider>();
             return services;

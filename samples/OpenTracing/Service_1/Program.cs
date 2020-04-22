@@ -108,9 +108,9 @@ namespace Service_1
 
         public async Task<Stream> Echo_1(Stream stream)
         {
-            //MemoryStream ms = new MemoryStream();
-            //using (stream)
-            //    await stream.CopyToAsync(ms);
+            MemoryStream ms = new MemoryStream();
+            using (stream)
+                await stream.CopyToAsync(ms);
             //ms.Seek(0, SeekOrigin.Begin);
             return stream;
         }

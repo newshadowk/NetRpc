@@ -139,7 +139,7 @@ namespace NetRpc.Http
             //body
             ValidateSection(section);
             MemoryStream ms = new MemoryStream();
-            section.Body.CopyTo(ms);
+            await section.Body.CopyToAsync(ms);
             var body = Encoding.UTF8.GetString(ms.ToArray());
             var dataObj = Helper.ToHttpDataObj(body, dataObjType);
 
@@ -147,7 +147,6 @@ namespace NetRpc.Http
             section = await reader.ReadNextSectionAsync();
             ValidateSection(section);
             var proxyStream = new ProxyStream(section.Body, dataObj.StreamLength);
-
             return (dataObj, proxyStream);
         }
 

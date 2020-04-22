@@ -73,7 +73,7 @@ namespace NetRpc
         {
             var buffer = new byte[StreamBufferSize];
 
-            var readCount = await stream.ReadAsync(buffer, 0, StreamBufferSize, token);
+            var readCount = await stream.GreedReadAsync(buffer, 0, StreamBufferSize, token);
             started?.Invoke();
             while (readCount > 0)
             {
@@ -87,7 +87,7 @@ namespace NetRpc
                 }
 
                 await publishBuffer(buffer);
-                readCount = await stream.ReadAsync(buffer, 0, StreamBufferSize, token);
+                readCount = await stream.GreedReadAsync(buffer, 0, StreamBufferSize, token);
             }
 
             await publishBufferEnd();
@@ -441,6 +441,25 @@ namespace NetRpc
             }
 
             return msgContent.ToString();
+        }
+
+        private static async Task<int> GreedReadAsync(this Stream stream, byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            int sumCount = 0;
+            int nextCount = count;
+            int currOffset = offset;
+            while (true)
+            {
+               int currCount = await stream.ReadAsync(buffer, currOffset, nextCount, cancellationToken);
+               if (currCount == 0)
+                   break;
+
+               sumCount += currCount;
+               nextCount -= currCount;
+               currOffset += currCount;
+            }
+
+            return sumCount;
         }
 
         private static string GetMsgContent(Exception ee)

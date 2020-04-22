@@ -49,7 +49,7 @@ namespace NetRpc
                 throw;
             }
 
-            if (readCount < count)
+            if (readCount == 0)
                 InvokeFinish(new SizeEventArgs(Position));
 
             return readCount;
@@ -71,7 +71,7 @@ namespace NetRpc
                 throw;
             }
 
-            if (readCount < count)
+            if (readCount == 0)
                 InvokeFinish(new SizeEventArgs(Position));
 
             return readCount;
