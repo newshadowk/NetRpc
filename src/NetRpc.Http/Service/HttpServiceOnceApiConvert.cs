@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -146,8 +147,16 @@ namespace NetRpc.Http
             //stream
             section = await reader.ReadNextSectionAsync();
             ValidateSection(section);
+            var fileName = GetFileName(section.ContentDisposition);
+            dataObj.TrySetStreamName(fileName);
             var proxyStream = new ProxyStream(section.Body, dataObj.StreamLength);
             return (dataObj, proxyStream);
+        }
+        
+        private static string GetFileName(string contentDisposition)
+        {
+            //Content-Disposition: form-data; name="stream"; filename="t1.docx"
+            return Match(contentDisposition, "filename=\"", "\"");
         }
 
         private static void ValidateSection(MultipartSection section)
@@ -243,10 +252,11 @@ namespace NetRpc.Http
                 _cts.Cancel();
         }
 
-        private ActionInfo GetActionInfo(string requestPath)
+        private static string Match(string src, string left, string right)
         {
-            
-
+            var r = Regex.Match(src, $"(?<={left}).+(?={right})");
+            if (r.Captures.Count > 0)
+                return r.Captures[0].Value;
             return null;
         }
     }

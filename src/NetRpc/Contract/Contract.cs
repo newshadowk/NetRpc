@@ -40,18 +40,21 @@ namespace NetRpc
     {
         public Type Type { get; }
 
-        public string StreamName { get; }
+        public Type TypeWithoutStreamName { get; }
+
+        public string StreamPropName { get; }
         
         public TypeName CallbackAction { get; }
 
         public TypeName CancelToken { get; }
 
-        public MergeArgType(Type type, string streamName, TypeName callbackAction, TypeName cancelToken)
+        public MergeArgType(Type type, Type typeWithoutStreamName, string streamPropName, TypeName callbackAction, TypeName cancelToken)
         {
             Type = type;
-            StreamName = streamName;
+            StreamPropName = streamPropName;
             CallbackAction = callbackAction;
             CancelToken = cancelToken;
+            TypeWithoutStreamName = typeWithoutStreamName;
         }
     }
 
@@ -138,7 +141,8 @@ namespace NetRpc
             TypeName cancelToken = null;
 
             // ReSharper disable once PossibleNullReferenceException
-            var typeName = $"{m.DeclaringType.Namespace}_{m.DeclaringType.Name}_{m.Name}Param";
+            var typeName = $"{m.DeclaringType.Namespace}_{m.DeclaringType.Name}_{m.Name}Param2";
+            var typeNameWithoutStreamName = $"{m.DeclaringType.Namespace}_{m.DeclaringType.Name}_{m.Name}Param";
             var cis = new List<CustomsPropertyInfo>();
 
             var attributeData = CustomAttributeData.GetCustomAttributes(m).Where(i => i.AttributeType == typeof(ExampleAttribute)).ToList();
@@ -200,10 +204,12 @@ namespace NetRpc
                 cis.Add(new CustomsPropertyInfo(typeof(long), CallConst.StreamLength));
 
             var t = TypeFactory.BuildType(typeName, cis);
-            if (cis.Count == 0)
-                return new MergeArgType(null, null, null, null);
+            var t2 = BuildTypeWithoutStreamName(typeNameWithoutStreamName, cis);
 
-            return new MergeArgType(t, streamName, action, cancelToken);
+            if (cis.Count == 0)
+                return new MergeArgType(null, null, null, null, null);
+
+            return new MergeArgType(t, t2, streamName, action, cancelToken);
         }
 
         public object CreateMergeArgTypeObj(string callId, string connectionId, long streamLength, object[] args)
@@ -272,6 +278,13 @@ namespace NetRpc
             }
 
             return new HttpRoutInfo(contractPath, methodPath);
+        }
+
+        private static Type BuildTypeWithoutStreamName(string typeName, List<CustomsPropertyInfo> cis)
+        {
+            var list = cis.ToList();
+            list.RemoveAll(i => i.PropertyName.IsStreamName() && i.Type == typeof(string)); 
+            return TypeFactory.BuildType(typeName, list);
         }
     }
 

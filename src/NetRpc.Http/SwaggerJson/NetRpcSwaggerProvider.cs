@@ -40,11 +40,11 @@ namespace NetRpc.Http
 
         private void ProcessTags(List<Contract> contracts)
         {
-            List<string> tags = new List<string>();
+            var tags = new List<string>();
             contracts.ForEach(i => i.ContractInfo.TagAttributes.ForEach(j => tags.Add(j.Name)));
             contracts.ForEach(i => tags.Add(i.ContractInfo.Route));
             var distTags = tags.Distinct();
-            foreach (var distTag in distTags) 
+            foreach (var distTag in distTags)
                 _doc.Tags.Add(new OpenApiTag {Name = distTag});
         }
 
@@ -87,7 +87,7 @@ namespace NetRpc.Http
                     var operation = new OpenApiOperation
                     {
                         Tags = GenerateTags(contract, contractMethod),
-                        RequestBody = GenerateRequestBody(contractMethod.MergeArgType.Type, contractMethod.MergeArgType.StreamName),
+                        RequestBody = GenerateRequestBody(contractMethod.MergeArgType.TypeWithoutStreamName, contractMethod.MergeArgType.StreamPropName),
                         Responses = GenerateResponses(contractMethod, contractMethod.MergeArgType.CancelToken != null)
                     };
 

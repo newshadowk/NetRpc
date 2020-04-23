@@ -98,11 +98,11 @@ namespace NetRpc.Http.Client
             }
 
             //request
-            if (methodContext.ContractMethod.MergeArgType.StreamName != null)
+            if (methodContext.ContractMethod.MergeArgType.StreamPropName != null)
             {
                 req.AddParameter("data", postObj.ToDtoJson(), ParameterType.RequestBody);
                 // ReSharper disable once PossibleNullReferenceException
-                req.AddFile(methodContext.ContractMethod.MergeArgType.StreamName, stream.CopyTo, methodContext.ContractMethod.MergeArgType.StreamName,
+                req.AddFile(methodContext.ContractMethod.MergeArgType.StreamPropName, stream.CopyTo, methodContext.ContractMethod.MergeArgType.StreamPropName,
                     stream.Length);
             }
             else

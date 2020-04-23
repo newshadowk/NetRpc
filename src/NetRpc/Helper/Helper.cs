@@ -115,7 +115,7 @@ namespace NetRpc
             stream = (Stream) found.GetValue(obj);
 
             //streamName
-            found = ps.FirstOrDefault(i => i.Name == "StreamName");
+            found = ps.FirstOrDefault(i => i.Name.IsStreamName());
             if (found != null)
                 streamName = found.GetValue(obj) as string;
 
@@ -441,6 +441,12 @@ namespace NetRpc
             }
 
             return msgContent.ToString();
+        }
+
+        public static bool IsStreamName(this string propName)
+        {
+            // ReSharper disable once StringLiteralTypo
+            return propName.ToLower() == "streamname";
         }
 
         private static async Task<int> GreedReadAsync(this Stream stream, byte[] buffer, int offset, int count, CancellationToken cancellationToken)

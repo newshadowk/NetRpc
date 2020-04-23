@@ -81,7 +81,7 @@ namespace Service_Startup
             return ret;
         }
 
-        public async Task<int> UploadAsync(Stream stream, string p1, Func<int, Task> cb, CancellationToken token)
+        public async Task<int> UploadAsync(Stream stream, string streamName, string p1, Func<int, Task> cb, CancellationToken token)
         {
             Console.WriteLine($"UploadAsync, {p1}");
             string path = @"d:\testfile\tgt.rar";

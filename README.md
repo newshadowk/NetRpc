@@ -737,6 +737,14 @@ public class ComplexStream
     public string StreamName { get; set; }  //the property will map to file name.
 }
 ```
+**StreamName** also apply to input params.
+```c#
+//Content-Disposition: form-data; name="stream"; filename="t1.docx"
+//mapping filename to streamname
+Task UploadAsync(Stream stream, string streamName);
+
+```
+
 ## [Http] DefaultValue
 Set DefaultValue to contract, will effect to swagger.
 ```c#

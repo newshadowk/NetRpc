@@ -75,7 +75,7 @@ namespace Service
             return ret;
         }
 
-        public Task<int> UploadAsync(Stream stream, string p1, Func<int, Task> cb, CancellationToken token)
+        public Task<int> UploadAsync(Stream stream, string streamName, string p1, Func<int, Task> cb, CancellationToken token)
         {
             throw new NotImplementedException();
         }

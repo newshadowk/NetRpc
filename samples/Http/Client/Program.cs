@@ -128,7 +128,7 @@ namespace Client
             {
                 Console.WriteLine("[Test_UploadAsync]...Send file...");
                 CancellationTokenSource cts = new CancellationTokenSource();
-                var ret = await _proxyAsync.UploadAsync(stream, "123", async i => Console.WriteLine(i), cts.Token);
+                var ret = await _proxyAsync.UploadAsync(stream, "file.txt", "123", async i => Console.WriteLine(i), cts.Token);
                 Console.WriteLine($"ret:{ret}");
             }
         }
