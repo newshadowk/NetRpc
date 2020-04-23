@@ -456,13 +456,16 @@ namespace NetRpc
             int currOffset = offset;
             while (true)
             {
-               int currCount = await stream.ReadAsync(buffer, currOffset, nextCount, cancellationToken);
-               if (currCount == 0)
-                   break;
+                int currCount = await stream.ReadAsync(buffer, currOffset, nextCount, cancellationToken);
+                if (currCount == 0)
+                    break;
 
-               sumCount += currCount;
-               nextCount -= currCount;
-               currOffset += currCount;
+                sumCount += currCount;
+                nextCount -= currCount;
+                currOffset += currCount;
+
+                if (nextCount == 0)
+                    break;
             }
 
             return sumCount;
