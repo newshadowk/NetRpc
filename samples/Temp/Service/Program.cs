@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -177,7 +178,12 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
                     services.AddNetRpcServiceContract<IService, Service>(ServiceLifetime.Scoped);
                     services.AddNetRpcGrpcClientContract<IClientService>(ServiceLifetime.Scoped);
                     services.AddNetRpcGrpcClient(o => { o.Url = "http://localhost:5000"; });
-                    services.AddNetRpcGrpcService();
+                    services.AddNetRpcGrpcService(o =>
+                    {
+                        o.EnableDetailedErrors = true;
+                        o.MaxReceiveMessageSize = 20 * 1024 * 1024; // 2 MB
+                        o.MaxSendMessageSize = 20 * 1024 * 1024; // 5 MB
+                    });
 
                 })
                 .Configure(app =>   
@@ -237,6 +243,12 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
             Console.WriteLine($"CallAsync {s}");
             await Task.Delay(1000000);
             return "1";
+        }
+
+        public async Task<List<string>> BigDataAsync(List<string> list)
+        {
+            Console.WriteLine("BigDataAsync receive start");
+            return list;
         }
 
         public async Task<string> Call2Async(string s, Func<int, Task> cb, CancellationToken token)

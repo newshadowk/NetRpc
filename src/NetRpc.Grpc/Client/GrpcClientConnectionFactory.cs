@@ -31,11 +31,7 @@ namespace NetRpc.Grpc
 #if NETCOREAPP3_1
             var host = new Uri(opt.Url).Host;
             var port = new Uri(opt.Url).Port;
-            
-            if (opt.ChannelOptions == null)
-                _client = new Client(GrpcChannel.ForAddress(opt.Url), host, port, opt.ToString());
-            else
-                _client = new Client(GrpcChannel.ForAddress(opt.Url, opt.ChannelOptions), host, port, opt.ToString());
+            _client = new Client(GrpcChannel.ForAddress(opt.Url, opt.ChannelOptions), host, port, opt.ToString());
 #else
             if (string.IsNullOrEmpty(opt.PublicKey))
                 _client = new Client(new Channel(opt.Host, opt.Port, ChannelCredentials.Insecure), opt.Host, opt.Port, opt.ToString());

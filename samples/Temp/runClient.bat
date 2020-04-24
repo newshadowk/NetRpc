@@ -1,1 +1,2 @@
-@dotnet %~dp0\Client\bin\Debug\netcoreapp2.2\client.dll
+pushd %~dp0\Client\bin\Debug\netcoreapp3.1
+client.exe

@@ -75,7 +75,11 @@ namespace NetRpc.Grpc
 
             //add a lock here will not slowdown send speed.
             using (await _sendLock.LockAsync())
-                await _api.RequestStream.WriteAsync(new StreamBuffer {Body = ByteString.CopyFrom(buffer)});
+            {
+                var sb = new StreamBuffer {Body = ByteString.CopyFrom(buffer)};
+                _logger.LogDebug($"Send count:{Helper.SizeSuffix(sb.Body.Length)}");
+                await _api.RequestStream.WriteAsync(sb);
+            }
 
             if (isEnd)
             {

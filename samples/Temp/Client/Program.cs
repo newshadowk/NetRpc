@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
 using Grpc.Core;
+using Grpc.Net.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -73,7 +74,10 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
 
         static async Task Main(string[] args)
         {
+            AppContext.SetSwitch(
+                "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
 
+            GrpcChannelOptions o = new GrpcChannelOptions();
 
             var h = new HostBuilder()
                 .ConfigureServices((context, services) =>
@@ -85,10 +89,11 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
                     //var channel = new Channel("localhost", 60001, ssl);
                     //var channel = new Channel("localhost", 50001, new SslCredentials());
                     services.AddNetRpcGrpcClient(i =>
-                        {
-                            i.Host = "localhost";
-                            i.Port = 5000;
-                        });
+                    {
+                        i.Url = "http://localhost:5000";
+                        i.ChannelOptions.MaxReceiveMessageSize = 20 * 1024 * 1024; // 2 MB
+                        i.ChannelOptions.MaxSendMessageSize = 20 * 1024 * 1024; // 5 MB
+                    });
 
                     services.AddNetRpcClientContract<IService>();
                     services.AddHostedService<MyHost>();
@@ -123,27 +128,44 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
             //await _service.Call2Async("123", async i => Console.WriteLine(i), cts.Token);
             Task.Run(async () =>
             {
-                CancellationTokenSource cts = new CancellationTokenSource();
-                while (true)
+                string s = "";
+                for (int i = 0; i < 1024; i++)
                 {
-                    using (var s = File.OpenRead(@"D:\TestFile\10MB.db"))
-                    {
-                        try
-                        {
-                            Console.WriteLine("call start");
-                            var r = await _service.Call3Async(s, async i => Console.WriteLine(i), cts.Token);
-                            MemoryStream ms = new MemoryStream();
-                            r.Stream.CopyTo(ms);
-                            r.Stream.Dispose();
-                            Console.WriteLine("call end");
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine(e);
-                            throw;
-                        }
-                    }
+                    s += "1";
                 }
+
+                List<string> list = new List<string>();
+                for (int i = 0; i < 1024 * 1024 * 3; i++)
+                {
+                    list.Add(s);
+                }
+
+
+            Console.WriteLine("BigDataAsync send start");
+            var t = await _service.BigDataAsync(list);
+            Console.WriteLine("BigDataAsync send end");
+
+                //CancellationTokenSource cts = new CancellationTokenSource();
+                //while (true)
+                //{
+                //    using (var s = File.OpenRead(@"D:\TestFile\10MB.db"))
+                //    {
+                //        try
+                //        {
+                //            Console.WriteLine("call start");
+                //            var r = await _service.Call3Async(s, async i => Console.WriteLine(i), cts.Token);
+                //            MemoryStream ms = new MemoryStream();
+                //            r.Stream.CopyTo(ms);
+                //            r.Stream.Dispose();
+                //            Console.WriteLine("call end");
+                //        }
+                //        catch (Exception e)
+                //        {
+                //            Console.WriteLine(e);
+                //            throw;
+                //        }
+                //    }
+                //}
             });
             
             return Task.CompletedTask;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,8 @@ namespace DataContract
     public interface IService
     {
         Task<string> CallAsync(string s);
+
+        Task<List<string>> BigDataAsync(List<string> list);
 
         Task<string> Call2Async(string s, Func<int, Task> cb, CancellationToken token);
 

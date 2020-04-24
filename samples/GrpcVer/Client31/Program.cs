@@ -14,6 +14,7 @@ namespace Client
         {
             AppContext.SetSwitch(
                 "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+
             //var c = GrpcChannel.ForAddress("https://localhost:5001");
             //var c = GrpcChannel.ForAddress("http://localhost:5000");
             //var p = NetRpcManager.CreateClientProxy<IService>(c);

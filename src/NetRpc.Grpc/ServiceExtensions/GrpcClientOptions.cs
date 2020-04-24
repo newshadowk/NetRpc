@@ -1,6 +1,4 @@
-﻿
-using System;
-#if NETCOREAPP3_1
+﻿#if NETCOREAPP3_1
 using Grpc.Net.Client;
 #endif
 namespace NetRpc.Grpc
@@ -11,7 +9,7 @@ namespace NetRpc.Grpc
     public class GrpcClientOptions
     {
 #if NETCOREAPP3_1
-        public GrpcChannelOptions ChannelOptions { get; set; }
+        public GrpcChannelOptions ChannelOptions { get; set; } = new GrpcChannelOptions();
 
         public string Url { get; set; }
 
