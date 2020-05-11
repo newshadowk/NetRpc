@@ -90,8 +90,11 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
             }
 
+            services.AddSingleton<IOrphanClientProxyProvider, OrphanGrpcClientProxyProvider>();
+
             return services;
         }
+
 
         public static IServiceCollection AddNetRpcGrpcClientContract<TService>(this IServiceCollection services,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)

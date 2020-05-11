@@ -29,6 +29,8 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
             }
 
+            services.AddSingleton<IOrphanClientProxyProvider, OrphanHttpClientProxyProvider>();
+
             return services;
         }
     }

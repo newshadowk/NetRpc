@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class NetRpcRabbitMQServiceExtensions
     {
         public static IServiceCollection AddNetRpcRabbitMQService(this IServiceCollection services,
-            Action<RabbitMqServiceOptions> configureOptions = null)
+            Action<RabbitMQServiceOptions> configureOptions = null)
         {
             if (configureOptions != null)
                 services.Configure(configureOptions);
@@ -27,17 +27,20 @@ namespace Microsoft.Extensions.DependencyInjection
             switch (serviceLifetime)
             {
                 case ServiceLifetime.Singleton:
-                    services.AddSingleton<IClientProxyProvider, RabbitMqClientProxyProvider>();
+                    services.AddSingleton<IClientProxyProvider, RabbitMQClientProxyProvider>();
                     break;
                 case ServiceLifetime.Scoped:
-                    services.AddScoped<IClientProxyProvider, RabbitMqClientProxyProvider>();
+                    services.AddScoped<IClientProxyProvider, RabbitMQClientProxyProvider>();
                     break;
                 case ServiceLifetime.Transient:
-                    services.AddTransient<IClientProxyProvider, RabbitMqClientProxyProvider>();
+                    services.AddTransient<IClientProxyProvider, RabbitMQClientProxyProvider>();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
             }
+
+            services.AddSingleton<IOrphanClientProxyProvider, OrphanRabbitMQClientProxyProvider>();
+
             return services;
         }
 

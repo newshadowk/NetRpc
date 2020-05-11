@@ -120,7 +120,7 @@ namespace NetRpc
 
         private void SetStreamResult(TaskCompletionSource<object> tcs, object result)
         {
-            //current thread is receive thread by lower layer (rabbitMq or Grpc), can not be block.
+            //current thread is receive thread by lower layer (rabbitMQ or Grpc), can not be block.
             //run a thread to handle Stream result, avoid sync read stream by user.
             _callbackDispatcher?.Dispose();
             Task.Run(() => { tcs.SetResult(result); });

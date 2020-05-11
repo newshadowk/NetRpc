@@ -22,7 +22,7 @@ namespace TestHelper
             //config your RabbitMQ parameters before run
             var user = "testuser";
             var password = "1";
-            var host = "test7";
+            var host = "192.168.1.158";
             var virtualHost = "testvh";
             var port = 5672;
             var rpcQueue = "rpc_test";

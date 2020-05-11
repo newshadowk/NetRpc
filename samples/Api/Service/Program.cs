@@ -12,7 +12,7 @@ namespace Service
     {
         static async Task Main(string[] args)
         {
-            //rabbitMq
+            //rabbitMQ
             var mOpt = new MiddlewareOptions();
             mOpt.UseMiddleware<TestGlobalExceptionMiddleware>();
             var mqHost = NetRpcManager.CreateHost(Helper.GetMQOptions(),

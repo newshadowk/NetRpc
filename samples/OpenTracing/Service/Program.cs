@@ -93,11 +93,13 @@ namespace Service
     internal class Service : IService
     {
         private readonly IClientProxyFactory _factory;
+        private readonly IOrphanClientProxyFactory _factory2;
         private readonly ILogger<Service> _logger;
 
-        public Service(IClientProxyFactory factory, ILogger<Service> logger)
+        public Service(IClientProxyFactory factory, IOrphanClientProxyFactory factory2, ILogger<Service> logger)
         {
             _factory = factory;
+            _factory2 = factory2;
             _logger = logger;
         }
 
@@ -136,6 +138,17 @@ namespace Service
             {
                 _logger.LogError(e, "error msg");
             }
+
+            //Task.Run(async () =>
+            //{
+            //    var proxy2 = _factory2.CreateProxy<IService_1>("grpc1");
+            //    while (true)
+            //    {
+            //        await Task.Delay(1000);
+            //        await proxy2.Proxy.Call_1(obj, 101, true,
+            //            async i => { _logger.LogInformation($"tid:{GlobalTracer.Instance?.ActiveSpan.Context.TraceId}, callback:{i}"); }, default);
+            //    }
+            //});
 
             await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1(obj, 101, true,
                 async i => { _logger.LogInformation($"tid:{GlobalTracer.Instance?.ActiveSpan.Context.TraceId}, callback:{i}"); }, default);

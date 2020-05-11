@@ -19,7 +19,7 @@ namespace NetRpc.RabbitMQ
         private Service _service;
         private readonly ILogger _logger;
 
-        public RabbitMQServiceProxy(IOptions<RabbitMqServiceOptions> mqOptions, BusyFlag busyFlag, IServiceProvider serviceProvider, ILoggerFactory factory)
+        public RabbitMQServiceProxy(IOptions<RabbitMQServiceOptions> mqOptions, BusyFlag busyFlag, IServiceProvider serviceProvider, ILoggerFactory factory)
         {
             _busyFlag = busyFlag;
             _logger = factory.CreateLogger("NetRpc");

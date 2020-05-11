@@ -13,9 +13,27 @@ namespace NetRpc
         public ClientProxy<TService> CreateProxy<TService>(string optionsName)
         {
             var key = $"{optionsName}_{typeof(TService).FullName}";
-            var handler = (ClientProxy<TService>)_caches.GetOrAdd(key, new Lazy<object>(() => 
+            var clientProxy = (ClientProxy<TService>)_caches.GetOrAdd(key, new Lazy<object>(() => 
                 CreateProxyInner<TService>(optionsName), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
-            return handler;
+            return clientProxy;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+                DisposeManaged();
+        }
+
+        private void DisposeManaged()
+        {
+            foreach (var proxy in _caches.Values) 
+                ((IClientProxy) proxy.Value).Dispose();
         }
     }
 }

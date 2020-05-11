@@ -1,13 +1,13 @@
 ﻿namespace NetRpc.RabbitMQ
 {
-    public class RabbitMqServiceOptions : MQOptions
+    public class RabbitMQServiceOptions : MQOptions
     {
-        public RabbitMqServiceOptions(string host, string virtualHost, string rpcQueue, int port, string user, string password, int prefetchCount = 1) : base(
+        public RabbitMQServiceOptions(string host, string virtualHost, string rpcQueue, int port, string user, string password, int prefetchCount = 1) : base(
             host, virtualHost, rpcQueue, port, user, password, prefetchCount)
         {
         }
 
-        public RabbitMqServiceOptions(MQOptions options) : base(options.Host, options.VirtualHost, options.RpcQueue, options.Port, options.User, options.Password, options.PrefetchCount)
+        public RabbitMQServiceOptions(MQOptions options) : base(options.Host, options.VirtualHost, options.RpcQueue, options.Port, options.User, options.Password, options.PrefetchCount)
         {
 
         }
@@ -17,7 +17,7 @@
             this.CopyPropertiesFrom(options);
         }
 
-        public RabbitMqServiceOptions()
+        public RabbitMQServiceOptions()
         {
         }
     }
