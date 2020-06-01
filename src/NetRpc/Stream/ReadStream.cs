@@ -11,6 +11,13 @@ namespace NetRpc
         private volatile bool _isStarted;
         private volatile bool _isFinished;
 
+        public Stream CacheStream { get; set; }
+
+        protected void WriteCache(byte[] buffer, int count)
+        {
+            CacheStream.Write(buffer, 0, count);
+        }
+
         protected void InvokeFinish(SizeEventArgs e)
         {
             if (!_isStarted)
