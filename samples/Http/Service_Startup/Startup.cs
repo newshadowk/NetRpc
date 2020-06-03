@@ -1,8 +1,10 @@
+using System;
+using System.Threading.Tasks;
 using DataContract;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using NetRpc;
 using NetRpc.Http;
 
 namespace Service_Startup
@@ -18,6 +20,11 @@ namespace Service_Startup
             services.AddNetRpcSwagger();
             services.AddNetRpcHttpService();
             services.AddNetRpcServiceContract<IServiceAsync, ServiceAsync>(ServiceLifetime.Scoped);
+            services.AddNetRpcMiddleware(i =>
+            {
+                i.UseMiddleware<A1Middleware>();
+                i.UseMiddleware<A2Middleware>();
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,6 +52,43 @@ namespace Service_Startup
             });
             app.UseNetRpcSwagger();
             app.UseNetRpcHttp();
+        }
+    }
+
+
+    public class A1Middleware
+    {
+        private readonly RequestDelegate _next;
+
+
+        public A1Middleware(RequestDelegate next)
+        {
+            _next = next;
+        }
+
+        public async Task InvokeAsync(ActionExecutingContext context)
+        {
+            Console.WriteLine("A1 start");
+            await _next(context);
+            Console.WriteLine("A1 end");
+        }
+    }
+
+    public class A2Middleware
+    {
+        private readonly RequestDelegate _next;
+
+
+        public A2Middleware(RequestDelegate next)
+        {
+            _next = next;
+        }
+
+        public async Task InvokeAsync(ActionExecutingContext context)
+        {
+            Console.WriteLine("A2 start");
+            await _next(context);
+            Console.WriteLine("A2 end");
         }
     }
 }

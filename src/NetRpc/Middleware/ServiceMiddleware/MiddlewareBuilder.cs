@@ -24,8 +24,8 @@ namespace NetRpc
         public MiddlewareBuilder(MiddlewareOptions options, IServiceProvider serviceProvider)
         {
             _components.Add(CreateMiddleware(serviceProvider, typeof(IgnoreMiddleware), new object[] { }));
-            _components.Add(CreateMiddleware(serviceProvider, typeof(MethodInvokeMiddleware), new object[] { }));
             options.GetItems().ForEach(i => _components.Add(CreateMiddleware(serviceProvider, i.Type, i.args)));
+            _components.Add(CreateMiddleware(serviceProvider, typeof(MethodInvokeMiddleware), new object[] { }));
         }
 
         public async Task<object> InvokeAsync(ActionExecutingContext context)
@@ -47,7 +47,7 @@ namespace NetRpc
         private RequestDelegate Build()
         {
             RequestDelegate requestDelegate = context => Task.CompletedTask;
-            foreach (var component in _components)
+            foreach (var component in _components.Reverse())
                 requestDelegate = component(requestDelegate);
             return requestDelegate;
         }
