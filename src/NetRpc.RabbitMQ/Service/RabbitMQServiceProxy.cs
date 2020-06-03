@@ -49,7 +49,7 @@ namespace NetRpc.RabbitMQ
 #endif 
 
                 using var connection = new RabbitMQServiceConnection(e.Value);
-                await _requestHandler.HandleAsync(connection);
+                await _requestHandler.HandleAsync(connection, null);
             }
             finally
             {

@@ -12,14 +12,15 @@ namespace NetRpc
     internal sealed class Call : ICall
     {
         private readonly Guid _clientProxyId;
-        private readonly IServiceProvider _serviceProvider;
         private readonly ContractInfo _contract;
         private readonly IOnceCallFactory _factory;
-        private volatile int _timeoutInterval;
-        private readonly string _optionsName;
         private readonly ClientMiddlewareBuilder _middlewareBuilder;
+        private readonly string _optionsName;
+        private readonly IServiceProvider _serviceProvider;
+        private volatile int _timeoutInterval;
 
-        public Call(Guid clientProxyId, IServiceProvider serviceProvider, ContractInfo contract, IOnceCallFactory factory, int timeoutInterval, string optionsName)
+        public Call(Guid clientProxyId, IServiceProvider serviceProvider, ContractInfo contract, IOnceCallFactory factory, int timeoutInterval,
+            string optionsName)
         {
             _clientProxyId = clientProxyId;
             _serviceProvider = serviceProvider;
@@ -35,34 +36,31 @@ namespace NetRpc
             }
         }
 
-        public void Config(int timeoutInterval)
-        {
-            _timeoutInterval = timeoutInterval;
-        }
-
         public Dictionary<string, object> AdditionHeader { get; set; } = new Dictionary<string, object>();
 
-        public async Task<object> CallAsync(MethodInfo methodInfo, Func<object, Task> callback, CancellationToken token, Stream stream, params object[] pureArgs)
+        public async Task<object> CallAsync(MethodInfo methodInfo, Func<object, Task> callback, CancellationToken token, Stream stream,
+            params object[] pureArgs)
         {
+            //cache header
+            var header = AdditionHeader;
+
+            //start
             var call = await _factory.CreateAsync(_timeoutInterval);
-            await call.StartAsync();
+            await call.StartAsync(GetAuthorizationToken(header));
 
             //stream
             var contractMethod = _contract.Methods.Find(i => i.MethodInfo == methodInfo);
             var instanceMethod = new InstanceMethod(methodInfo);
             var methodContext = new MethodContext(contractMethod, instanceMethod);
             var readStream = GetReadStream(stream);
-            var clientContext = new ClientActionExecutingContext(_clientProxyId, _serviceProvider, _optionsName, call, instanceMethod, callback, token, _contract,
+            var clientContext = new ClientActionExecutingContext(_clientProxyId, _serviceProvider, _optionsName, call, instanceMethod, callback, token,
+                _contract,
                 contractMethod, readStream, pureArgs);
 
             //header
-            var header = AdditionHeader;
-            if (header != null && header.Count > 0)
-            {
-                foreach (var key in header.Keys)
-                    clientContext.Header.Add(key, header[key]);
-            }
+            AddHeader(clientContext, header);
 
+            //invoke
             if (_middlewareBuilder != null)
             {
                 await _middlewareBuilder.InvokeAsync(clientContext);
@@ -71,6 +69,11 @@ namespace NetRpc
 
             //onceTransfer will dispose after stream translate finished in OnceCall.
             return await call.CallAsync(header, methodContext, callback, token, stream, pureArgs);
+        }
+
+        public void Config(int timeoutInterval)
+        {
+            _timeoutInterval = timeoutInterval;
         }
 
         private static ReadStream GetReadStream(Stream stream)
@@ -90,6 +93,28 @@ namespace NetRpc
             }
 
             return readStream;
+        }
+
+        private static void AddHeader(ClientActionExecutingContext context, Dictionary<string, object> additionHeader)
+        {
+            if (additionHeader != null && additionHeader.Count > 0)
+                foreach (var key in additionHeader.Keys)
+                    context.Header.Add(key, additionHeader[key]);
+        }
+
+        private static string GetAuthorizationToken(Dictionary<string, object> additionHeader)
+        {
+            if (additionHeader == null)
+                return null;
+
+            if (!additionHeader.TryGetValue("Authorization", out var v))
+                return null;
+
+            var s = v.ToString();
+            if (s == null || !s.StartsWith("Bearer "))
+                return null;
+
+            return s.Substring(7);
         }
     }
 }

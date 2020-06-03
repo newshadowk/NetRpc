@@ -89,10 +89,21 @@ namespace NetRpc.Grpc
         }
 
 #pragma warning disable 1998
-        public async Task StartAsync()
+        public async Task StartAsync(string authorizationToken)
 #pragma warning restore 1998
         {
-            _api = _client.CallClient.DuplexStreamingServerMethod();
+            Metadata headers = null;
+            if (authorizationToken != null)
+            {
+                headers = new Metadata
+                {
+                    {
+                        "Authorization", $"Bearer {authorizationToken}"
+                    }
+                };
+            }
+
+            _api = _client.CallClient.DuplexStreamingServerMethod(headers);
 #pragma warning disable 4014
             Task.Run(async () =>
 #pragma warning restore 4014

@@ -13,9 +13,9 @@ namespace NetRpc
 
         public Stream CacheStream { get; set; }
 
-        protected void WriteCache(byte[] buffer, int count)
+        protected void WriteCache(byte[] buffer, int offset, int count)
         {
-            CacheStream.Write(buffer, 0, count);
+            CacheStream.Write(buffer, offset, count);
         }
 
         protected void InvokeFinish(SizeEventArgs e)

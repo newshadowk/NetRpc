@@ -86,7 +86,9 @@ namespace Service
             Console.WriteLine($"UploadAsync, {p1}");
             string path = @"d:\testfile\tgt.rar";
             File.Delete(path);
-            
+            MemoryStream ms = new MemoryStream();
+            ((ProxyStream) stream).CacheStream = ms;
+
             using (var fs = File.OpenWrite(path))
             {
                 const int ReadBuffSize = 81920;
@@ -95,10 +97,14 @@ namespace Service
                 while (readCount > 0)
                 {
                     await fs.WriteAsync(buffer, 0, readCount, token);
-                    //cb.Invoke(readCount);
                     readCount = await stream.ReadAsync(buffer, 0, ReadBuffSize, token);
                 }
             }
+
+            ms.Seek(0, SeekOrigin.Begin);
+
+            using var ws = File.OpenWrite(@"d:\testfile\tgt2.rar");
+            await ms.CopyToAsync(ws);
 
             return 100;
         }

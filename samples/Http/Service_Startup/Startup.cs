@@ -16,7 +16,7 @@ namespace Service_Startup
             services.AddCors();
             services.AddSignalR();
             services.AddNetRpcSwagger();
-            services.AddNetRpcHttpService(i => i.ApiRootPath = "/api");
+            services.AddNetRpcHttpService();
             services.AddNetRpcServiceContract<IServiceAsync, ServiceAsync>(ServiceLifetime.Scoped);
         }
 
@@ -33,10 +33,10 @@ namespace Service_Startup
 
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-            });
+            //app.UseSwaggerUI(c =>
+            //{
+            //    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+            //});
 
             app.UseRouting();
             app.UseEndpoints(endpoints =>

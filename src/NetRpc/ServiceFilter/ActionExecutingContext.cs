@@ -87,7 +87,7 @@ namespace NetRpc
         /// <summary>
         /// A central location for sharing state between components during the invoking process.
         /// </summary>
-        public Dictionary<object, object> Properties { get; set; } = new Dictionary<object, object>();
+        public Dictionary<object, object> Properties { get; set; }
 
         public ActionExecutingContext(IServiceProvider serviceProvider,
             Dictionary<string, object> header,
@@ -100,9 +100,11 @@ namespace NetRpc
             ReadStream stream,
             Contract contract,
             ChannelType channelType,
+            Dictionary<object, object> properties,
             Func<object, Task> callback,
             CancellationToken token)
         {
+            Properties = properties ?? new Dictionary<object, object>();
             StartTime = DateTimeOffset.Now;
             ServiceProvider = serviceProvider;
             ChannelType = channelType;

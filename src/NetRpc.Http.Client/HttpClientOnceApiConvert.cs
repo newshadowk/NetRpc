@@ -58,7 +58,7 @@ namespace NetRpc.Http.Client
             }
         }
 
-        public Task StartAsync()
+        public Task StartAsync(string authorizationToken)
         {
             return Task.CompletedTask;
         }

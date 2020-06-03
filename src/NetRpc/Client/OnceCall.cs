@@ -23,9 +23,9 @@ namespace NetRpc
             _convert = convert;
         }
 
-        public async Task StartAsync()
+        public async Task StartAsync(string authorizationToken)
         {
-            await _convert.StartAsync();
+            await _convert.StartAsync(authorizationToken);
         }
 
         public event EventHandler SendRequestStreamStarted;

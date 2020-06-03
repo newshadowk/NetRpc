@@ -27,7 +27,11 @@ namespace NetRpc.Grpc
             try
             {
                 connection = new GrpcServiceConnection(requestStream, responseStream, _logger);
-                await _requestHandler.HandleAsync(connection);
+#if NETCOREAPP3_1
+                await _requestHandler.HandleAsync(connection, context.GetHttpContext());
+#else
+                await _requestHandler.HandleAsync(connection, null);
+#endif
             }
             finally
             {

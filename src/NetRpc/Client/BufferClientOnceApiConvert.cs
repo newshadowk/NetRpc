@@ -33,9 +33,9 @@ namespace NetRpc
 
         public ConnectionInfo ConnectionInfo => _connection.ConnectionInfo;
 
-        public async Task StartAsync()
+        public async Task StartAsync(string authorizationToken)
         {
-            await _connection.StartAsync();
+            await _connection.StartAsync(authorizationToken);
         }
 
         public Task SendCancelAsync()

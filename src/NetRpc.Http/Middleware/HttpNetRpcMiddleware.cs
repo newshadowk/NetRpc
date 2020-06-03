@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace NetRpc.Http
@@ -33,7 +32,7 @@ namespace NetRpc.Http
             using (var convert = new HttpServiceOnceApiConvert(contractOptions.Value.Contracts, httpContext,
                 httpOptions.Value.ApiRootPath, httpOptions.Value.IgnoreWhenNotMatched, hub, serviceProvider))
             {
-                await requestHandler.HandleAsync(convert);
+                await requestHandler.HandleAsync(convert, httpContext);
                 notMatched = convert.NotMatched;
             }
 

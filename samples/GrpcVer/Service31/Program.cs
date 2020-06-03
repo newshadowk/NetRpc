@@ -13,8 +13,10 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NetRpc;
 using NetRpc.Http;
 using Proxy.Grpc;
+using RequestDelegate = Microsoft.AspNetCore.Http.RequestDelegate;
 
 namespace Service
 {
@@ -85,6 +87,8 @@ namespace Service
     {
         public async Task Call(string s)
         {
+            var hc = (HttpContext)GlobalActionExecutingContext.Context.Properties["HttpContext"];
+
             for (int i = 0; i < 10000; i++)
             {
                 Console.WriteLine(i);
@@ -164,6 +168,7 @@ namespace Service
     public class GreeterService : Greeter.GreeterBase
     {
         private readonly ILogger<GreeterService> _logger;
+
         public GreeterService(ILogger<GreeterService> logger)
         {
             _logger = logger;

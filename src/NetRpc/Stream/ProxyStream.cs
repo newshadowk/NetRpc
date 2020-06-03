@@ -41,7 +41,7 @@ namespace NetRpc
             try
             {
                 readCount = _stream.Read(buffer, offset, count);
-                WriteCache(buffer, readCount);
+                WriteCache(buffer, offset, readCount);
                 OnProgress(new SizeEventArgs(Position));
             }
             catch
@@ -64,7 +64,7 @@ namespace NetRpc
             try
             {
                 readCount = await _stream.ReadAsync(buffer, offset, count, cancellationToken);
-                WriteCache(buffer, readCount);
+                WriteCache(buffer, offset, readCount);
                 OnProgress(new SizeEventArgs(Position));
             }
             catch

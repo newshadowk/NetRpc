@@ -17,7 +17,7 @@ namespace NetRpc
 
         Task SendAsync(byte[] buffer, bool isEnd = false, bool isPost = false);
 
-        Task StartAsync();
+        Task StartAsync(string authorizationToken);
     }
 #if NETSTANDARD2_1 || NETCOREAPP3_1
     public interface IServiceConnection : IDisposable, IAsyncDisposable

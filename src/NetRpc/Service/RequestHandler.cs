@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -8,10 +9,10 @@ namespace NetRpc
 {
     public sealed class RequestHandler
     {
-        private readonly IServiceProvider _serviceProvider;
         private readonly ChannelType _channelType;
         private readonly ILogger _logger;
         private readonly MiddlewareBuilder _middlewareBuilder;
+        private readonly IServiceProvider _serviceProvider;
 
         public RequestHandler(IServiceProvider serviceProvider, ChannelType channelType)
         {
@@ -22,12 +23,12 @@ namespace NetRpc
             _middlewareBuilder = new MiddlewareBuilder(middlewareOptions, serviceProvider);
         }
 
-        public async Task HandleAsync(IServiceConnection connection)
+        public async Task HandleAsync(IServiceConnection connection, object httpContext)
         {
-            await HandleAsync(new BufferServiceOnceApiConvert(connection, _logger));
+            await HandleAsync(new BufferServiceOnceApiConvert(connection, _logger), httpContext);
         }
 
-        public async Task HandleAsync(IServiceOnceApiConvert convert)
+        public async Task HandleAsync(IServiceOnceApiConvert convert, object httpContext)
         {
             try
             {
@@ -38,7 +39,19 @@ namespace NetRpc
                 GlobalServiceProvider.Provider = _serviceProvider;
                 GlobalServiceProvider.ScopeProvider = scope.ServiceProvider;
                 var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
-                var onceTransfer = new ServiceOnceTransfer(instances, scope.ServiceProvider, convert, _middlewareBuilder, rpcContextAccessor, _channelType, _logger);
+
+                var onceTransfer = new ServiceOnceTransfer(instances, 
+                    scope.ServiceProvider, 
+                    convert, 
+                    _middlewareBuilder, 
+                    rpcContextAccessor, 
+                    _channelType,
+                    new Dictionary<object, object>
+                    {
+                        {"HttpContext", httpContext},
+                    }, 
+                    _logger);
+
                 await onceTransfer.StartAsync();
                 await onceTransfer.HandleRequestAsync();
             }

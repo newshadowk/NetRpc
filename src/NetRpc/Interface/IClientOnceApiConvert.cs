@@ -13,7 +13,7 @@ namespace NetRpc
     {
         ConnectionInfo ConnectionInfo { get; }
 
-        Task StartAsync();
+        Task StartAsync(string authorizationToken);
 
         Task SendCancelAsync();
 

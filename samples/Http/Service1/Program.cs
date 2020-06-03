@@ -27,7 +27,7 @@ namespace Service
                     services.AddCors();
                     services.AddSignalR();
                     services.AddNetRpcSwagger();
-                    services.AddNetRpcHttpService(i => i.ApiRootPath = "/api");
+                    services.AddNetRpcHttpService();
                     services.AddNetRpcServiceContract<IServiceAsync, ServiceAsync>();
                 })
                 .Configure(app =>
