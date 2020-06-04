@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.AspNetCore.Http;
 using NetRpc;
 using NetRpc.Http;
 using NetRpc.Http.Client;
@@ -12,6 +13,13 @@ namespace Service_Startup
 {
     public class ServiceAsync : IServiceAsync
     {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public ServiceAsync(IHttpContextAccessor httpContextAccessor)
+        {
+            _httpContextAccessor = httpContextAccessor;
+        }
+
         public Task<CustomObj> Call2Async(CObj obj, string s1, string s2)
         {
             throw new NotImplementedException();
@@ -21,6 +29,8 @@ namespace Service_Startup
         {
             var retObj = new CustomObj { Date = DateTime.Now, Name = NameEnum.John };
             var h = GlobalActionExecutingContext.Context.Header;
+            var httpContext = _httpContextAccessor.HttpContext;
+
             //Console.WriteLine($"[Call]...receive:{p1}, {p2}, h1:{h["h1"]}, h2:{h["h2"]} return:{retObj}");
             Console.WriteLine($"[Call]...receive:{p1}, {p2}, return:{retObj}");
             return retObj;

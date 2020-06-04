@@ -559,12 +559,7 @@ For more details pls go to [samples/OpenTracing](samples/OpenTracing)
 ![Alt text](images/tracer.png)
 
 # Get HttpContext
-```c#
-//service side
-//only for http channel or grpc channel.
-var httpContext = GlobalActionExecutingContext.Context.Properties["HttpContext"];
-```
-
+Use IHttpContextAccessor by services.AddHttpContextAccessor();
 
 # [Http] NetRpc.Http
 NetRpc.Http provide:

@@ -100,11 +100,10 @@ namespace NetRpc
             ReadStream stream,
             Contract contract,
             ChannelType channelType,
-            Dictionary<object, object> properties,
             Func<object, Task> callback,
             CancellationToken token)
         {
-            Properties = properties ?? new Dictionary<object, object>();
+            Properties = new Dictionary<object, object>();
             StartTime = DateTimeOffset.Now;
             ServiceProvider = serviceProvider;
             ChannelType = channelType;

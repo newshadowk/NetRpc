@@ -41,6 +41,7 @@ namespace Service
                     services.AddOptions<HostOptions>().Configure(
                         opts => opts.ShutdownTimeout = TimeSpan.FromSeconds(10));
 
+                    services.AddHttpContextAccessor();
                     //services.AddCors();
                     //services.AddSignalR();
                     //services.AddNetRpcSwagger();
@@ -85,9 +86,16 @@ namespace Service
 
     internal class Service : IService
     {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public Service(IHttpContextAccessor httpContextAccessor)
+        {
+            _httpContextAccessor = httpContextAccessor;
+        }
+
         public async Task Call(string s)
         {
-            var hc = (HttpContext)GlobalActionExecutingContext.Context.Properties["HttpContext"];
+            var httpContext = _httpContextAccessor.HttpContext;
 
             for (int i = 0; i < 10000; i++)
             {

@@ -27,6 +27,7 @@ namespace Service_Mvc
         {
             services.AddControllersWithViews();
             services.AddCors();
+            services.AddHttpContextAccessor();
             services.AddSignalR();
             services.AddNetRpcSwagger();
             services.AddNetRpcHttpService(i => i.ApiRootPath = "/api");

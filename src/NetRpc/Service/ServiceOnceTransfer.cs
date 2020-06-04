@@ -14,20 +14,18 @@ namespace NetRpc
         private readonly IServiceProvider _serviceProvider;
         private readonly MiddlewareBuilder _middlewareBuilder;
         private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
-        private readonly Dictionary<object, object> _properties;
         private readonly ChannelType _channelType;
         private readonly ILogger _logger;
         private readonly CancellationTokenSource _serviceCts = new CancellationTokenSource();
 
         public ServiceOnceTransfer(List<Instance> instances, IServiceProvider serviceProvider, IServiceOnceApiConvert convert,
             MiddlewareBuilder middlewareBuilder, IActionExecutingContextAccessor actionExecutingContextAccessor,
-            ChannelType channelType, Dictionary<object, object> properties, ILogger logger)
+            ChannelType channelType, ILogger logger)
         {
             _instances = instances;
             _serviceProvider = serviceProvider;
             _middlewareBuilder = middlewareBuilder;
             _actionExecutingContextAccessor = actionExecutingContextAccessor;
-            _properties = properties;
             _channelType = channelType;
             _logger = logger;
             _convert = convert;
@@ -130,7 +128,6 @@ namespace NetRpc
                 onceCallParam.Stream,
                 instance.Contract,
                 _channelType,
-                _properties,
                 Callback,
                 _serviceCts.Token);
         }

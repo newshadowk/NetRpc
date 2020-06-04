@@ -19,6 +19,7 @@ namespace Service_Startup
             services.AddSignalR();
             services.AddNetRpcSwagger();
             services.AddNetRpcHttpService();
+            services.AddHttpContextAccessor();
             services.AddNetRpcServiceContract<IServiceAsync, ServiceAsync>(ServiceLifetime.Scoped);
             services.AddNetRpcMiddleware(i =>
             {

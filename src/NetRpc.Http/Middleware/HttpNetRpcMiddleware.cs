@@ -32,7 +32,7 @@ namespace NetRpc.Http
             using (var convert = new HttpServiceOnceApiConvert(contractOptions.Value.Contracts, httpContext,
                 httpOptions.Value.ApiRootPath, httpOptions.Value.IgnoreWhenNotMatched, hub, serviceProvider))
             {
-                await requestHandler.HandleAsync(convert, httpContext);
+                await requestHandler.HandleAsync(convert);
                 notMatched = convert.NotMatched;
             }
 

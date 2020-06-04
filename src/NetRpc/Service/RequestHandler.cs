@@ -23,12 +23,12 @@ namespace NetRpc
             _middlewareBuilder = new MiddlewareBuilder(middlewareOptions, serviceProvider);
         }
 
-        public async Task HandleAsync(IServiceConnection connection, object httpContext)
+        public async Task HandleAsync(IServiceConnection connection)
         {
-            await HandleAsync(new BufferServiceOnceApiConvert(connection, _logger), httpContext);
+            await HandleAsync(new BufferServiceOnceApiConvert(connection, _logger));
         }
 
-        public async Task HandleAsync(IServiceOnceApiConvert convert, object httpContext)
+        public async Task HandleAsync(IServiceOnceApiConvert convert)
         {
             try
             {
@@ -46,10 +46,6 @@ namespace NetRpc
                     _middlewareBuilder, 
                     rpcContextAccessor, 
                     _channelType,
-                    new Dictionary<object, object>
-                    {
-                        {"HttpContext", httpContext},
-                    }, 
                     _logger);
 
                 await onceTransfer.StartAsync();
