@@ -22,9 +22,9 @@ namespace Microsoft.Extensions.DependencyInjection
             if (configureOpenTracingOptions != null)
                 services.Configure(configureOpenTracingOptions);
 
-            services.Configure<MiddlewareOptions>(i => i.UseMiddleware<NetRpcServiceJaegerMiddleware>());
-            services.Configure<ClientMiddlewareOptions>(i => i.UseMiddleware<NetRpcClientJaegerMiddleware>());
             services.AddNetRpcOpenTracing();
+            services.Configure<ClientMiddlewareOptions>(i => i.UseMiddleware<NetRpcClientJaegerMiddleware>());
+            services.Configure<MiddlewareOptions>(i => i.UseMiddleware<NetRpcServiceJaegerMiddleware>());
             services.AddSingleton(typeof(ITracer), i =>
             {
                 var opt = i.GetService<IOptions<JaegerOptions>>();

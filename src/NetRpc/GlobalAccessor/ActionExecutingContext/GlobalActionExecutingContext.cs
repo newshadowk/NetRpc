@@ -2,6 +2,11 @@
 
 namespace NetRpc
 {
+    public interface IActionExecutingContextAccessor
+    {
+        ActionExecutingContext Context { get; set; }
+    }
+
     public static class GlobalActionExecutingContext
     {
         private static readonly AsyncLocal<ActionExecutingContext> Local = new AsyncLocal<ActionExecutingContext>();
@@ -10,6 +15,15 @@ namespace NetRpc
         {
             get => Local.Value;
             set => Local.Value = value;
+        }
+    }
+
+    public class ActionExecutingContextAccessor : IActionExecutingContextAccessor
+    {
+        public ActionExecutingContext Context
+        {
+            get => GlobalActionExecutingContext.Context;
+            set => GlobalActionExecutingContext.Context = value;
         }
     }
 }

@@ -30,8 +30,8 @@ namespace Service
                     services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5003/swagger");
                     services.AddNetRpcJaeger(i =>
                     {
-                        i.Host = "jaeger.yx.com";
-                        i.Port = 6831;
+                        i.Host = "m.k8s.yx.com";
+                        i.Port = 36831;
                         i.ServiceName = "Service_2";
                     });
                 })

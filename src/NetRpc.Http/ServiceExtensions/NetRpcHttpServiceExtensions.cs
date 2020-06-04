@@ -75,11 +75,5 @@ namespace Microsoft.Extensions.DependencyInjection
             });
             return app;
         }
-
-        public static IServiceCollection UseNetRpcHttpAuth(this IServiceCollection services)
-        {
-            services.AddNetRpcMiddleware(i => i.UseMiddleware(typeof(AuthMiddleware)));
-            return services;
-        }
     }
 }

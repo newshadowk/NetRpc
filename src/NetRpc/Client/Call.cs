@@ -18,8 +18,9 @@ namespace NetRpc
         private readonly string _optionsName;
         private readonly IServiceProvider _serviceProvider;
         private volatile int _timeoutInterval;
+        private readonly bool _forwardHeader;
 
-        public Call(Guid clientProxyId, IServiceProvider serviceProvider, ContractInfo contract, IOnceCallFactory factory, int timeoutInterval,
+        public Call(Guid clientProxyId, IServiceProvider serviceProvider, ContractInfo contract, IOnceCallFactory factory, int timeoutInterval, bool forwardHeader,
             string optionsName)
         {
             _clientProxyId = clientProxyId;
@@ -27,6 +28,7 @@ namespace NetRpc
             _contract = contract;
             _factory = factory;
             _timeoutInterval = timeoutInterval;
+            _forwardHeader = forwardHeader;
             _optionsName = optionsName;
 
             if (serviceProvider != null)
@@ -41,12 +43,12 @@ namespace NetRpc
         public async Task<object> CallAsync(MethodInfo methodInfo, Func<object, Task> callback, CancellationToken token, Stream stream,
             params object[] pureArgs)
         {
-            //cache header
-            var header = AdditionHeader;
+            //merge header
+            var mergeHeader = MergeHeader(AdditionHeader);
 
             //start
             var call = await _factory.CreateAsync(_timeoutInterval);
-            await call.StartAsync(GetAuthorizationToken(header));
+            await call.StartAsync(GetAuthorizationToken(mergeHeader));
 
             //stream
             var contractMethod = _contract.Methods.Find(i => i.MethodInfo == methodInfo);
@@ -54,11 +56,7 @@ namespace NetRpc
             var methodContext = new MethodContext(contractMethod, instanceMethod);
             var readStream = GetReadStream(stream);
             var clientContext = new ClientActionExecutingContext(_clientProxyId, _serviceProvider, _optionsName, call, instanceMethod, callback, token,
-                _contract,
-                contractMethod, readStream, pureArgs);
-
-            //header
-            AddHeader(clientContext, header);
+                _contract, contractMethod, readStream, mergeHeader, pureArgs);
 
             //invoke
             if (_middlewareBuilder != null)
@@ -68,12 +66,7 @@ namespace NetRpc
             }
 
             //onceTransfer will dispose after stream translate finished in OnceCall.
-            return await call.CallAsync(header, methodContext, callback, token, stream, pureArgs);
-        }
-
-        public void Config(int timeoutInterval)
-        {
-            _timeoutInterval = timeoutInterval;
+            return await call.CallAsync(mergeHeader, methodContext, callback, token, stream, pureArgs);
         }
 
         private static ReadStream GetReadStream(Stream stream)
@@ -95,11 +88,23 @@ namespace NetRpc
             return readStream;
         }
 
-        private static void AddHeader(ClientActionExecutingContext context, Dictionary<string, object> additionHeader)
+        private Dictionary<string, object> MergeHeader(Dictionary<string, object> additionHeader)
         {
+            var dic = new Dictionary<string, object>();
+           
+            if (_forwardHeader)
+            {
+                var contextHeader = GlobalActionExecutingContext.Context.Header;
+                if (contextHeader != null && contextHeader.Count > 0)
+                    foreach (var key in contextHeader.Keys)
+                        dic.Add(key, contextHeader[key]);
+            }
+
             if (additionHeader != null && additionHeader.Count > 0)
                 foreach (var key in additionHeader.Keys)
-                    context.Header.Add(key, additionHeader[key]);
+                    dic[key] = additionHeader[key];
+
+            return dic;
         }
 
         private static string GetAuthorizationToken(Dictionary<string, object> additionHeader)

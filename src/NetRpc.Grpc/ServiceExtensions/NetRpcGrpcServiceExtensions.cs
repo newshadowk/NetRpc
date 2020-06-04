@@ -58,6 +58,7 @@ namespace Microsoft.Extensions.DependencyInjection
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
             services.AddNetRpcGrpcClient(grpcClientConfigureOptions, clientConfigureOptions, serviceLifetime);
+            services.Configure<NetRpcClientOption>(i => i.ForwardHeader = true);
             services.AddNetRpcGrpcClientContract<TService>(serviceLifetime);
             services.AddNetRpcServiceContract(typeof(TService),
                 p => ((IClientProxy<TService>) p.GetService(typeof(IClientProxy<TService>))).Proxy, 
@@ -94,7 +95,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return services;
         }
-
 
         public static IServiceCollection AddNetRpcGrpcClientContract<TService>(this IServiceCollection services,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)

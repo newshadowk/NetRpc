@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DataContract;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NetRpc;
 using Helper = TestHelper.Helper;
 
 namespace Service
@@ -38,7 +39,8 @@ namespace Service
     {
         public async Task Call(string s)
         {
-            Console.WriteLine($"Receive: {s}");
+            var h = GlobalActionExecutingContext.Context.Header;
+            Console.WriteLine($"Receive: {s}, {h["k1"]}");
         }
 
         public async Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Func<CustomCallbackObj, Task> cb, CancellationToken token)

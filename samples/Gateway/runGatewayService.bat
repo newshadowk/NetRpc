@@ -1,0 +1,1 @@
+@START /b cmd /c dotnet %~dp0\GatewayService\bin\Debug\netcoreapp2.2\GatewayService.dll

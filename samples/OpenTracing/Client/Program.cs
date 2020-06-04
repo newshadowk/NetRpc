@@ -11,15 +11,15 @@ namespace Client
         {
             var p = NetRpc.RabbitMQ.NetRpcManager.CreateClientProxy<IService>(TestHelper.Helper.GetMQOptions());
             //var p = NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure));
-            await p.Proxy.Call("msg");
-            await p.Proxy.Call("msg");
+            //await p.Proxy.Call("msg");
+            //await p.Proxy.Call("msg");
 
-            //using (var s = File.OpenRead(@"d:\7\3.rar"))
-            //{
-            //    var stream = await p.Proxy.Echo(s);
-            //    MemoryStream ms = new MemoryStream();
-            //    stream.CopyTo(ms);
-            //}
+            using (var s = File.OpenRead(@"D:\TestFile\400MB.exe"))
+            {
+                var stream = await p.Proxy.Echo(s);
+                MemoryStream ms = new MemoryStream();
+                stream.CopyTo(ms);
+            }
 
             Console.WriteLine("--- end ---");
             Console.Read();

@@ -54,8 +54,8 @@ namespace Service
                     
                     services.AddNetRpcJaeger(i =>
                     {
-                        i.Host = "jaeger.yx.com";
-                        i.Port = 6831;
+                        i.Host = "m.k8s.yx.com";
+                        i.Port = 36831;
                         i.ServiceName = "Service";
                     }, i =>
                     {
@@ -160,12 +160,12 @@ namespace Service
 
         public async Task<Stream> Echo(Stream stream)
         {
-            //MemoryStream ms = new MemoryStream();
-            //using (stream)
-            //    await stream.CopyToAsync(ms);
-            //ms.Seek(0, SeekOrigin.Begin);
+            MemoryStream ms = new MemoryStream();
+            using (stream)
+                await stream.CopyToAsync(ms);
+            ms.Seek(0, SeekOrigin.Begin);
             //return ms;
-            return await _factory.CreateProxy<IService_1>("grpc1").Proxy.Echo_1(stream);
+            return await _factory.CreateProxy<IService_1>("grpc1").Proxy.Echo_1(ms);
         }
     }
 }

@@ -35,12 +35,11 @@ namespace NetRpc
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            InvokeStart();
-
             int readCount;
             try
             {
                 readCount = _stream.Read(buffer, offset, count);
+                InvokeStart();
                 WriteCache(buffer, offset, readCount);
                 OnProgress(new SizeEventArgs(Position));
             }
@@ -58,13 +57,12 @@ namespace NetRpc
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            InvokeStart();
             int readCount;
-
             try
             {
                 readCount = await _stream.ReadAsync(buffer, offset, count, cancellationToken);
                 WriteCache(buffer, offset, readCount);
+                InvokeStart();
                 OnProgress(new SizeEventArgs(Position));
             }
             catch

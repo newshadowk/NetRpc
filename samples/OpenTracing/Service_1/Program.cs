@@ -54,8 +54,8 @@ namespace Service_1
                     services.Configure<ClientSwaggerOptions>(i => i.HostPath = "http://localhost:5004/swagger");
                     services.AddNetRpcJaeger(i =>
                     {
-                        i.Host = "jaeger.yx.com";
-                        i.Port = 6831;
+                        i.Host = "m.k8s.yx.com";
+                        i.Port = 36831;
                         i.ServiceName = "Service_1";
                     });
                 })
@@ -111,8 +111,8 @@ namespace Service_1
             MemoryStream ms = new MemoryStream();
             using (stream)
                 await stream.CopyToAsync(ms);
-            //ms.Seek(0, SeekOrigin.Begin);
-            return stream;
+            ms.Seek(0, SeekOrigin.Begin);
+            return ms;
         }
     }
 }

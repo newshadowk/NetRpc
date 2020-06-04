@@ -57,7 +57,8 @@ namespace NetRpc
             CancellationToken token,
             ContractInfo contractInfo,
             ContractMethod contractMethod,
-            ReadStream stream, 
+            ReadStream stream,
+            Dictionary<string, object> header,
             object[] pureArgs)
         {
             ClientProxyId = clientProxyId;
@@ -72,6 +73,7 @@ namespace NetRpc
             Stream = stream;
             PureArgs = pureArgs;
             OptionsName = optionsName;
+            Header = header ?? new Dictionary<string, object>();
         }
     }
 }

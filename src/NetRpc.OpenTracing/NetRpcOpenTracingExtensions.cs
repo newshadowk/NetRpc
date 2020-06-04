@@ -13,15 +13,15 @@ namespace Microsoft.Extensions.DependencyInjection
             if (configureOptions != null)
                 services.Configure(configureOptions);
             services.TryAddSingleton<IGlobalTracerAccessor, GlobalTracerAccessor>();
-            services.Configure<MiddlewareOptions>(i =>
-            {
-                i.UseMiddleware<StreamTracingMiddleware>();
-                i.UseMiddleware<OpenTracingMiddleware>();
-            });
             services.Configure<ClientMiddlewareOptions>(i =>
             {
-                i.UseMiddleware<ClientStreamTracingMiddleware>();
                 i.UseMiddleware<ClientOpenTracingMiddleware>();
+                i.UseMiddleware<ClientStreamTracingMiddleware>();
+            });
+            services.Configure<MiddlewareOptions>(i =>
+            {
+                i.UseMiddleware<OpenTracingMiddleware>();
+                i.UseMiddleware<StreamTracingMiddleware>();
             });
             services.AddSingleton<ILoggerProvider, SpanLoggerProvider>();
             return services;

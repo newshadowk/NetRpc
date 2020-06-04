@@ -34,7 +34,7 @@ namespace NetRpc
         {
             _factory = factory;
             _logger = loggerFactory.CreateLogger("NetRpc");
-            _call = new Call(Id, serviceProvider, new ContractInfo(typeof(TService)), factory, options.Value.TimeoutInterval, optionsName);
+            _call = new Call(Id, serviceProvider, new ContractInfo(typeof(TService)), factory, options.Value.TimeoutInterval, options.Value.ForwardHeader, optionsName);
             var invoker = new ClientMethodInvoker(_call);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
             ((SimpleDispatchProxyAsync)(object)Proxy).ExceptionInvoked += ProxyExceptionInvoked;
