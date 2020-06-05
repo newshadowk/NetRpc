@@ -8,6 +8,7 @@ namespace RabbitMQ.Base
     {
         public event EventHandler<EventArgsT<CallSession>> Received;
         public event EventHandler<ShutdownEventArgs> ConnectionShutdown;
+        public event EventHandler<EventArgs> RecoverySucceeded;
         private IConnection _connection;
         private readonly ConnectionFactory _factory;
         private readonly string _rpcQueue;
@@ -28,6 +29,7 @@ namespace RabbitMQ.Base
         public void Open()
         {
             _connection = _factory.CreateConnection();
+            _connection.RecoverySucceeded += ConnectionRecoverySucceeded;
             _connection.ConnectionShutdown += ConnectionConnectionShutdown;
             ResetService();
         }
@@ -35,6 +37,19 @@ namespace RabbitMQ.Base
         private void ConnectionConnectionShutdown(object sender, ShutdownEventArgs e)
         {
             OnConnectionShutdown(e);
+        }
+
+        private void ConnectionRecoverySucceeded(object sender, EventArgs e)
+        {
+            try
+            {
+                ResetService();
+                OnRecoverySucceeded();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, null);
+            }
         }
 
         private void ResetService()
@@ -70,6 +85,11 @@ namespace RabbitMQ.Base
         private void OnConnectionShutdown(ShutdownEventArgs e)
         {
             ConnectionShutdown?.Invoke(this, e);
+        }
+
+        private void OnRecoverySucceeded()
+        {
+            RecoverySucceeded?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnReceived(EventArgsT<CallSession> e)

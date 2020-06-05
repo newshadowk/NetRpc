@@ -36,13 +36,13 @@ namespace RabbitMQ.Base
             {
                 _clientToServiceQueue = _clientToServiceModel.QueueDeclare().QueueName;
                 var clientToServiceConsumer = new EventingBasicConsumer(_clientToServiceModel);
-                clientToServiceConsumer.Received += (s, e) => OnReceived(new EventArgsT<byte[]>(e.Body.ToArray()));
+                clientToServiceConsumer.Received += (s, e) => OnReceived(new EventArgsT<byte[]>(e.Body));
 
                 _clientToServiceModel.BasicConsume(_clientToServiceQueue, true, clientToServiceConsumer);
                 Send(Encoding.UTF8.GetBytes(_clientToServiceQueue));
             }
 
-            OnReceived(new EventArgsT<byte[]>(_e.Body.ToArray()));
+            OnReceived(new EventArgsT<byte[]>(_e.Body));
         }
 
         public void Send(byte[] buffer)
