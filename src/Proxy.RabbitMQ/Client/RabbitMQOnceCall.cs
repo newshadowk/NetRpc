@@ -93,13 +93,13 @@ namespace RabbitMQ.Base
                     if (!_clientToServiceQueueOnceBlock.IsPosted)
                     {
                         _clientToServiceQueueOnceBlock.IsPosted = true;
-                        _clientToServiceQueueOnceBlock.WriteOnceBlock.Post(Encoding.UTF8.GetString(e.Body));
+                        _clientToServiceQueueOnceBlock.WriteOnceBlock.Post(Encoding.UTF8.GetString(e.Body.ToArray()));
                     }
                 }
             }
             else
             {
-                OnReceived(new EventArgsT<byte[]>(e.Body));
+                OnReceived(new EventArgsT<byte[]>(e.Body.ToArray()));
             }
         }
 
