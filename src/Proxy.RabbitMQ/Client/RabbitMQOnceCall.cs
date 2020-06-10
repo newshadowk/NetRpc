@@ -11,17 +11,15 @@ namespace RabbitMQ.Base
 {
     public sealed class RabbitMQOnceCall : IDisposable
     {
-        private volatile IModel _model;
-        private readonly IConnection _connect;
-        private readonly string _rpcQueue;
-        private readonly ILogger _logger;
-        private string _serviceToClientQueue;
-        private string _clientToServiceQueue;
         private readonly CheckWriteOnceBlock<string> _clientToServiceQueueOnceBlock = new CheckWriteOnceBlock<string>();
+        private readonly IConnection _connect;
+        private readonly ILogger _logger;
+        private readonly string _rpcQueue;
+        private string _clientToServiceQueue;
         private volatile bool _disposed;
+        private volatile IModel _model;
+        private string _serviceToClientQueue;
         private bool isFirstSend = true;
-
-        public event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;
 
         public RabbitMQOnceCall(IConnection connect, string rpcQueue, ILogger logger)
         {
@@ -29,14 +27,30 @@ namespace RabbitMQ.Base
             _rpcQueue = rpcQueue;
             _logger = logger;
         }
-      
+
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+            _disposed = true;
+
+            try
+            {
+                _model?.Close();
+                _model?.Dispose();
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, null);
+            }
+        }
+
+        public event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;
+
         public async Task CreateChannelAsync()
         {
             //bug:block issue, need start a task.
-            await Task.Run(() =>
-            {
-                _model = _connect.CreateModel();
-            });
+            await Task.Run(() => { _model = _connect.CreateModel(); });
 
             _serviceToClientQueue = _model.QueueDeclare().QueueName;
             var consumer = new AsyncEventingBasicConsumer(_model);
@@ -56,7 +70,7 @@ namespace RabbitMQ.Base
 
             if (isFirstSend)
             {
-                IBasicProperties p = _model.CreateBasicProperties();
+                var p = _model.CreateBasicProperties();
                 p.ReplyTo = _serviceToClientQueue;
                 var cid = Guid.NewGuid().ToString();
                 p.CorrelationId = cid;
@@ -82,17 +96,14 @@ namespace RabbitMQ.Base
                 }
             }
             else
-            {
                 _model.BasicPublish("", _clientToServiceQueue, null, buffer);
-                //bug: after invoke 'BasicPublish' need an other thread to publish for real send? (sometimes happened.)
-                //blocking thread in OnceCall row 96:Task.Delay(_timeoutInterval, _timeOutCts.Token).ContinueWith(i =>
-            }
+            //bug: after invoke 'BasicPublish' need an other thread to publish for real send? (sometimes happened.)
+            //blocking thread in OnceCall row 96:Task.Delay(_timeoutInterval, _timeOutCts.Token).ContinueWith(i =>
         }
-    
+
         private async Task ConsumerReceived(object s, BasicDeliverEventArgs e)
         {
             if (!_clientToServiceQueueOnceBlock.IsPosted)
-            {
                 lock (_clientToServiceQueueOnceBlock.SyncRoot)
                 {
                     if (!_clientToServiceQueueOnceBlock.IsPosted)
@@ -101,28 +112,8 @@ namespace RabbitMQ.Base
                         _clientToServiceQueueOnceBlock.WriteOnceBlock.Post(Encoding.UTF8.GetString(e.Body.ToArray()));
                     }
                 }
-            }
             else
-            {
                 await OnReceivedAsync(new EventArgsT<byte[]>(e.Body.ToArray()));
-            }
-        }
-
-        public void Dispose()
-        {
-            if (_disposed)
-                return;
-            _disposed = true;
-
-            try
-            {
-                _model?.Close();
-                _model?.Dispose();
-            }
-            catch (Exception e)
-            {
-                _logger.LogWarning(e, null);
-            }
         }
 
         private Task OnReceivedAsync(EventArgsT<byte[]> e)

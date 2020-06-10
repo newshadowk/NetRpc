@@ -24,7 +24,7 @@ namespace Service
     {
         public async Task Call(Func<int, Task> cb)
         {
-            for (var i = 0; i <= 2000; i++)
+            for (var i = 0; i <= 20; i++)
             {
                 await Task.Delay(100);
                 try
