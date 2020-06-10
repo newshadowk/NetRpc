@@ -43,7 +43,7 @@ namespace NetRpc.Grpc
                 _end.ReceiveAsync());
         }
 
-        public event Func<object, EventArgsT<byte[]>, Task> ReceivedAsync;
+        public event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;
 
         public async Task SendAsync(byte[] buffer)
         {

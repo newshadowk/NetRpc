@@ -1,0 +1,1 @@
+@dotnet %~dp0\ServiceMq\bin\Debug\netcoreapp3.1\ServiceMq.dll

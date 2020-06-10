@@ -20,7 +20,7 @@ namespace NetRpc.Http.Client
 
         public event EventHandler<EventArgsT<object>> ResultStream;
         public event EventHandler<EventArgsT<object>> Result;
-        public event Func<object, EventArgsT<object>, Task> CallbackAsync;
+        public event AsyncEventHandler<EventArgsT<object>> CallbackAsync;
         public event EventHandler<EventArgsT<object>> Fault;
 
         public HttpClientOnceApiConvert(string apiUrl, string connectionId, HubCallBackNotifier notifier, int timeoutInterval)
@@ -140,6 +140,7 @@ namespace NetRpc.Http.Client
                 else
                 {
                     var resultH = res.Headers.First(i => i.Name == ClientConstValue.CustomResultHeaderKey);
+                    // ReSharper disable once PossibleNullReferenceException
                     var hStr = HttpUtility.UrlDecode(resultH.Value.ToString(), Encoding.UTF8);
                     var retInstance = hStr.ToDtoObject(realRetT);
                     retInstance.SetStream(ms);

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using RabbitMQ.Base;
 
 namespace NetRpc.RabbitMQ
@@ -11,12 +10,7 @@ namespace NetRpc.RabbitMQ
         public RabbitMQServiceConnection(CallSession callSession)
         {
             _callSession = callSession;
-            _callSession.Received += CallSessionReceived;
-        }
-
-        private void CallSessionReceived(object sender, global::RabbitMQ.Base.EventArgsT<byte[]> e)
-        {
-            OnReceivedAsync(new EventArgsT<byte[]>(e.Value)).Wait();
+            _callSession.ReceivedAsync += (s, e) => OnReceivedAsync(new EventArgsT<byte[]>(e.Value));
         }
 
         public void Dispose()
@@ -32,7 +26,7 @@ namespace NetRpc.RabbitMQ
         }
 #endif
 
-        public event Func<object, EventArgsT<byte[]>, Task> ReceivedAsync;
+        public event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;
 
         public Task SendAsync(byte[] buffer)
         {

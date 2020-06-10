@@ -15,7 +15,8 @@ namespace NetRpc.RabbitMQ
                 HostName = options.Host,
                 Port = options.Port,
                 AutomaticRecoveryEnabled = true,
-                NetworkRecoveryInterval = TimeSpan.FromSeconds(5)
+                NetworkRecoveryInterval = TimeSpan.FromSeconds(5),
+                DispatchConsumersAsync = true
             };
         }
     }

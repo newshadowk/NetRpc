@@ -10,18 +10,13 @@ namespace NetRpc
 {
     internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
     {
-        private readonly IClientConnection _connection;
-        private readonly ILogger _logger;
-
         private readonly BufferBlock<(byte[], BufferType)> _block =
             new BufferBlock<(byte[], BufferType)>(new DataflowBlockOptions {BoundedCapacity = Helper.StreamBufferCount});
 
-        private BufferBlockStream _stream;
+        private readonly IClientConnection _connection;
+        private readonly ILogger _logger;
 
-        public event EventHandler<EventArgsT<object>> ResultStream;
-        public event EventHandler<EventArgsT<object>> Result;
-        public event Func<object, EventArgsT<object>, Task> CallbackAsync;
-        public event EventHandler<EventArgsT<object>> Fault;
+        private BufferBlockStream _stream;
 
         public BufferClientOnceApiConvert(IClientConnection connection, ILogger logger)
         {
@@ -30,6 +25,11 @@ namespace NetRpc
             _connection.ReceivedAsync += ConnectionReceivedAsync;
             _connection.ReceiveDisconnected += ConnectionReceiveDisconnected;
         }
+
+        public event EventHandler<EventArgsT<object>> ResultStream;
+        public event EventHandler<EventArgsT<object>> Result;
+        public event AsyncEventHandler<EventArgsT<object>> CallbackAsync;
+        public event EventHandler<EventArgsT<object>> Fault;
 
         public ConnectionInfo ConnectionInfo => _connection.ConnectionInfo;
 
@@ -62,6 +62,20 @@ namespace NetRpc
             return true;
         }
 
+        public void Dispose()
+        {
+            _connection?.Dispose();
+        }
+
+#if NETSTANDARD2_1 || NETCOREAPP3_1
+        public ValueTask DisposeAsync()
+        {
+            if (_connection != null)
+                return _connection.DisposeAsync();
+            return new ValueTask();
+        }
+#endif
+
         private BufferBlockStream GetRequestStream(long length)
         {
             _stream = new BufferBlockStream(_block, length);
@@ -92,7 +106,7 @@ namespace NetRpc
                     if (TryToObject(r.Body, out long body))
                         OnResultStream(new EventArgsT<object>(GetRequestStream(body)));
                     else
-                        OnFaultSerializationException();
+                        await OnFaultSerializationExceptionAsync();
                     break;
                 }
                 case ReplyType.CustomResult:
@@ -107,11 +121,12 @@ namespace NetRpc
                         else
                         {
                             OnResult(new EventArgsT<object>(body.Result));
-                            Dispose();
+                            await InvokeDisposeAsync();
                         }
                     }
                     else
-                        OnFaultSerializationException();
+                        await OnFaultSerializationExceptionAsync();
+
                     break;
                 }
                 case ReplyType.Callback:
@@ -119,7 +134,7 @@ namespace NetRpc
                     if (TryToObject(r.Body, out var body))
                         await OnCallbackAsync(new EventArgsT<object>(body));
                     else
-                        OnFaultSerializationException();
+                        await OnFaultSerializationExceptionAsync();
                     break;
                 }
                 case ReplyType.Fault:
@@ -127,10 +142,11 @@ namespace NetRpc
                     if (TryToObject(r.Body, out var body))
                     {
                         OnFault(new EventArgsT<object>(body));
-                        Dispose();
+                        await InvokeDisposeAsync();
                     }
                     else
-                        OnFaultSerializationException();
+                        await OnFaultSerializationExceptionAsync();
+
                     break;
                 }
                 case ReplyType.Buffer:
@@ -138,15 +154,15 @@ namespace NetRpc
                     break;
                 case ReplyType.BufferCancel:
                     await _block.SendAsync((default, BufferType.Cancel));
-                    Dispose();
+                    await InvokeDisposeAsync();
                     break;
                 case ReplyType.BufferFault:
                     await _block.SendAsync((default, BufferType.Fault));
-                    Dispose();
+                    await InvokeDisposeAsync();
                     break;
                 case ReplyType.BufferEnd:
                     await _block.SendAsync((r.Body, BufferType.End));
-                    Dispose();
+                    await InvokeDisposeAsync();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -200,24 +216,19 @@ namespace NetRpc
             return false;
         }
 
-        private void OnFaultSerializationException()
+        private async Task OnFaultSerializationExceptionAsync()
         {
             OnFault(new EventArgsT<object>(new SerializationException("Deserialization failure when receive data.")));
-            Dispose();
+            await InvokeDisposeAsync();
         }
 
-        public void Dispose()
+        private async Task InvokeDisposeAsync()
         {
-            _connection?.Dispose();
-        }
-
 #if NETSTANDARD2_1 || NETCOREAPP3_1
-        public ValueTask DisposeAsync()
-        {
-            if (_connection != null)
-                return _connection.DisposeAsync();
-            return new ValueTask();
-        }
+            await DisposeAsync();
+#else
+            Dispose();
 #endif
+        }
     }
 }

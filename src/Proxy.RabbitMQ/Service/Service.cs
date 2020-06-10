@@ -1,14 +1,15 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
 namespace RabbitMQ.Base
 {
     public sealed class Service : IDisposable
     {
-        public event EventHandler<EventArgsT<CallSession>> Received;
+        public event AsyncEventHandler<EventArgsT<CallSession>> ReceivedAsync;
         public event EventHandler<ShutdownEventArgs> ConnectionShutdown;
-        public event EventHandler<EventArgs> RecoverySucceeded;
         private IConnection _connection;
         private readonly ConnectionFactory _factory;
         private readonly string _rpcQueue;
@@ -29,40 +30,15 @@ namespace RabbitMQ.Base
         public void Open()
         {
             _connection = _factory.CreateConnection();
-            _connection.RecoverySucceeded += ConnectionRecoverySucceeded;
             _connection.ConnectionShutdown += ConnectionConnectionShutdown;
-            ResetService();
+            Inner = new ServiceInner(_connection, _rpcQueue, _prefetchCount, _logger);
+            Inner.CreateChannel();
+            Inner.ReceivedAsync += (s, e) => OnReceivedAsync(e);
         }
 
         private void ConnectionConnectionShutdown(object sender, ShutdownEventArgs e)
         {
             OnConnectionShutdown(e);
-        }
-
-        private void ConnectionRecoverySucceeded(object sender, EventArgs e)
-        {
-            try
-            {
-                ResetService();
-                OnRecoverySucceeded();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, null);
-            }
-        }
-
-        private void ResetService()
-        {
-            Inner?.Dispose();
-            Inner = new ServiceInner(_connection, _rpcQueue, _prefetchCount, _logger);
-            Inner.CreateChannel();
-            Inner.Received += InnerReceived;
-        }
-
-        private void InnerReceived(object sender, EventArgsT<CallSession> e)
-        {
-            OnReceived(e);
         }
 
         public void Dispose()
@@ -87,14 +63,9 @@ namespace RabbitMQ.Base
             ConnectionShutdown?.Invoke(this, e);
         }
 
-        private void OnRecoverySucceeded()
+        private Task OnReceivedAsync(EventArgsT<CallSession> e)
         {
-            RecoverySucceeded?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void OnReceived(EventArgsT<CallSession> e)
-        {
-            Received?.Invoke(this, e);
+            return ReceivedAsync.InvokeAsync(this, e);
         }
     }
 }

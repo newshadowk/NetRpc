@@ -1,0 +1,1 @@
+@dotnet %~dp0\ClientMq\bin\Debug\netcoreapp3.1\ClientMq.dll

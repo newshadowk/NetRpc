@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -7,7 +8,7 @@ namespace RabbitMQ.Base
 {
     public sealed class ServiceInner : IDisposable
     {
-        public event EventHandler<EventArgsT<CallSession>> Received;
+        public event AsyncEventHandler<EventArgsT<CallSession>> ReceivedAsync;
         private readonly string _rpcQueueName;
         private readonly int _prefetchCount;
         private readonly ILogger _logger;
@@ -27,15 +28,10 @@ namespace RabbitMQ.Base
         {
             _mainModel = _connect.CreateModel();
             _mainModel.QueueDeclare(_rpcQueueName, false, false, true, null);
-            var consumer = new EventingBasicConsumer(_mainModel);
+            var consumer = new AsyncEventingBasicConsumer(_mainModel);
             _mainModel.BasicQos(0, (ushort) _prefetchCount, true);
             _mainModel.BasicConsume(_rpcQueueName, false, consumer);
-            consumer.Received += ConsumerReceived;
-        }
-
-        private void ConsumerReceived(object sender, BasicDeliverEventArgs e)
-        {
-            OnReceived(new EventArgsT<CallSession>(new CallSession(_connect, _mainModel, e, _logger)));
+            consumer.Received += (s, e) => OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_connect, _mainModel, e, _logger)));
         }
 
         public void Dispose()
@@ -55,9 +51,9 @@ namespace RabbitMQ.Base
             }
         }
 
-        private void OnReceived(EventArgsT<CallSession> e)
+        private Task OnReceivedAsync(EventArgsT<CallSession> e)
         {
-            Received?.Invoke(this, e);
+            return ReceivedAsync.InvokeAsync(this, e);
         }
     }
 }

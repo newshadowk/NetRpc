@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -18,7 +19,7 @@ namespace RabbitMQ.Base
         private bool _disposed;
         private readonly bool _isPost;
 
-        public event EventHandler<EventArgsT<byte[]>> Received;
+        public event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;
 
         public CallSession(IConnection connection, IModel mainModel, BasicDeliverEventArgs e, ILogger logger)
         {
@@ -35,14 +36,13 @@ namespace RabbitMQ.Base
             if (!_isPost)
             {
                 _clientToServiceQueue = _clientToServiceModel.QueueDeclare().QueueName;
-                var clientToServiceConsumer = new EventingBasicConsumer(_clientToServiceModel);
-                clientToServiceConsumer.Received += (s, e) => OnReceived(new EventArgsT<byte[]>(e.Body));
-
+                var clientToServiceConsumer = new AsyncEventingBasicConsumer(_clientToServiceModel);
+                clientToServiceConsumer.Received += (s, e) => OnReceivedAsync(new EventArgsT<byte[]>(e.Body.ToArray()));
                 _clientToServiceModel.BasicConsume(_clientToServiceQueue, true, clientToServiceConsumer);
                 Send(Encoding.UTF8.GetBytes(_clientToServiceQueue));
             }
 
-            OnReceived(new EventArgsT<byte[]>(_e.Body));
+            OnReceivedAsync(new EventArgsT<byte[]>(_e.Body.ToArray()));
         }
 
         public void Send(byte[] buffer)
@@ -71,9 +71,9 @@ namespace RabbitMQ.Base
             }
         }
 
-        private void OnReceived(EventArgsT<byte[]> e)
+        private Task OnReceivedAsync(EventArgsT<byte[]> e)
         {
-            Received?.Invoke(this, e);
+            return ReceivedAsync.InvokeAsync(this, e);
         }
     }
 }

@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
+    public delegate Task AsyncEventHandler<in TEvent>(object sender, TEvent @event) where TEvent : EventArgs;
+
     public static class Helper
     {
         public const int StreamBufferSize = 81920;
@@ -406,16 +408,16 @@ namespace NetRpc
             }
         }
 
-        public static async Task InvokeAsync<TEventArgs>(this Func<object, TEventArgs, Task> evt, object sender, TEventArgs eventArgs)
+        public static async Task InvokeAsync<TEventArgs>(this AsyncEventHandler<TEventArgs> @event, object sender, TEventArgs eventArgs) where TEventArgs : EventArgs
         {
-            var handler = evt;
+            var handler = @event;
             if (handler == null)
                 return;
 
-            Delegate[] invocationList = handler.GetInvocationList();
+            var invocationList = handler.GetInvocationList();
             Task[] handlerTasks = new Task[invocationList.Length];
             for (var i = 0; i < invocationList.Length; i++)
-                handlerTasks[i] = ((Func<object, TEventArgs, Task>)invocationList[i])(sender, eventArgs);
+                handlerTasks[i] = ((AsyncEventHandler<TEventArgs>)invocationList[i])(sender, eventArgs);
 
             await Task.WhenAll(handlerTasks);
         }

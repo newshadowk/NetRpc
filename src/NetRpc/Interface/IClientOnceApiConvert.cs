@@ -26,8 +26,7 @@ namespace NetRpc
 
         event EventHandler<EventArgsT<object>> ResultStream;
         event EventHandler<EventArgsT<object>> Result;
-
-        event Func<object, EventArgsT<object>, Task> CallbackAsync;
+        event AsyncEventHandler<EventArgsT<object>> CallbackAsync;
         event EventHandler<EventArgsT<object>> Fault;
     }
 }

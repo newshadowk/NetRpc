@@ -22,7 +22,7 @@ namespace NetRpc.Grpc
             _logger = logger;
         }
 
-        public event Func<object, EventArgsT<byte[]>, Task> ReceivedAsync;
+        public event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;
 
         public event EventHandler<EventArgsT<Exception>> ReceiveDisconnected;
 

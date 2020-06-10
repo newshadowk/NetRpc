@@ -21,7 +21,7 @@ namespace RabbitMQ.Base
         private volatile bool _disposed;
         private bool isFirstSend = true;
 
-        public event EventHandler<EventArgsT<byte[]>> Received;
+        public event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;
 
         public RabbitMQOnceCall(IConnection connect, string rpcQueue, ILogger logger)
         {
@@ -29,12 +29,17 @@ namespace RabbitMQ.Base
             _rpcQueue = rpcQueue;
             _logger = logger;
         }
-
-        public void CreateChannel()
+      
+        public async Task CreateChannelAsync()
         {
-            _model = _connect.CreateModel();
+            //bug:block issue, need start a task.
+            await Task.Run(() =>
+            {
+                _model = _connect.CreateModel();
+            });
+
             _serviceToClientQueue = _model.QueueDeclare().QueueName;
-            var consumer = new EventingBasicConsumer(_model);
+            var consumer = new AsyncEventingBasicConsumer(_model);
             _model.BasicConsume(_serviceToClientQueue, true, consumer);
             consumer.Received += ConsumerReceived;
         }
@@ -45,7 +50,7 @@ namespace RabbitMQ.Base
             {
                 var p = _model.CreateBasicProperties();
                 _model.BasicPublish("", _rpcQueue, p, buffer);
-                OnReceived(new EventArgsT<byte[]>(null));
+                await OnReceivedAsync(new EventArgsT<byte[]>(null));
                 return;
             }
 
@@ -84,7 +89,7 @@ namespace RabbitMQ.Base
             }
         }
     
-        private void ConsumerReceived(object s, BasicDeliverEventArgs e)
+        private async Task ConsumerReceived(object s, BasicDeliverEventArgs e)
         {
             if (!_clientToServiceQueueOnceBlock.IsPosted)
             {
@@ -93,13 +98,13 @@ namespace RabbitMQ.Base
                     if (!_clientToServiceQueueOnceBlock.IsPosted)
                     {
                         _clientToServiceQueueOnceBlock.IsPosted = true;
-                        _clientToServiceQueueOnceBlock.WriteOnceBlock.Post(Encoding.UTF8.GetString(e.Body));
+                        _clientToServiceQueueOnceBlock.WriteOnceBlock.Post(Encoding.UTF8.GetString(e.Body.ToArray()));
                     }
                 }
             }
             else
             {
-                OnReceived(new EventArgsT<byte[]>(e.Body));
+                await OnReceivedAsync(new EventArgsT<byte[]>(e.Body.ToArray()));
             }
         }
 
@@ -120,9 +125,9 @@ namespace RabbitMQ.Base
             }
         }
 
-        private void OnReceived(EventArgsT<byte[]> e)
+        private Task OnReceivedAsync(EventArgsT<byte[]> e)
         {
-            Received?.Invoke(this, e);
+            return ReceivedAsync.InvokeAsync(this, e);
         }
     }
 }

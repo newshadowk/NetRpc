@@ -31,15 +31,15 @@ namespace NetRpc.RabbitMQ
             if (_service != null)
             {
                 _service.Dispose();
-                _service.Received -= ServiceReceived;
+                _service.ReceivedAsync -= ServiceReceivedAsync;
             }
 
             _service = new Service(opt.CreateConnectionFactory(), opt.RpcQueue, opt.PrefetchCount, _logger);
             _requestHandler = new RequestHandler(serviceProvider, ChannelType.RabbitMQ);
-            _service.Received += ServiceReceived;
+            _service.ReceivedAsync += ServiceReceivedAsync;
         }
 
-        private async void ServiceReceived(object sender, global::RabbitMQ.Base.EventArgsT<CallSession> e)
+        private async Task ServiceReceivedAsync(object sender, global::RabbitMQ.Base.EventArgsT<CallSession> e)
         {
             _busyFlag.Increment();
             try
