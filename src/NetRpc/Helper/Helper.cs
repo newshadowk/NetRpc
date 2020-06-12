@@ -19,7 +19,7 @@ namespace NetRpc
         /// <summary>
         /// about 4 MB
         /// </summary>
-        public const int StreamBufferCount = 53;
+        public const int StreamBufferCacheCount = 53;
 
         private static readonly string[] SizeSuffixes = { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
 
@@ -226,7 +226,7 @@ namespace NetRpc
             }
         }
 
-        public static bool IsSystemType(Type t)
+        public static bool IsSystemType(this Type t)
         {
             var sn = t.Module.ScopeName;
             return sn == "System.Private.CoreLib.dll" || sn == "CommonLanguageRuntimeLibrary";
@@ -486,7 +486,7 @@ namespace NetRpc
 
         private static string GetTypeName(Type t)
         {
-            if (IsSystemType(t))
+            if (t.IsSystemType())
                 return t.FullName;
             return t.AssemblyQualifiedName;
         }

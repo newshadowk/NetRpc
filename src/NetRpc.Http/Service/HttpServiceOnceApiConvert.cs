@@ -27,10 +27,11 @@ namespace NetRpc.Http
         private CancellationTokenSource _cts;
         private readonly FormOptions _defaultFormOptions = new FormOptions();
 
-        public HttpServiceOnceApiConvert(List<Contract> contracts, HttpContext context, string rootPath, bool ignoreWhenNotMatched, IHubContext<CallbackHub, ICallback> hub,
+        public HttpServiceOnceApiConvert(List<Contract> contracts, HttpContext context, string rootPath, bool ignoreWhenNotMatched,
+            IHubContext<CallbackHub, ICallback> hub,
             IServiceProvider serviceProvider)
         {
-            var logger = ((ILoggerFactory)serviceProvider.GetService(typeof(ILoggerFactory))).CreateLogger("NetRpc");
+            var logger = ((ILoggerFactory) serviceProvider.GetService(typeof(ILoggerFactory))).CreateLogger("NetRpc");
             _contracts = contracts;
             _context = context;
             _connection = new HttpConnection(context, hub, logger);
@@ -72,7 +73,7 @@ namespace NetRpc.Http
             var header = GetHeader();
             var (dataObj, stream) = await GetHttpDataObjAndStream(actionInfo);
 
-            if (dataObj == null) 
+            if (dataObj == null)
                 dataObj = new HttpDataObj();
 
             _connection.CallId = dataObj.CallId;
@@ -139,7 +140,7 @@ namespace NetRpc.Http
 
             //body
             ValidateSection(section);
-            MemoryStream ms = new MemoryStream();
+            var ms = new MemoryStream();
             await section.Body.CopyToAsync(ms);
             var body = Encoding.UTF8.GetString(ms.ToArray());
             var dataObj = Helper.ToHttpDataObj(body, dataObjType);
@@ -152,7 +153,7 @@ namespace NetRpc.Http
             var proxyStream = new ProxyStream(section.Body, dataObj.StreamLength);
             return (dataObj, proxyStream);
         }
-        
+
         private static string GetFileName(string contentDisposition)
         {
             //Content-Disposition: form-data; name="stream"; filename="t1.docx"
@@ -198,10 +199,8 @@ namespace NetRpc.Http
 
             foreach (var contract in _contracts)
             foreach (var contractMethod in contract.ContractInfo.Methods)
-            {
                 if (rawPath == contractMethod.HttpRoutInfo.ToString())
                     return contractMethod.MethodInfo.ToActionInfo();
-            }
 
             throw new HttpNotMatchedException($"Request url:'{_context.Request.Path.Value}' is not matched.");
         }
@@ -223,17 +222,16 @@ namespace NetRpc.Http
             if (_context.Request.ContentType != null)
             {
                 //multipart/form-data
-                if (_context.Request.ContentType.StartsWith("multipart/form-data"))
-                {
-                    return await GetFromFormDataAsync(dataObjType);
-                }
+                if (_context.Request.ContentType.StartsWith("multipart/form-data")) return await GetFromFormDataAsync(dataObjType);
 
                 //application/json
                 if (_context.Request.ContentType.StartsWith("application/json"))
                 {
                     string body;
                     using (var sr = new StreamReader(_context.Request.Body, Encoding.UTF8))
+                    {
                         body = await sr.ReadToEndAsync();
+                    }
 
                     var dataObj = Helper.ToHttpDataObj(body, dataObjType);
                     return (dataObj, null);
@@ -242,8 +240,9 @@ namespace NetRpc.Http
                 throw new HttpFailedException($"ContentType:'{_context.Request.ContentType}' is not supported.");
             }
 
-            //_context.Request.ContentType == null
-            return (null, null);
+            //get
+            var httpDj = Helper.GetHttpDataObjFromQuery(_context.Request.Query, dataObjType);
+            return (httpDj, null);
         }
 
         private void CallbackHubCanceled(object sender, string e)

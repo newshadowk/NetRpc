@@ -2,10 +2,9 @@
 
 namespace NetRpc
 {
-#if NETSTANDARD2_1 || NETCOREAPP3_1
-    public interface IClientConnectionFactory : IDisposable, IAsyncDisposable
-#else
     public interface IClientConnectionFactory : IDisposable
+#if NETSTANDARD2_1 || NETCOREAPP3_1
+        , IAsyncDisposable
 #endif
     {
         IClientConnection Create();

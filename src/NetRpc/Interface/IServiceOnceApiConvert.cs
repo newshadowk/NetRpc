@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-#if NETSTANDARD2_1 || NETCOREAPP3_1
-    public interface IServiceOnceApiConvert : IDisposable, IAsyncDisposable
-#else
     public interface IServiceOnceApiConvert : IDisposable
+#if NETSTANDARD2_1 || NETCOREAPP3_1
+        , IAsyncDisposable
 #endif
     {
         Task SendBufferAsync(byte[] buffer);

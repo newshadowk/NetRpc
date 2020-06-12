@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace NetRpc.Grpc
 {
-    public sealed class GrpcClientConnection : IClientConnection
+    internal sealed class GrpcClientConnection : IClientConnection
     {
         private readonly AsyncLock _sendLock = new AsyncLock();
         private readonly Client _client;

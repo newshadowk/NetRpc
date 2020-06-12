@@ -45,6 +45,13 @@ namespace DataContract
         }
     }
 
+    public class SimObj
+    {
+        public string P1 { get; set; }
+        public int P2 { get; set; }
+        public DateTime P3 { get; set; }
+    }
+
     /// <example>Mary</example>
     public enum NameEnum
     {

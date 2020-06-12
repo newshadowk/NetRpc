@@ -60,6 +60,20 @@ namespace NetRpc.Http
             return ret.ToArray();
         }
 
+        public static HttpDataObj GetHttpDataObjFromQuery(IQueryCollection query, Type dataObjType)
+        {
+            var dataObj = GetDataObjFromQuery(query, dataObjType);
+
+            return new HttpDataObj
+            {
+                StreamLength = 0,
+                Value = dataObj,
+                CallId = null,
+                ConnectionId = null,
+                Type = dataObj.GetType()
+            };
+        }
+
         public static bool IsEqualsOrSubclassOf(this Type t, Type c)
         {
             return t == c || t.IsSubclassOf(c);
@@ -118,6 +132,55 @@ namespace NetRpc.Http
             if (pi == null)
                 return null;
             return pi.GetValue(obj);
+        }
+
+        private static object GetDataObjFromQuery(IQueryCollection query, Type dataObjType)
+        {
+            if (dataObjType == null)
+                return null;
+
+            var dataObj = Activator.CreateInstance(dataObjType);
+            var ps = dataObjType.GetProperties();
+            var targetObj = dataObj;
+
+            // dataObj is CustomObj? get inside properties.
+            if (ps.Length == 1 && !ps[0].PropertyType.IsSystemType())
+            {
+                targetObj = Activator.CreateInstance(ps[0].PropertyType);
+                ps[0].SetValue(dataObj, targetObj);
+            }
+
+            SetDataObj(query, targetObj);
+       
+            return dataObj;
+        }
+
+        private static void SetDataObj(IQueryCollection query, object dataObj)
+        {
+            var ps = dataObj.GetType().GetProperties();
+
+            foreach (var p in ps)
+            {
+                if (query.TryGetValue(p.Name, out var values))
+                {
+                    try
+                    {
+                        if (p.PropertyType == typeof(string))
+                        {
+                            p.SetValue(dataObj, values[0]);
+                            continue;
+                        }
+
+                        // ReSharper disable once PossibleNullReferenceException
+                        var parsedValue = p.PropertyType.GetMethod("Parse", new[] { typeof(string) }).Invoke(null, new object[] { values[0] });
+                        p.SetValue(dataObj, parsedValue);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new HttpNotMatchedException($"http get, '{p.Name}' is not valid value, {ex.Message}");
+                    }
+                }
+            }
         }
     }
 }

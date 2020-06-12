@@ -3,10 +3,9 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-#if NETSTANDARD2_1 || NETCOREAPP3_1
-    public interface IClientConnection : IDisposable, IAsyncDisposable
-#else
     public interface IClientConnection : IDisposable
+#if NETSTANDARD2_1 || NETCOREAPP3_1
+        , IAsyncDisposable
 #endif
     {
         ConnectionInfo ConnectionInfo { get; }
@@ -19,10 +18,9 @@ namespace NetRpc
 
         Task StartAsync(string authorizationToken);
     }
-#if NETSTANDARD2_1 || NETCOREAPP3_1
-    public interface IServiceConnection : IDisposable, IAsyncDisposable
-#else
     public interface IServiceConnection : IDisposable
+#if NETSTANDARD2_1 || NETCOREAPP3_1
+        , IAsyncDisposable
 #endif
     {
         event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;

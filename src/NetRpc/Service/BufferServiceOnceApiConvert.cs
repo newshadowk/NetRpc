@@ -15,7 +15,7 @@ namespace NetRpc
         private CancellationTokenSource _cts;
 
         private readonly BufferBlock<(byte[], BufferType)> _block =
-            new BufferBlock<(byte[], BufferType)>(new DataflowBlockOptions {BoundedCapacity = Helper.StreamBufferCount});
+            new BufferBlock<(byte[], BufferType)>(new DataflowBlockOptions {BoundedCapacity = Helper.StreamBufferCacheCount});
 
         private readonly WriteOnceBlock<Request> _cmdReq = new WriteOnceBlock<Request>(null);
 

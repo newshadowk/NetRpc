@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard2.0;netstandard2.1;netcoreapp2.1;netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
     <SignAssembly>true</SignAssembly>
     <Description>Provide api proxy for Grpc, NetRpc.</Description>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

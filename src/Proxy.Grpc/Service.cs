@@ -4,10 +4,9 @@ using Grpc.Core;
 
 namespace Proxy.Grpc
 {
+    public class Service : IDisposable
 #if NETSTANDARD2_1 || NETCOREAPP3_1
-    public class Service : IDisposable, IAsyncDisposable
-#else
-    public sealed class Service : IDisposable
+        , IAsyncDisposable
 #endif
     {
         private readonly Server _server;

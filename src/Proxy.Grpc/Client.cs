@@ -7,10 +7,9 @@ using Channel = Grpc.Core.Channel;
 
 namespace Proxy.Grpc
 {
+    public class Client : IDisposable
 #if NETSTANDARD2_1 || NETCOREAPP3_1
-    public class Client : IDisposable, IAsyncDisposable
-#else
-    public sealed class Client : IDisposable
+        , IAsyncDisposable
 #endif
     {
         private readonly Channel _channel;

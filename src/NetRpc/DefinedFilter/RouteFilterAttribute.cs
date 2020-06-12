@@ -55,7 +55,7 @@ namespace NetRpc
         {
             if (srcObj is Stream || 
                 srcObj is Action ||
-                Helper.IsSystemType(srcObj.GetType()))
+                srcObj.GetType().IsSystemType())
                 return srcObj;
 
             return srcObj.CreateAndCopy(tgtObjType);

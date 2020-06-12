@@ -27,6 +27,8 @@ namespace DataContract
         [SecurityApiKey("tokenKey")]
         Task<CustomObj> CallAsync(string p1, int p2);
 
+        Task Call3Async(SimObj obj);
+
         /// <summary>
         /// summary of Call
         /// </summary>

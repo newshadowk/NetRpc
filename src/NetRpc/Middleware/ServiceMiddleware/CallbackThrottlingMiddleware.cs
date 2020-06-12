@@ -40,10 +40,9 @@ namespace NetRpc
         }
     }
 
-#if NETSTANDARD2_1 || NETCOREAPP3_1
-    internal sealed class ThrottlingFunc : IDisposable, IAsyncDisposable
-#else
     internal sealed class ThrottlingFunc : IDisposable
+#if NETSTANDARD2_1 || NETCOREAPP3_1
+        , IAsyncDisposable
 #endif
     {
         private readonly AsyncLock _lock = new AsyncLock();

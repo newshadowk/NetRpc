@@ -36,6 +36,11 @@ namespace Service_Startup
             return retObj;
         }
 
+        public Task Call3Async(SimObj obj)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task CallByCustomExceptionAsync()
         {
             Console.WriteLine("[CallByCustomExceptionAsync]...");

@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-#if NETSTANDARD2_1 || NETCOREAPP3_1
-    public interface IClientOnceApiConvert : IDisposable, IAsyncDisposable
-#else
     public interface IClientOnceApiConvert : IDisposable
+#if NETSTANDARD2_1 || NETCOREAPP3_1
+        , IAsyncDisposable
 #endif
     {
         ConnectionInfo ConnectionInfo { get; }

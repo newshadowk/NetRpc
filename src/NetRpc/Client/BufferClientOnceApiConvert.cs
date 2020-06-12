@@ -11,7 +11,7 @@ namespace NetRpc
     internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
     {
         private readonly BufferBlock<(byte[], BufferType)> _block =
-            new BufferBlock<(byte[], BufferType)>(new DataflowBlockOptions {BoundedCapacity = Helper.StreamBufferCount});
+            new BufferBlock<(byte[], BufferType)>(new DataflowBlockOptions {BoundedCapacity = Helper.StreamBufferCacheCount});
 
         private readonly IClientConnection _connection;
         private readonly ILogger _logger;
