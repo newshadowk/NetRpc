@@ -31,6 +31,11 @@ namespace Service
             throw new NotImplementedException();
         }
 
+        public Task Call4Async(string p1, int p2)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task CallByCustomExceptionAsync()
         {
             Console.WriteLine("[CallByCustomExceptionAsync]...");

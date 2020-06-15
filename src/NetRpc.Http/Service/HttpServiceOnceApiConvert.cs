@@ -24,11 +24,16 @@ namespace NetRpc.Http
         private readonly string _rootPath;
         private readonly bool _ignoreWhenNotMatched;
         private readonly IServiceProvider _serviceProvider;
+        private readonly HttpObjProcessor _httpObjProcessor;
         private CancellationTokenSource _cts;
         private readonly FormOptions _defaultFormOptions = new FormOptions();
 
-        public HttpServiceOnceApiConvert(List<Contract> contracts, HttpContext context, string rootPath, bool ignoreWhenNotMatched,
+        public HttpServiceOnceApiConvert(List<Contract> contracts,
+            HttpContext context,
+            string rootPath,
+            bool ignoreWhenNotMatched,
             IHubContext<CallbackHub, ICallback> hub,
+            HttpObjProcessor httpObjProcessor,
             IServiceProvider serviceProvider)
         {
             var logger = ((ILoggerFactory) serviceProvider.GetService(typeof(ILoggerFactory))).CreateLogger("NetRpc");
@@ -38,6 +43,7 @@ namespace NetRpc.Http
             _rootPath = rootPath;
             _ignoreWhenNotMatched = ignoreWhenNotMatched;
             _serviceProvider = serviceProvider;
+            _httpObjProcessor = httpObjProcessor;
             CallbackHub.Canceled += CallbackHubCanceled;
         }
 
@@ -71,17 +77,14 @@ namespace NetRpc.Http
         {
             var actionInfo = GetActionInfo();
             var header = GetHeader();
-            var (dataObj, stream) = await GetHttpDataObjAndStream(actionInfo);
+            var httpObj = await GetHttpDataObjAndStream(actionInfo);
+            
+            _connection.CallId = httpObj.HttpDataObj.CallId;
+            _connection.ConnectionId = httpObj.HttpDataObj.ConnectionId;
+            _connection.Stream = httpObj.ProxyStream;
 
-            if (dataObj == null)
-                dataObj = new HttpDataObj();
-
-            _connection.CallId = dataObj.CallId;
-            _connection.ConnectionId = dataObj.ConnectionId;
-            _connection.Stream = stream;
-            var pureArgs = Helper.GetPureArgsFromDataObj(dataObj.Type, dataObj.Value);
-
-            return new ServiceOnceCallParam(actionInfo, pureArgs, dataObj.StreamLength, stream, header);
+            var pureArgs = Helper.GetPureArgsFromDataObj(httpObj.HttpDataObj.Type, httpObj.HttpDataObj.Value);
+            return new ServiceOnceCallParam(actionInfo, pureArgs, httpObj.HttpDataObj.StreamLength, httpObj.ProxyStream, header);
         }
 
         public async Task<bool> SendResultAsync(CustomResult result, Stream stream, string streamName, ActionExecutingContext context)
@@ -154,6 +157,14 @@ namespace NetRpc.Http
             return (dataObj, proxyStream);
         }
 
+        private static string Match(string src, string left, string right)
+        {
+            var r = Regex.Match(src, $"(?<={left}).+(?={right})");
+            if (r.Captures.Count > 0)
+                return r.Captures[0].Value;
+            return null;
+        }
+
         private static string GetFileName(string contentDisposition)
         {
             //Content-Disposition: form-data; name="stream"; filename="t1.docx"
@@ -213,50 +224,18 @@ namespace NetRpc.Http
             return ret;
         }
 
-        private async Task<(HttpDataObj dataObj, ProxyStream stream)> GetHttpDataObjAndStream(ActionInfo ai)
+        private async Task<HttpObj> GetHttpDataObjAndStream(ActionInfo ai)
         {
             //dataObjType
             var method = ApiWrapper.GetMethodInfo(ai, _contracts, _serviceProvider);
             var dataObjType = method.contractMethod.MergeArgType.Type;
-
-            if (_context.Request.ContentType != null)
-            {
-                //multipart/form-data
-                if (_context.Request.ContentType.StartsWith("multipart/form-data")) return await GetFromFormDataAsync(dataObjType);
-
-                //application/json
-                if (_context.Request.ContentType.StartsWith("application/json"))
-                {
-                    string body;
-                    using (var sr = new StreamReader(_context.Request.Body, Encoding.UTF8))
-                    {
-                        body = await sr.ReadToEndAsync();
-                    }
-
-                    var dataObj = Helper.ToHttpDataObj(body, dataObjType);
-                    return (dataObj, null);
-                }
-
-                throw new HttpFailedException($"ContentType:'{_context.Request.ContentType}' is not supported.");
-            }
-
-            //get
-            var httpDj = Helper.GetHttpDataObjFromQuery(_context.Request.Query, dataObjType);
-            return (httpDj, null);
+            return await _httpObjProcessor.ProcessAsync(_context.Request, dataObjType);
         }
 
         private void CallbackHubCanceled(object sender, string e)
         {
             if (_connection.CallId == e || string.IsNullOrEmpty(e))
                 _cts.Cancel();
-        }
-
-        private static string Match(string src, string left, string right)
-        {
-            var r = Regex.Match(src, $"(?<={left}).+(?={right})");
-            if (r.Captures.Count > 0)
-                return r.Captures[0].Value;
-            return null;
         }
     }
 }

@@ -47,7 +47,10 @@ namespace NetRpc.Grpc
                         TimeoutInterval = timeoutInterval,
                         HearbeatInterval = hearbeatInterval
                     }
-                ), null, NullLoggerFactory.Instance);
+                ), new NullOptions<ClientMiddlewareOptions>(), 
+                ActionExecutingContextAccessor.Default, 
+                null,
+                NullLoggerFactory.Instance);
         }
     }
 }

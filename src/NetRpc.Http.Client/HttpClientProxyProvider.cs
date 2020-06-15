@@ -8,14 +8,22 @@ namespace NetRpc.Http.Client
     {
         private readonly IOptionsMonitor<HttpClientOptions> _httpClientOptions;
         private readonly IOptionsMonitor<NetRpcClientOption> _netRpcClientOption;
+        private readonly IOptions<ClientMiddlewareOptions> _clientMiddlewareOptions;
+        private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILoggerFactory _loggerFactory;
 
-        public HttpClientProxyProvider(IOptionsMonitor<HttpClientOptions> httpClientOptions, IOptionsMonitor<NetRpcClientOption> netRpcClientOption,
-            IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
+        public HttpClientProxyProvider(IOptionsMonitor<HttpClientOptions> httpClientOptions,
+            IOptionsMonitor<NetRpcClientOption> netRpcClientOption,
+            IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
+            IActionExecutingContextAccessor actionExecutingContextAccessor,
+            IServiceProvider serviceProvider,
+            ILoggerFactory loggerFactory)
         {
             _httpClientOptions = httpClientOptions;
             _netRpcClientOption = netRpcClientOption;
+            _clientMiddlewareOptions = clientMiddlewareOptions;
+            _actionExecutingContextAccessor = actionExecutingContextAccessor;
             _serviceProvider = serviceProvider;
             _loggerFactory = loggerFactory;
         }
@@ -27,7 +35,14 @@ namespace NetRpc.Http.Client
                 return null;
 
             var f = new HttpOnceCallFactory(new SimpleOptions<HttpClientOptions>(options), _loggerFactory);
-            var clientProxy = new ClientProxy<TService>(f, new SimpleOptions<NetRpcClientOption>(_netRpcClientOption.CurrentValue), _serviceProvider, _loggerFactory, optionsName);
+            var clientProxy = new ClientProxy<TService>(
+                f,
+                new SimpleOptions<NetRpcClientOption>(_netRpcClientOption.CurrentValue),
+                _clientMiddlewareOptions,
+                _actionExecutingContextAccessor,
+                _serviceProvider,
+                _loggerFactory,
+                optionsName);
             return clientProxy;
         }
     }
@@ -36,14 +51,22 @@ namespace NetRpc.Http.Client
     {
         private readonly IOptionsMonitor<HttpClientOptions> _httpClientOptions;
         private readonly IOptionsMonitor<NetRpcClientOption> _netRpcClientOption;
+        private readonly IOptions<ClientMiddlewareOptions> _clientMiddlewareOptions;
+        private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILoggerFactory _loggerFactory;
 
-        public OrphanHttpClientProxyProvider(IOptionsMonitor<HttpClientOptions> httpClientOptions, IOptionsMonitor<NetRpcClientOption> netRpcClientOption,
-            IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
+        public OrphanHttpClientProxyProvider(IOptionsMonitor<HttpClientOptions> httpClientOptions,
+            IOptionsMonitor<NetRpcClientOption> netRpcClientOption,
+            IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
+            IActionExecutingContextAccessor actionExecutingContextAccessor,
+            IServiceProvider serviceProvider,
+            ILoggerFactory loggerFactory)
         {
             _httpClientOptions = httpClientOptions;
             _netRpcClientOption = netRpcClientOption;
+            _clientMiddlewareOptions = clientMiddlewareOptions;
+            _actionExecutingContextAccessor = actionExecutingContextAccessor;
             _serviceProvider = serviceProvider;
             _loggerFactory = loggerFactory;
         }
@@ -55,7 +78,14 @@ namespace NetRpc.Http.Client
                 return null;
 
             var f = new HttpOnceCallFactory(new SimpleOptions<HttpClientOptions>(options), _loggerFactory);
-            var clientProxy = new ClientProxy<TService>(f, new SimpleOptions<NetRpcClientOption>(_netRpcClientOption.CurrentValue), _serviceProvider, _loggerFactory, optionsName);
+            var clientProxy = new ClientProxy<TService>(
+                f,
+                new SimpleOptions<NetRpcClientOption>(_netRpcClientOption.CurrentValue),
+                _clientMiddlewareOptions,
+                _actionExecutingContextAccessor,
+                _serviceProvider,
+                _loggerFactory,
+                optionsName);
             return clientProxy;
         }
     }

@@ -10,15 +10,23 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         private readonly IOptionsMonitor<GrpcClientOptions> _grpcClientOptions;
         private readonly IOptionsMonitor<NetRpcClientOption> _netRpcClientOption;
+        private readonly IOptions<ClientMiddlewareOptions> _clientMiddlewareOptions;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
         private readonly ILoggerFactory _loggerFactory;
 
-        public GrpcClientProxyProvider(IOptionsMonitor<GrpcClientOptions> grpcClientOptions, IOptionsMonitor<NetRpcClientOption> netRpcClientOption,
-            IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
+        public GrpcClientProxyProvider(IOptionsMonitor<GrpcClientOptions> grpcClientOptions, 
+            IOptionsMonitor<NetRpcClientOption> netRpcClientOption,
+            IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
+            IActionExecutingContextAccessor actionExecutingContextAccessor,
+            IServiceProvider serviceProvider,
+            ILoggerFactory loggerFactory)
         {
             _grpcClientOptions = grpcClientOptions;
             _netRpcClientOption = netRpcClientOption;
+            _clientMiddlewareOptions = clientMiddlewareOptions;
             _serviceProvider = serviceProvider;
+            _actionExecutingContextAccessor = actionExecutingContextAccessor;
             _loggerFactory = loggerFactory;
         }
 
@@ -29,7 +37,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 return null;
 
             var f = new GrpcClientConnectionFactory(new SimpleOptions<GrpcClientOptions>(options), _loggerFactory);
-            var clientProxy = new GrpcClientProxy<TService>(f,  new SimpleOptions<NetRpcClientOption>(_netRpcClientOption.CurrentValue), _serviceProvider, _loggerFactory, optionsName);
+            var clientProxy = new GrpcClientProxy<TService>(f,  
+                new SimpleOptions<NetRpcClientOption>(_netRpcClientOption.CurrentValue),
+                _clientMiddlewareOptions,
+                _actionExecutingContextAccessor,
+                _serviceProvider,
+                _loggerFactory, optionsName);
             return clientProxy;
         }
     }
@@ -38,15 +51,23 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         private readonly IOptionsMonitor<GrpcClientOptions> _grpcClientOptions;
         private readonly IOptionsMonitor<NetRpcClientOption> _netRpcClientOption;
+        private readonly IOptions<ClientMiddlewareOptions> _clientMiddlewareOptions;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
         private readonly ILoggerFactory _loggerFactory;
 
-        public OrphanGrpcClientProxyProvider(IOptionsMonitor<GrpcClientOptions> grpcClientOptions, IOptionsMonitor<NetRpcClientOption> netRpcClientOption,
-            IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
+        public OrphanGrpcClientProxyProvider(IOptionsMonitor<GrpcClientOptions> grpcClientOptions, 
+            IOptionsMonitor<NetRpcClientOption> netRpcClientOption,
+            IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
+            IActionExecutingContextAccessor actionExecutingContextAccessor,
+            IServiceProvider serviceProvider,
+            ILoggerFactory loggerFactory)
         {
             _grpcClientOptions = grpcClientOptions;
             _netRpcClientOption = netRpcClientOption;
+            _clientMiddlewareOptions = clientMiddlewareOptions;
             _serviceProvider = serviceProvider;
+            _actionExecutingContextAccessor = actionExecutingContextAccessor;
             _loggerFactory = loggerFactory;
         }
 
@@ -57,7 +78,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 return null;
 
             var f = new GrpcClientConnectionFactory(new SimpleOptions<GrpcClientOptions>(options), _loggerFactory);
-            var clientProxy = new GrpcClientProxy<TService>(f, new SimpleOptions<NetRpcClientOption>(_netRpcClientOption.CurrentValue), _serviceProvider, _loggerFactory, optionsName);
+            var clientProxy = new GrpcClientProxy<TService>(f, 
+                new SimpleOptions<NetRpcClientOption>(_netRpcClientOption.CurrentValue),
+                _clientMiddlewareOptions,
+                _actionExecutingContextAccessor,
+                _serviceProvider,
+                _loggerFactory, 
+                optionsName);
             return clientProxy;
         }
     }

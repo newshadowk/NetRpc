@@ -130,6 +130,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
             }
 
+            services.TryAddSingleton<IActionExecutingContextAccessor, ActionExecutingContextAccessor>();
             services.TryAddSingleton<IOrphanClientProxyFactory, OrphanClientProxyFactory>();
 
             return services;

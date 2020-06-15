@@ -4,8 +4,6 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace NetRpc
 {
@@ -17,25 +15,29 @@ namespace NetRpc
         private readonly ClientMiddlewareBuilder _middlewareBuilder;
         private readonly string _optionsName;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
         private volatile int _timeoutInterval;
         private readonly bool _forwardHeader;
 
-        public Call(Guid clientProxyId, IServiceProvider serviceProvider, ContractInfo contract, IOnceCallFactory factory, int timeoutInterval, bool forwardHeader,
+        public Call(Guid clientProxyId,
+            IServiceProvider serviceProvider,
+            ClientMiddlewareOptions middlewareOptions,
+            IActionExecutingContextAccessor actionExecutingContextAccessor,
+            ContractInfo contract,
+            IOnceCallFactory factory,
+            int timeoutInterval,
+            bool forwardHeader,
             string optionsName)
         {
             _clientProxyId = clientProxyId;
             _serviceProvider = serviceProvider;
+            _actionExecutingContextAccessor = actionExecutingContextAccessor;
             _contract = contract;
             _factory = factory;
             _timeoutInterval = timeoutInterval;
             _forwardHeader = forwardHeader;
             _optionsName = optionsName;
-
-            if (serviceProvider != null)
-            {
-                var middlewareOptions = _serviceProvider.GetService<IOptions<ClientMiddlewareOptions>>().Value;
-                _middlewareBuilder = new ClientMiddlewareBuilder(middlewareOptions, serviceProvider);
-            }
+            _middlewareBuilder = new ClientMiddlewareBuilder(middlewareOptions, serviceProvider);
         }
 
         public Dictionary<string, object> AdditionHeader { get; set; } = new Dictionary<string, object>();
@@ -44,7 +46,7 @@ namespace NetRpc
             params object[] pureArgs)
         {
             //merge header
-            var mergeHeader = MergeHeader(AdditionHeader);
+            var mergeHeader = MergeHeader(AdditionHeader, _actionExecutingContextAccessor.Context?.Header);
 
             //start
             var call = await _factory.CreateAsync(_timeoutInterval);
@@ -88,13 +90,12 @@ namespace NetRpc
             return readStream;
         }
 
-        private Dictionary<string, object> MergeHeader(Dictionary<string, object> additionHeader)
+        private Dictionary<string, object> MergeHeader(Dictionary<string, object> additionHeader, Dictionary<string, object> contextHeader)
         {
             var dic = new Dictionary<string, object>();
-           
+
             if (_forwardHeader)
             {
-                var contextHeader = GlobalActionExecutingContext.Context.Header;
                 if (contextHeader != null && contextHeader.Count > 0)
                     foreach (var key in contextHeader.Keys)
                         dic.Add(key, contextHeader[key]);

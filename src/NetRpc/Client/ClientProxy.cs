@@ -30,20 +30,47 @@ namespace NetRpc
             set => _call.AdditionHeader = value;
         }
 
-        public ClientProxy(IOnceCallFactory factory, IOptions<NetRpcClientOption> options, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, string optionsName = null)
+        public ClientProxy(IOnceCallFactory factory,
+            IOptions<NetRpcClientOption> clientOptions,
+            IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
+            IActionExecutingContextAccessor actionExecutingContextAccessor,
+            IServiceProvider serviceProvider,
+            ILoggerFactory loggerFactory,
+            string optionsName = null)
         {
             _factory = factory;
             _logger = loggerFactory.CreateLogger("NetRpc");
-            _call = new Call(Id, serviceProvider, new ContractInfo(typeof(TService)), factory, options.Value.TimeoutInterval, options.Value.ForwardHeader, optionsName);
+
+            _call = new Call(Id,
+                serviceProvider,
+                clientMiddlewareOptions.Value,
+                actionExecutingContextAccessor,
+                new ContractInfo(typeof(TService)),
+                factory,
+                clientOptions.Value.TimeoutInterval,
+                clientOptions.Value.ForwardHeader, optionsName);
+
             var invoker = new ClientMethodInvoker(_call);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
-            ((SimpleDispatchProxyAsync)(object)Proxy).ExceptionInvoked += ProxyExceptionInvoked;
-            _tHearbeat = new Timer(options.Value.HearbeatInterval);
+            ((SimpleDispatchProxyAsync) (object) Proxy).ExceptionInvoked += ProxyExceptionInvoked;
+            _tHearbeat = new Timer(clientOptions.Value.HearbeatInterval);
             _tHearbeat.Elapsed += THearbeatElapsed;
         }
 
-        public ClientProxy(IClientConnectionFactory factory, IOptions<NetRpcClientOption> options, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, string optionsName = null)
-            : this(new OnceCallFactory(factory, loggerFactory), options, serviceProvider, loggerFactory, optionsName)
+        public ClientProxy(IClientConnectionFactory factory,
+            IOptions<NetRpcClientOption> clientOptions,
+            IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
+            IActionExecutingContextAccessor actionExecutingContextAccessor,
+            IServiceProvider serviceProvider,
+            ILoggerFactory loggerFactory,
+            string optionsName = null)
+            : this(new OnceCallFactory(factory, loggerFactory),
+                clientOptions,
+                clientMiddlewareOptions,
+                actionExecutingContextAccessor,
+                serviceProvider,
+                loggerFactory,
+                optionsName)
         {
         }
 

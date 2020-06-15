@@ -3,6 +3,13 @@ using System.Linq;
 
 namespace NetRpc.Http
 {
+    internal sealed class HttpObj
+    {
+        public HttpDataObj HttpDataObj { get; set; } = new HttpDataObj();
+
+        public ProxyStream ProxyStream { get; set; }
+    }
+
     internal sealed class HttpDataObj
     {
         public string ConnectionId { get; set; }

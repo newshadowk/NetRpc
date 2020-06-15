@@ -25,5 +25,7 @@ namespace NetRpc
             get => GlobalActionExecutingContext.Context;
             set => GlobalActionExecutingContext.Context = value;
         }
+
+        public static readonly ActionExecutingContextAccessor Default = new ActionExecutingContextAccessor();
     }
 }

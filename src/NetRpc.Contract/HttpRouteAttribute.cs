@@ -5,7 +5,7 @@ namespace NetRpc
     [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, Inherited = false)]
     public class HttpRouteAttribute : Attribute
     {
-        public HttpRouteAttribute(string template, bool trimActionAsync = false)
+        public HttpRouteAttribute(string template, bool trimActionAsync)
         {
             Template = template ?? throw new ArgumentNullException(nameof(template));
 
@@ -18,6 +18,10 @@ namespace NetRpc
                 Template = Template.Substring(0, Template.Length - 1);
 
             TrimActionAsync = trimActionAsync;
+        }
+
+        public HttpRouteAttribute(string template) : this(template, false)
+        {
         }
 
         public HttpRouteAttribute(bool trimActionAsync)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using NetRpc.Http.Client;
 
 namespace NetRpc.Http
@@ -60,9 +61,9 @@ namespace NetRpc.Http
             return ret.ToArray();
         }
 
-        public static HttpDataObj GetHttpDataObjFromQuery(IQueryCollection query, Type dataObjType)
+        public static HttpDataObj GetHttpDataObjFromQuery(HttpRequest request, Type dataObjType)
         {
-            var dataObj = GetDataObjFromQuery(query, dataObjType);
+            var dataObj = GetDataObjFromQuery(request, dataObjType);
 
             return new HttpDataObj
             {
@@ -134,7 +135,7 @@ namespace NetRpc.Http
             return pi.GetValue(obj);
         }
 
-        private static object GetDataObjFromQuery(IQueryCollection query, Type dataObjType)
+        private static object GetDataObjFromQuery(HttpRequest request, Type dataObjType)
         {
             if (dataObjType == null)
                 return null;
@@ -150,18 +151,18 @@ namespace NetRpc.Http
                 ps[0].SetValue(dataObj, targetObj);
             }
 
-            SetDataObj(query, targetObj);
+            SetDataObj(request, targetObj);
        
             return dataObj;
         }
 
-        private static void SetDataObj(IQueryCollection query, object dataObj)
+        private static void SetDataObj(HttpRequest request, object dataObj)
         {
             var ps = dataObj.GetType().GetProperties();
-
             foreach (var p in ps)
             {
-                if (query.TryGetValue(p.Name, out var values))
+                if (request.Query.TryGetValue(p.Name, out var values) ||
+                    request.HasFormContentType && request.Form.TryGetValue(p.Name, out values))
                 {
                     try
                     {

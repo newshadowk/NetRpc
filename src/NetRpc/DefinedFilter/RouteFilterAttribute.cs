@@ -10,32 +10,33 @@ namespace NetRpc
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface)]
     public class RouteFilterAttribute : ActionFilterAttribute
     {
+        private readonly Type _contactType;
         private readonly string _methodName;
-        private readonly IClientProxy _clientProxy;
-        private readonly MethodInfo[] _proxyMethodInfos;
+        private readonly string _optionsName;
 
         public RouteFilterAttribute(Type contactType, string methodName = null, string optionsName = null)
         {
-            //_clientProxy
-            var f = (IClientProxyFactory)GlobalServiceProvider.ScopeProvider.GetService(typeof(IClientProxyFactory));
-            // ReSharper disable once PossibleNullReferenceException
-            var mi = f.GetType().GetMethod(nameof(IClientProxyFactory.CreateProxy)).MakeGenericMethod(contactType);
-            _clientProxy = (IClientProxy)mi.Invoke(f, new object[] {optionsName});
+            _contactType = contactType;
+            _optionsName = optionsName;
             _methodName = methodName;
-            _proxyMethodInfos = _clientProxy.Proxy.GetType().GetMethods();
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
+            var f = context.ServiceProvider.GetService(typeof(IClientProxyFactory));
+            // ReSharper disable once PossibleNullReferenceException
+            var mi = f.GetType().GetMethod(nameof(IClientProxyFactory.CreateProxy)).MakeGenericMethod(_contactType);
+            var clientProxy = (IClientProxy)mi.Invoke(f, new object[] { _optionsName });
+            var proxyMethodInfos = clientProxy.Proxy.GetType().GetMethods();
             var methodName = _methodName ?? context.InstanceMethod.MethodInfo.Name;
 
-            var proxyM = _proxyMethodInfos.FirstOrDefault(i => i.Name == methodName);
+            var proxyM = proxyMethodInfos.FirstOrDefault(i => i.Name == methodName);
             if (proxyM == null)
                 throw new InvalidOperationException($"Method {methodName} not found in ClientProxy");
 
             var tgtPi = proxyM.GetParameters();
             var newArgs = CreateArgs(context.Args, tgtPi); 
-            var tgtRet = await proxyM.InvokeAsync(_clientProxy.Proxy, newArgs);
+            var tgtRet = await proxyM.InvokeAsync(clientProxy.Proxy, newArgs);
             context.Result = ConvertParam(tgtRet, context.InstanceMethod.MethodInfo.ReturnType.GetTypeFromReturnTypeDefinition());
         }
 

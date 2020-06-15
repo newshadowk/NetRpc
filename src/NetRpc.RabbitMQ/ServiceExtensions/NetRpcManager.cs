@@ -35,7 +35,7 @@ namespace NetRpc.RabbitMQ
             {
                 HearbeatInterval = hearbeatInterval,
                 TimeoutInterval = timeoutInterval
-            }), null, NullLoggerFactory.Instance);
+            }), new NullOptions<ClientMiddlewareOptions>(), ActionExecutingContextAccessor.Default,  null, NullLoggerFactory.Instance);
         }
 
         public static ClientProxy<TService> CreateClientProxy<TService>(MQOptions options, int timeoutInterval = 1200000, int hearbeatInterval = 10000)
