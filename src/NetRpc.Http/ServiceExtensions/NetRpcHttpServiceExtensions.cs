@@ -40,7 +40,14 @@ namespace Microsoft.Extensions.DependencyInjection
             if (httpServiceConfigureOptions != null)
                 services.Configure(httpServiceConfigureOptions);
             services.TryAddSingleton(p => new RequestHandler(p, ChannelType.Http));
-            services.TryAddSingleton<HttpObjProcessor>();
+
+            //HttpObjProcessor
+            services.TryAddSingleton<HttpObjProcessorManager>();
+            services.AddSingleton<IHttpObjProcessor, FormDataHttpObjProcessor>();
+            services.AddSingleton<IHttpObjProcessor, JsonHttpObjProcessor>();
+            services.AddSingleton<IHttpObjProcessor, FormUrlEncodedObjProcessor>();
+
+            services.TryAddTransient<PathProcessor>();
             services.AddNetRpcService();
             return services;
         }

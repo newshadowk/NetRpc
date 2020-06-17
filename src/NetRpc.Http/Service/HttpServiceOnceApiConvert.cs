@@ -24,7 +24,7 @@ namespace NetRpc.Http
         private readonly string _rootPath;
         private readonly bool _ignoreWhenNotMatched;
         private readonly IServiceProvider _serviceProvider;
-        private readonly HttpObjProcessor _httpObjProcessor;
+        private readonly HttpObjProcessorManager _httpObjProcessorManager;
         private CancellationTokenSource _cts;
         private readonly FormOptions _defaultFormOptions = new FormOptions();
 
@@ -33,7 +33,7 @@ namespace NetRpc.Http
             string rootPath,
             bool ignoreWhenNotMatched,
             IHubContext<CallbackHub, ICallback> hub,
-            HttpObjProcessor httpObjProcessor,
+            HttpObjProcessorManager httpObjProcessorManager,
             IServiceProvider serviceProvider)
         {
             var logger = ((ILoggerFactory) serviceProvider.GetService(typeof(ILoggerFactory))).CreateLogger("NetRpc");
@@ -43,7 +43,7 @@ namespace NetRpc.Http
             _rootPath = rootPath;
             _ignoreWhenNotMatched = ignoreWhenNotMatched;
             _serviceProvider = serviceProvider;
-            _httpObjProcessor = httpObjProcessor;
+            _httpObjProcessorManager = httpObjProcessorManager;
             CallbackHub.Canceled += CallbackHubCanceled;
         }
 
@@ -229,7 +229,7 @@ namespace NetRpc.Http
             //dataObjType
             var method = ApiWrapper.GetMethodInfo(ai, _contracts, _serviceProvider);
             var dataObjType = method.contractMethod.MergeArgType.Type;
-            return await _httpObjProcessor.ProcessAsync(_context.Request, dataObjType);
+            return await _httpObjProcessorManager.ProcessAsync(_context.Request, dataObjType);
         }
 
         private void CallbackHubCanceled(object sender, string e)

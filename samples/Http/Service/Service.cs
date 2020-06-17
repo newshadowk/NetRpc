@@ -25,8 +25,9 @@ namespace Service
             throw new NotImplementedException();
         }
 
-        public Task Call4Async(string p1, int p2)
+        public async Task<string> Call4Async(string p1, int p2)
         {
+            
             throw new NotImplementedException();
         }
 

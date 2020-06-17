@@ -33,4 +33,11 @@ namespace NetRpc
 
         public bool TrimActionAsync { get; }
     }
+
+    public interface IRouteTemplateProvider
+    {
+        string Template { get; }
+
+        string Name { get; }
+    }
 }

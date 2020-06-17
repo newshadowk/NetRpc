@@ -29,8 +29,8 @@ namespace DataContract
 
         Task Call3Async(SimObj obj);
 
-        [HttpRoute("Service1/{p1}/Call4")]
-        Task Call4Async(string p1, int p2);
+        //[HttpRoute("Service1/{p1}/Call4")]
+        Task<string> Call4Async(string p1, int p2);
 
         /// <summary>
         /// summary of Call

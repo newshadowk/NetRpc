@@ -118,16 +118,13 @@ namespace NetRpc.Http
         }
     }
 
-    internal sealed class HttpObjProcessor
+    internal sealed class HttpObjProcessorManager
     {
         private readonly List<IHttpObjProcessor> _processors;
 
-        public HttpObjProcessor()
+        public HttpObjProcessorManager(IEnumerable<IHttpObjProcessor> processors)
         {
-            _processors = new List<IHttpObjProcessor>();
-            _processors.Add(new FormDataHttpObjProcessor());
-            _processors.Add(new JsonHttpObjProcessor());
-            _processors.Add(new FormUrlEncodedObjProcessor());
+            _processors = processors.ToList();
         }
 
         public async Task<HttpObj> ProcessAsync(HttpRequest request, Type dataObjType)

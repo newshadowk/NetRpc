@@ -29,10 +29,13 @@ namespace NetRpc
 
         public string Name { get; }
 
-        public MethodParameter(int index, string name)
+        public Type Type { get; set; }
+
+        public MethodParameter(int index, string name, Type type)
         {
             Index = index;
             Name = name;
+            Type = type;
         }
     }
 
@@ -306,7 +309,7 @@ namespace NetRpc
             var httpHeaderDic = GetAttributes<HttpHeaderAttribute>(type, methodInfos);
             var responseTextDic = GetAttributes<ResponseTextAttribute>(type, methodInfos);
 
-            foreach (var f in faultDic) 
+            foreach (var f in faultDic)
                 Methods.Add(new ContractMethod(type, 
                     f.Key, 
                     GetMethodParameters(f.Key), 
@@ -350,7 +353,7 @@ namespace NetRpc
                 if (p.ParameterType.IsFuncT() || p.ParameterType == typeof(Stream))
                     continue;
 
-                ret.Add(new MethodParameter(i, p.Name));
+                ret.Add(new MethodParameter(i, p.Name, p.ParameterType));
             }
 
             return ret;

@@ -39,9 +39,10 @@ namespace Service_Mvc
             Console.WriteLine($"[Call3]...receive:{obj.P1}, {obj.P2}, {obj.P3}");
         }
 
-        public async Task Call4Async(string p1, int p2)
+        public async Task<string> Call4Async(string p1, int p2)
         {
             Console.WriteLine($"[Call4]...{p1}, {p2}");
+            return "ret";
         }
 
         public async Task CallByCustomExceptionAsync()
