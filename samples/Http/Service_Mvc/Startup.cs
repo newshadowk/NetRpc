@@ -29,8 +29,8 @@ namespace Service_Mvc
             services.AddCors();
             services.AddHttpContextAccessor();
             services.AddSignalR();
-            services.AddNetRpcSwagger();
-            services.AddNetRpcHttpService(i => i.ApiRootPath = "/api");
+            services.AddNSwagger();
+            services.AddNHttpService(i => i.ApiRootPath = "/api");
             services.AddNetRpcServiceContract<IServiceAsync, ServiceAsync>(ServiceLifetime.Scoped);
         }
 
@@ -73,8 +73,8 @@ namespace Service_Mvc
                 endpoints.MapHub<CallbackHub>("/callback");
             });
 
-            app.UseNetRpcSwagger();
-            app.UseNetRpcHttp();
+            app.UseNSwagger();
+            app.UseNHttp();
         }
     }
 }

@@ -15,12 +15,12 @@ namespace Service
             //rabbitMQ
             var mOpt = new MiddlewareOptions();
             mOpt.UseMiddleware<TestGlobalExceptionMiddleware>();
-            var mqHost = NetRpcManager.CreateHost(Helper.GetMQOptions(),
+            var mqHost = NManager.CreateHost(Helper.GetMQOptions(),
                 mOpt, new Contract<IService, Service>(), new Contract<IServiceAsync, ServiceAsync>());
             mqHost.RunAsync();
 
             //grpc
-            var grpcHost = NetRpc.Grpc.NetRpcManager.CreateHost(Helper.GetGrpcServiceOptions(),
+            var grpcHost = NetRpc.Grpc.NManager.CreateHost(Helper.GetGrpcServiceOptions(),
                 null, new Contract<IService, Service>(), new Contract<IServiceAsync, ServiceAsync>());
             grpcHost.RunAsync();
             Console.Read();

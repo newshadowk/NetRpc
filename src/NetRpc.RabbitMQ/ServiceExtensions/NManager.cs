@@ -4,14 +4,14 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace NetRpc.RabbitMQ
 {
-    public static class NetRpcManager
+    public static class NManager
     {
         public static IHost CreateHost(MQOptions mqOptions, MiddlewareOptions middlewareOptions, params Contract[] contracts)
         {
             return new HostBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddNetRpcRabbitMQService(i =>
+                    services.AddNRabbitMQService(i =>
                     {
                         if (mqOptions != null)
                             i.CopyFrom(mqOptions);
@@ -31,7 +31,7 @@ namespace NetRpc.RabbitMQ
         public static ClientProxy<TService> CreateClientProxy<TService>(RabbitMQClientConnectionFactoryOptions options, int timeoutInterval = 1200000,
             int hearbeatInterval = 10000)
         {
-            return new ClientProxy<TService>(options.Factory, new SimpleOptions<NetRpcClientOption>(new NetRpcClientOption
+            return new ClientProxy<TService>(options.Factory, new SimpleOptions<NClientOption>(new NClientOption
             {
                 HearbeatInterval = hearbeatInterval,
                 TimeoutInterval = timeoutInterval

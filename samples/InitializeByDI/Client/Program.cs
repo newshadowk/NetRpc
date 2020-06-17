@@ -16,7 +16,7 @@ namespace Client
                 .ConfigureServices((context, services) =>
                 {
                     services.AddHostedService<GrpcHostedService>();
-                    services.AddNetRpcGrpcClient(i =>
+                    services.AddNGrpcClient(i =>
                     {
                         i.Host = "localhost";
                         i.Port = 50001;

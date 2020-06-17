@@ -5,18 +5,18 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace NetRpc.Grpc
 {
-    public static class NetRpcManager
+    public static class NManager
     {
 #if !NETCOREAPP3_1
-        public static IHost CreateHost(GrpcServiceOptions grpcServiceOptions, MiddlewareOptions middlewareOptions, params Contract[] contracts)
+        public static IHost CreateHost(NGrpcServiceOptions nGrpcServiceOptions, MiddlewareOptions middlewareOptions, params Contract[] contracts)
         {
             return new HostBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddNetRpcGrpcService(i =>
+                    services.AddNGrpcService(i =>
                     {
-                        if (grpcServiceOptions != null)
-                            i.Ports = grpcServiceOptions.Ports;
+                        if (nGrpcServiceOptions != null)
+                            i.Ports = nGrpcServiceOptions.Ports;
                     });
                     services.AddNetRpcMiddleware(i =>
                     {
@@ -42,7 +42,7 @@ namespace NetRpc.Grpc
             int hearbeatInterval = 10000)
         {
             return new GrpcClientProxy<TService>(options.Factory,
-                new SimpleOptions<NetRpcClientOption>(new NetRpcClientOption
+                new SimpleOptions<NClientOption>(new NClientOption
                     {
                         TimeoutInterval = timeoutInterval,
                         HearbeatInterval = hearbeatInterval

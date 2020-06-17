@@ -45,10 +45,10 @@ namespace Service
                     //services.AddCors();
                     //services.AddSignalR();
                     //services.AddNetRpcSwagger();
-                    //services.AddNetRpcHttpService();
+                    //services.AddNHttpService();
                     services.AddNetRpcServiceContract<IService, Service>();
-                    //services.AddNetRpcRabbitMQService(i => i.CopyFrom(TestHelper.Helper.GetMQOptions()));
-                    services.AddNetRpcGrpcService();
+                    //services.AddNRabbitMQService(i => i.CopyFrom(TestHelper.Helper.GetMQOptions()));
+                    services.AddNGrpcService();
 
                 })
                 .Configure(app =>
@@ -67,9 +67,9 @@ namespace Service
                     //    endpoints.MapHub<CallbackHub>("/callback");
                     //});
                     //app.UseNetRpcSwagger();
-                    //app.UseNetRpcHttp();
+                    //app.UseNHttp();
                     //app.UseMiddleware<SwaggerUiIndexMiddleware>();
-                    app.UseNetRpcGrpc();
+                    app.UseNGrpc();
                 }).Build();
 
             try

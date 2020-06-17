@@ -26,8 +26,8 @@ namespace Service
                 {
                     services.AddCors();
                     services.AddSignalR();
-                    services.AddNetRpcSwagger();
-                    services.AddNetRpcHttpService();
+                    services.AddNSwagger();
+                    services.AddNHttpService();
                     services.AddNetRpcServiceContract<IServiceAsync, ServiceAsync>();
                 })
                 .Configure(app =>
@@ -51,8 +51,8 @@ namespace Service
                     {
                         endpoints.MapHub<CallbackHub>("/callback");
                     });
-                    app.UseNetRpcSwagger();
-                    app.UseNetRpcHttp();
+                    app.UseNSwagger();
+                    app.UseNHttp();
                 })
                 .Build();
 

@@ -4,12 +4,12 @@ using Microsoft.OpenApi.Models;
 
 namespace NetRpc.Http
 {
-    internal class NetRpcSwaggerProvider : INetRpcSwaggerProvider
+    internal class NSwaggerProvider : INSwaggerProvider
     {
         private readonly PathProcessor _pathProcessor;
         private readonly OpenApiDocument _doc;
 
-        public NetRpcSwaggerProvider(PathProcessor pathProcessor)
+        public NSwaggerProvider(PathProcessor pathProcessor)
         {
             _pathProcessor = pathProcessor;
             _doc = new OpenApiDocument();

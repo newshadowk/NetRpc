@@ -13,7 +13,7 @@ namespace Service
     {
         static async Task Main(string[] args)
         {
-            var webHost = NetRpcManager.CreateHost(
+            var webHost = NManager.CreateHost(
                 5000,
                 "/callback",
                 true,
@@ -39,7 +39,7 @@ namespace Service
 
             //        services.AddSignalR();
             //        services.AddNetRpcSwagger();
-            //        services.AddNetRpcHttpService(i => i.ApiRootPath = "/api");
+            //        services.AddNHttpService(i => i.ApiRootPath = "/api");
             //        services.AddNetRpcContractSingleton<IServiceAsync, ServiceAsync>();
             //    })
             //    .Configure(app =>
@@ -47,7 +47,7 @@ namespace Service
             //        app.UseCors(origins);
             //        app.UseSignalR(routes => { routes.MapHub<CallbackHub>("/callback"); });
             //        app.UseNetRpcSwagger();
-            //        app.UseNetRpcHttp();
+            //        app.UseNHttp();
             //    })
             //    .Build();
 

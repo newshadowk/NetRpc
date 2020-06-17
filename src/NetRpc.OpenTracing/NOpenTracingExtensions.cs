@@ -6,9 +6,9 @@ using NetRpc.OpenTracing;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class NetRpcOpenTracingExtensions
+    public static class NOpenTracingExtensions
     {
-        public static IServiceCollection AddNetRpcOpenTracing(this IServiceCollection services, Action<OpenTracingOptions> configureOptions = null)
+        public static IServiceCollection AddNOpenTracing(this IServiceCollection services, Action<OpenTracingOptions> configureOptions = null)
         {
             if (configureOptions != null)
                 services.Configure(configureOptions);

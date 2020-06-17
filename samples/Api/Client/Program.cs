@@ -10,7 +10,7 @@ using NetRpc;
 using NetRpc.Grpc;
 using NetRpc.RabbitMQ;
 using Helper = TestHelper.Helper;
-using NetRpcManager = NetRpc.RabbitMQ.NetRpcManager;
+using NManager = NetRpc.RabbitMQ.NManager;
 
 namespace Client
 {
@@ -25,7 +25,7 @@ namespace Client
             //RabbitMQ
             Console.WriteLine("--- Client RabbitMQ  ---");
             var mqF = new RabbitMQClientConnectionFactoryOptions(Helper.GetMQOptions(), NullLoggerFactory.Instance);
-            _clientProxy = NetRpcManager.CreateClientProxy<IService>(mqF);
+            _clientProxy = NManager.CreateClientProxy<IService>(mqF);
             _clientProxy.Connected += (s, e) => Console.WriteLine("[event] Connected");
             _clientProxy.DisConnected += (s, e) => Console.WriteLine("[event] DisConnected");
             _clientProxy.ExceptionInvoked += (s, e) => Console.WriteLine("[event] ExceptionInvoked");
@@ -40,7 +40,7 @@ namespace Client
             //clientProxy.StartHeartbeat(true);
 
             _proxy = _clientProxy.Proxy;
-            _proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(mqF).Proxy;
+            _proxyAsync = NManager.CreateClientProxy<IServiceAsync>(mqF).Proxy;
             RunTest();
             await RunTestAsync();
 
@@ -48,9 +48,9 @@ namespace Client
             Console.WriteLine("\r\n--- Client Grpc  ---");
             var grpcF = new GrpcClientConnectionFactoryOptions(
                 new GrpcClientOptions { Host = "localhost", Port = 50001 });
-            _clientProxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(grpcF);
+            _clientProxy = NetRpc.Grpc.NManager.CreateClientProxy<IService>(grpcF);
             _proxy = _clientProxy.Proxy;
-            _proxyAsync = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IServiceAsync>(grpcF).Proxy;
+            _proxyAsync = NetRpc.Grpc.NManager.CreateClientProxy<IServiceAsync>(grpcF).Proxy;
             RunTest();
             await RunTestAsync();
 

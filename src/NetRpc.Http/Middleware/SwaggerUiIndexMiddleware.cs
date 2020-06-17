@@ -20,7 +20,7 @@ namespace NetRpc.Http
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, INetRpcSwaggerProvider netRpcSwaggerProvider,
+        public async Task Invoke(HttpContext context, INSwaggerProvider nSwaggerProvider,
             IOptions<HttpServiceOptions> httpServiceOptions, IOptions<ContractOptions> contractOptions)
         {
             var apiRootApi = httpServiceOptions.Value.ApiRootPath;
@@ -44,7 +44,7 @@ namespace NetRpc.Http
                     _html = await ReadStringAsync(".index.html");
                     _html = _html.Replace("{url}", swaggerFilePath);
 
-                    var doc = netRpcSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.Contracts);
+                    var doc = nSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.Contracts);
                     _json = ToJson(doc);
                 }
 

@@ -31,7 +31,7 @@ namespace NetRpc
         }
 
         public ClientProxy(IOnceCallFactory factory,
-            IOptions<NetRpcClientOption> clientOptions,
+            IOptions<NClientOption> nClientOptions,
             IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
             IActionExecutingContextAccessor actionExecutingContextAccessor,
             IServiceProvider serviceProvider,
@@ -47,25 +47,25 @@ namespace NetRpc
                 actionExecutingContextAccessor,
                 new ContractInfo(typeof(TService)),
                 factory,
-                clientOptions.Value.TimeoutInterval,
-                clientOptions.Value.ForwardHeader, optionsName);
+                nClientOptions.Value.TimeoutInterval,
+                nClientOptions.Value.ForwardHeader, optionsName);
 
             var invoker = new ClientMethodInvoker(_call);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
             ((SimpleDispatchProxyAsync) (object) Proxy).ExceptionInvoked += ProxyExceptionInvoked;
-            _tHearbeat = new Timer(clientOptions.Value.HearbeatInterval);
+            _tHearbeat = new Timer(nClientOptions.Value.HearbeatInterval);
             _tHearbeat.Elapsed += THearbeatElapsed;
         }
 
         public ClientProxy(IClientConnectionFactory factory,
-            IOptions<NetRpcClientOption> clientOptions,
+            IOptions<NClientOption> nClientOptions,
             IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
             IActionExecutingContextAccessor actionExecutingContextAccessor,
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
             string optionsName = null)
             : this(new OnceCallFactory(factory, loggerFactory),
-                clientOptions,
+                nClientOptions,
                 clientMiddlewareOptions,
                 actionExecutingContextAccessor,
                 serviceProvider,

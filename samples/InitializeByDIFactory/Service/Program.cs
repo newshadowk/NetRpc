@@ -20,8 +20,8 @@ namespace Service
             var h = new HostBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddNetRpcRabbitMQService(i => { i.CopyFrom(Helper.GetMQOptions()); });
-                    services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50001));
+                    services.AddNRabbitMQService(i => { i.CopyFrom(Helper.GetMQOptions()); });
+                    services.AddNGrpcService(i => i.AddPort("0.0.0.0", 50001));
                     services.AddNetRpcServiceContract<IService, Service>();
                 })
                 .Build();

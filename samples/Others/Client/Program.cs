@@ -10,7 +10,7 @@ using NetRpc.Grpc;
 using NetRpc.RabbitMQ;
 using Helper = TestHelper.Helper;
 
-//using NetRpcManager = NetRpc.Grpc.NetRpcManager;
+//using NManager = NetRpc.Grpc.NManager;
 
 namespace Client
 {
@@ -26,12 +26,12 @@ namespace Client
                         i.Host = "localhost";
                         i.Port = 50002;
                     });
-                    services.AddNetRpcGrpcClient();
+                    services.AddNGrpcClient();
                     services.AddNetRpcClientContract<IService1>("grpc");
 
                     services.Configure<RabbitMQClientOptions>("mq", i => { i.CopyFrom(Helper.GetMQOptions()); });
 
-                    services.AddNetRpcRabbitMQClient();
+                    services.AddNRabbitMQClient();
 
                     services.AddHostedService<H>();
                 })

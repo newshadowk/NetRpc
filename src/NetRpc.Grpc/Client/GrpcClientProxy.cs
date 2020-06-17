@@ -8,13 +8,13 @@ namespace NetRpc.Grpc
     public sealed class GrpcClientProxy<TService> : ClientProxy<TService>
     {
         public GrpcClientProxy(IClientConnectionFactory factory,
-            IOptions<NetRpcClientOption> clientOptions,
+            IOptions<NClientOption> nClientOptions,
             IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
             IActionExecutingContextAccessor actionExecutingContextAccessor,
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory, string optionsName = null)
             : base(factory,
-                clientOptions,
+                nClientOptions,
                 clientMiddlewareOptions,
                 actionExecutingContextAccessor,
                 serviceProvider,

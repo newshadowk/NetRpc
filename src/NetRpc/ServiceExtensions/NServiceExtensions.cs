@@ -5,7 +5,7 @@ using NetRpc;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class NetRpcServiceExtensions
+    public static class NServiceExtensions
     {
         #region Service
 
@@ -109,7 +109,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         #region Client
 
-        private static IServiceCollection AddNetRpcClient(this IServiceCollection services, Action<NetRpcClientOption> configureOptions = null,
+        private static IServiceCollection AddNetRpcClient(this IServiceCollection services, Action<NClientOption> configureOptions = null,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
             if (configureOptions != null)
@@ -185,7 +185,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNetRpcClientByOnceCallFactory<TOnceCallFactoryImplementation>(this IServiceCollection services,
-            Action<NetRpcClientOption> configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
+            Action<NClientOption> configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
             where TOnceCallFactoryImplementation : class, IOnceCallFactory
         {
             switch (serviceLifetime)
@@ -208,7 +208,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNetRpcClientByClientConnectionFactory<TClientConnectionFactoryImplementation>(this IServiceCollection services,
-            Action<NetRpcClientOption> configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
+            Action<NClientOption> configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
             where TClientConnectionFactoryImplementation : class, IClientConnectionFactory
         {
             switch (serviceLifetime)

@@ -4,11 +4,11 @@ using NetRpc.Http.Client;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class NetRpcHttpClientExtensions
+    public static class NHttpClientExtensions
     {
-        public static IServiceCollection AddNetRpcHttpClient(this IServiceCollection services,
+        public static IServiceCollection AddNHttpClient(this IServiceCollection services,
             Action<HttpClientOptions> httpClientConfigureOptions = null,
-            Action<NetRpcClientOption> clientConfigureOptions = null,
+            Action<NClientOption> clientConfigureOptions = null,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
             if (httpClientConfigureOptions != null)

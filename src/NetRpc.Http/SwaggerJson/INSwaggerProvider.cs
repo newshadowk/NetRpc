@@ -3,7 +3,7 @@ using Microsoft.OpenApi.Models;
 
 namespace NetRpc.Http
 {
-    public interface INetRpcSwaggerProvider
+    public interface INSwaggerProvider
     {
         OpenApiDocument GetSwagger(string apiRootPath, List<Contract> contracts);
     }

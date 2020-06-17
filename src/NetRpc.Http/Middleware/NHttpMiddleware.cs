@@ -6,11 +6,11 @@ using Microsoft.Extensions.Options;
 
 namespace NetRpc.Http
 {
-    internal class HttpNetRpcMiddleware
+    internal class NHttpMiddleware
     {
         private readonly Microsoft.AspNetCore.Http.RequestDelegate _next;
 
-        public HttpNetRpcMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next)
+        public NHttpMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next)
         {
             _next = next;
         }

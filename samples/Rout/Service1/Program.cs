@@ -22,7 +22,7 @@ namespace Service
             var host = new HostBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50002); });
+                    services.AddNGrpcService(i => { i.AddPort("0.0.0.0", 50002); });
                     services.AddNetRpcServiceContract<IService1, Service1>();
                 })
                 .Build();

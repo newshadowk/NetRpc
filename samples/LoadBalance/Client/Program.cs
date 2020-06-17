@@ -10,7 +10,7 @@ namespace Client
     {
         static async Task Main(string[] args)
         {
-            var proxy = NetRpcManager.CreateClientProxy<IServiceAsync>(Helper.GetMQOptions()).Proxy;
+            var proxy = NManager.CreateClientProxy<IServiceAsync>(Helper.GetMQOptions()).Proxy;
 
             for (var i = 0; i < 10; i++)
             {

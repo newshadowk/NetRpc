@@ -26,15 +26,15 @@ namespace NetRpc
                     break;
                 case ChannelType.Grpc:
                     if (context.ContractMethod.IsGrpcIgnore)
-                        throw new NetRpcIgnoreException(nameof(ChannelType.Grpc));
+                        throw new NIgnoreException(nameof(ChannelType.Grpc));
                     break;
                 case ChannelType.RabbitMQ:
                     if (context.ContractMethod.IsRabbitMQIgnore)
-                        throw new NetRpcIgnoreException(nameof(ChannelType.RabbitMQ));
+                        throw new NIgnoreException(nameof(ChannelType.RabbitMQ));
                     break;
                 case ChannelType.Http:
                     if (context.ContractMethod.IsHttpIgnore)
-                        throw new NetRpcIgnoreException(nameof(ChannelType.Http));
+                        throw new NIgnoreException(nameof(ChannelType.Http));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

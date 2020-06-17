@@ -13,9 +13,9 @@ using Helper = NetRpc.Http.Helper;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class NetRpcHttpServiceExtensions
+    public static class NHttpServiceExtensions
     {
-        public static IServiceCollection AddNetRpcSwagger(this IServiceCollection services)
+        public static IServiceCollection AddNSwagger(this IServiceCollection services)
         {
             var paths = Helper.GetCommentsXmlPaths();
             services.AddSwaggerGen(i =>
@@ -31,11 +31,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddControllers().AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 #endif
-            services.TryAddTransient<INetRpcSwaggerProvider, NetRpcSwaggerProvider>();
+            services.TryAddTransient<INSwaggerProvider, NSwaggerProvider>();
             return services;
         }
 
-        public static IServiceCollection AddNetRpcHttpService(this IServiceCollection services, Action<HttpServiceOptions> httpServiceConfigureOptions = null)
+        public static IServiceCollection AddNHttpService(this IServiceCollection services, Action<HttpServiceOptions> httpServiceConfigureOptions = null)
         {
             if (httpServiceConfigureOptions != null)
                 services.Configure(httpServiceConfigureOptions);
@@ -52,12 +52,12 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection AddNetRpcHttpGateway<TService>(this IServiceCollection services,
+        public static IServiceCollection AddNHttpGateway<TService>(this IServiceCollection services,
             Action<HttpClientOptions> httpClientConfigureOptions = null,
-            Action<NetRpcClientOption> clientConfigureOptions = null,
+            Action<NClientOption> clientConfigureOptions = null,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
-            services.AddNetRpcHttpClient(httpClientConfigureOptions, clientConfigureOptions, serviceLifetime);
+            services.AddNHttpClient(httpClientConfigureOptions, clientConfigureOptions, serviceLifetime);
             services.AddNetRpcClientContract<TService>(serviceLifetime);
             services.AddNetRpcServiceContract(typeof(TService),
                 p => ((ClientProxy<TService>) p.GetService(typeof(ClientProxy<TService>))).Proxy,
@@ -65,13 +65,13 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        public static IApplicationBuilder UseNetRpcHttp(this IApplicationBuilder app)
+        public static IApplicationBuilder UseNHttp(this IApplicationBuilder app)
         {
-            app.UseMiddleware<HttpNetRpcMiddleware>();
+            app.UseMiddleware<NHttpMiddleware>();
             return app;
         }
 
-        public static IApplicationBuilder UseNetRpcSwagger(this IApplicationBuilder app)
+        public static IApplicationBuilder UseNSwagger(this IApplicationBuilder app)
         {
             var opt = app.ApplicationServices.GetService<IOptions<HttpServiceOptions>>();
             var swaggerRootPath = opt.Value.ApiRootPath + "/swagger";

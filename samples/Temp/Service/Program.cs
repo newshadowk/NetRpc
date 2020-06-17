@@ -173,12 +173,12 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
                 {
                     services.AddCors();
                     services.AddSignalR();
-                    services.AddNetRpcSwagger();
-                    services.AddNetRpcHttpService();
+                    services.AddNSwagger();
+                    services.AddNHttpService();
                     services.AddNetRpcServiceContract<IService, Service>(ServiceLifetime.Scoped);
-                    services.AddNetRpcGrpcClientContract<IClientService>(ServiceLifetime.Scoped);
-                    services.AddNetRpcGrpcClient(o => { o.Url = "http://localhost:5000"; });
-                    services.AddNetRpcGrpcService(o =>
+                    services.AddNGrpcClientContract<IClientService>(ServiceLifetime.Scoped);
+                    services.AddNGrpcClient(o => { o.Url = "http://localhost:5000"; });
+                    services.AddNGrpcService(o =>
                     {
                         o.EnableDetailedErrors = true;
                         o.MaxReceiveMessageSize = 20 * 1024 * 1024; // 2 MB
@@ -202,10 +202,10 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
                     {
                         endpoints.MapHub<CallbackHub>("/callback");
                     });
-                    app.UseNetRpcSwagger();
-                    app.UseNetRpcHttp();
+                    app.UseNSwagger();
+                    app.UseNHttp();
                     app.UseMiddleware<SwaggerUiIndexMiddleware>();
-                    app.UseNetRpcGrpc();
+                    app.UseNGrpc();
                 }).Build();
 
             await host.RunAsync();
@@ -218,11 +218,11 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
         //    var h = new HostBuilder()
         //        .ConfigureServices((context, services) =>
         //        {
-        //            //services.AddNetRpcGrpcService(i => 
+        //            //services.AddNGrpcService(i => 
         //            //    i.AddPort("localhost", 60001, PublicKey, PrivateKey));
-        //            services.AddNetRpcGrpcService(i =>
+        //            services.AddNGrpcService(i =>
         //                i.AddPort("0.0.0.0", 50000));
-        //            services.AddNetRpcHttpService();
+        //            services.AddNHttpService();
         //            services.AddNetRpcSwagger();
         //            services.AddNetRpcServiceContract<IService, Service>(ServiceLifetime.Scoped);
         //        })

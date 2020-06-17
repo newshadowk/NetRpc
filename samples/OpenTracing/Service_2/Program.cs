@@ -21,14 +21,14 @@ namespace Service
                     services.AddCors();
 
                     services.AddSignalR();
-                    services.AddNetRpcSwagger();
-                    services.AddNetRpcHttpService();
+                    services.AddNSwagger();
+                    services.AddNHttpService();
 
-                    services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50003); });
+                    services.AddNGrpcService(i => { i.AddPort("0.0.0.0", 50003); });
                     services.AddNetRpcServiceContract<IService_2, Service>();
 
                     services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5003/swagger");
-                    services.AddNetRpcJaeger(i =>
+                    services.AddNJaeger(i =>
                     {
                         i.Host = "m.k8s.yx.com";
                         i.Port = 36831;
@@ -45,8 +45,8 @@ namespace Service
                             .AllowCredentials();
                     });
                     app.UseSignalR(routes => { routes.MapHub<CallbackHub>("/callback"); });
-                    app.UseNetRpcSwagger();
-                    app.UseNetRpcHttp();
+                    app.UseNSwagger();
+                    app.UseNHttp();
                 })
                 .Build();
 

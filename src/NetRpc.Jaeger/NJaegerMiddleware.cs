@@ -5,11 +5,11 @@ using OpenTracing.Tag;
 
 namespace NetRpc.Jaeger
 {
-    public class NetRpcServiceJaegerMiddleware
+    public class NServiceJaegerMiddleware
     {
         private readonly RequestDelegate _next;
 
-        public NetRpcServiceJaegerMiddleware(RequestDelegate next)
+        public NServiceJaegerMiddleware(RequestDelegate next)
         {
             _next = next;
         }
@@ -31,11 +31,11 @@ namespace NetRpc.Jaeger
         }
     }
 
-    public class NetRpcClientJaegerMiddleware
+    public class NClientJaegerMiddleware
     {
         private readonly ClientRequestDelegate _next;
 
-        public NetRpcClientJaegerMiddleware(ClientRequestDelegate next)
+        public NClientJaegerMiddleware(ClientRequestDelegate next)
         {
             _next = next;
         }

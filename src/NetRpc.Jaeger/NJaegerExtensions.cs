@@ -12,9 +12,9 @@ using OpenTracing.Util;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class NetRpcJaegerExtensions
+    public static class NJaegerExtensions
     {
-        public static IServiceCollection AddNetRpcJaeger(this IServiceCollection services, 
+        public static IServiceCollection AddNJaeger(this IServiceCollection services, 
             Action<JaegerOptions> configureJaegerOptions = null, Action<OpenTracingOptions> configureOpenTracingOptions = null)
         {
             if (configureJaegerOptions != null)
@@ -22,9 +22,9 @@ namespace Microsoft.Extensions.DependencyInjection
             if (configureOpenTracingOptions != null)
                 services.Configure(configureOpenTracingOptions);
 
-            services.AddNetRpcOpenTracing();
-            services.Configure<ClientMiddlewareOptions>(i => i.UseMiddleware<NetRpcClientJaegerMiddleware>());
-            services.Configure<MiddlewareOptions>(i => i.UseMiddleware<NetRpcServiceJaegerMiddleware>());
+            services.AddNOpenTracing();
+            services.Configure<ClientMiddlewareOptions>(i => i.UseMiddleware<NClientJaegerMiddleware>());
+            services.Configure<MiddlewareOptions>(i => i.UseMiddleware<NServiceJaegerMiddleware>());
             services.AddSingleton(typeof(ITracer), i =>
             {
                 var opt = i.GetService<IOptions<JaegerOptions>>();

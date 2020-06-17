@@ -4,7 +4,7 @@ using DataContract;
 using Grpc.Net.Client;
 using GrpcService1;
 using NetRpc.Grpc;
-using NetRpcManager = NetRpc.RabbitMQ.NetRpcManager;
+using NManager = NetRpc.RabbitMQ.NManager;
 
 namespace Client
 {
@@ -17,7 +17,7 @@ namespace Client
 
             //var c = GrpcChannel.ForAddress("https://localhost:5001");
             //var c = GrpcChannel.ForAddress("http://localhost:5000");
-            //var p = NetRpcManager.CreateClientProxy<IService>(c);
+            //var p = NManager.CreateClientProxy<IService>(c);
             //await p.Proxy.Call("hello world.");
 
             //var channel = Grpc.Net.Client.GrpcChannel.ForAddress("https://localhost:5001", new GrpcChannelOptions() { });
@@ -35,12 +35,12 @@ namespace Client
             //await m.RequestStream.CompleteAsync();
             //Console.WriteLine("end");
 
-            var clientProxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new GrpcClientOptions()
+            var clientProxy = NetRpc.Grpc.NManager.CreateClientProxy<IService>(new GrpcClientOptions()
             {
                 Url = "http://localhost:5000"
             });
 
-            //var clientProxy = NetRpcManager.CreateClientProxy<IService>(TestHelper.Helper.GetMQOptions());
+            //var clientProxy = NManager.CreateClientProxy<IService>(TestHelper.Helper.GetMQOptions());
 
             await clientProxy.Proxy.Call("1111");
             //await clientProxy.Proxy.Call("222");

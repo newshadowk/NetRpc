@@ -25,9 +25,9 @@ namespace Service
             var host = new HostBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50001); });
+                    services.AddNGrpcService(i => { i.AddPort("0.0.0.0", 50001); });
                     services.AddNetRpcServiceContract<IService, Service>();
-                    services.AddNetRpcGrpcClient(i =>
+                    services.AddNGrpcClient(i =>
                     {
                         i.Host = "localhost";
                         i.Port = 50002;

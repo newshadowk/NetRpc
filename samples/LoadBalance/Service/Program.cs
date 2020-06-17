@@ -13,7 +13,7 @@ namespace Service
     {
         static async Task Main(string[] args)
         {
-            var host = NetRpcManager.CreateHost(Helper.GetMQOptions(),
+            var host = NManager.CreateHost(Helper.GetMQOptions(),
                 null,
                 new Contract<IServiceAsync, ServiceAsync>());
 

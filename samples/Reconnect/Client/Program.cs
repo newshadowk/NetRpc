@@ -28,8 +28,8 @@ namespace Client
                         i.Host = "localhost";
                         i.Port = 50001;
                     });
-                    services.AddNetRpcRabbitMQClient();
-                    services.AddNetRpcGrpcClient();
+                    services.AddNRabbitMQClient();
+                    services.AddNGrpcClient();
                 })
                 .ConfigureLogging((context, builder) => { builder.AddConsole(); })
                 .Build();

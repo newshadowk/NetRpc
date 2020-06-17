@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace NetRpc.Http
 {
-    public static class NetRpcManager
+    public static class NManager
     {
         public static IWebHost CreateHost(int port, string hubPath, bool isSwagger, HttpServiceOptions httpServiceOptions, MiddlewareOptions middlewareOptions,
             params Contract[] contracts)
@@ -22,8 +22,8 @@ namespace NetRpc.Http
                     services.AddCors();
                     services.AddSignalR();
                     if (isSwagger)
-                        services.AddNetRpcSwagger();
-                    services.AddNetRpcHttpService(i =>
+                        services.AddNSwagger();
+                    services.AddNHttpService(i =>
                     {
                         if (httpServiceOptions != null)
                         {
@@ -60,8 +60,8 @@ namespace NetRpc.Http
 #endif
 
                     if (isSwagger)
-                        app.UseNetRpcSwagger();
-                    app.UseNetRpcHttp();
+                        app.UseNSwagger();
+                    app.UseNHttp();
                 })
                 .Build();
         }

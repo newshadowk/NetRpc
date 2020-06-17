@@ -30,14 +30,14 @@ namespace Service
                 {
                     services.AddCors();
                     services.AddSignalR();
-                    services.AddNetRpcSwagger();
-                    services.AddNetRpcHttpService();
-                    services.AddNetRpcGrpcGateway<IService>(o =>
+                    services.AddNSwagger();
+                    services.AddNHttpService();
+                    services.AddNGrpcGateway<IService>(o =>
                     {
                         o.Host = "localhost";
                         o.Port = 50001;
                     });
-                    services.AddNetRpcGrpcGateway<IService2>();
+                    services.AddNGrpcGateway<IService2>();
                 })
                 .Configure(app =>
                 {
@@ -49,8 +49,8 @@ namespace Service
                         }
                     );
                     app.UseSignalR(routes => { routes.MapHub<CallbackHub>("/callback"); });
-                    app.UseNetRpcSwagger();
-                    app.UseNetRpcHttp();
+                    app.UseNSwagger();
+                    app.UseNHttp();
                 })
                 .Build();
             await host.RunAsync();
@@ -62,18 +62,18 @@ namespace Service
                 .ConfigureServices((context, services) =>
                 {
                     //set single target by DI.
-                    services.AddNetRpcRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
+                    services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
 
-                    services.AddNetRpcGrpcGateway<IService>(o =>
+                    services.AddNGrpcGateway<IService>(o =>
                     {
                         o.Host = "localhost";
                         o.Port = 50001;
                     });
-                    services.AddNetRpcGrpcGateway<IService2>();
+                    services.AddNGrpcGateway<IService2>();
 
                     //set different target point.
-                    //var p1 = NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
-                    //var p2 = NetRpcManager.CreateClientProxy<IService2>(new Channel("localhost2", 50001, ChannelCredentials.Insecure)).Proxy;
+                    //var p1 = NManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
+                    //var p2 = NManager.CreateClientProxy<IService2>(new Channel("localhost2", 50001, ChannelCredentials.Insecure)).Proxy;
                     //services.AddNetRpcContractSingleton(typeof(IService), p1);
                     //services.AddNetRpcContractSingleton(typeof(IService2), p2);
                 })
@@ -87,13 +87,13 @@ namespace Service
             var host = new HostBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50000));
-                    services.AddNetRpcGrpcGateway<IService>(o =>
+                    services.AddNGrpcService(i => i.AddPort("0.0.0.0", 50000));
+                    services.AddNGrpcGateway<IService>(o =>
                     {
                         o.Host = "localhost";
                         o.Port = 50001;
                     });
-                    services.AddNetRpcGrpcGateway<IService2>();
+                    services.AddNGrpcGateway<IService2>();
                 })
                 .Build();
 

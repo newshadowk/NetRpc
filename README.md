@@ -13,7 +13,7 @@ class Program
     {
         var o = new GrpcServiceOptions();
         o.AddPort("0.0.0.0", 50001);
-        var host = NetRpc.Grpc.NetRpcManager.CreateHost(o, null, new Contract<IService, Service>()).RunAsync();
+        var host = NetRpc.Grpc.NManager.CreateHost(o, null, new Contract<IService, Service>()).RunAsync();
         await host.RunAsync();
     }
 }
@@ -32,7 +32,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure));
+        var proxy = NetRpc.Grpc.NManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure));
         p.Proxy.Call("hello world.");
         Console.Read();
     }
@@ -61,9 +61,9 @@ There is message channel for RabbitMQ and Grpc, Http pls see topic blow.
 ![Alt text](images/nrpc.png)
 
 ## Swithch RabbitMQ/Grpc/Http
-* **NetRpc.RabbitMQ.NetRpcManager** for **RabbitMQ**.
-* **NetRpc.Grpc.NetRpcManager** for **Grpc**.
-* **NetRpc.Http.NetRpcManager** for **Http**.
+* **NetRpc.RabbitMQ.NManager** for **RabbitMQ**.
+* **NetRpc.Grpc.NManager** for **Grpc**.
+* **NetRpc.Http.NManager** for **Http**.
 ## Initialize by DI
 There has two ways to initialize service and client, See DI sample below:
 ```c#
@@ -71,7 +71,7 @@ There has two ways to initialize service and client, See DI sample below:
 var host = new HostBuilder()
     .ConfigureServices((context, services) =>
     {
-        services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50001));
+        services.AddNGrpcService(i => i.AddPort("0.0.0.0", 50001));
         services.AddNetRpcContractSingleton<IService, Service>();
     })
     .Build();
@@ -82,7 +82,7 @@ var host = new HostBuilder()
     .ConfigureServices((context, services) =>
     {
         services.AddHostedService<GrpcHostedService>();
-        services.AddNetRpcGrpcClient(i =>
+        services.AddNGrpcClient(i =>
             i.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
         services.AddNetRpcClientContract<IService>();
     })
@@ -104,7 +104,7 @@ If want to inject multiple **ClientProxies**, should use **IClientProxyFactory**
 //service side
 services.Configure<RabbitMQClientOptions>("mq1", context.Configuration.GetSection("Mq1"));
 services.Configure<RabbitMQClientOptions>("mq2", context.Configuration.GetSection("Mq2"));
-services.AddNetRpcRabbitMQClient();
+services.AddNRabbitMQClient();
 services.AddNetRpcClientContract<IService>();
 
 ```
@@ -213,7 +213,7 @@ public void TestHeader()
 On the client side, when **AdditionHeader** is not null and items count is greater than 0, **Header** will get the value of **AdditionHeader** when call the remote. This feature is usefull when you want to transfer a sessionId to service.
 ```c#
 //client side
-var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
+var proxy = NetRpc.Grpc.NManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
 //set the AdditionHeader with SessionId
 client.Context.AdditionHeader = new Dictionary<string, object> {{"SessionId", 1}};
 //will tranfer the header of SessionId to service.
@@ -357,7 +357,7 @@ internal class ServiceAsync : IServiceAsync
 ```
 ```c#
 //client side
-var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
+var proxy = NetRpc.Grpc.NManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
 try
 {
     await proxy.CallBySystemExceptionAsync();
@@ -482,13 +482,13 @@ Task CallAsync(call);
 Client should use the **ClientConnectionFactory** manage the connection, that use one connection apply to muti contracts.
 ```c#
 //service side
-var service = NetRpc.Grpc.NetRpcManager.CreateServiceProxy(new ServerPort("0.0.0.0", 50001, ServerCredentials.Insecure), new Servcie1(), new Service2());
+var service = NetRpc.Grpc.NManager.CreateServiceProxy(new ServerPort("0.0.0.0", 50001, ServerCredentials.Insecure), new Servcie1(), new Service2());
 ```
 ```c#
 //client side
 var factory = new NetRpc.Grpc.ClientConnectionFactory("localhost", 50001);
-_proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService1>(factory).Proxy;
-_proxyAsync = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService2>(factory).Proxy;
+_proxy = NetRpc.Grpc.NManager.CreateClientProxy<IService1>(factory).Proxy;
+_proxyAsync = NetRpc.Grpc.NManager.CreateClientProxy<IService2>(factory).Proxy;
 ```
 ## Client Event
 **ClientProxy** has events:  
@@ -508,7 +508,7 @@ Client should register the **Heartbeat** event and implementation of heartbeat.
 According to **Heartbeat** is successfull or faild, **Connected** or **DisConnected** will invoke correspondingly.
 ```c#
 //client set the heartbeat interval to 10*1000
-var proxy = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure), 10*1000).Proxy;
+var proxy = NetRpc.Grpc.NManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure), 10*1000).Proxy;
 clientProxy.Heartbeat += async s => s.Proxy.Hearbeat();
 clientProxy.StartHeartbeat(true);
 ```
@@ -521,7 +521,7 @@ Normally four options below support realtime update, if options has changed, wil
 
 Note: only for DI mode:
 ```c#
-services.AddNetRpcGrpcService(i => i.AddPort("0.0.0.0", 50001));
+services.AddNGrpcService(i => i.AddPort("0.0.0.0", 50001));
 ```
 
 ## Gateway
@@ -537,13 +537,13 @@ Gateway has many advantages:
 The code blow show how to Receive message from RabbitMQ channel client and send to Grpc channel service.
 ```c#
  //set single target by DI.
-services.AddNetRpcRabbitMQService(i => i.Value = TestHelper.Helper.GetMQOptions());
+services.AddNRabbitMQService(i => i.Value = TestHelper.Helper.GetMQOptions());
 services.AddNetRpcGateway<IService>(o => o.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
 services.AddNetRpcGateway<IService2>();
 
 //set different target point.
-//var p1 = NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
-//var p2 = NetRpcManager.CreateClientProxy<IService2>(new Channel("localhost2", 50001, ChannelCredentials.Insecure)).Proxy;
+//var p1 = NManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
+//var p2 = NManager.CreateClientProxy<IService2>(new Channel("localhost2", 50001, ChannelCredentials.Insecure)).Proxy;
 //services.AddNetRpcContractSingleton(typeof(IService), p1);
 //services.AddNetRpcContractSingleton(typeof(IService2), p2);
 ```
@@ -575,10 +575,10 @@ Note:
 ![Alt text](images/nrpc_http.png)
 
 ## [Http] Create Host
-Use **NetRpcManager** create host:
+Use **NManager** create host:
 ```c#
 //service side
-var webHost = NetRpcManager.CreateHost(
+var webHost = NManager.CreateHost(
     8080,
     "/callback",
     true,
@@ -587,12 +587,12 @@ var webHost = NetRpcManager.CreateHost(
     typeof(ServiceAsync));
 await webHost.RunAsync();
 ```
-Use DI to create NetRpcHttp service, also could create NetRpcHttp service base on exist MVC servcie.
+Use DI to create NHttp service, also could create NHttp service base on exist MVC servcie.
 ```c#
 //regist services
 services.AddSignalR();         // add SignalR service
 services.AddNetRpcSwagger();   // add Swgger service
-services.AddNetRpcHttp(i =>    // add RpcHttp service
+services.AddNHttp(i =>    // add RpcHttp service
 {
     i.ApiRootPath = "/api";
     i.IgnoreWhenNotMatched = false;
@@ -604,12 +604,12 @@ services.AddNetRpcServiceContract(instanceTypes); // add Contracts
 //use components
 app.UseSignalR(routes => { routes.MapHub<CallbackHub>(hubPath); });   // define CallbackHub
 app.UseNetRpcSwagger();   // use NetRpcSwagger middleware
-app.UseNetRpcHttp();      // use NetRpcHttp middleware
+app.UseNHttp();      // use NHttp middleware
 ```
 ## [Http] Client
-use **NetRpc.Http.Client.NetRpcManager.CreateClientProxy** to create a client instance.
+use **NetRpc.Http.Client.NManager.CreateClientProxy** to create a client instance.
 ```c#
-_proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(
+_proxyAsync = NManager.CreateClientProxy<IServiceAsync>(
     new HttpClientOptions() { 
         SignalRHubUrl = "http://localhost:5000/callback",
         ApiUrl = "http://localhost:5000/api" 

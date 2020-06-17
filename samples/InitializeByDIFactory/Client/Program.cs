@@ -29,12 +29,12 @@ namespace Client
                     services.AddOptions();
                     services.AddHostedService<MyHost>();
 
-                    services.AddNetRpcRabbitMQClient();
+                    services.AddNRabbitMQClient();
                     services.Configure<RabbitMQClientOptions>("mq1", context.Configuration.GetSection("Mq1"));
                     services.Configure<RabbitMQClientOptions>("mq2", context.Configuration.GetSection("Mq2"));
                     services.AddNetRpcClientContract<IService>("mq1");
 
-                    services.AddNetRpcGrpcClient();
+                    services.AddNGrpcClient();
                     services.Configure<GrpcClientOptions>("grpc1", i =>
                     {
                         i.Host = "localhost";

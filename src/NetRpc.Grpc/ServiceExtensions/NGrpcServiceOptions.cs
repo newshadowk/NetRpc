@@ -3,7 +3,7 @@ using Grpc.Core;
 
 namespace NetRpc.Grpc
 {
-    public sealed class GrpcServiceOptions
+    public sealed class NGrpcServiceOptions
     {
         public List<ServerPort> Ports { get; set; } = new List<ServerPort>();
 

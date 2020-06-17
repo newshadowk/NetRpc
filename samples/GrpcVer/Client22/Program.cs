@@ -33,8 +33,8 @@ WYJb2q9GVF4h9vhJavosI1adlar05sZcLmkQCP1YtU8=
             HttpClient c = new HttpClient();
             var res = await c.GetAsync("http://localhost:5000/11");
 
-            //var p = NetRpcManager.CreateClientProxy<IService>(new Channel("localhost", 5000, ChannelCredentials.Insecure));
-            var p = NetRpcManager.CreateClientProxy<IService>(new GrpcClientOptions() {Host = "localhost", Port = 5001, PublicKey = PublicKey});
+            //var p = NManager.CreateClientProxy<IService>(new Channel("localhost", 5000, ChannelCredentials.Insecure));
+            var p = NManager.CreateClientProxy<IService>(new GrpcClientOptions() {Host = "localhost", Port = 5001, PublicKey = PublicKey});
             //await p.Proxy.Call("hello world.");
 
             var channel = new Channel("localhost", 5000, ChannelCredentials.Insecure);

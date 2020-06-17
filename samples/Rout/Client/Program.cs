@@ -24,12 +24,12 @@ namespace Client
                         i.Host = "localhost";
                         i.Port = 50001;
                     });
-                    services.AddNetRpcGrpcClient();
+                    services.AddNGrpcClient();
                     services.AddNetRpcClientContract<IService>("grpc");
 
                     services.Configure<RabbitMQClientOptions>("mq", i => { i.CopyFrom(Helper.GetMQOptions()); });
 
-                    services.AddNetRpcRabbitMQClient();
+                    services.AddNRabbitMQClient();
 
                     services.AddHostedService<H>();
                 })

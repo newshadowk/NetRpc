@@ -88,7 +88,7 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
                     //var channel = new Channel("localhost", 50001, ssl, options);
                     //var channel = new Channel("localhost", 60001, ssl);
                     //var channel = new Channel("localhost", 50001, new SslCredentials());
-                    services.AddNetRpcGrpcClient(i =>
+                    services.AddNGrpcClient(i =>
                     {
                         i.Url = "http://localhost:5000";
                         i.ChannelOptions.MaxReceiveMessageSize = 20 * 1024 * 1024; // 2 MB

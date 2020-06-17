@@ -17,8 +17,8 @@ namespace Service_Startup
         {
             services.AddCors();
             services.AddSignalR();
-            services.AddNetRpcSwagger();
-            services.AddNetRpcHttpService();
+            services.AddNSwagger();
+            services.AddNHttpService();
             services.AddHttpContextAccessor();
             services.AddNetRpcServiceContract<IServiceAsync, ServiceAsync>(ServiceLifetime.Scoped);
             services.AddNetRpcMiddleware(i =>
@@ -51,8 +51,8 @@ namespace Service_Startup
             {
                 endpoints.MapHub<CallbackHub>("/callback");
             });
-            app.UseNetRpcSwagger();
-            app.UseNetRpcHttp();
+            app.UseNSwagger();
+            app.UseNHttp();
         }
     }
 

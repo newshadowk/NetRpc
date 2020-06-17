@@ -11,9 +11,9 @@ namespace Service
     {
         static async Task Main(string[] args)
         {
-            var o = new GrpcServiceOptions();
+            var o = new NGrpcServiceOptions();
             o.AddPort("0.0.0.0", 50001);
-            await NetRpcManager.CreateHost(o, null, new Contract<IService, Service>()).RunAsync();
+            await NManager.CreateHost(o, null, new Contract<IService, Service>()).RunAsync();
         }
     }
 

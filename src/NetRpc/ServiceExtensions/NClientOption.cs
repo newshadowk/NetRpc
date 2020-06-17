@@ -1,6 +1,6 @@
 ﻿namespace NetRpc
 {
-    public class NetRpcClientOption
+    public class NClientOption
     {
         /// <summary>
         /// Default value is 1200000.

@@ -28,10 +28,10 @@ namespace Service_1
                     services.AddCors();
 
                     services.AddSignalR();
-                    services.AddNetRpcSwagger();
-                    services.AddNetRpcHttpService();
+                    services.AddNSwagger();
+                    services.AddNHttpService();
 
-                    services.AddNetRpcGrpcService(i => { i.AddPort("0.0.0.0", 50002); });
+                    services.AddNGrpcService(i => { i.AddPort("0.0.0.0", 50002); });
                     services.AddNetRpcServiceContract<IService_1, Service>();
 
                     services.Configure<GrpcClientOptions>("grpc",
@@ -47,12 +47,12 @@ namespace Service_1
                             i.SignalRHubUrl = "http://localhost:5004/callback";
                         });
 
-                    services.AddNetRpcGrpcClient();
-                    services.AddNetRpcHttpClient();
+                    services.AddNGrpcClient();
+                    services.AddNHttpClient();
 
                     services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5002/swagger");
                     services.Configure<ClientSwaggerOptions>(i => i.HostPath = "http://localhost:5004/swagger");
-                    services.AddNetRpcJaeger(i =>
+                    services.AddNJaeger(i =>
                     {
                         i.Host = "m.k8s.yx.com";
                         i.Port = 36831;
@@ -69,8 +69,8 @@ namespace Service_1
                             .AllowCredentials();
                     });
                     app.UseSignalR(routes => { routes.MapHub<CallbackHub>("/callback"); });
-                    app.UseNetRpcSwagger();
-                    app.UseNetRpcHttp();
+                    app.UseNSwagger();
+                    app.UseNHttp();
                 })
                 .Build();
 

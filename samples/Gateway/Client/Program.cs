@@ -6,7 +6,7 @@ using NetRpc;
 using NetRpc.Grpc;
 using NetRpc.Http.Client;
 using Helper = TestHelper.Helper;
-using NetRpcManager = NetRpc.RabbitMQ.NetRpcManager;
+using NManager = NetRpc.RabbitMQ.NManager;
 
 namespace Client
 {
@@ -19,20 +19,20 @@ namespace Client
         {
             Console.WriteLine("---- MQ test ----");
             var mqOptions = Helper.GetMQOptions();
-            _c1 = NetRpcManager.CreateClientProxy<IService>(mqOptions);
-            _c2 = NetRpcManager.CreateClientProxy<IService2>(mqOptions);
+            _c1 = NManager.CreateClientProxy<IService>(mqOptions);
+            _c2 = NManager.CreateClientProxy<IService2>(mqOptions);
             await TestAsync();
 
             Console.WriteLine("---- Http test ----");
             var httpOptions = new HttpClientOptions {ApiUrl = "http://localhost:5000", SignalRHubUrl = "http://localhost:5000/callback"};
-            _c1 = NetRpc.Http.Client.NetRpcManager.CreateClientProxy<IService>(httpOptions);
-            _c2 = NetRpc.Http.Client.NetRpcManager.CreateClientProxy<IService2>(httpOptions);
+            _c1 = NetRpc.Http.Client.NManager.CreateClientProxy<IService>(httpOptions);
+            _c2 = NetRpc.Http.Client.NManager.CreateClientProxy<IService2>(httpOptions);
             await TestAsync();
 
             Console.WriteLine("---- Grpc test ----");
             GrpcClientOptions grpcOpt = new GrpcClientOptions{Host = "localhost", Port = 50000};
-            _c1 = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService>(grpcOpt);
-            _c2 = NetRpc.Grpc.NetRpcManager.CreateClientProxy<IService2>(grpcOpt);
+            _c1 = NetRpc.Grpc.NManager.CreateClientProxy<IService>(grpcOpt);
+            _c2 = NetRpc.Grpc.NManager.CreateClientProxy<IService2>(grpcOpt);
             await TestAsync();
 
             Console.WriteLine("---- end ----");

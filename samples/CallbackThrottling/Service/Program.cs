@@ -11,11 +11,11 @@ namespace Service
     {
         static async Task Main(string[] args)
         {
-            var o = new GrpcServiceOptions();
+            var o = new NGrpcServiceOptions();
             o.AddPort("0.0.0.0", 50001);
             var options = new MiddlewareOptions();
             options.UseCallbackThrottling(1000);
-            var host = NetRpcManager.CreateHost(o, options, new Contract<IService, Service>());
+            var host = NManager.CreateHost(o, options, new Contract<IService, Service>());
             await host.RunAsync();
         }
     }

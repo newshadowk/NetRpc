@@ -10,10 +10,10 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class NetRpcGrpcServiceExtensions
+    public static class NGrpcServiceExtensions
     {
 #if !NETCOREAPP3_1
-        public static IServiceCollection AddNetRpcGrpcService(this IServiceCollection services, Action<GrpcServiceOptions> configureOptions = null)
+        public static IServiceCollection AddNGrpcService(this IServiceCollection services, Action<NGrpcServiceOptions> configureOptions = null)
         {
             if (configureOptions != null)
                 services.Configure(configureOptions);
@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 #else
-        public static IServiceCollection AddNetRpcGrpcService(this IServiceCollection services, Action<Grpc.AspNetCore.Server.GrpcServiceOptions> configureOptions = null)
+        public static IServiceCollection AddNGrpcService(this IServiceCollection services, Action<Grpc.AspNetCore.Server.GrpcServiceOptions> configureOptions = null)
         {
             if (configureOptions != null)
                 services.AddGrpc(configureOptions);
@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.DependencyInjection
 #endif
 
 #if NETCOREAPP3_1
-        public static IApplicationBuilder UseNetRpcGrpc(this IApplicationBuilder app)
+        public static IApplicationBuilder UseNGrpc(this IApplicationBuilder app)
         {
             app.UseRouting();
             app.UseEndpoints(endpoints =>
@@ -52,23 +52,23 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 #endif
 
-        public static IServiceCollection AddNetRpcGrpcGateway<TService>(this IServiceCollection services,
+        public static IServiceCollection AddNGrpcGateway<TService>(this IServiceCollection services,
             Action<GrpcClientOptions> grpcClientConfigureOptions = null,
-            Action<NetRpcClientOption> clientConfigureOptions = null,
+            Action<NClientOption> clientConfigureOptions = null,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
-            services.AddNetRpcGrpcClient(grpcClientConfigureOptions, clientConfigureOptions, serviceLifetime);
-            services.Configure<NetRpcClientOption>(i => i.ForwardHeader = true);
-            services.AddNetRpcGrpcClientContract<TService>(serviceLifetime);
+            services.AddNGrpcClient(grpcClientConfigureOptions, clientConfigureOptions, serviceLifetime);
+            services.Configure<NClientOption>(i => i.ForwardHeader = true);
+            services.AddNGrpcClientContract<TService>(serviceLifetime);
             services.AddNetRpcServiceContract(typeof(TService),
                 p => ((IClientProxy<TService>) p.GetService(typeof(IClientProxy<TService>))).Proxy, 
                 serviceLifetime);
             return services;
         }
 
-        public static IServiceCollection AddNetRpcGrpcClient(this IServiceCollection services,
+        public static IServiceCollection AddNGrpcClient(this IServiceCollection services,
             Action<GrpcClientOptions> grpcClientConfigureOptions = null,
-            Action<NetRpcClientOption> clientConfigureOptions = null,
+            Action<NClientOption> clientConfigureOptions = null,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
             if (grpcClientConfigureOptions != null)
@@ -91,12 +91,12 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
             }
 
-            services.AddSingleton<IOrphanClientProxyProvider, OrphanGrpcClientProxyProvider>();
+            services.AddSingleton<IOrphanClientProxyProvider, OrphanNGrpcClientProxyProvider>();
 
             return services;
         }
 
-        public static IServiceCollection AddNetRpcGrpcClientContract<TService>(this IServiceCollection services,
+        public static IServiceCollection AddNGrpcClientContract<TService>(this IServiceCollection services,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
             switch (serviceLifetime)

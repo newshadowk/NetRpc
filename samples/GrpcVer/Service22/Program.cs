@@ -62,7 +62,7 @@ WYJb2q9GVF4h9vhJavosI1adlar05sZcLmkQCP1YtU8=
             var host = new HostBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddNetRpcGrpcService(i =>
+                    services.AddNGrpcService(i =>
                     {
                         i.AddPort("0.0.0.0", 5001, PublicKey, PrivateKey);
                     });

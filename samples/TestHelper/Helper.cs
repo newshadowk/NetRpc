@@ -10,9 +10,9 @@ namespace TestHelper
 {
     public static class Helper
     {
-        public static GrpcServiceOptions GetGrpcServiceOptions()
+        public static NGrpcServiceOptions GetGrpcServiceOptions()
         {
-            var opt = new GrpcServiceOptions();
+            var opt = new NGrpcServiceOptions();
             opt.AddPort("0.0.0.0", 50001);
             return opt;
         }

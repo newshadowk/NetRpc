@@ -30,10 +30,10 @@ namespace Service
                 {
                     services.AddCors();
                     services.AddSignalR();
-                    services.AddNetRpcSwagger();
-                    services.AddNetRpcHttpService();
+                    services.AddNSwagger();
+                    services.AddNHttpService();
 
-                    services.AddNetRpcRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
+                    services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
                     services.AddNetRpcServiceContract<IService, Service>(ServiceLifetime.Scoped);
 
                     services.Configure<GrpcClientOptions>("grpc1", i =>
@@ -46,13 +46,13 @@ namespace Service
                         i.Host = "localhost";
                         i.Port = 50003;
                     });
-                    services.AddNetRpcGrpcClient(null, null, ServiceLifetime.Scoped);
+                    services.AddNGrpcClient(null, null, ServiceLifetime.Scoped);
 
                     services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5001/swagger");
                     services.Configure<ClientSwaggerOptions>("grpc1", i => i.HostPath = "http://localhost:5002/swagger");
                     services.Configure<ClientSwaggerOptions>("grpc2", i => i.HostPath = "http://localhost:5003/swagger");
                     
-                    services.AddNetRpcJaeger(i =>
+                    services.AddNJaeger(i =>
                     {
                         i.Host = "m.k8s.yx.com";
                         i.Port = 36831;
@@ -72,8 +72,8 @@ namespace Service
                             .AllowCredentials();
                     });
                     app.UseSignalR(routes => { routes.MapHub<CallbackHub>("/callback"); });
-                    app.UseNetRpcSwagger();
-                    app.UseNetRpcHttp();
+                    app.UseNSwagger();
+                    app.UseNHttp();
                 })
                 .ConfigureLogging(logging =>
                 {

@@ -4,9 +4,9 @@ using NetRpc.RabbitMQ;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class NetRpcRabbitMQServiceExtensions
+    public static class NRabbitMQServiceExtensions
     {
-        public static IServiceCollection AddNetRpcRabbitMQService(this IServiceCollection services,
+        public static IServiceCollection AddNRabbitMQService(this IServiceCollection services,
             Action<RabbitMQServiceOptions> configureOptions = null)
         {
             if (configureOptions != null)
@@ -16,9 +16,9 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection AddNetRpcRabbitMQClient(this IServiceCollection services,
+        public static IServiceCollection AddNRabbitMQClient(this IServiceCollection services,
             Action<RabbitMQClientOptions> mQClientConfigureOptions = null,
-            Action<NetRpcClientOption> clientConfigureOptions = null,
+            Action<NClientOption> clientConfigureOptions = null,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
             if (mQClientConfigureOptions != null)
@@ -44,12 +44,12 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection AddNetRpcRabbitMQGateway<TService>(this IServiceCollection services,
+        public static IServiceCollection AddNRabbitMQGateway<TService>(this IServiceCollection services,
             Action<RabbitMQClientOptions> mQClientConfigureOptions = null,
-            Action<NetRpcClientOption> clientConfigureOptions = null,
+            Action<NClientOption> clientConfigureOptions = null,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
-            services.AddNetRpcRabbitMQClient(mQClientConfigureOptions, clientConfigureOptions, serviceLifetime);
+            services.AddNRabbitMQClient(mQClientConfigureOptions, clientConfigureOptions, serviceLifetime);
             services.AddNetRpcClientContract<TService>(serviceLifetime);
             services.AddNetRpcServiceContract(typeof(TService),
                 p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))).Proxy,

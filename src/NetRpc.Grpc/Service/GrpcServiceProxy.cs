@@ -15,7 +15,7 @@ namespace NetRpc.Grpc
         private readonly Service _service;
         private readonly BusyFlag _busyFlag;
 
-        public GrpcServiceProxy(IOptions<GrpcServiceOptions> options, MessageCallImpl messageCall, BusyFlag busyFlag)
+        public GrpcServiceProxy(IOptions<NGrpcServiceOptions> options, MessageCallImpl messageCall, BusyFlag busyFlag)
         {
             _busyFlag = busyFlag;
             _service = new Service(options.Value.Ports, messageCall);

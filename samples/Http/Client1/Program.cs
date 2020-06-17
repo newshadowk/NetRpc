@@ -15,7 +15,7 @@ namespace Client
 
         static async Task Main(string[] args)
         {
-            _proxyAsync = NetRpcManager.CreateClientProxy<IServiceAsync>(new HttpClientOptions
+            _proxyAsync = NManager.CreateClientProxy<IServiceAsync>(new HttpClientOptions
             {
                 SignalRHubUrl = "http://localhost:5000/callback",
                 ApiUrl = "http://localhost:5000/api"
