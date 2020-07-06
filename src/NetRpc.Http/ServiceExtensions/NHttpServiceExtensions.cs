@@ -21,7 +21,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSwaggerGen(i =>
             {
 #if !NETCOREAPP3_1
+#pragma warning disable 618
                 i.DescribeAllEnumsAsStrings();
+#pragma warning restore 618
 #endif
                 paths.ForEach(path => { i.IncludeXmlComments(path); });
                 i.SchemaFilter<ExampleSchemaFilter>();
@@ -48,7 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<IHttpObjProcessor, FormUrlEncodedObjProcessor>();
 
             services.TryAddTransient<PathProcessor>();
-            services.AddNetRpcService();
+            services.AddNRpcService();
             return services;
         }
 
@@ -58,8 +60,8 @@ namespace Microsoft.Extensions.DependencyInjection
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
             services.AddNHttpClient(httpClientConfigureOptions, clientConfigureOptions, serviceLifetime);
-            services.AddNetRpcClientContract<TService>(serviceLifetime);
-            services.AddNetRpcServiceContract(typeof(TService),
+            services.AddNRpcClientContract<TService>(serviceLifetime);
+            services.AddNRpcServiceContract(typeof(TService),
                 p => ((ClientProxy<TService>) p.GetService(typeof(ClientProxy<TService>))).Proxy,
                 serviceLifetime);
             return services;

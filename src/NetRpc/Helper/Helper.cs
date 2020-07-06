@@ -54,14 +54,18 @@ namespace NetRpc
             // ReSharper restore FormatStringProblem
         }
 
-        public static string ListToStringForDisplay(Array list, string split)
+        public static string ListToStringForDisplay<T>(this IEnumerable<T> list, string split, bool displayCount = true)
         {
-            var sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
+            var toList = list as IList<T> ?? list.ToList();
 
-            sb.Append("[Count:" + list.Length + "]");
-            sb.Append(split);
+            if (displayCount)
+            {
+                sb.Append("[Count:" + toList.Count + "]");
+                sb.Append(split);
+            }
 
-            foreach (var s in list)
+            foreach (var s in toList)
             {
                 sb.Append(s);
                 sb.Append(split);

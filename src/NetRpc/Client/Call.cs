@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,7 +54,7 @@ namespace NetRpc
             await call.StartAsync(GetAuthorizationToken(mergeHeader));
 
             //stream
-            var contractMethod = _contract.Methods.Find(i => i.MethodInfo == methodInfo);
+            var contractMethod = _contract.Methods.First(i => i.MethodInfo == methodInfo);
             var instanceMethod = new InstanceMethod(methodInfo);
             var methodContext = new MethodContext(contractMethod, instanceMethod);
             var readStream = GetReadStream(stream);

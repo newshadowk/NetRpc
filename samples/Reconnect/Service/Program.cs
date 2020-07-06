@@ -23,7 +23,7 @@ namespace Service
                 {
                     services.AddNRabbitMQService(i => { i.CopyFrom(Helper.GetMQOptions()); });
                     //services.AddNGrpcService(i => i.AddPort("0.0.0.0", 50001));
-                    services.AddNetRpcServiceContract<IService, Service>();
+                    services.AddNRpcServiceContract<IService, Service>();
                 })
                 .ConfigureLogging((context, builder) => { builder.AddConsole(); })
                 .Build();

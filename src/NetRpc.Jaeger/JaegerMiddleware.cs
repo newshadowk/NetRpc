@@ -5,11 +5,11 @@ using OpenTracing.Tag;
 
 namespace NetRpc.Jaeger
 {
-    public class NServiceJaegerMiddleware
+    public class ServiceJaegerMiddleware
     {
         private readonly RequestDelegate _next;
 
-        public NServiceJaegerMiddleware(RequestDelegate next)
+        public ServiceJaegerMiddleware(RequestDelegate next)
         {
             _next = next;
         }
@@ -23,19 +23,19 @@ namespace NetRpc.Jaeger
             }
 
             //http://localhost:5001/swagger/index.html#/IService/post_IService_Call
-            var info = context.ContractMethod.HttpRoutInfo;
-            var requestUrl = Helper.GetRequestUrl(options.Value.HostPath.FormatUrl(), options.Value.ApiPath, info.ContractPath, info.MethodPath);
+            var info = context.ContractMethod.Route.DefaultRout;
+            var requestUrl = Helper.GetRequestUrl(options.Value.HostPath.FormatUrl(), options.Value.ApiPath, info.ContractTag, info.Path);
             tracer.ActiveSpan?.SetTag(new StringTag("Url"), requestUrl);
 
             await _next(context);
         }
     }
 
-    public class NClientJaegerMiddleware
+    public class ClientJaegerMiddleware
     {
         private readonly ClientRequestDelegate _next;
 
-        public NClientJaegerMiddleware(ClientRequestDelegate next)
+        public ClientJaegerMiddleware(ClientRequestDelegate next)
         {
             _next = next;
         }
@@ -50,8 +50,8 @@ namespace NetRpc.Jaeger
                 return;
             }
 
-            var info = context.ContractMethod.HttpRoutInfo;
-            var requestUrl = Helper.GetRequestUrl(opt.HostPath.FormatUrl(), opt.ApiPath, info.ContractPath, info.MethodPath);
+            var info = context.ContractMethod.Route.DefaultRout;
+            var requestUrl = Helper.GetRequestUrl(opt.HostPath.FormatUrl(), opt.ApiPath, info.ContractTag, info.Path);
             tracer.ActiveSpan?.SetTag(new StringTag("Url"), requestUrl);
 
             await _next(context);

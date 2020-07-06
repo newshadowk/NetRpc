@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -30,20 +31,111 @@ namespace NetRpc.Http
         public readonly SchemaRepository SchemaRepository = new SchemaRepository();
         private readonly SwaggerGeneratorOptions _options;
 
-        public PathItem Process(string apiRootPath, Contract contract, ContractMethod contractMethod, OperationType operationType)
+        public OpenApiOperation Process(ContractMethod contractMethod, HttpRoutInfo routInfo, string method)
         {
             if (contractMethod.IsHttpIgnore)
+                return null;
+            
+            //is Support?
+            var isSupportBody = IsSupportBody(method.ToOperationType());
+            var isSupportParams = contractMethod.IsSupportAllParameter();
+            if (!isSupportBody && !isSupportParams)
                 return null;
 
             //Operation
             var operation = new OpenApiOperation
             {
-                Tags = GenerateTags(contract, contractMethod),
-                Responses = GenerateResponses(contractMethod, contractMethod.MergeArgType.CancelToken != null)
+                Tags = GenerateTags(contractMethod),
+                Responses = GenerateResponses(contractMethod, contractMethod.MergeArgType.CancelToken != null),
+                Parameters = new List<OpenApiParameter>()
             };
 
             //Header
-            operation.Parameters = new List<OpenApiParameter>();
+            AddHeader(contractMethod, operation);
+
+            //Params to body or Parameters
+            if (isSupportBody)
+            {
+                AddPathParams(contractMethod, operation, routInfo);
+                operation.RequestBody = GenerateRequestBody(contractMethod.MergeArgType.TypeWithoutStreamName, contractMethod.MergeArgType.StreamPropName);
+            }
+            else
+                AddQueryPathParams(contractMethod, operation, routInfo);
+
+            //Summary
+            AddSummary(contractMethod, operation);
+
+            //ApiSecurity
+            AddApiSecurity(contractMethod, operation);
+
+            return operation;
+        }
+
+        private static void AddPathParams(ContractMethod contractMethod, OpenApiOperation operation, HttpRoutInfo routInfo)
+        {
+            ValidatePath(contractMethod, routInfo);
+
+            foreach (var p in contractMethod.InnerSystemTypeParameters)
+            {
+                if (routInfo.IsPath(p.Name))
+                {
+                    var s = new OpenApiSchema();
+                    s.SetSchemaType(p.Type);
+                    operation.Parameters.Add(new OpenApiParameter
+                    {
+                        In = ParameterLocation.Path,
+                        Name = p.Name,
+                        Schema = s,
+                        Required = true
+                    });
+                }
+            }
+        }
+
+        private static void AddQueryPathParams(ContractMethod contractMethod, OpenApiOperation operation, HttpRoutInfo routInfo)
+        {
+            ValidatePath(contractMethod, routInfo);
+
+            foreach (var p in contractMethod.InnerSystemTypeParameters)
+            {
+                var s = new OpenApiSchema();
+                s.SetSchemaType(p.Type);
+
+                if (routInfo.IsPath(p.Name))
+                {
+                    operation.Parameters.Add(new OpenApiParameter
+                    {
+                        In = ParameterLocation.Path,
+                        Name = p.Name,
+                        Schema = s,
+                        Required = true
+                    });
+                }
+                else
+                {
+                    operation.Parameters.Add(new OpenApiParameter
+                    {
+                        In = ParameterLocation.Query,
+                        Name = p.Name,
+                        Schema = s
+                    });
+                }
+            }
+        }
+
+        private static void ValidatePath(ContractMethod contractMethod, HttpRoutInfo rout)
+        {
+            //validate
+            foreach (var p in rout.PathParams)
+            {
+                if (contractMethod.InnerSystemTypeParameters.All(i => i.Name != p))
+                    throw new InvalidOperationException(
+                        $"{rout.Path}, '{p}' is not found in method params:{contractMethod.InnerSystemTypeParameters.Select(i => i.Name).ListToString(", ")}");
+            }
+        }
+
+        private static void AddHeader(ContractMethod contractMethod, OpenApiOperation operation)
+        {
             foreach (var header in contractMethod.HttpHeaderAttributes)
             {
                 operation.Parameters.Add(new OpenApiParameter
@@ -51,27 +143,22 @@ namespace NetRpc.Http
                     In = ParameterLocation.Header,
                     Name = header.Name,
                     Description = header.Description,
-                    Schema = new OpenApiSchema { Type = "string" }
+                    Schema = new OpenApiSchema {Type = "string"}
                 });
             }
+        }
 
-            //Params to body or Parameters
-            if (IsSupportBody(operationType))
-                operation.RequestBody = GenerateRequestBody(contractMethod.MergeArgType.TypeWithoutStreamName, contractMethod.MergeArgType.StreamPropName);
-            else
-            {
-                
-            }
-
-            //Summary
+        private void AddSummary(ContractMethod contractMethod, OpenApiOperation operation)
+        {
             var filterContext = new OperationFilterContext(new ApiDescription(), _schemaGenerator, SchemaRepository, contractMethod.MethodInfo);
             foreach (var filter in _options.OperationFilters)
                 filter.Apply(operation, filterContext);
             operation.Summary = AppendSummaryByCallbackAndCancel(operation.Summary, contractMethod.MergeArgType.CallbackAction,
                 contractMethod.MergeArgType.CancelToken);
+        }
 
-
-            //ApiSecurity
+        private static void AddApiSecurity(ContractMethod contractMethod, OpenApiOperation operation)
+        {
             foreach (var apiKey in contractMethod.SecurityApiKeyAttributes)
             {
                 var r = new OpenApiSecurityRequirement
@@ -91,11 +178,6 @@ namespace NetRpc.Http
                 };
                 operation.Security.Add(r);
             }
-
-            var openApiPathItem = new OpenApiPathItem();
-            openApiPathItem.AddOperation(operationType, operation);
-            var key = $"{apiRootPath}/{contractMethod.HttpRoutInfo}";
-            return new PathItem(key, openApiPathItem);
         }
 
         public PathProcessor(ISchemaGenerator schemaGenerator, IOptions<SwaggerGeneratorOptions> options)
@@ -104,40 +186,14 @@ namespace NetRpc.Http
             _options = options.Value;
         }
 
-        private static List<OpenApiTag> GenerateTags(Contract contract, ContractMethod method)
+        private static List<OpenApiTag> GenerateTags(ContractMethod method)
         {
             var tags = new List<OpenApiTag>();
-            tags.Add(new OpenApiTag { Name = contract.ContractInfo.Route });
-            method.TagAttributes.ForEach(i => tags.Add(new OpenApiTag { Name = i.Name }));
+            method.Tags.ToList().ForEach(i => tags.Add(new OpenApiTag { Name = i }));
             return tags;
         }
 
         private OpenApiRequestBody GenerateRequestBody(Type argType, string streamName)
-        {
-            var body = new OpenApiRequestBody();
-
-            if (argType != null)
-            {
-                body.Required = true;
-                if (streamName != null)
-                {
-                    GenerateRequestBodyByForm(body,
-                        new TypeName(streamName, typeof(IFormFile)),
-                        new TypeName("data", argType));
-                }
-                else
-                    GenerateRequestBodyByBody(body, argType);
-            }
-            else if (streamName != null)
-            {
-                body.Required = true;
-                GenerateRequestBodyByForm(body, new TypeName(streamName, typeof(IFormFile)));
-            }
-
-            return body;
-        }
-
-        private OpenApiRequestBody GenerateRequestBody2(Type argType, string streamName)
         {
             var body = new OpenApiRequestBody();
 
@@ -291,22 +347,6 @@ namespace NetRpc.Http
                 OperationType.Trace => false,
                 _ => true
             };
-        }
-
-        private static bool IsSupportParams(ContractMethod contractMethod)
-        {
-            if (contractMethod.Parameters.Count == 0)
-                return false;
-
-            if (contractMethod.Parameters.Count == 1)
-            {
-                if (contractMethod.Parameters[0].Type.GetProperties().Any(i => !i.PropertyType.IsSystemType()))
-                    return false;
-            }
-
-            if (contractMethod.Parameters.Exists(i => !i.Type.IsSystemType()))
-                return false;
-            return true;
         }
     }
 }

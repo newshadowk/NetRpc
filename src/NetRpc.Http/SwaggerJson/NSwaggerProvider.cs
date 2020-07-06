@@ -36,8 +36,7 @@ namespace NetRpc.Http
         private void ProcessTags(List<Contract> contracts)
         {
             var tags = new List<string>();
-            contracts.ForEach(i => i.ContractInfo.TagAttributes.ForEach(j => tags.Add(j.Name)));
-            contracts.ForEach(i => tags.Add(i.ContractInfo.Route));
+            contracts.ForEach(i => tags.AddRange(i.ContractInfo.Tags));
             var distTags = tags.Distinct();
             foreach (var distTag in distTags)
                 _doc.Tags.Add(new OpenApiTag { Name = distTag });
@@ -53,7 +52,7 @@ namespace NetRpc.Http
 
             //SecurityScheme
             var dic = new Dictionary<string, SecurityApiKeyDefineAttribute>();
-            contracts.ForEach(i => i.ContractInfo.SecurityApiKeyDefineAttributes.ForEach(j => dic[j.Key] = j));
+            contracts.ForEach(i => i.ContractInfo.SecurityApiKeyDefineAttributes.ToList().ForEach(j => dic[j.Key] = j));
             foreach (var item in dic.Values)
             {
                 var scheme = new OpenApiSecurityScheme
@@ -75,14 +74,19 @@ namespace NetRpc.Http
             {
                 foreach (var contractMethod in contract.ContractInfo.Methods)
                 {
-                    var pathItem = _pathProcessor.Process(apiRootPath, contract, contractMethod, OperationType.Options);
-                    _doc.Paths.Add(pathItem.Key, pathItem.Item);
+                    foreach (var route in contractMethod.Route.SwaggerRouts)
+                    {
+                        var pathItem = new OpenApiPathItem();
+                        foreach (var method in route.HttpMethods)
+                        {
+                            //AddOperation 
+                            var operation = _pathProcessor.Process(contractMethod, route, method);
+                            pathItem.AddOperation(method.ToOperationType(), operation);
+                        }
 
-                    //if (pathItem!= null)
-                    //_doc.Paths.Add(pathItem.Key, pathItem.Item);
-                    //pathItem = _pathProcessor.Process(apiRootPath, contract, contractMethod, OperationType.Post);
-                    //if (pathItem != null)
-                    //    _doc.Paths.Add(pathItem.Key, pathItem.Item);
+                        //add a path
+                        _doc.Paths.Add($"{apiRootPath}/{route.Path}", pathItem);
+                    }
                 }
             }
         }

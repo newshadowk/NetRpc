@@ -72,7 +72,7 @@ var host = new HostBuilder()
     .ConfigureServices((context, services) =>
     {
         services.AddNGrpcService(i => i.AddPort("0.0.0.0", 50001));
-        services.AddNetRpcContractSingleton<IService, Service>();
+        services.AddNRpcContractSingleton<IService, Service>();
     })
     .Build();
 ```
@@ -84,7 +84,7 @@ var host = new HostBuilder()
         services.AddHostedService<GrpcHostedService>();
         services.AddNGrpcClient(i =>
             i.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
-        services.AddNetRpcClientContract<IService>();
+        services.AddNRpcClientContract<IService>();
     })
     .Build();
 
@@ -105,7 +105,7 @@ If want to inject multiple **ClientProxies**, should use **IClientProxyFactory**
 services.Configure<RabbitMQClientOptions>("mq1", context.Configuration.GetSection("Mq1"));
 services.Configure<RabbitMQClientOptions>("mq2", context.Configuration.GetSection("Mq2"));
 services.AddNRabbitMQClient();
-services.AddNetRpcClientContract<IService>();
+services.AddNRpcClientContract<IService>();
 
 ```
 
@@ -222,10 +222,10 @@ client.Proxy.Call();
 ## ContractLifeTime
 ```c#
 //Singleton: create one instance for every request.
-services.AddNetRpcContract<IService, Service>(ServiceLifetime.Singleton);
+services.AddNRpcContract<IService, Service>(ServiceLifetime.Singleton);
 
 //Scoped: create new instance for each request. 
-services.AddNetRpcContract<IService, Service>(ServiceLifetime.Scoped);
+services.AddNRpcContract<IService, Service>(ServiceLifetime.Scoped);
 ```
 ## Context
 On service side, **Midderware** or **Filter** can access **ActionExecutingContext**, it is
@@ -292,7 +292,7 @@ The way use **NetRpc Middleware** and use **MVC Middleware** is same, the only d
 Support DI Type and ctor args.
 ```c#
 //servcie
-services.AddNetRpcMiddleware(i => i.UseMiddleware<TestGlobalExceptionMiddleware>("arg1value"));
+services.AddNRpcMiddleware(i => i.UseMiddleware<TestGlobalExceptionMiddleware>("arg1value"));
 
 public class TestGlobalExceptionMiddleware
 {
@@ -320,11 +320,11 @@ public class TestGlobalExceptionMiddleware
 ```
 Client side also support Middleware.
 ```c#
-public class NetRpcClientOpenTracingMiddleware
+public class ClientOpenTracingMiddleware
 {
     private readonly ClientRequestDelegate _next;
 
-    public NetRpcClientOpenTracingMiddleware(ClientRequestDelegate next)
+    public ClientOpenTracingMiddleware(ClientRequestDelegate next)
     {
         _next = next;
     }
@@ -393,9 +393,9 @@ Task CallByCallBackAsync(Func<CustomCallbackObj, Task> cb);
 Built-in **CallbackThrottlingMiddleware** is useful when callback is progress, normally progress do not need callback every time to client, also for saving network resources.
 ```c#
 //service side
-services.AddNetRpcMiddleware(i => i.UseCallbackThrottling(1000)); //limit to one call per second
+services.AddNRpcMiddleware(i => i.UseCallbackThrottling(1000)); //limit to one call per second
 //or this:
-services.AddNetRpcCallbackThrottling(1000);
+services.AddNRpcCallbackThrottling(1000);
 ...
 public async Task Call(Func<int, Task> cb)
 {
@@ -465,7 +465,7 @@ public class ComplexStream
 Only for RabbitMQ channel, means post way to call, after sent message to rabbitMQ then return immediately, consumer will consum messages in queue asynchronous.  
 Post method define has some limits, no callback Action, no cancelToken, no return value.
 ```c#
-[NetRpcPost]
+[MQPost]
 Task PostAsync(string s1, Stream stream);
 ```
 ## IgnoreAttribute
@@ -538,14 +538,14 @@ The code blow show how to Receive message from RabbitMQ channel client and send 
 ```c#
  //set single target by DI.
 services.AddNRabbitMQService(i => i.Value = TestHelper.Helper.GetMQOptions());
-services.AddNetRpcGateway<IService>(o => o.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
-services.AddNetRpcGateway<IService2>();
+services.AddNRpcGateway<IService>(o => o.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
+services.AddNRpcGateway<IService2>();
 
 //set different target point.
 //var p1 = NManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
 //var p2 = NManager.CreateClientProxy<IService2>(new Channel("localhost2", 50001, ChannelCredentials.Insecure)).Proxy;
-//services.AddNetRpcContractSingleton(typeof(IService), p1);
-//services.AddNetRpcContractSingleton(typeof(IService2), p2);
+//services.AddNRpcContractSingleton(typeof(IService), p1);
+//services.AddNRpcContractSingleton(typeof(IService2), p2);
 ```
 Also privode middleware in the gateway service, can add access authority if needed.
 
@@ -591,19 +591,19 @@ Use DI to create NHttp service, also could create NHttp service base on exist MV
 ```c#
 //regist services
 services.AddSignalR();         // add SignalR service
-services.AddNetRpcSwagger();   // add Swgger service
+services.AddNRpcSwagger();   // add Swgger service
 services.AddNHttp(i =>    // add RpcHttp service
 {
     i.ApiRootPath = "/api";
     i.IgnoreWhenNotMatched = false;
 });
-services.AddNetRpcMiddleware(i => i.UseMiddleware<MyNetRpcMiddleware>());  // define NetRpc Middleware
-services.AddNetRpcServiceContract(instanceTypes); // add Contracts
+services.AddNRpcMiddleware(i => i.UseMiddleware<MyNRpcMiddleware>());  // define NetRpc Middleware
+services.AddNRpcServiceContract(instanceTypes); // add Contracts
 ```
 ```c#
 //use components
 app.UseSignalR(routes => { routes.MapHub<CallbackHub>(hubPath); });   // define CallbackHub
-app.UseNetRpcSwagger();   // use NetRpcSwagger middleware
+app.UseNRpcSwagger();   // use NRpcSwagger middleware
 app.UseNHttp();      // use NHttp middleware
 ```
 ## [Http] Client
@@ -621,9 +621,9 @@ Use [Swashbuckle.AspNetCore.Swagger](https://github.com/domaindrivendev/Swashbuc
 Note: swagger need add Http channel, swagger api path is **[HttpServiceOptions.ApiRootPath]/swagger**, if apiRootPath is "api", should like http://localhost:5000/api/swagger, if apiRootPath is null, should like http://localhost:5000/swagger.  
 Add codes below to enabled swagger function.
 ```c#
-services.AddNetRpcSwagger();   // add Swgger service
+services.AddNRpcSwagger();   // add Swgger service
 ...
-app.UseNetRpcSwagger();        // use NetRpcSwagger middleware
+app.UseNRpcSwagger();        // use NRpcSwagger middleware
 ```
 The demo show how to call a method with callback and cancel:
 ![Alt text](images/swagger.png)
@@ -696,17 +696,39 @@ Task CallByCustomExceptionAsync();
 [FaultException(typeof(CustomException2), 400, 2, "errorCode2 error description")]
 public interface IServiceAsync
 ```
-## [Http] HttpRouteAttribute
-Route the request path, set **trimActionAsync** to true, action name will trim end by 'Async'.
+## [Http] Attribute*
+Support some Attributes, pls see demo.
 ```c#
-[HttpRoute("Service", true)] //reset "IServiceAsync" to "Service"
-public interface IServiceAsync
+[HttpTrimAsync]   //trim 'async' at end.
+[HttpRoute("IRout1")]
+[Tag("RoutTag1")]   //swagger tag
+public interface IService2Async
 {
-    [HttpRoute("Service1/Call2")] //reset to "Service1/Call2"
-    Task<CustomObj> CallAsync(string p1, int p2);  
+    [Tag("CallTag1")]
+    [HttpPost]
+    [HttpRoute("Call1/{p1}")]
+    [HttpGet("/Root/Call/{p1}")]
+    [HttpTrimAsync]
+    Task<string> Call1Async(string p1, int p2);
 
-    Task CallByCustomExceptionAsync();
+    [HttpGet]
+    [HttpDelete]
+    [HttpHead]
+    [HttpPut]
+    [HttpPatch]
+    [HttpOptions]
+    [HttpGet("Call2/{P1}/{P2}/Get")]
+    [HttpPost("Call2/{P1}/Post")]
+    Task<string> Call2Async(CallObj obj);
+}
 
+[Serializable]
+public class CallObj
+{
+    public string P1 { get; set; }
+        
+    public int P2 { get; set; }
+}
 ```
 ## [Http] HttpHeaderAttribute
 Add a header field to swagger.

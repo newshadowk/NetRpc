@@ -95,7 +95,7 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
                         i.ChannelOptions.MaxSendMessageSize = 20 * 1024 * 1024; // 5 MB
                     });
 
-                    services.AddNetRpcClientContract<IService>();
+                    services.AddNRpcClientContract<IService>();
                     services.AddHostedService<MyHost>();
                 })
                 .Build();

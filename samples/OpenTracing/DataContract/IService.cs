@@ -45,7 +45,7 @@ namespace DataContract
         Task<Stream> Echo(Stream stream);
     }
 
-    [HttpRoute("ReService", true)]
+    [HttpRoute("ReService")]
     public interface IService_1
     {
         //[TracerIgnore]

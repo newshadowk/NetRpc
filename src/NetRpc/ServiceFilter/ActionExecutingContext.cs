@@ -157,7 +157,7 @@ namespace NetRpc
 
         public override string ToString()
         {
-            return $"Header:{DicToStringForDisplay(Header)}, MethodName:{InstanceMethod.MethodInfo.Name}, Args:{Helper.ListToStringForDisplay(Args, ",")}";
+            return $"Header:{DicToStringForDisplay(Header)}, MethodName:{InstanceMethod.MethodInfo.Name}, Args:{Args.ListToStringForDisplay(",")}";
         }
 
         private static Type GetFuncType(object[] args)

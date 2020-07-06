@@ -31,14 +31,14 @@ namespace NetRpc.Http
                             i.IgnoreWhenNotMatched = httpServiceOptions.IgnoreWhenNotMatched;
                         }
                     });
-                    services.AddNetRpcMiddleware(i =>
+                    services.AddNRpcMiddleware(i =>
                     {
                         if (middlewareOptions != null)
                             i.AddItems(middlewareOptions.GetItems());
                     });
 
                     foreach (var contract in contracts)
-                        services.AddNetRpcServiceContract(contract.ContractInfo.Type, contract.InstanceType);
+                        services.AddNRpcServiceContract(contract.ContractInfo.Type, contract.InstanceType);
                 })
                 .Configure(app =>
                 {

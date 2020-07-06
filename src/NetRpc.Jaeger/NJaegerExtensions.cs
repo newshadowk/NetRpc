@@ -23,8 +23,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.Configure(configureOpenTracingOptions);
 
             services.AddNOpenTracing();
-            services.Configure<ClientMiddlewareOptions>(i => i.UseMiddleware<NClientJaegerMiddleware>());
-            services.Configure<MiddlewareOptions>(i => i.UseMiddleware<NServiceJaegerMiddleware>());
+            services.Configure<ClientMiddlewareOptions>(i => i.UseMiddleware<ClientJaegerMiddleware>());
+            services.Configure<MiddlewareOptions>(i => i.UseMiddleware<ServiceJaegerMiddleware>());
             services.AddSingleton(typeof(ITracer), i =>
             {
                 var opt = i.GetService<IOptions<JaegerOptions>>();

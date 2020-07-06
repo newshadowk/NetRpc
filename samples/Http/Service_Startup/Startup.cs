@@ -20,8 +20,8 @@ namespace Service_Startup
             services.AddNSwagger();
             services.AddNHttpService();
             services.AddHttpContextAccessor();
-            services.AddNetRpcServiceContract<IServiceAsync, ServiceAsync>(ServiceLifetime.Scoped);
-            services.AddNetRpcMiddleware(i =>
+            services.AddNRpcServiceContract<IServiceAsync, ServiceAsync>(ServiceLifetime.Scoped);
+            services.AddNRpcMiddleware(i =>
             {
                 i.UseMiddleware<A1Middleware>();
                 i.UseMiddleware<A2Middleware>();

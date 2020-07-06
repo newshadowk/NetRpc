@@ -2,7 +2,10 @@
 
 namespace NetRpc
 {
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
+    /// <summary>
+    /// Interface AllowMultiple is false, Method is true.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
     public class TagAttribute : Attribute
     {
         public string Name { get; set; }

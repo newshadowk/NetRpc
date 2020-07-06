@@ -16,7 +16,7 @@ namespace NetRpc.Http
     {
         bool MatchContentType(string contentType);
 
-        Task<HttpObj> ProcessAsync(HttpRequest request, Type dataObjType);
+        Task<HttpObj> ProcessAsync(ProcessItem item);
     }
 
     /// <summary>
@@ -31,12 +31,12 @@ namespace NetRpc.Http
             return contentType == "multipart/form-data";
         }
 
-        public async Task<HttpObj> ProcessAsync(HttpRequest request, Type dataObjType)
+        public async Task<HttpObj> ProcessAsync(ProcessItem item)
         {
             var boundary = MultipartRequestHelper.GetBoundary(
-                MediaTypeHeaderValue.Parse(request.ContentType),
+                MediaTypeHeaderValue.Parse(item.HttpRequest.ContentType),
                 _defaultFormOptions.MultipartBoundaryLengthLimit);
-            var reader = new MultipartReader(boundary, request.Body);
+            var reader = new MultipartReader(boundary, item.HttpRequest.Body);
             var section = await reader.ReadNextSectionAsync();
 
             //body
@@ -44,7 +44,7 @@ namespace NetRpc.Http
             var ms = new MemoryStream();
             await section.Body.CopyToAsync(ms);
             var body = Encoding.UTF8.GetString(ms.ToArray());
-            var dataObj = Helper.ToHttpDataObj(body, dataObjType);
+            var dataObj = Helper.ToHttpDataObj(body, item.DataObjType);
 
             //stream
             section = await reader.ReadNextSectionAsync();
@@ -90,13 +90,13 @@ namespace NetRpc.Http
             return contentType == "application/json";
         }
 
-        public async Task<HttpObj> ProcessAsync(HttpRequest request, Type dataObjType)
+        public async Task<HttpObj> ProcessAsync(ProcessItem item)
         {
             string body;
-            using (var sr = new StreamReader(request.Body, Encoding.UTF8))
+            using (var sr = new StreamReader(item.HttpRequest.Body, Encoding.UTF8))
                 body = await sr.ReadToEndAsync();
 
-            var dataObj = Helper.ToHttpDataObj(body, dataObjType);
+            var dataObj = Helper.ToHttpDataObj(body, item.DataObjType);
             return new HttpObj {HttpDataObj = dataObj};
         }
     }
@@ -112,9 +112,72 @@ namespace NetRpc.Http
                    string.IsNullOrWhiteSpace(contentType);
         }
 
-        public Task<HttpObj> ProcessAsync(HttpRequest request, Type dataObjType)
+        public Task<HttpObj> ProcessAsync(ProcessItem item)
         {
-            return Task.FromResult(new HttpObj {HttpDataObj = Helper.GetHttpDataObjFromQuery(request, dataObjType)});
+            return Task.FromResult(new HttpObj {HttpDataObj = GetHttpDataObjFromQuery(item.HttpRequest, item.DataObjType) });
+        }
+
+        private static HttpDataObj GetHttpDataObjFromQuery(HttpRequest request, Type dataObjType)
+        {
+            var dataObj = GetDataObjFromQuery(request, dataObjType);
+
+            return new HttpDataObj
+            {
+                StreamLength = 0,
+                Value = dataObj,
+                CallId = null,
+                ConnectionId = null,
+                Type = dataObj.GetType()
+            };
+        }
+
+        private static object GetDataObjFromQuery(HttpRequest request, Type dataObjType)
+        {
+            if (dataObjType == null)
+                return null;
+
+            var dataObj = Activator.CreateInstance(dataObjType);
+            var ps = dataObjType.GetProperties();
+            var targetObj = dataObj;
+
+            // dataObj is CustomObj? get inside properties.
+            if (ps.Length == 1 && !ps[0].PropertyType.IsSystemType())
+            {
+                targetObj = Activator.CreateInstance(ps[0].PropertyType);
+                ps[0].SetValue(dataObj, targetObj);
+            }
+
+            SetDataObj(request, targetObj);
+
+            return dataObj;
+        }
+
+        private static void SetDataObj(HttpRequest request, object dataObj)
+        {
+            var ps = dataObj.GetType().GetProperties();
+            foreach (var p in ps)
+            {
+                if (request.Query.TryGetValue(p.Name, out var values) ||
+                    request.HasFormContentType && request.Form.TryGetValue(p.Name, out values))
+                {
+                    try
+                    {
+                        if (p.PropertyType == typeof(string))
+                        {
+                            p.SetValue(dataObj, values[0]);
+                            continue;
+                        }
+
+                        // ReSharper disable once PossibleNullReferenceException
+                        var parsedValue = p.PropertyType.GetMethod("Parse", new[] { typeof(string) }).Invoke(null, new object[] { values[0] });
+                        p.SetValue(dataObj, parsedValue);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new HttpNotMatchedException($"http get, '{p.Name}' is not valid value, {ex.Message}");
+                    }
+                }
+            }
         }
     }
 
@@ -127,15 +190,30 @@ namespace NetRpc.Http
             _processors = processors.ToList();
         }
 
-        public async Task<HttpObj> ProcessAsync(HttpRequest request, Type dataObjType)
+        public async Task<HttpObj> ProcessAsync(ProcessItem item)
         {
-            if (dataObjType == null)
+            if (item.DataObjType == null)
                 return new HttpObj();
 
             foreach (var p in _processors)
-                if (p.MatchContentType(request.ContentType))
-                    return await p.ProcessAsync(request, dataObjType);
-            throw new HttpFailedException($"ContentType:'{request.ContentType}' is not supported.");
+                if (p.MatchContentType(item.HttpRequest.ContentType))
+                {
+                    var obj = await p.ProcessAsync(item);
+
+                    //set path values
+                    obj.HttpDataObj.SetValue(item.HttpRoutInfo.MatchesPathValues(item.FormatRawPath));
+
+                    return obj;
+                }
+            throw new HttpFailedException($"ContentType:'{item.HttpRequest.ContentType}' is not supported.");
         }
+    }
+
+    internal sealed class ProcessItem
+    {
+        public HttpRequest HttpRequest { get; set; }
+        public HttpRoutInfo HttpRoutInfo { get; set; }
+        public string FormatRawPath { get; set; }
+        public Type DataObjType { get; set; }
     }
 }

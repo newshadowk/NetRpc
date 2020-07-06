@@ -1,15 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
+using Microsoft.OpenApi.Models;
 using NetRpc.Http.Client;
 
 namespace NetRpc.Http
 {
     internal static class Helper
     {
+        public static OperationType ToOperationType(this string httpMethod)
+        {
+            return httpMethod switch
+            {
+                "POST" => OperationType.Post,
+                "GET" => OperationType.Get,
+                "PUT" => OperationType.Put,
+                "HEAD" => OperationType.Head,
+                "OPTIONS" => OperationType.Options,
+                "PATCH" => OperationType.Patch,
+                "DELETE" => OperationType.Delete,
+                _ => throw new ArgumentOutOfRangeException(nameof(httpMethod))
+            };
+        }
+
         public static HttpDataObj ToHttpDataObj(string json, Type t)
         {
             var obj = ToObjectForHttp(json, t);
@@ -61,20 +76,6 @@ namespace NetRpc.Http
             return ret.ToArray();
         }
 
-        public static HttpDataObj GetHttpDataObjFromQuery(HttpRequest request, Type dataObjType)
-        {
-            var dataObj = GetDataObjFromQuery(request, dataObjType);
-
-            return new HttpDataObj
-            {
-                StreamLength = 0,
-                Value = dataObj,
-                CallId = null,
-                ConnectionId = null,
-                Type = dataObj.GetType()
-            };
-        }
-
         public static bool IsEqualsOrSubclassOf(this Type t, Type c)
         {
             return t == c || t.IsSubclassOf(c);
@@ -115,6 +116,53 @@ namespace NetRpc.Http
                 null, classInstance, new object[] { });
         }
 
+        public static void SetSchemaType(this OpenApiSchema schema, Type t)
+        {
+            if (t == typeof(string))
+            {
+                schema.Type = "string";
+            }
+            else if (t == typeof(long))
+            {
+                schema.Type = "integer";
+                schema.Format = "int64";
+            }
+            else if (t == typeof(int))
+            {
+                schema.Type = "integer";
+            }
+            else if (t == typeof(double))
+            {
+                schema.Type = "number";
+                schema.Format = "double";
+            }
+            else if (t == typeof(float))
+            {
+                schema.Type = "number";
+            }
+            else if (t == typeof(byte))
+            {
+                schema.Type = "string";
+                schema.Format = "byte";
+            }
+            else if (t == typeof(bool))
+            {
+                schema.Type = "boolean";
+            }
+            else if (t == typeof(DateTime))
+            {
+                schema.Type = "string";
+                schema.Format = "date-time";
+            }
+            else if (t == typeof(Guid))
+            {
+                schema.Type = "string";
+                schema.Format = "uuid";
+            }
+            else
+                schema.Type = "string";
+        }
+
         private static (string connectionId, string callId, long streamLength) GetAdditionData(object dataObj)
         {
             if (dataObj == null)
@@ -133,55 +181,6 @@ namespace NetRpc.Http
             if (pi == null)
                 return null;
             return pi.GetValue(obj);
-        }
-
-        private static object GetDataObjFromQuery(HttpRequest request, Type dataObjType)
-        {
-            if (dataObjType == null)
-                return null;
-
-            var dataObj = Activator.CreateInstance(dataObjType);
-            var ps = dataObjType.GetProperties();
-            var targetObj = dataObj;
-
-            // dataObj is CustomObj? get inside properties.
-            if (ps.Length == 1 && !ps[0].PropertyType.IsSystemType())
-            {
-                targetObj = Activator.CreateInstance(ps[0].PropertyType);
-                ps[0].SetValue(dataObj, targetObj);
-            }
-
-            SetDataObj(request, targetObj);
-       
-            return dataObj;
-        }
-
-        private static void SetDataObj(HttpRequest request, object dataObj)
-        {
-            var ps = dataObj.GetType().GetProperties();
-            foreach (var p in ps)
-            {
-                if (request.Query.TryGetValue(p.Name, out var values) ||
-                    request.HasFormContentType && request.Form.TryGetValue(p.Name, out values))
-                {
-                    try
-                    {
-                        if (p.PropertyType == typeof(string))
-                        {
-                            p.SetValue(dataObj, values[0]);
-                            continue;
-                        }
-
-                        // ReSharper disable once PossibleNullReferenceException
-                        var parsedValue = p.PropertyType.GetMethod("Parse", new[] { typeof(string) }).Invoke(null, new object[] { values[0] });
-                        p.SetValue(dataObj, parsedValue);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new HttpNotMatchedException($"http get, '{p.Name}' is not valid value, {ex.Message}");
-                    }
-                }
-            }
         }
     }
 }

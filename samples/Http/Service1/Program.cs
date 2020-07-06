@@ -28,7 +28,7 @@ namespace Service
                     services.AddSignalR();
                     services.AddNSwagger();
                     services.AddNHttpService();
-                    services.AddNetRpcServiceContract<IServiceAsync, ServiceAsync>();
+                    services.AddNRpcServiceContract<IServiceAsync, ServiceAsync>();
                 })
                 .Configure(app =>
                 {

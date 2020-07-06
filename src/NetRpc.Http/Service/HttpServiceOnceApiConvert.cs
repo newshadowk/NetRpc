@@ -75,9 +75,9 @@ namespace NetRpc.Http
 
         public async Task<ServiceOnceCallParam> GetServiceOnceCallParamAsync()
         {
-            var actionInfo = GetActionInfo();
+            var (actionInfo, hri, rawPath) = GetActionInfo();
             var header = GetHeader();
-            var httpObj = await GetHttpDataObjAndStream(actionInfo);
+            var httpObj = await GetHttpDataObjAndStream(actionInfo, hri, rawPath);
             
             _connection.CallId = httpObj.HttpDataObj.CallId;
             _connection.ConnectionId = httpObj.HttpDataObj.ConnectionId;
@@ -197,7 +197,7 @@ namespace NetRpc.Http
 
         public bool NotMatched { get; private set; }
 
-        private ActionInfo GetActionInfo()
+        private (ActionInfo ai, HttpRoutInfo hri, string rawPath) GetActionInfo()
         {
             var rawPath = Helper.FormatPath(_context.Request.Path.Value);
             if (!string.IsNullOrEmpty(_rootPath))
@@ -210,8 +210,11 @@ namespace NetRpc.Http
 
             foreach (var contract in _contracts)
             foreach (var contractMethod in contract.ContractInfo.Methods)
-                if (rawPath == contractMethod.HttpRoutInfo.ToString())
-                    return contractMethod.MethodInfo.ToActionInfo();
+            {
+                var hri = contractMethod.Route.MatchPath(rawPath, _context.Request.Method);
+                if (hri != null)
+                    return (contractMethod.MethodInfo.ToActionInfo(), hri, rawPath);
+            }
 
             throw new HttpNotMatchedException($"Request url:'{_context.Request.Path.Value}' is not matched.");
         }
@@ -224,12 +227,18 @@ namespace NetRpc.Http
             return ret;
         }
 
-        private async Task<HttpObj> GetHttpDataObjAndStream(ActionInfo ai)
+        private async Task<HttpObj> GetHttpDataObjAndStream(ActionInfo ai, HttpRoutInfo hri, string rawPath)
         {
             //dataObjType
             var method = ApiWrapper.GetMethodInfo(ai, _contracts, _serviceProvider);
             var dataObjType = method.contractMethod.MergeArgType.Type;
-            return await _httpObjProcessorManager.ProcessAsync(_context.Request, dataObjType);
+            return await _httpObjProcessorManager.ProcessAsync(new ProcessItem
+            {
+                DataObjType = dataObjType,
+                HttpRoutInfo = hri,
+                HttpRequest = _context.Request,
+                FormatRawPath = rawPath
+            });
         }
 
         private void CallbackHubCanceled(object sender, string e)

@@ -26,13 +26,13 @@ namespace Service
                 .ConfigureServices((context, services) =>
                 {
                     services.AddNGrpcService(i => { i.AddPort("0.0.0.0", 50001); });
-                    services.AddNetRpcServiceContract<IService, Service>();
+                    services.AddNRpcServiceContract<IService, Service>();
                     services.AddNGrpcClient(i =>
                     {
                         i.Host = "localhost";
                         i.Port = 50002;
                     });
-                    services.AddNetRpcClientContract<IService1>();
+                    services.AddNRpcClientContract<IService1>();
                 })
                 .Build();
 

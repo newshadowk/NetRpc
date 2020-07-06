@@ -29,6 +29,22 @@ namespace NetRpc
             return msgContent.ToString();
         }
 
+        public static string FormatTemplate(this string template)
+        {
+            if (template == null)
+                return null;
+
+            template = template.Replace('\\', '/');
+
+            if (template.StartsWith("/"))
+                template = template.Substring(1);
+
+            if (template.EndsWith("\\"))
+                template = template.Substring(0, template.Length - 1);
+
+            return template;
+        }
+
         private static string GetMsgContent(Exception ee)
         {
             var ret = ee.Message;

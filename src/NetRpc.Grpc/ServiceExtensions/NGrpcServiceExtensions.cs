@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
             if (configureOptions != null)
                 services.Configure(configureOptions);
 
-            services.AddNetRpcService();
+            services.AddNRpcService();
             services.AddHostedService<GrpcServiceProxy>();
             services.AddSingleton(typeof(MessageCallImpl));
             return services;
@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.DependencyInjection
             else
                 services.AddGrpc();
 
-            services.AddNetRpcService();
+            services.AddNRpcService();
             return services;
         }
 #endif
@@ -60,7 +60,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddNGrpcClient(grpcClientConfigureOptions, clientConfigureOptions, serviceLifetime);
             services.Configure<NClientOption>(i => i.ForwardHeader = true);
             services.AddNGrpcClientContract<TService>(serviceLifetime);
-            services.AddNetRpcServiceContract(typeof(TService),
+            services.AddNRpcServiceContract(typeof(TService),
                 p => ((IClientProxy<TService>) p.GetService(typeof(IClientProxy<TService>))).Proxy, 
                 serviceLifetime);
             return services;
@@ -74,7 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection
             if (grpcClientConfigureOptions != null)
                 services.Configure(grpcClientConfigureOptions);
 
-            services.AddNetRpcClientByClientConnectionFactory<GrpcClientConnectionFactory>(clientConfigureOptions, serviceLifetime);
+            services.AddNRpcClientByClientConnectionFactory<GrpcClientConnectionFactory>(clientConfigureOptions, serviceLifetime);
 
             switch (serviceLifetime)
             {

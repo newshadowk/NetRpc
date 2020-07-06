@@ -6,7 +6,8 @@ using NetRpc;
 
 namespace DataContract
 {
-    [HttpRoute("Service", true)]
+    [HttpTrimAsync]
+    [HttpRoute("Service")]
     [FaultExceptionDefine(typeof(CustomException), 400, 1, "errorCode1 error description")]
     [FaultExceptionDefine(typeof(CustomException2), 400, 2, "errorCode2 error description")]
     [HttpHeader("h1", "h1 des.")]
@@ -53,5 +54,44 @@ namespace DataContract
         Task<ComplexStream> ComplexCallAsync(CustomObj obj, string p1, Stream stream, Func<CustomCallbackObj, Task> cb, CancellationToken token);
 
         Task<int> UploadAsync(Stream stream, string streamName, string p1, Func<int, Task> cb, CancellationToken token);
+    }
+
+    [HttpTrimAsync]
+    [HttpRoute("IRout1")]
+    [Tag("RoutTag1")]
+    public interface IService2Async
+    {
+        [Tag("CallTag1")]
+        [HttpPost]
+        [HttpRoute("Call1/{p1}")]
+        [HttpGet("/Root/Call/{p1}")]
+        [HttpTrimAsync]
+        Task<string> Call1Async(string p1, int p2);
+
+        [HttpGet]
+        [HttpDelete]
+        [HttpHead]
+        [HttpPut]
+        [HttpPatch]
+        [HttpOptions]
+        [HttpGet("Call2/{P1}/{P2}/Get")]
+        [HttpPost("Call2/{P1}/Post")]
+        Task<string> Call2Async(CallObj obj);
+    }
+
+    [Serializable]
+    public class CallObj
+    {
+        public string P1 { get; set; }
+        
+        public int P2 { get; set; }
+    }
+
+    [Serializable]
+    public class InnerObj2
+    {
+        public string P3 { get; set; }
+
+        public int I4 { get; set; }
     }
 }

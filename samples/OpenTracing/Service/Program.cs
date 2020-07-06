@@ -34,7 +34,7 @@ namespace Service
                     services.AddNHttpService();
 
                     services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
-                    services.AddNetRpcServiceContract<IService, Service>(ServiceLifetime.Scoped);
+                    services.AddNRpcServiceContract<IService, Service>(ServiceLifetime.Scoped);
 
                     services.Configure<GrpcClientOptions>("grpc1", i =>
                     {

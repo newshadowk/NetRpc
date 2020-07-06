@@ -82,7 +82,7 @@ namespace NetRpc.Http.Client
         {
             _callbackAction = methodContext.ContractMethod.MergeArgType.CallbackAction;
             var postObj = methodContext.ContractMethod.CreateMergeArgTypeObj(_callId, _connectionId, stream?.Length ?? 0, callParam.PureArgs);
-            var actionPath = methodContext.ContractMethod.HttpRoutInfo.ToString();
+            var actionPath = methodContext.ContractMethod.Route.DefaultRout.Path;
             var reqUrl = $"{_apiUrl}/{actionPath}";
 
             var client = new RestClient(reqUrl);

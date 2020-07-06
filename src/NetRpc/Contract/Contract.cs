@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -7,96 +8,25 @@ using System.Threading;
 
 namespace NetRpc
 {
-    public class TypeName
-    {
-        public string Name { get; set; }
-        public Type Type { get; set; }
-
-        public TypeName(string name, Type type)
-        {
-            Name = name;
-            Type = type;
-        }
-
-        public TypeName()
-        {
-        }
-    }
-
-    public sealed class MethodParameter
-    {
-        public int Index { get; }
-
-        public string Name { get; }
-
-        public Type Type { get; set; }
-
-        public MethodParameter(int index, string name, Type type)
-        {
-            Index = index;
-            Name = name;
-            Type = type;
-        }
-    }
-
-    public sealed class MergeArgType
-    {
-        public Type Type { get; }
-
-        public Type TypeWithoutStreamName { get; }
-
-        public string StreamPropName { get; }
-        
-        public TypeName CallbackAction { get; }
-
-        public TypeName CancelToken { get; }
-
-        public MergeArgType(Type type, Type typeWithoutStreamName, string streamPropName, TypeName callbackAction, TypeName cancelToken)
-        {
-            Type = type;
-            StreamPropName = streamPropName;
-            CallbackAction = callbackAction;
-            CancelToken = cancelToken;
-            TypeWithoutStreamName = typeWithoutStreamName;
-        }
-    }
-
-    public sealed class HttpRoutInfo
-    {
-        public string ContractPath { get; }
-
-        public string MethodPath { get; }
-
-        public HttpRoutInfo(string contractPath, string methodPath)
-        {
-            ContractPath = contractPath;
-            MethodPath = methodPath;
-        }
-
-        public override string ToString()
-        {
-            return $"{ContractPath}/{MethodPath}";
-        }
-    }
-
     public sealed class ContractMethod
     {
         public MethodInfo MethodInfo { get; }
 
-        public List<MethodParameter> Parameters { get; }
+        public ReadOnlyCollection<MethodParameter> Parameters { get; }
 
-        public ContractMethod(Type contractType, MethodInfo methodInfo, List<MethodParameter> parameters, List<FaultExceptionAttribute> faultExceptionAttributes,
-            List<HttpHeaderAttribute> httpHeaderAttributes, List<ResponseTextAttribute> responseTextAttributes, List<SecurityApiKeyAttribute> securityApiKeyAttributes)
+        public ReadOnlyCollection<MethodParameter> InnerSystemTypeParameters { get; }
+
+        public ContractMethod(Type contractType, string contractTypeTag, MethodInfo methodInfo, List<MethodParameter> parameters,
+            List<FaultExceptionAttribute> faultExceptionAttributes, List<HttpHeaderAttribute> httpHeaderAttributes,
+            List<ResponseTextAttribute> responseTextAttributes, List<SecurityApiKeyAttribute> securityApiKeyAttributes)
         {
             MethodInfo = methodInfo;
-            Parameters = parameters;
-            FaultExceptionAttributes = faultExceptionAttributes;
-            HttpHeaderAttributes = httpHeaderAttributes;
-            ResponseTextAttributes = responseTextAttributes;
-            SecurityApiKeyAttributes = securityApiKeyAttributes;
-            HttpRoutInfo = GetHttpRoutInfo(contractType, methodInfo);
-            TagAttributes = methodInfo.GetCustomAttributes<TagAttribute>(true).ToList();
-            MergeArgType = GetMergeArgType(methodInfo);
+            Parameters = new ReadOnlyCollection<MethodParameter>(parameters);
+            InnerSystemTypeParameters = new ReadOnlyCollection<MethodParameter>(GetInnerSystemTypeParameters(parameters));
+            FaultExceptionAttributes = new ReadOnlyCollection<FaultExceptionAttribute>(faultExceptionAttributes);
+            HttpHeaderAttributes = new ReadOnlyCollection<HttpHeaderAttribute>(httpHeaderAttributes);
+            ResponseTextAttributes = new ReadOnlyCollection<ResponseTextAttribute>(responseTextAttributes);
+            SecurityApiKeyAttributes = new ReadOnlyCollection<SecurityApiKeyAttribute>(securityApiKeyAttributes);
 
             //IgnoreAttribute
             IsGrpcIgnore = GetCustomAttribute<GrpcIgnoreAttribute>(contractType, methodInfo) != null;
@@ -106,14 +36,18 @@ namespace NetRpc
             IsTracerArgsIgnore = GetCustomAttribute<TracerArgsIgnoreAttribute>(contractType, methodInfo) != null;
             IsTraceReturnIgnore = GetCustomAttribute<TracerReturnIgnoreAttribute>(contractType, methodInfo) != null;
 
+            Route = new MethodRoute(contractType, methodInfo);
+            MergeArgType = GetMergeArgType(methodInfo);
             IsMQPost = GetCustomAttribute<MQPostAttribute>(contractType, methodInfo) != null;
+
+            Tags = new ReadOnlyCollection<string>(GetTags(contractTypeTag, methodInfo));
         }
 
         public MergeArgType MergeArgType { get; }
 
-        public HttpRoutInfo HttpRoutInfo { get; }
+        public ReadOnlyCollection<string> Tags { get; }
 
-        public List<TagAttribute> TagAttributes { get; }
+        public MethodRoute Route { get; }
 
         public bool IsTracerArgsIgnore { get; }
 
@@ -129,13 +63,53 @@ namespace NetRpc
 
         public bool IsMQPost { get; }
 
-        public List<FaultExceptionAttribute> FaultExceptionAttributes { get; }
+        public ReadOnlyCollection<FaultExceptionAttribute> FaultExceptionAttributes { get; }
 
-        public List<HttpHeaderAttribute> HttpHeaderAttributes { get; }
+        public ReadOnlyCollection<HttpHeaderAttribute> HttpHeaderAttributes { get; }
 
-        public List<ResponseTextAttribute> ResponseTextAttributes { get; }
+        public ReadOnlyCollection<ResponseTextAttribute> ResponseTextAttributes { get; }
 
-        public List<SecurityApiKeyAttribute> SecurityApiKeyAttributes { get; }
+        public ReadOnlyCollection<SecurityApiKeyAttribute> SecurityApiKeyAttributes { get; }
+
+        public bool IsSupportAllParameter()
+        {
+            return IsSupportAllParameter(Parameters);
+        }
+
+        private static List<MethodParameter> GetInnerSystemTypeParameters(IList<MethodParameter> ps)
+        {
+            if (ps.Count == 0)
+                return new List<MethodParameter>();
+
+            var ret = new List<MethodParameter>();
+            if (ps.Count == 1 && !ps[0].Type.IsSystemType())
+                ps = ps[0].Type.GetProperties().ToList().ConvertAll(i => new MethodParameter(i.Name, i.PropertyType));
+
+            foreach (var p in ps)
+            {
+                if (p.Type.IsSystemType())
+                    ret.Add(p);
+            }
+
+            return ret;
+        }
+
+        private static bool IsSupportAllParameter(IList<MethodParameter> ps)
+        {
+            if (ps.Count == 0)
+                return false;
+
+            if (ps.Count == 1 && !ps[0].Type.IsSystemType())
+            {
+                if (ps[0].Type.GetProperties().Any(i => !i.PropertyType.IsSystemType()))
+                    return false;
+                return true;
+            }
+
+            if (ps.Any(i => !i.Type.IsSystemType()))
+                return false;
+            return true;
+        }
 
         private static MergeArgType GetMergeArgType(MethodInfo m)
         {
@@ -247,47 +221,23 @@ namespace NetRpc
             return contractType.GetCustomAttribute<T>(true);
         }
 
-        private static HttpRoutInfo GetHttpRoutInfo(Type contractType, MethodInfo methodInfo)
-        {
-            //contractPath
-            string contractPath;
-            var contractRoute = contractType.GetCustomAttribute<HttpRouteAttribute>(true);
-            if (contractRoute?.Template == null)
-                contractPath = contractType.Name;
-            else
-                contractPath = contractRoute.Template;
-
-            //methodPath
-            string methodPath;
-            var methodRoute = methodInfo.GetCustomAttribute<HttpRouteAttribute>(true);
-            if (methodRoute?.Template != null)
-            {
-                if (methodRoute.Template != null)
-                {
-                    methodPath = methodRoute.Template;
-                }
-                else
-                {
-                    methodPath = methodInfo.Name;
-                    if (methodRoute.TrimActionAsync)
-                        methodPath = methodPath.TrimEndString("Async");
-                }
-            }
-            else
-            {
-                methodPath = methodInfo.Name;
-                if (contractRoute != null && contractRoute.TrimActionAsync)
-                    methodPath = methodPath.TrimEndString("Async");
-            }
-
-            return new HttpRoutInfo(contractPath, methodPath);
-        }
-
         private static Type BuildTypeWithoutStreamName(string typeName, List<CustomsPropertyInfo> cis)
         {
             var list = cis.ToList();
-            list.RemoveAll(i => i.PropertyName.IsStreamName() && i.Type == typeof(string)); 
+            list.RemoveAll(i => i.PropertyName.IsStreamName() && i.Type == typeof(string));
             return TypeFactory.BuildType(typeName, list);
+        }
+
+        private static List<string> GetTags(string contractTypeTag, MethodInfo methodInfo)
+        {
+            var ret = new List<string>();
+            ret.Add(contractTypeTag);
+
+            var tags = methodInfo.GetCustomAttributes<TagAttribute>(true);
+            foreach (var t in tags) 
+                ret.Add(t.Name);
+
+            return ret;
         }
     }
 
@@ -297,69 +247,56 @@ namespace NetRpc
         {
             Type = type;
 
-            HttpRoute = type.GetCustomAttribute<HttpRouteAttribute>(true);
-            SecurityApiKeyDefineAttributes = type.GetCustomAttributes<SecurityApiKeyDefineAttribute>(true).ToList();
-            Methods = new List<ContractMethod>();
-
+            SecurityApiKeyDefineAttributes = new ReadOnlyCollection<SecurityApiKeyDefineAttribute>(
+                type.GetCustomAttributes<SecurityApiKeyDefineAttribute>(true).ToList());
+     
             var methodInfos = type.GetInterfaceMethods().ToList();
-            var faultDic = GetItemsFromDefines<FaultExceptionAttribute, FaultExceptionDefineAttribute>(type, methodInfos, 
+            var faultDic = GetItemsFromDefines<FaultExceptionAttribute, FaultExceptionDefineAttribute>(type, methodInfos,
                 (i, define) => i.DetailType == define.DetailType);
             var apiKeysDic = GetItemsFromDefines<SecurityApiKeyAttribute, SecurityApiKeyDefineAttribute>(type, methodInfos,
                 (i, define) => i.Key == define.Key);
             var httpHeaderDic = GetAttributes<HttpHeaderAttribute>(type, methodInfos);
             var responseTextDic = GetAttributes<ResponseTextAttribute>(type, methodInfos);
+            var tag = GetTag(type);
 
+            var methods = new List<ContractMethod>();
             foreach (var f in faultDic)
-                Methods.Add(new ContractMethod(type, 
-                    f.Key, 
-                    GetMethodParameters(f.Key), 
-                    f.Value, 
+                methods.Add(new ContractMethod(
+                    type, 
+                    tag,
+                    f.Key,
+                    GetMethodParameters(f.Key),
+                    f.Value,
                     httpHeaderDic[f.Key],
                     responseTextDic[f.Key],
                     apiKeysDic[f.Key]));
 
-            var tagDic = new Dictionary<string, TagAttribute>();
-            Methods.ForEach(i => i.TagAttributes.ForEach(j => tagDic[j.Name] = j));
-            TagAttributes = tagDic.Values.ToList();
+            Methods = new ReadOnlyCollection<ContractMethod>(methods);
+            Tags = new ReadOnlyCollection<string>(GetTags(methods));
         }
 
         public Type Type { get; }
 
-        public List<SecurityApiKeyDefineAttribute> SecurityApiKeyDefineAttributes { get; }
+        public ReadOnlyCollection<SecurityApiKeyDefineAttribute> SecurityApiKeyDefineAttributes { get; }
 
-        public List<ContractMethod> Methods { get; }
+        public ReadOnlyCollection<ContractMethod> Methods { get; }
 
-        public HttpRouteAttribute HttpRoute { get; }
-
-        public List<TagAttribute> TagAttributes { get; }
-
-        public string Route
-        {
-            get
-            {
-                if (HttpRoute?.Template == null)
-                    return Type.Name;
-                return HttpRoute.Template;
-            }
-        }
+        public ReadOnlyCollection<string> Tags { get; }
 
         private static List<MethodParameter> GetMethodParameters(MethodInfo methodInfo)
         {
             var ret = new List<MethodParameter>();
-            int i = -1;
             foreach (var p in methodInfo.GetParameters())
             {
-                i++;
                 if (p.ParameterType.IsFuncT() || p.ParameterType == typeof(Stream))
                     continue;
-
-                ret.Add(new MethodParameter(i, p.Name, p.ParameterType));
+                ret.Add(new MethodParameter(p.Name, p.ParameterType));
             }
 
             return ret;
         }
 
-        private static Dictionary<MethodInfo, List<T>> GetItemsFromDefines<T, TDefine>(Type contractType, IEnumerable<MethodInfo> methodInfos, 
+        private static Dictionary<MethodInfo, List<T>> GetItemsFromDefines<T, TDefine>(Type contractType, IEnumerable<MethodInfo> methodInfos,
             Func<T, TDefine, bool> match)
             where T : Attribute
             where TDefine : Attribute
@@ -397,6 +334,24 @@ namespace NetRpc
             }
 
             return dic;
+        }
+
+        private static string GetTag(Type type)
+        {
+            var tags = type.GetCustomAttributes<TagAttribute>(true).ToList();
+            if (tags.Count > 1)
+                throw new InvalidOperationException("TagAttribute on Interface is not allow multiple.");
+
+            if (tags.Count == 0)
+                return type.Name;
+            return tags[0].Name;
+        }
+
+        private static List<string> GetTags(List<ContractMethod> methods)
+        {
+            var ret = new List<string>();
+            methods.ForEach(i => ret.AddRange(i.Tags));
+            return ret.Distinct().ToList();
         }
     }
 

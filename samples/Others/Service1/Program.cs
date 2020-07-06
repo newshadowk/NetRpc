@@ -24,7 +24,7 @@ namespace Service
                 .ConfigureServices((context, services) =>
                 {
                     services.AddNGrpcService(i => { i.AddPort("0.0.0.0", 50002); });
-                    services.AddNetRpcServiceContract<IService1, Service1>();
+                    services.AddNRpcServiceContract<IService1, Service1>();
                 }).ConfigureLogging((context, builder) => { builder.AddConsole(); })
                 .Build();
 
