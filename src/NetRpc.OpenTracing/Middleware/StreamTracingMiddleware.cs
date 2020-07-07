@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using OpenTracing;
 using OpenTracing.Util;
@@ -16,6 +17,7 @@ namespace NetRpc.OpenTracing
 
         public async Task InvokeAsync(ActionExecutingContext context, IOptions<OpenTracingOptions> options)
         {
+            Console.WriteLine("StreamTracingMiddleware");
             if (context.ContractMethod.IsTracerIgnore)
             {
                 await _next(context);
