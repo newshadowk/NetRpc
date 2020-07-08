@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -77,23 +78,22 @@ namespace NetRpc
         public static async Task SendStreamAsync(Func<byte[], Task> publishBuffer, Func<Task> publishBufferEnd, Stream stream, CancellationToken token,
             Action started = null)
         {
-            var buffer = new byte[StreamBufferSize];
-
-            var readCount = await stream.GreedReadAsync(buffer, 0, StreamBufferSize, token);
+            using var rent = new ArrayPoolRent<byte>(StreamBufferSize);
+            var readCount = await stream.GreedReadAsync(rent.Data, 0, StreamBufferSize, token);
             started?.Invoke();
             while (readCount > 0)
             {
                 if (readCount < StreamBufferSize)
                 {
-                    var tempBs = new byte[readCount];
-                    Buffer.BlockCopy(buffer, 0, tempBs, 0, readCount);
-                    await publishBuffer(tempBs);
+                    using var tmpRent = new ArrayPoolRent<byte>(readCount);
+                    Buffer.BlockCopy(rent.Data, 0, tmpRent.Data, 0, readCount);
+                    await publishBuffer(tmpRent.Data);
                     await publishBufferEnd();
                     return;
                 }
 
-                await publishBuffer(buffer);
-                readCount = await stream.GreedReadAsync(buffer, 0, StreamBufferSize, token);
+                await publishBuffer(rent.Data);
+                readCount = await stream.GreedReadAsync(rent.Data, 0, StreamBufferSize, token);
             }
 
             await publishBufferEnd();

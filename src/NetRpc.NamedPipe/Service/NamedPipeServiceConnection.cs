@@ -5,25 +5,25 @@ using System.Threading.Tasks;
 
 namespace NetRpc.NamedPipe
 {
-    //internal sealed class NamedPipeServiceConnection : IServiceConnection
-    //{
-    //    public void Dispose()
-    //    {
-    //        throw new NotImplementedException();
-    //    }
+//    internal sealed class NamedPipeServiceConnection : IServiceConnection
+//    {
+//        public void Dispose()
+//        {
+//            throw new NotImplementedException();
+//        }
 
-    //    public event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;
+//        public event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;
 
-    //    public Task SendAsync(byte[] buffer)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
+//        public Task SendAsync(byte[] buffer)
+//        {
+//            throw new NotImplementedException();
+//        }
 
-    //    public Task StartAsync()
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-    //}
+//        public Task StartAsync()
+//        {
+//            throw new NotImplementedException();
+//        }
+//    }
 
 
 //    internal sealed class NamedPipeServerProxy :
@@ -32,7 +32,6 @@ namespace NetRpc.NamedPipe
 //#else
 //        IDisposable
 //#endif
-
 //    {
 //        private readonly NamedPipeServerStream _pipeServer;
 
@@ -42,6 +41,11 @@ namespace NetRpc.NamedPipe
 //        }
 
 //        public event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;
+
+//        //public async Task Send(byte[] buffer)
+//        //{
+//        //    _pipeServer.WriteAsync(buffer)
+//        //}
 
 //        public async void StartWaitForConnection()
 //        {
