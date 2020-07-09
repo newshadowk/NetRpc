@@ -36,7 +36,7 @@ namespace NetRpc
             Type = type;
             Body = body;
             All = new byte[TypeSize + (Body?.Length ?? 0)];
-            All[0] = (byte) type;
+            All[0] = (byte)type;
             if (Body != null)
                 Buffer.BlockCopy(body, 0, All, TypeSize, Body.Length);
         }
@@ -50,26 +50,26 @@ namespace NetRpc
 
     internal sealed class Request : Message
     {
-        public new RequestType Type => (RequestType) Enum.ToObject(typeof(RequestType), base.Type);
+        public new RequestType Type => (RequestType)Enum.ToObject(typeof(RequestType), base.Type);
 
         public Request(byte[] bytes) : base(bytes)
         {
         }
 
-        public Request(RequestType type, byte[] body = default) : base((int) type, body)
+        public Request(RequestType type, byte[] body = default) : base((int)type, body)
         {
         }
     }
 
     internal sealed class Reply : Message
     {
-        public new ReplyType Type => (ReplyType) Enum.ToObject(typeof(ReplyType), base.Type);
+        public new ReplyType Type => (ReplyType)Enum.ToObject(typeof(ReplyType), base.Type);
 
         public Reply(byte[] bytes) : base(bytes)
         {
         }
 
-        private Reply(ReplyType type, byte[] body = default) : base((int) type, body)
+        private Reply(ReplyType type, byte[] body = default) : base((int)type, body)
         {
         }
 
@@ -112,56 +112,5 @@ namespace NetRpc
         {
             return new Reply(ReplyType.BufferEnd);
         }
-    }
-
-    internal enum RequestType
-    {
-        Cmd,
-        Buffer,
-        BufferEnd,
-        Cancel
-    }
-
-    internal enum ReplyType
-    {
-        /// <summary>
-        /// body:long?, stream length.
-        /// </summary>
-        ResultStream,
-
-        /// <summary>
-        /// body:CustomResult.
-        /// </summary>
-        CustomResult,
-
-        /// <summary>
-        /// body:Callback object.
-        /// </summary>
-        Callback,
-
-        /// <summary>
-        /// body:Exception.
-        /// </summary>
-        Fault,
-
-        /// <summary>
-        /// body:byte[].
-        /// </summary>
-        Buffer,
-
-        /// <summary>
-        /// body:null.
-        /// </summary>
-        BufferCancel,
-
-        /// <summary>
-        /// body:null.
-        /// </summary>
-        BufferFault,
-
-        /// <summary>
-        /// body:null.
-        /// </summary>
-        BufferEnd
     }
 }

@@ -11,10 +11,11 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    public delegate Task AsyncEventHandler<in TEvent>(object sender, TEvent @event) where TEvent : EventArgs;
-
     public static class Helper
     {
+        /// <summary>
+        /// 82910 less than 85000, not in LOH.
+        /// </summary>
         public const int StreamBufferSize = 81920;
 
         /// <summary>
@@ -78,22 +79,22 @@ namespace NetRpc
         public static async Task SendStreamAsync(Func<byte[], Task> publishBuffer, Func<Task> publishBufferEnd, Stream stream, CancellationToken token,
             Action started = null)
         {
-            using var rent = new ArrayPoolRent<byte>(StreamBufferSize);
-            var readCount = await stream.GreedReadAsync(rent.Data, 0, StreamBufferSize, token);
+            using var bo = ArrayPool<byte>.Shared.RentOwner(StreamBufferSize);
+            var readCount = await stream.GreedReadAsync(bo.Array, 0, StreamBufferSize, token);
             started?.Invoke();
             while (readCount > 0)
             {
                 if (readCount < StreamBufferSize)
                 {
-                    using var tmpRent = new ArrayPoolRent<byte>(readCount);
-                    Buffer.BlockCopy(rent.Data, 0, tmpRent.Data, 0, readCount);
-                    await publishBuffer(tmpRent.Data);
+                    var tmpBuffer = new byte[readCount];
+                    Buffer.BlockCopy(bo.Array, 0, tmpBuffer, 0, readCount);
+                    await publishBuffer(tmpBuffer);
                     await publishBufferEnd();
                     return;
                 }
 
-                await publishBuffer(rent.Data);
-                readCount = await stream.GreedReadAsync(rent.Data, 0, StreamBufferSize, token);
+                await publishBuffer(bo.Array);
+                readCount = await stream.GreedReadAsync(bo.Array, 0, StreamBufferSize, token);
             }
 
             await publishBufferEnd();
@@ -410,20 +411,6 @@ namespace NetRpc
                 if (foundTgtP != null)
                     foundTgtP.SetValue(toObj, srcP.GetValue(fromObj, null), null);
             }
-        }
-
-        public static async Task InvokeAsync<TEventArgs>(this AsyncEventHandler<TEventArgs> @event, object sender, TEventArgs eventArgs) where TEventArgs : EventArgs
-        {
-            var handler = @event;
-            if (handler == null)
-                return;
-
-            var invocationList = handler.GetInvocationList();
-            Task[] handlerTasks = new Task[invocationList.Length];
-            for (var i = 0; i < invocationList.Length; i++)
-                handlerTasks[i] = ((AsyncEventHandler<TEventArgs>)invocationList[i])(sender, eventArgs);
-
-            await Task.WhenAll(handlerTasks);
         }
 
         public static string ExceptionToString(this Exception e)

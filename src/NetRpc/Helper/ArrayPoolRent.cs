@@ -1,20 +1,25 @@
-﻿using System;
-using System.Buffers;
-
-namespace NetRpc
+﻿namespace System.Buffers
 {
-    public class ArrayPoolRent<T> :IDisposable
+    public static class ArrayPoolExtensions
     {
-        public ArrayPoolRent(int minimumLength)
+        public static ArrayOwner<T> RentOwner<T>(this ArrayPool<T> arrayPool, int minimumLength)
         {
-            Data = ArrayPool<T>.Shared.Rent(minimumLength);
+            return new ArrayOwner<T>(arrayPool.Rent(minimumLength));
+        }
+    }
+
+    public class ArrayOwner<T> :IDisposable
+    {
+        public ArrayOwner(T[] array)
+        {
+            Array = array;
         }
 
-        public T[] Data { get; }
+        public T[] Array { get; }
 
         public void Dispose()
         {
-            ArrayPool<T>.Shared.Return(Data);
+            ArrayPool<T>.Shared.Return(Array);
         }
     }
 }
