@@ -9,26 +9,24 @@ namespace NetRpc
 {
     public sealed class RequestHandler
     {
-        private readonly ChannelType _channelType;
         private readonly ILogger _logger;
         private readonly MiddlewareBuilder _middlewareBuilder;
         private readonly IServiceProvider _serviceProvider;
 
-        public RequestHandler(IServiceProvider serviceProvider, ChannelType channelType)
+        public RequestHandler(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
-            _channelType = channelType;
             _logger = _serviceProvider.GetService<ILoggerFactory>().CreateLogger("NetRpc");
             var middlewareOptions = _serviceProvider.GetService<IOptions<MiddlewareOptions>>().Value;
             _middlewareBuilder = new MiddlewareBuilder(middlewareOptions, serviceProvider);
         }
 
-        public async Task HandleAsync(IServiceConnection connection)
+        public async Task HandleAsync(IServiceConnection connection, ChannelType channelType)
         {
-            await HandleAsync(new BufferServiceOnceApiConvert(connection, _logger));
+            await HandleAsync(new BufferServiceOnceApiConvert(connection, _logger), channelType);
         }
 
-        public async Task HandleAsync(IServiceOnceApiConvert convert)
+        public async Task HandleAsync(IServiceOnceApiConvert convert, ChannelType channelType)
         {
             try
             {
@@ -44,8 +42,8 @@ namespace NetRpc
                     scope.ServiceProvider, 
                     convert, 
                     _middlewareBuilder, 
-                    rpcContextAccessor, 
-                    _channelType,
+                    rpcContextAccessor,
+                    channelType,
                     _logger);
 
                 await onceTransfer.StartAsync();

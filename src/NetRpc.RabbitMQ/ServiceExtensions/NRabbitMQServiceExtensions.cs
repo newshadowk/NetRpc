@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection
             if (configureOptions != null)
                 services.Configure(configureOptions);
             services.AddNRpcService();
-            services.AddHostedService<RabbitMQServiceProxy>();
+            services.AddHostedService<RabbitMQHostedService>();
             return services;
         }
 

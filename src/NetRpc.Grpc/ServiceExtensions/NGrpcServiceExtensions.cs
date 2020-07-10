@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.Configure(configureOptions);
 
             services.AddNRpcService();
-            services.AddHostedService<GrpcServiceProxy>();
+            services.AddHostedService<GrpcHostedService>();
             services.AddSingleton(typeof(MessageCallImpl));
             return services;
         }

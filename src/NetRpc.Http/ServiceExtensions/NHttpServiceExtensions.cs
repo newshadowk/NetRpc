@@ -41,7 +41,6 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (httpServiceConfigureOptions != null)
                 services.Configure(httpServiceConfigureOptions);
-            services.TryAddSingleton(p => new RequestHandler(p, ChannelType.Http));
 
             //HttpObjProcessor
             services.TryAddSingleton<HttpObjProcessorManager>();

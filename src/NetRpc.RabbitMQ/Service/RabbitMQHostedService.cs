@@ -12,21 +12,22 @@ namespace NetRpc.RabbitMQ
     /// for not .net3.1;
     /// .net 3.1 have not implemented yet.
     /// </summary>
-    public sealed class RabbitMQServiceProxy : IHostedService
+    public sealed class RabbitMQHostedService : IHostedService
     {
         private readonly BusyFlag _busyFlag;
-        private RequestHandler _requestHandler;
+        private readonly RequestHandler _requestHandler;
         private Service _service;
         private readonly ILogger _logger;
 
-        public RabbitMQServiceProxy(IOptions<RabbitMQServiceOptions> mqOptions, BusyFlag busyFlag, IServiceProvider serviceProvider, ILoggerFactory factory)
+        public RabbitMQHostedService(IOptions<RabbitMQServiceOptions> mqOptions, BusyFlag busyFlag, RequestHandler requestHandler, ILoggerFactory factory)
         {
             _busyFlag = busyFlag;
             _logger = factory.CreateLogger("NetRpc");
-            Reset(mqOptions.Value, serviceProvider);
+            _requestHandler = requestHandler;
+            Reset(mqOptions.Value);
         }
 
-        private void Reset(MQOptions opt, IServiceProvider serviceProvider)
+        private void Reset(MQOptions opt)
         {
             if (_service != null)
             {
@@ -35,7 +36,6 @@ namespace NetRpc.RabbitMQ
             }
 
             _service = new Service(opt.CreateConnectionFactory(), opt.RpcQueue, opt.PrefetchCount, _logger);
-            _requestHandler = new RequestHandler(serviceProvider, ChannelType.RabbitMQ);
             _service.ReceivedAsync += ServiceReceivedAsync;
         }
 
@@ -49,7 +49,7 @@ namespace NetRpc.RabbitMQ
 #endif 
 
                 using var connection = new RabbitMQServiceConnection(e.Value);
-                await _requestHandler.HandleAsync(connection);
+                await _requestHandler.HandleAsync(connection, ChannelType.RabbitMQ);
             }
             finally
             {

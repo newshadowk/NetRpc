@@ -10,12 +10,12 @@ namespace NetRpc.Grpc
     /// <summary>
     /// for not .net 3.1
     /// </summary>
-    internal sealed class GrpcServiceProxy : IHostedService
+    internal sealed class GrpcHostedService : IHostedService
     {
         private readonly Service _service;
         private readonly BusyFlag _busyFlag;
 
-        public GrpcServiceProxy(IOptions<NGrpcServiceOptions> options, MessageCallImpl messageCall, BusyFlag busyFlag)
+        public GrpcHostedService(IOptions<NGrpcServiceOptions> options, MessageCallImpl messageCall, BusyFlag busyFlag)
         {
             _busyFlag = busyFlag;
             _service = new Service(options.Value.Ports, messageCall);

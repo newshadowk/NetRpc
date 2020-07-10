@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using Proxy.Grpc;
@@ -12,10 +11,10 @@ namespace NetRpc.Grpc
         private readonly RequestHandler _requestHandler;
         private readonly ILogger _logger;
 
-        public MessageCallImpl(IServiceProvider serviceProvider, ILoggerFactory factory, BusyFlag busyFlag)
+        public MessageCallImpl(RequestHandler requestHandler, ILoggerFactory factory, BusyFlag busyFlag)
         {
             _busyFlag = busyFlag;
-            _requestHandler = new RequestHandler(serviceProvider, ChannelType.Grpc);
+            _requestHandler = requestHandler;
             _logger = factory.CreateLogger("NetRpc");
         }
 
@@ -27,7 +26,7 @@ namespace NetRpc.Grpc
             try
             {
                 connection = new GrpcServiceConnection(requestStream, responseStream, _logger);
-                await _requestHandler.HandleAsync(connection);
+                await _requestHandler.HandleAsync(connection, ChannelType.Grpc);
             }
             finally
             {
