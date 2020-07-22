@@ -6,7 +6,7 @@ namespace NetRpc.Http
     {
         private readonly object _lockObj = new object();
 
-        private ProgressCounter _speedCounter;
+        private ProgressCounter? _speedCounter;
 
         public ProgressEventArgs DownLoaderProgress(long currSize, long totalSize)
         {

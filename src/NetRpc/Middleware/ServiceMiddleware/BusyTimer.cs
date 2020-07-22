@@ -31,7 +31,7 @@ namespace NetRpc
             T.Stop();
         }
 
-        public event AsyncEventHandler<ElapsedEventArgs> ElapsedAsync;
+        public event AsyncEventHandler<ElapsedEventArgs>? ElapsedAsync;
 
         private Task OnElapsedAsync(ElapsedEventArgs e)
         {

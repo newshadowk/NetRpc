@@ -8,16 +8,16 @@ namespace RabbitMQ.Base
 {
     public sealed class Service : IDisposable
     {
-        public event AsyncEventHandler<EventArgsT<CallSession>> ReceivedAsync;
-        public event EventHandler<ShutdownEventArgs> ConnectionShutdown;
-        private IConnection _connection;
+        public event AsyncEventHandler<EventArgsT<CallSession>>? ReceivedAsync;
+        public event EventHandler<ShutdownEventArgs>? ConnectionShutdown;
+        private IConnection? _connection;
         private readonly ConnectionFactory _factory;
         private readonly string _rpcQueue;
         private readonly int _prefetchCount;
         private readonly ILogger _logger;
         private volatile bool _disposed;
 
-        public ServiceInner Inner { get; private set; }
+        public ServiceInner? Inner { get; private set; }
 
         public Service(ConnectionFactory factory, string rpcQueue, int prefetchCount, ILogger logger)
         {

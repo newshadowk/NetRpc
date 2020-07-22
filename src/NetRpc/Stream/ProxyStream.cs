@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,6 +29,47 @@ namespace NetRpc
             _length = length;
         }
 
+#if NETSTANDARD2_1 || NETCOREAPP3_1
+
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = new CancellationToken())
+        {
+            int readCount;
+            try
+            {
+                readCount = await _stream.ReadAsync(buffer, cancellationToken);
+                await WriteCacheAsync(buffer, cancellationToken);
+                await InvokeStartAsync();
+                await OnProgressAsync(new SizeEventArgs(Position));
+            }
+            catch
+            {
+                await InvokeFinishAsync(new SizeEventArgs(Position));
+                throw;
+            }
+
+            if (readCount == 0)
+                await InvokeFinishAsync(new SizeEventArgs(Position));
+
+            return readCount;
+        }
+
+        public override int Read(Span<byte> buffer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return _stream.WriteAsync(buffer, cancellationToken);
+        }
+
+        public override void Write(ReadOnlySpan<byte> buffer)
+        {
+            _stream.Write(buffer);
+        }
+
+#endif
+
         public override void Flush()
         {
             _stream.Flush();
@@ -35,24 +77,7 @@ namespace NetRpc
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            int readCount;
-            try
-            {
-                readCount = _stream.Read(buffer, offset, count);
-                InvokeStart();
-                WriteCache(buffer, offset, readCount);
-                OnProgress(new SizeEventArgs(Position));
-            }
-            catch
-            {
-                InvokeFinish(new SizeEventArgs(Position));
-                throw;
-            }
-
-            if (readCount == 0)
-                InvokeFinish(new SizeEventArgs(Position));
-
-            return readCount;
+            throw new NotImplementedException();
         }
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -61,20 +86,30 @@ namespace NetRpc
             try
             {
                 readCount = await _stream.ReadAsync(buffer, offset, count, cancellationToken);
-                WriteCache(buffer, offset, readCount);
-                InvokeStart();
-                OnProgress(new SizeEventArgs(Position));
+                await WriteCacheAsync(buffer, offset, readCount, cancellationToken);
+                await InvokeStartAsync();
+                await OnProgressAsync(new SizeEventArgs(Position));
             }
             catch
             {
-                InvokeFinish(new SizeEventArgs(Position));
+                await InvokeFinishAsync(new SizeEventArgs(Position));
                 throw;
             }
 
             if (readCount == 0)
-                InvokeFinish(new SizeEventArgs(Position));
+                await InvokeFinishAsync(new SizeEventArgs(Position));
 
             return readCount;
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            _stream.Write(buffer, offset, count);
+        }
+
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            return _stream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -87,13 +122,10 @@ namespace NetRpc
             _stream.SetLength(value);
         }
 
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            _stream.Write(buffer, offset, count);
-        }
-
         public override bool CanRead => _stream.CanRead;
+
         public override bool CanSeek => _stream.CanSeek;
+
         public override bool CanWrite => _stream.CanWrite;
 
         // ReSharper disable once ConvertToAutoProperty

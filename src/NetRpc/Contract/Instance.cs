@@ -32,7 +32,7 @@ namespace NetRpc
 
         public List<ActionFilterAttribute> ActionFilters { get; } = new List<ActionFilterAttribute>();
 
-        public InstanceMethod(MethodInfo methodInfo, object target = null)
+        public InstanceMethod(MethodInfo methodInfo, object? target = null)
         {
             MethodInfo = methodInfo;
 

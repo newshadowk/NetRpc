@@ -43,7 +43,7 @@ namespace NetRpc
             Tags = new ReadOnlyCollection<string>(GetTags(contractTypeTag, methodInfo));
         }
 
-        public MergeArgType MergeArgType { get; }
+        public MergeArgType? MergeArgType { get; }
 
         public ReadOnlyCollection<string> Tags { get; }
 
@@ -111,11 +111,11 @@ namespace NetRpc
             return true;
         }
 
-        private static MergeArgType GetMergeArgType(MethodInfo m)
+        private static MergeArgType? GetMergeArgType(MethodInfo m)
         {
-            string streamName = null;
-            TypeName action = null;
-            TypeName cancelToken = null;
+            string? streamName = null;
+            TypeName? action = null;
+            TypeName? cancelToken = null;
 
             // ReSharper disable once PossibleNullReferenceException
             var typeName = $"{m.DeclaringType.Namespace}_{m.DeclaringType.Name}_{m.Name}Param2";
@@ -138,12 +138,7 @@ namespace NetRpc
                 //callback
                 if (p.ParameterType.IsFuncT())
                 {
-                    action = new TypeName
-                    {
-                        Type = p.ParameterType,
-                        Name = p.Name
-                    };
-
+                    action = new TypeName(p.Name, p.ParameterType);
                     addedCallId = true;
                     continue;
                 }
@@ -151,12 +146,7 @@ namespace NetRpc
                 //cancel
                 if (p.ParameterType == typeof(CancellationToken?) || p.ParameterType == typeof(CancellationToken))
                 {
-                    cancelToken = new TypeName
-                    {
-                        Type = p.ParameterType,
-                        Name = p.Name
-                    };
-
+                    cancelToken = new TypeName(p.Name, p.ParameterType);
                     addedCallId = true;
                     continue;
                 }
@@ -189,7 +179,7 @@ namespace NetRpc
             return new MergeArgType(t, t2, streamName, action, cancelToken);
         }
 
-        public object CreateMergeArgTypeObj(string callId, string connectionId, long streamLength, object[] args)
+        public object? CreateMergeArgTypeObj(string? callId, string? connectionId, long streamLength, object?[] args)
         {
             if (MergeArgType.Type == null)
                 return null;
@@ -357,19 +347,24 @@ namespace NetRpc
 
     public class Contract
     {
-        private readonly Func<IServiceProvider, object> _instanceFactory;
+        private readonly Func<IServiceProvider, object>? _instanceFactory;
 
         public ContractInfo ContractInfo { get; }
 
-        public Type InstanceType { get; private set; }
+        public Type? InstanceType { get; private set; }
 
         public MethodInfo GetInstanceMethodInfo(string name, IServiceProvider serviceProvider)
         {
             if (InstanceType != null)
                 return InstanceType.GetMethod(name);
 
-            InstanceType = _instanceFactory(serviceProvider).GetType();
-            return InstanceType.GetMethod(name);
+            if (_instanceFactory != null)
+            {
+                InstanceType = _instanceFactory(serviceProvider).GetType();
+                return InstanceType.GetMethod(name);
+            }
+
+            throw new ArgumentNullException();
         }
 
         public Contract(Type contractType, Type instanceType)

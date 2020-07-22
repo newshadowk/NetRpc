@@ -2,6 +2,6 @@
 {
     public interface IRouteTemplateProvider
     {
-        string Template { get; }
+        string? Template { get; }
     }
 }

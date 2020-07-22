@@ -5,7 +5,7 @@ namespace NetRpc
 {
     internal static class FuncHelper
     {
-        public static Func<object, Task> ConvertFunc(object func)
+        public static Func<object?, Task>? ConvertFunc(object func)
         {
             var f = (Delegate)func;
             if (f == null)
@@ -13,10 +13,12 @@ namespace NetRpc
             return o => (Task) f.DynamicInvoke(o);
         }
 
-        public static object ConvertFunc(Func<object, Task> func, Type type)
+        public static object? ConvertFunc(Func<object?, Task>? func, Type? type)
         {
             if (func == null)
                 return null;
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
 
             var fp = new FuncProxy(func);
             var makeGenericType = typeof(Func<,>).MakeGenericType(type, typeof(Task));
@@ -28,9 +30,9 @@ namespace NetRpc
 
         public class FuncProxy
         {
-            private readonly Func<object, Task> _func;
+            private readonly Func<object?, Task> _func;
 
-            public FuncProxy(Func<object, Task> func)
+            public FuncProxy(Func<object?, Task> func)
             {
                 _func = func;
             }

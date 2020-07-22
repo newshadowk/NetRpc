@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,12 +13,10 @@ namespace NetRpc
     {
         private readonly IServiceConnection _connection;
         private readonly ILogger _logger;
-        private CancellationTokenSource _cts;
+        private CancellationTokenSource _cts = null!;
+        private readonly DuplexPipe _streamPipe = new DuplexPipe(new PipeOptions(pauseWriterThreshold: Helper.StreamBufferCacheCount, resumeWriterThreshold:1));
 
-        private readonly BufferBlock<(byte[], BufferType)> _block =
-            new BufferBlock<(byte[], BufferType)>(new DataflowBlockOptions {BoundedCapacity = Helper.StreamBufferCacheCount});
-
-        private readonly WriteOnceBlock<Request> _cmdReq = new WriteOnceBlock<Request>(null);
+        private readonly WriteOnceBlock<byte[]> _cmdReq = new WriteOnceBlock<byte[]>(null);
 
         public BufferServiceOnceApiConvert(IServiceConnection connection, ILogger logger)
         {
@@ -32,19 +31,21 @@ namespace NetRpc
             await _connection.StartAsync();
         }
 
-        private async Task ConnectionReceivedAsync(object sender, EventArgsT<byte[]> e)
+        private async Task ConnectionReceivedAsync(object sender, EventArgsT<ReadOnlyMemory<byte>> e)
         {
             var r = new Request(e.Value);
+
             switch (r.Type)
             {
                 case RequestType.Cmd:
-                    _cmdReq.Post(new Request(e.Value));
+                    _cmdReq.Post(r.Body.ToArray());
                     break;
                 case RequestType.Buffer:
-                    await _block.SendAsync((r.Body, BufferType.Buffer));
+                    await _streamPipe.OutputStream.ComWriteAsync(r.Body);
                     break;
                 case RequestType.BufferEnd:
-                    await _block.SendAsync((r.Body, BufferType.End));
+                    await _streamPipe.OutputStream.ComWriteAsync(r.Body);
+                    await _streamPipe.Output.CompleteAsync();
                     break;
                 case RequestType.Cancel:
                     _cts.Cancel();
@@ -56,17 +57,17 @@ namespace NetRpc
 
         public async Task<ServiceOnceCallParam> GetServiceOnceCallParamAsync()
         {
-            var r = await _cmdReq.ReceiveAsync();
-            var ocp = r.Body.ToObject<OnceCallParam>();
+            var requestBody = await _cmdReq.ReceiveAsync();
+            var ocp = requestBody.ToObject<OnceCallParam>();
 
             //stream
-            ReadStream rs;
+            ReadStream? rs;
             if (ocp.HasStream)
             {
                 if (ocp.PostStream != null)
                     rs = new ProxyStream(new MemoryStream(ocp.PostStream));
                 else
-                    rs = new BufferBlockStream(_block, ocp.StreamLength);
+                    rs = new ProxyStream(_streamPipe.InputStream, ocp.StreamLength);
             }
             else
                 rs = null;
@@ -74,7 +75,7 @@ namespace NetRpc
             return new ServiceOnceCallParam(ocp.Action, ocp.PureArgs, ocp.StreamLength, rs, ocp.Header);
         }
 
-        public async Task<bool> SendResultAsync(CustomResult result, Stream stream, string streamName, ActionExecutingContext context)
+        public async Task<bool> SendResultAsync(CustomResult result, Stream? stream, string? streamName, ActionExecutingContext context)
         {
             if (result.Result is Stream s)
             {
@@ -98,7 +99,7 @@ namespace NetRpc
             return true;
         }
 
-        public Task SendFaultAsync(Exception body, ActionExecutingContext context)
+        public Task SendFaultAsync(Exception body, ActionExecutingContext? context)
         {
             try
             {
@@ -115,7 +116,7 @@ namespace NetRpc
             }
         }
 
-        public Task SendBufferAsync(byte[] buffer)
+        public Task SendBufferAsync(ReadOnlyMemory<byte> buffer)
         {
             return SendAsync(Reply.FromBuffer(buffer));
         }
@@ -135,7 +136,7 @@ namespace NetRpc
             return SendAsync(Reply.FromBufferFault());
         }
 
-        public Task SendCallbackAsync(object callbackObj)
+        public Task SendCallbackAsync(object? callbackObj)
         {
             Reply reply;
             try
@@ -151,7 +152,7 @@ namespace NetRpc
             return SendAsync(reply);
         }
 
-        private async Task SendAsync(Reply reply)
+        private async Task SendAsync(Message reply)
         {
             await _connection.SendAsync(reply.All);
         }
@@ -159,6 +160,7 @@ namespace NetRpc
         public void Dispose()
         {
             _connection?.Dispose();
+            _streamPipe.Dispose();
             _cts?.Dispose();
         }
 
@@ -167,6 +169,7 @@ namespace NetRpc
         {
             if (_connection != null)
                 await _connection.DisposeAsync();
+            await _streamPipe.DisposeAsync();
             _cts?.Dispose();
         }
 #endif

@@ -10,7 +10,7 @@ namespace NetRpc
         {
         }
 
-        protected HttpMethodAttribute(string httpMethod, string template)
+        protected HttpMethodAttribute(string httpMethod, string? template)
         {
             if (httpMethod == null)
                 throw new ArgumentNullException(nameof(httpMethod));
@@ -20,6 +20,6 @@ namespace NetRpc
 
         public string HttpMethod { get; }
 
-        public string Template { get; }
+        public string? Template { get; }
     }
 }

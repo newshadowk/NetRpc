@@ -38,7 +38,7 @@ namespace NetRpc
 
         public async Task HandleRequestAsync()
         {
-            ActionExecutingContext context = null;
+            ActionExecutingContext? context = null;
 
             try
             {
@@ -96,7 +96,7 @@ namespace NetRpc
             var parameters = contractMethod.MethodInfo.GetParameters();
 
             //callback, cancel when exception
-            async Task Callback(object i)
+            async Task Callback(object? i)
             {
                 try
                 {
@@ -132,7 +132,7 @@ namespace NetRpc
                 _serviceCts.Token);
         }
 
-        private async Task SendStreamAsync(ActionExecutingContext context, bool hasStream, Stream retStream)
+        private async Task SendStreamAsync(ActionExecutingContext context, bool hasStream, Stream? retStream)
         {
             if (hasStream)
             {
@@ -147,7 +147,7 @@ namespace NetRpc
                         await Helper.SendStreamAsync(
                             i => _convert.SendBufferAsync(i), 
                             () => _convert.SendBufferEndAsync(), 
-                            retStream, 
+                            retStream!, 
                             context.CancellationToken, 
                             context.OnSendResultStreamStarted);
                     }

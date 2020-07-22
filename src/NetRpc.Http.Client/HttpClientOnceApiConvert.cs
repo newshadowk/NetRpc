@@ -39,6 +39,7 @@ namespace NetRpc.Http.Client
                 return;
             var argType = _callbackAction.Type.GenericTypeArguments[0];
             var obj = e.Data.ToDtoObject(argType);
+            //have not deadlock issue?
             OnCallbackAsync(new EventArgsT<object>(obj)).Wait();
         }
 

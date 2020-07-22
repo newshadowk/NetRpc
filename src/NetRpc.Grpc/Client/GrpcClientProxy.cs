@@ -5,14 +5,15 @@ using Microsoft.Extensions.Options;
 
 namespace NetRpc.Grpc
 {
-    public sealed class GrpcClientProxy<TService> : ClientProxy<TService>
+    public sealed class GrpcClientProxy<TService> : ClientProxy<TService> where TService : class
     {
         public GrpcClientProxy(IClientConnectionFactory factory,
             IOptions<NClientOption> nClientOptions,
             IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
             IActionExecutingContextAccessor actionExecutingContextAccessor,
             IServiceProvider serviceProvider,
-            ILoggerFactory loggerFactory, string optionsName = null)
+            ILoggerFactory loggerFactory, 
+            string? optionsName = null)
             : base(factory,
                 nClientOptions,
                 clientMiddlewareOptions,

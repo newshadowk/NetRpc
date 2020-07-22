@@ -6,13 +6,13 @@ namespace NetRpc
     [Serializable]
     public sealed class FaultException<T> : FaultException where T : Exception
     {
-        public new T Detail
+        public new T? Detail
         {
-            get => (T) base.Detail;
+            get => (T) base.Detail!;
             set => base.Detail = value;
         }
 
-        public new string Action
+        public new string? Action
         {
             get => base.Action;
             set => base.Action = value;
@@ -34,11 +34,11 @@ namespace NetRpc
     [Serializable]
     public class FaultException : Exception
     {
-        public Exception Detail { get; set; }
+        public Exception? Detail { get; set; }
 
-        public string FaultCode { get; set; }
+        public string? FaultCode { get; set; }
 
-        public string Action { get; set; }
+        public string? Action { get; set; }
 
         public FaultException()
         {

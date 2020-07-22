@@ -7,9 +7,9 @@ namespace NetRpc.OpenTracing
 {
     internal sealed class RequestHeadersExtractAdapter : ITextMap
     {
-        private readonly Dictionary<string, object> _headers;
+        private readonly Dictionary<string, object?> _headers;
 
-        public RequestHeadersExtractAdapter(Dictionary<string, object> headers)
+        public RequestHeadersExtractAdapter(Dictionary<string, object?>? headers)
         {
             _headers = headers ?? throw new ArgumentNullException(nameof(headers));
         }
@@ -19,11 +19,11 @@ namespace NetRpc.OpenTracing
             throw new NotSupportedException("This class should only be used with ITracer.Extract");
         }
 
-        public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
+        public IEnumerator<KeyValuePair<string, string?>> GetEnumerator()
         {
             foreach (var kvp in _headers)
             {
-                yield return new KeyValuePair<string, string>(kvp.Key, kvp.Value.ToString());
+                yield return new KeyValuePair<string, string?>(kvp.Key, kvp.Value?.ToString());
             }
         }
 

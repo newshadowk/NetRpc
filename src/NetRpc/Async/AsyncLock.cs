@@ -25,7 +25,7 @@ namespace NetRpc
                     TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
         }
 
-        public struct Release : IDisposable
+        public readonly struct Release : IDisposable
         {
             private readonly AsyncLock _toRelease;
 

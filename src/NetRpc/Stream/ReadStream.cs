@@ -1,24 +1,38 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    public abstract class ReadStream : Stream, IProgress
+    public abstract class ReadStream : Stream
     {
-        public event EventHandler<SizeEventArgs> Finished;
-        public event EventHandler Started;
-        public event EventHandler<SizeEventArgs> Progress;
+        public event AsyncEventHandler<SizeEventArgs>? FinishedAsync;
+        public event AsyncEventHandler? StartedAsync;
+        public event AsyncEventHandler<SizeEventArgs>? ProgressAsync;
+
         private volatile bool _isStarted;
         private volatile bool _isFinished;
 
-        public Stream CacheStream { get; set; }
+        public Stream? CacheStream { get; set; }
 
-        protected void WriteCache(byte[] buffer, int offset, int count)
+        protected async Task WriteCacheAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            CacheStream?.Write(buffer, offset, count);
+            if (CacheStream == null)
+                return;
+            await CacheStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
-        protected void InvokeFinish(SizeEventArgs e)
+#if NETSTANDARD2_1 || NETCOREAPP3_1
+       protected ValueTask WriteCacheAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+        {
+            if (CacheStream == null)
+                return new ValueTask();
+            return CacheStream.WriteAsync(buffer, cancellationToken);
+        }
+#endif
+
+        protected async Task InvokeFinishAsync(SizeEventArgs e)
         {
             if (!_isStarted)
                 return;
@@ -26,32 +40,32 @@ namespace NetRpc
             if (!_isFinished)
             {
                 _isFinished = true;
-                OnFinished(e);
+                await OnFinishedAsync(e);
             }
         }
 
-        protected void InvokeStart()
+        protected async Task InvokeStartAsync()
         {
             if (!_isStarted)
             {
                 _isStarted = true;
-                OnStarted();
+                await OnStartedAsync();
             }
         }
 
-        protected void OnStarted()
+        protected virtual Task OnStartedAsync()
         {
-            Started?.Invoke(this, EventArgs.Empty);
+            return StartedAsync.InvokeAsync(this, EventArgs.Empty);
         }
 
-        protected virtual void OnFinished(SizeEventArgs e)
+        protected virtual Task OnFinishedAsync(SizeEventArgs e)
         {
-            Finished?.Invoke(this, e);
+            return FinishedAsync.InvokeAsync(this, e);
         }
 
-        protected virtual void OnProgress(SizeEventArgs e)
+        protected virtual Task OnProgressAsync(SizeEventArgs e)
         {
-            Progress?.Invoke(this, e);
+            return ProgressAsync.InvokeAsync(this, e);
         }
     }
 }

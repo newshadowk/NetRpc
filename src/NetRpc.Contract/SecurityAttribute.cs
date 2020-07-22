@@ -22,7 +22,7 @@ namespace NetRpc
     {
         public string Key { get; }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         public SecurityApiKeyAttribute(string key)
         {

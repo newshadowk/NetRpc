@@ -17,7 +17,7 @@ namespace NetRpc
             _call = call;
         }
 
-        public object Invoke(MethodInfo targetMethod, object[] args)
+        public object Invoke(MethodInfo targetMethod, object?[] args)
         {
             var (callback, token, stream, otherArgs) = GetArgs(args);
             try
@@ -36,14 +36,14 @@ namespace NetRpc
             }
         }
 
-        public async Task InvokeAsync(MethodInfo targetMethod, object[] args)
+        public async Task InvokeAsync(MethodInfo targetMethod, object?[] args)
         {
             var (callback, token, stream, otherArgs) = GetArgs(args);
             token.ThrowIfCancellationRequested();
             await _call.CallAsync(targetMethod, callback, token, stream, otherArgs);
         }
 
-        public async Task<T> InvokeAsyncT<T>(MethodInfo targetMethod, object[] args)
+        public async Task<T> InvokeAsyncT<T>(MethodInfo targetMethod, object?[] args)
         {
             var (callback, token, stream, otherArgs) = GetArgs(args);
             token.ThrowIfCancellationRequested();
@@ -51,12 +51,12 @@ namespace NetRpc
             return (T) ret;
         }
 
-        private static (Func<object, Task> callback, CancellationToken token, Stream stream, object[] otherArgs) GetArgs(object[] args)
+        private static (Func<object?, Task>? callback, CancellationToken token, Stream? stream, object?[] otherArgs) GetArgs(object?[] args)
         {
             var objs = args.ToList();
 
             //callback
-            Func<object, Task> retCallback = null;
+            Func<object?, Task>? retCallback = null;
             var found = objs.FirstOrDefault(i =>
                 i != null &&
                 i.GetType().IsFuncT());
@@ -76,7 +76,7 @@ namespace NetRpc
             }
 
             //stream
-            Stream retStream = null;
+            Stream? retStream = null;
             found = objs.FirstOrDefault(i => i is Stream);
             if (found != null)
             {

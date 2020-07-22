@@ -30,9 +30,9 @@ namespace NetRpc.Http
             _logger = logger;
         }
 
-        public string ConnectionId { get; set; }
+        public string? ConnectionId { get; set; }
 
-        public string CallId { get; set; }
+        public string? CallId { get; set; }
 
         public ProxyStream Stream
         {
@@ -41,7 +41,7 @@ namespace NetRpc.Http
                 if (value == null)
                     return;
 
-                value.Progress += (s, e) =>
+                value.ProgressAsync += (s, e) =>
                 {
                     ProgressEventArgs args;
                     if (value.Length == 0)
@@ -55,6 +55,8 @@ namespace NetRpc.Http
                         UploadProgress(args);
 #pragma warning restore 4014
                     });
+
+                    return Task.CompletedTask;
                 };
             }
         }
@@ -111,9 +113,9 @@ namespace NetRpc.Http
         {
             _context.Response.ContentType = "application/json; charset=utf-8";
             _context.Response.StatusCode = result.StatusCode;
-            string s;
+            string? s;
             if (result.IsPainText)
-                s = result.Ret.ToString();
+                s = result.Ret?.ToString();
             else
                 s = result.Ret.ToDtoJson();
             await _context.Response.WriteAsync(s ?? "");

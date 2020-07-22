@@ -3,13 +3,12 @@
     <TargetFrameworks>netstandard2.0;netstandard2.1;netcoreapp2.1;netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
     <SignAssembly>true</SignAssembly>
     <Description>NetRpc is a light weight rpc engine base on RabbitMQ, Grpc, Http targeting .NET Standard 2.0. especially suitable for handle long call.</Description>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'netcoreapp2.2'">
     <PackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, 3.0.0)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, 3.0.0)" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[2.2.0, 3.0.0)" />
-    <PackageReference Include="System.Buffers" Version="[4.5.0, 4.6.0)" />
+    <PackageReference Include="System.Buffers" Version="[4.5.1, 4.6.0)" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
     <PackageReference Include="Microsoft.Extensions.Options" Version="[2.1.0, 2.2.0)" />
@@ -26,6 +25,7 @@
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
     <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.11.1" />
     <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
+    <PackageReference Include="System.IO.Pipelines" Version="[4.7.2, 4.8.0)" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NetRpc.Contract\NetRpc.Contract.csproj" />

@@ -5,8 +5,8 @@ namespace NetRpc
 {
     public sealed class ActionExecutedContext
     {
-        private Exception _exception;
-        private ExceptionDispatchInfo _exceptionDispatchInfo;
+        private Exception? _exception;
+        private ExceptionDispatchInfo? _exceptionDispatchInfo;
 
         public ActionExecutedContext(ActionExecutingContext actionExecutingContext)
         {
@@ -21,7 +21,7 @@ namespace NetRpc
         /// Gets or sets the <see cref="System.Exception"/> caught while executing the action or action filters, if
         /// any.
         /// </summary>
-        public Exception Exception
+        public Exception? Exception
         {
             get
             {
@@ -40,7 +40,7 @@ namespace NetRpc
         /// Gets or sets the <see cref="System.Runtime.ExceptionServices.ExceptionDispatchInfo"/> for the
         /// <see cref="Exception"/>, if an <see cref="System.Exception"/> was caught and this information captured.
         /// </summary>
-        public ExceptionDispatchInfo ExceptionDispatchInfo
+        public ExceptionDispatchInfo? ExceptionDispatchInfo
         {
             get => _exceptionDispatchInfo;
             set

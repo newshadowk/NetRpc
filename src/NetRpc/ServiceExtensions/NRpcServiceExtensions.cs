@@ -110,7 +110,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
         #region Client
 
-        private static IServiceCollection AddNRpcClient(this IServiceCollection services, Action<NClientOption> configureOptions = null,
+        // ReSharper disable once UnusedMethodReturnValue.Local
+        private static IServiceCollection AddNRpcClient(this IServiceCollection services, Action<NClientOption>? configureOptions = null,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
             if (configureOptions != null)
@@ -138,7 +139,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNRpcClientContract<TService>(this IServiceCollection services,
-            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
+            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
         {
             switch (serviceLifetime)
             {
@@ -162,21 +163,21 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNRpcClientContract<TService>(this IServiceCollection services, string optionsName,
-            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
+            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
         {
             switch (serviceLifetime)
             {
                 case ServiceLifetime.Singleton:
                     services.TryAddSingleton(typeof(IClientProxy<TService>), p => p.GetService<IClientProxyFactory>().CreateProxy<TService>(optionsName));
-                    services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxyFactory>().CreateProxy<TService>(optionsName).Proxy);
+                    services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxyFactory>().CreateProxy<TService>(optionsName)!.Proxy);
                     break;
                 case ServiceLifetime.Scoped:
                     services.TryAddScoped(typeof(IClientProxy<TService>), p => p.GetService<IClientProxyFactory>().CreateProxy<TService>(optionsName));
-                    services.TryAddScoped(typeof(TService), p => p.GetService<IClientProxyFactory>().CreateProxy<TService>(optionsName).Proxy);
+                    services.TryAddScoped(typeof(TService), p => p.GetService<IClientProxyFactory>().CreateProxy<TService>(optionsName)!.Proxy);
                     break;
                 case ServiceLifetime.Transient:
                     services.TryAddTransient(typeof(IClientProxy<TService>), p => p.GetService<IClientProxyFactory>().CreateProxy<TService>(optionsName));
-                    services.TryAddTransient(typeof(TService), p => p.GetService<IClientProxyFactory>().CreateProxy<TService>(optionsName).Proxy);
+                    services.TryAddTransient(typeof(TService), p => p.GetService<IClientProxyFactory>().CreateProxy<TService>(optionsName)!.Proxy);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
@@ -186,7 +187,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNRpcClientByOnceCallFactory<TOnceCallFactoryImplementation>(this IServiceCollection services,
-            Action<NClientOption> configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
+            Action<NClientOption>? configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
             where TOnceCallFactoryImplementation : class, IOnceCallFactory
         {
             switch (serviceLifetime)
@@ -209,7 +210,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNRpcClientByClientConnectionFactory<TClientConnectionFactoryImplementation>(this IServiceCollection services,
-            Action<NClientOption> configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
+            Action<NClientOption>? configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
             where TClientConnectionFactoryImplementation : class, IClientConnectionFactory
         {
             switch (serviceLifetime)

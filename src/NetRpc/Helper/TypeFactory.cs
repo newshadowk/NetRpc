@@ -18,17 +18,6 @@ namespace NetRpc
 
     public class CustomsPropertyInfo
     {
-        public CustomsPropertyInfo()
-        {
-        }
-
-        public CustomsPropertyInfo(Type type, string propertyName, IList<CustomAttributeData> attributes)
-        {
-            Type = type;
-            PropertyName = propertyName;
-            Attributes = attributes;
-        }
-
         public CustomsPropertyInfo(Type type, string propertyName, CustomAttributeData attribute)
         {
             Type = type;
@@ -42,11 +31,11 @@ namespace NetRpc
             PropertyName = propertyName;
         }
 
-        public Type Type { get; set; }
+        public Type Type { get; }
 
-        public IList<CustomAttributeData> Attributes { get; set; } = new List<CustomAttributeData>();
+        public IList<CustomAttributeData> Attributes { get; } = new List<CustomAttributeData>();
 
-        public string PropertyName { get; set; }
+        public string PropertyName { get; }
 
         public string FieldName => $"_{PropertyName.Substring(0, 1).ToLower()}{PropertyName.Substring(1)}";
 
@@ -110,7 +99,7 @@ namespace NetRpc
                 var setPropertyMethodNameBuilder = myTypeBuilder.DefineMethod(cpi.SetPropertyMethodName,
                     getSetAttr,
                     null,
-                    new[] { cpi.Type });
+                    new[] {cpi.Type});
 
                 var setPropertyMethodNameBuilderGenerator = setPropertyMethodNameBuilder.GetILGenerator();
                 setPropertyMethodNameBuilderGenerator.Emit(OpCodes.Ldarg_0);
@@ -141,7 +130,7 @@ namespace NetRpc
                 {
                     FieldInfo[] possibleFields = att.GetType().GetFields();
 
-                    foreach (CustomAttributeNamedArgument arg in att.NamedArguments)
+                    foreach (var arg in att.NamedArguments)
                     {
                         foreach (var filed in possibleFields)
                         {
@@ -159,6 +148,7 @@ namespace NetRpc
                 else
                     ret.Add(new CustomAttributeBuilder(att.Constructor, constructorArguments.ToArray()));
             }
+
             return ret;
         }
     }

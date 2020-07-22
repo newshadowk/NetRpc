@@ -15,14 +15,14 @@ namespace NetRpc
         /// <summary>
         /// Result of invoked action.
         /// </summary>
-        object Result { get; set; }
+        object? Result { get; set; }
 
-        Dictionary<string, object> Header { get; }
+        Dictionary<string, object?> Header { get; set; }
 
         /// <summary>
         /// A central location for sharing state between components during the invoking process.
         /// </summary>
-        Dictionary<object, object> Properties { get; set; }
+        Dictionary<object, object?> Properties { get; set; }
 
         InstanceMethod InstanceMethod { get; }
 
@@ -30,15 +30,15 @@ namespace NetRpc
 
         ContractInfo ContractInfo { get; }
 
-        Func<object, Task> Callback { get; }
+        Func<object?, Task>? Callback { get; }
 
         CancellationToken CancellationToken { get; }
 
-        ReadStream Stream { get; }
+        ReadStream? Stream { get; }
 
         /// <summary>
         /// Args of invoked action without stream and action.
         /// </summary>
-        object[] PureArgs { get; }
+        object?[] PureArgs { get; }
     }
 }

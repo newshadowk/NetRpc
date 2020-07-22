@@ -22,7 +22,7 @@ namespace NetRpc.Grpc
             ServerCallContext context)
         {
             _busyFlag.Increment();
-            GrpcServiceConnection connection = null;
+            GrpcServiceConnection? connection = null;
             try
             {
                 connection = new GrpcServiceConnection(requestStream, responseStream, _logger);

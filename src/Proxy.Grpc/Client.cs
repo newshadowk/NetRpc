@@ -15,7 +15,7 @@ namespace Proxy.Grpc
         private readonly Channel _channel;
         private volatile bool _disposed;
 
-        public MessageCall.MessageCallClient CallClient { get; private set; }
+        public MessageCall.MessageCallClient CallClient { get; private set; } = null!;
 
         public Client(Channel channel, string host, int port, string connectionDescription)
         {
@@ -58,6 +58,7 @@ namespace Proxy.Grpc
 #if NETCOREAPP3_1
             _channel?.Dispose();
 #else
+            //have not deadlock issue.
             _channel?.ShutdownAsync().Wait();
 #endif
         }

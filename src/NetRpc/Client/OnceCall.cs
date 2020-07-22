@@ -12,7 +12,7 @@ namespace NetRpc
         private readonly int _timeoutInterval;
         private readonly ILogger _logger;
         private readonly CancellationTokenSource _timeOutCts = new CancellationTokenSource();
-        private AsyncDispatcher _callbackDispatcher;
+        private AsyncDispatcher? _callbackDispatcher;
         private CancellationTokenRegistration? _reg;
         private readonly IClientOnceApiConvert _convert;
 
@@ -23,18 +23,18 @@ namespace NetRpc
             _convert = convert;
         }
 
-        public async Task StartAsync(string authorizationToken)
+        public async Task StartAsync(string? authorizationToken)
         {
             await _convert.StartAsync(authorizationToken);
         }
 
-        public event EventHandler SendRequestStreamStarted;
-        public event EventHandler SendRequestStreamFinished;
+        public event EventHandler? SendRequestStreamStarted;
+        public event EventHandler? SendRequestStreamFinished;
 
         public ConnectionInfo ConnectionInfo => _convert.ConnectionInfo;
 
-        public Task<object> CallAsync(Dictionary<string, object> header, MethodContext methodContext, Func<object, Task> callback, CancellationToken token,
-            Stream stream, params object[] pureArgs)
+        public Task<object> CallAsync(Dictionary<string, object?> header, MethodContext methodContext, Func<object?, Task>? callback, CancellationToken token,
+            Stream? stream, params object?[] pureArgs)
         {
             if (callback != null)
                 _callbackDispatcher = new AsyncDispatcher();
@@ -51,7 +51,7 @@ namespace NetRpc
                     {
                         try
                         {
-                            await _callbackDispatcher.InvokeAsync(() => callback(e.Value)).Unwrap();
+                            await _callbackDispatcher!.InvokeAsync(() => callback(e.Value)).Unwrap();
                         }
                         catch (Exception ex)
                         {

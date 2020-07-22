@@ -10,7 +10,7 @@ namespace NetRpc
         , IAsyncDisposable
 #endif
     {
-        Task SendBufferAsync(byte[] buffer);
+        Task SendBufferAsync(ReadOnlyMemory<byte> buffer);
 
         Task SendBufferEndAsync();
 
@@ -23,10 +23,10 @@ namespace NetRpc
         Task<ServiceOnceCallParam> GetServiceOnceCallParamAsync();
 
         /// <returns>True need send stream next, otherwise false.</returns>
-        Task<bool> SendResultAsync(CustomResult result, Stream stream, string streamName, ActionExecutingContext context);
+        Task<bool> SendResultAsync(CustomResult result, Stream? stream, string? streamName, ActionExecutingContext context);
 
-        Task SendFaultAsync(Exception body, ActionExecutingContext context);
+        Task SendFaultAsync(Exception body, ActionExecutingContext? context);
 
-        Task SendCallbackAsync(object callbackObj);
+        Task SendCallbackAsync(object? callbackObj);
     }
 }

@@ -8,7 +8,7 @@ namespace NetRpc
     public class ActionInvoker
     {
         private readonly ActionExecutingContext _context;
-        private ActionExecutedContext _actionExecutedContext;
+        private ActionExecutedContext? _actionExecutedContext;
         private readonly FilterCursor _cursor;
 
         public ActionInvoker(ActionExecutingContext context)
@@ -21,7 +21,7 @@ namespace NetRpc
         {
             var next = State.ActionNext;
             var scope = Scope.Invoker;
-            var state = (object)null;
+            object state = null!;
             var isCompleted = false;
             while (!isCompleted)
                 await Next(ref next, ref scope, ref state, ref isCompleted);
@@ -100,7 +100,7 @@ namespace NetRpc
                     }
 
                     var actionExecutedContext = _actionExecutedContext;
-                    Rethrow(actionExecutedContext);
+                    Rethrow(actionExecutedContext!);
 
                     isCompleted = true;
                     return Task.CompletedTask;
@@ -135,7 +135,7 @@ namespace NetRpc
 
             await InvokeNextActionFilterAsync();
 
-            return _actionExecutedContext;
+            return _actionExecutedContext!;
         }
 
         private async Task InvokeNextActionFilterAsync()
@@ -144,7 +144,7 @@ namespace NetRpc
             {
                 var next = State.ActionNext;
                 var scope = Scope.Action;
-                var state = (object) null;
+                var state = (object) null!;
                 var isCompleted = false;
                 while (!isCompleted)
                 {

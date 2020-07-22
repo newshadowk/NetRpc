@@ -8,12 +8,12 @@ namespace RabbitMQ.Base
 {
     public sealed class ServiceInner : IDisposable
     {
-        public event AsyncEventHandler<EventArgsT<CallSession>> ReceivedAsync;
+        public event AsyncEventHandler<EventArgsT<CallSession>>? ReceivedAsync;
         private readonly string _rpcQueueName;
         private readonly int _prefetchCount;
         private readonly ILogger _logger;
         private readonly IConnection _connect;
-        private volatile IModel _mainModel;
+        private volatile IModel? _mainModel;
         private volatile bool _disposed;
 
         public ServiceInner(IConnection connect, string rpcQueueName, int prefetchCount, ILogger logger)

@@ -8,7 +8,7 @@ namespace NetRpc
     [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
     public class TagAttribute : Attribute
     {
-        public string Name { get; set; }
+        public string Name { get; }
 
         public TagAttribute(string name)
         {

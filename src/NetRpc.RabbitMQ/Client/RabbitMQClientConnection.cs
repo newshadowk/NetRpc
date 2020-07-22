@@ -56,7 +56,7 @@ namespace NetRpc.RabbitMQ
             return _call.SendAsync(buffer, isPost);
         }
 
-        public async Task StartAsync(string authorizationToken)
+        public async Task StartAsync(string? authorizationToken)
         {
             await _call.CreateChannelAsync();
         }

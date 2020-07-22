@@ -6,8 +6,8 @@ namespace NetRpc.Http
     internal sealed class RateAction : IDisposable
     {
         private readonly Timer _t;
-        private Action _action;
-        private Action _lastAction;
+        private Action? _action;
+        private Action? _lastAction;
 
         private DateTime _lastTime;
 
@@ -21,7 +21,7 @@ namespace NetRpc.Http
             _t.Start();
         }
 
-        private void TElapsed(object sender, System.Timers.ElapsedEventArgs e)
+        private void TElapsed(object sender, ElapsedEventArgs e)
         {
             Invoke();
         }
@@ -31,6 +31,9 @@ namespace NetRpc.Http
             lock (_lockObj)
             {
                 if (_isEnd)
+                    return;
+
+                if (_action == null)
                     return;
 
                 if (_action == _lastAction)

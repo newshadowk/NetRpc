@@ -787,6 +787,7 @@ ComplexStream Call(Stream data, Func<CustomCallbackObj, Task> cb);
 ```c#
 CreateClientProxy<TService>(Channel channel, int timeoutInterval = 1200000)
 ```
+* Entity model must be Class.
 ## Samples
 * [samples/HelloWorld](samples/HelloWorld) Quick start.
 * [samples/Api](samples/Api) Contains most of features.

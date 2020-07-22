@@ -43,13 +43,13 @@ namespace NetRpc.Grpc
                 _end.ReceiveAsync());
         }
 
-        public event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;
+        public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
 
-        public async Task SendAsync(byte[] buffer)
+        public async Task SendAsync(ReadOnlyMemory<byte> buffer)
         {
             //add a lock here will not slowdown send speed.
             using (await _sendLock.LockAsync())
-                await _responseStream.WriteAsync(new StreamBuffer { Body = ByteString.CopyFrom(buffer) });
+                await _responseStream.WriteAsync(new StreamBuffer { Body = ByteString.CopyFrom(buffer.Span) });
         }
 
         public Task StartAsync()
@@ -60,7 +60,7 @@ namespace NetRpc.Grpc
                 try
                 {
                     while (await _requestStream.MoveNext(CancellationToken.None))
-                        await OnReceivedAsync(new EventArgsT<byte[]>(_requestStream.Current.Body.ToByteArray()));
+                        await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(_requestStream.Current.Body.ToByteArray()));
                 }
                 catch (Exception e)
                 {
@@ -75,7 +75,7 @@ namespace NetRpc.Grpc
             return Task.CompletedTask;
         }
 
-        private Task OnReceivedAsync(EventArgsT<byte[]> e)
+        private Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>> e)
         { 
             return ReceivedAsync.InvokeAsync(this, e);
         }

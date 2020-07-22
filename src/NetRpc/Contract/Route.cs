@@ -149,7 +149,7 @@ namespace NetRpc
         private static List<HttpRoutInfo> GetRouts(Type contractType, MethodInfo methodInfo)
         {
             var contractTrimAsync = contractType.IsDefined(typeof(HttpTrimAsyncAttribute));
-            var methodTrimAsync = methodInfo.IsDefined(typeof(HttpTrimAsyncAttribute)) || contractTrimAsync;
+            //var methodTrimAsync = methodInfo.IsDefined(typeof(HttpTrimAsyncAttribute)) || contractTrimAsync;
 
             var contractRoutes = contractType.GetCustomAttributes<HttpRouteAttribute>(true);
             var tag = contractType.GetCustomAttribute<TagAttribute>(true);
@@ -169,8 +169,7 @@ namespace NetRpc
                         r.Template,
                         m.Template,
                         m.HttpMethod,
-                        contractTrimAsync,
-                        methodTrimAsync
+                        contractTrimAsync
                     ));
                 }
 
@@ -182,8 +181,7 @@ namespace NetRpc
                         r.Template,
                         mr.Template,
                         null,
-                        contractTrimAsync,
-                        methodTrimAsync
+                        contractTrimAsync
                     ));
                 }
             }
@@ -197,8 +195,7 @@ namespace NetRpc
                     null,
                     null,
                     null,
-                    contractTrimAsync,
-                    methodTrimAsync
+                    contractTrimAsync
                 ));
             }
 
@@ -233,26 +230,18 @@ namespace NetRpc
                 contractPath = tag.Name;
 
             if (contractTrimAsync)
-                contractPath = contractPath.TrimEndString("Async");
+                contractPath = contractPath.TrimEndString("Async")!;
             return contractPath;
         }
 
         private class TempInfo
         {
-            public string ContractTemplate { get; }
-            public string MethodTemplate { get; }
-            public string Method { get; }
-            public bool ContractTrimAsync { get; }
-            public bool MethodTrimAsync { get; }
+            public string? Method { get; }
             public string Path { get; }
 
-            public TempInfo(Type contractType, MethodInfo methodInfo, string contractTemplate, string methodTemplate, string method, bool contractTrimAsync, bool methodTrimAsync)
+            public TempInfo(Type contractType, MethodInfo methodInfo, string? contractTemplate, string? methodTemplate, string? method, bool contractTrimAsync)
             {
-                ContractTemplate = contractTemplate;
-                MethodTemplate = methodTemplate;
                 Method = method;
-                ContractTrimAsync = contractTrimAsync;
-                MethodTrimAsync = methodTrimAsync;
 
                 string contractPath;
                 if (contractTemplate == null)
@@ -265,7 +254,7 @@ namespace NetRpc
                 }
 
                 if (contractTrimAsync)
-                    contractPath = contractPath.TrimEndString("Async");
+                    contractPath = contractPath.TrimEndString("Async")!;
 
                 string methodPath;
                 if (methodTemplate == null)
@@ -274,7 +263,7 @@ namespace NetRpc
                     methodPath = methodTemplate;
 
                 if (contractTrimAsync)
-                    methodPath = contractPath.TrimEndString("Async");
+                    methodPath = contractPath.TrimEndString("Async")!;
 
                 if (methodPath.StartsWith("/"))
                 {

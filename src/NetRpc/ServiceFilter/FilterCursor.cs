@@ -18,7 +18,7 @@ namespace NetRpc
             _index = 0;
         }
 
-        public IAsyncActionFilter GetNextFilter()
+        public IAsyncActionFilter? GetNextFilter()
         {
             while (_index < _filters.Count)
             {

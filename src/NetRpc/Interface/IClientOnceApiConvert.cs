@@ -12,20 +12,20 @@ namespace NetRpc
     {
         ConnectionInfo ConnectionInfo { get; }
 
-        Task StartAsync(string authorizationToken);
+        Task StartAsync(string? authorizationToken);
 
         Task SendCancelAsync();
 
-        Task SendBufferAsync(byte[] body);
+        Task SendBufferAsync(ReadOnlyMemory<byte> body);
 
         Task SendBufferEndAsync();
 
         /// <returns>True do not send stream next, otherwise false.</returns>
-        Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream stream, bool isPost, CancellationToken token);
+        Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, CancellationToken token);
 
-        event EventHandler<EventArgsT<object>> ResultStream;
-        event EventHandler<EventArgsT<object>> Result;
-        event AsyncEventHandler<EventArgsT<object>> CallbackAsync;
-        event EventHandler<EventArgsT<object>> Fault;
+        event EventHandler<EventArgsT<object>>? ResultStream;
+        event EventHandler<EventArgsT<object>>? Result;
+        event AsyncEventHandler<EventArgsT<object>>? CallbackAsync;
+        event EventHandler<EventArgsT<object>>? Fault;
     }
 }

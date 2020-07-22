@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
             _loggerFactory = loggerFactory;
         }
 
-        protected override ClientProxy<TService> CreateProxyInner<TService>(string optionsName)
+        protected override ClientProxy<TService>? CreateProxyInner<TService>(string optionsName)
         {
             var options = _grpcClientOptions.Get(optionsName);
             if (options.IsPropertiesDefault())
@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.DependencyInjection
             _loggerFactory = loggerFactory;
         }
 
-        public ClientProxy<TService> CreateProxy<TService>(string optionsName)
+        public ClientProxy<TService>? CreateProxy<TService>(string optionsName) where TService : class 
         {
             var options = _grpcClientOptions.Get(optionsName);
             if (options.IsPropertiesDefault())

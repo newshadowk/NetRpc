@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using Microsoft.OpenApi.Models;
 using NetRpc.Http.Client;
@@ -28,8 +27,6 @@ namespace NetRpc.Http
         public static HttpDataObj ToHttpDataObj(string json, Type t)
         {
             var obj = ToObjectForHttp(json, t);
-            if (obj == null)
-                return null;
 
             var (connectionId, callId, streamLength) = GetAdditionData(obj);
 
@@ -66,7 +63,7 @@ namespace NetRpc.Http
             return path;
         }
 
-        public static object[] GetPureArgsFromDataObj(Type dataObjType, object dataObj)
+        public static object[] GetPureArgsFromDataObj(Type? dataObjType, object dataObj)
         {
             var ret = new List<object>();
             if (dataObjType == null)
@@ -163,19 +160,19 @@ namespace NetRpc.Http
                 schema.Type = "string";
         }
 
-        private static (string connectionId, string callId, long streamLength) GetAdditionData(object dataObj)
+        private static (string? connectionId, string? callId, long streamLength) GetAdditionData(object? dataObj)
         {
             if (dataObj == null)
                 return (null, null, 0);
 
-            var connectionId = (string) GetValue(dataObj, ClientConstValue.ConnectionIdName);
-            var callId = (string) GetValue(dataObj, ClientConstValue.CallIdName);
+            var connectionId = (string?) GetValue(dataObj, ClientConstValue.ConnectionIdName);
+            var callId = (string?) GetValue(dataObj, ClientConstValue.CallIdName);
             var streamLengthObj = GetValue(dataObj, ClientConstValue.StreamLength);
             var streamLength = (long?) streamLengthObj ?? 0;
             return (connectionId, callId, streamLength);
         }
 
-        private static object GetValue(object obj, string propertyName)
+        private static object? GetValue(object obj, string propertyName)
         {
             var pi = obj.GetType().GetProperty(propertyName);
             if (pi == null)

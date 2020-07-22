@@ -9,33 +9,29 @@ namespace NetRpc.Http
     {
         public HttpDataObj HttpDataObj { get; set; } = new HttpDataObj();
 
-        public ProxyStream ProxyStream { get; set; }
+        public ProxyStream? ProxyStream { get; set; }
     }
 
     internal sealed class HttpDataObj
     {
-        public string ConnectionId { get; set; }
+        public string? ConnectionId { get; set; }
 
-        public string CallId { get; set; }
+        public string? CallId { get; set; }
 
         public long StreamLength { get; set; }
 
-        public object Value { get; set; }
+        public object Value { get; set; } = null!;
 
-        public Type Type { get; set; }
+        public Type Type { get; set; } = null!;
 
         public void SetValue(Dictionary<string, string> keyValues)
         {
-            var mps = new List<MethodParameter>();
-            foreach (var p in Type.GetProperties()) 
-                mps.Add(new MethodParameter(p.Name, p.PropertyType));
-
             var (instance, ps) = GetInnerSystemTypeParameters();
             
             //set values
             foreach (var p in keyValues)
             {
-                var f = ps.FirstOrDefault(i => i.Name.ToLower() == p.Key.ToLower());
+                var f = ps.FirstOrDefault(i => string.Equals(i.Name, p.Key, StringComparison.CurrentCultureIgnoreCase));
                 if (f != null)
                 {
                     //may be need type convert
@@ -53,7 +49,7 @@ namespace NetRpc.Http
 
             if (propertyValue == DBNull.Value || propertyValue == null)
             {
-                type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance, new object[] { null });
+                type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance, new object[] {null!});
             }
             else
             {

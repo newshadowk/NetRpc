@@ -20,8 +20,7 @@ namespace NetRpc
 #if NETSTANDARD2_1 || NETCOREAPP3_1
             await 
 #endif
-            using var ra = new ThrottlingFunc(_callbackThrottlingInterval);
-
+            using ThrottlingFunc ra = new ThrottlingFunc(_callbackThrottlingInterval);
             var rawAction = context.Callback;
             context.Callback = async o =>
             {
@@ -47,11 +46,11 @@ namespace NetRpc
     {
         private readonly AsyncLock _lock = new AsyncLock();
         private readonly BusyTimer _t;
-        private Func<Task> _func;
-        private Func<Task> _lastFunc;
+        private Func<Task>? _func;
+        private Func<Task>? _lastFunc;
         private DateTime _lastTime;
         private bool _isEnd;
-        //todo
+
         public ThrottlingFunc(int intervalMs)
         {
             _t = new BusyTimer(intervalMs);
@@ -75,7 +74,7 @@ namespace NetRpc
                     return;
 
                 _lastFunc = _func;
-                await _lastFunc();
+                await _lastFunc!();
                 _lastTime = DateTime.Now;
             }
         }
@@ -93,7 +92,7 @@ namespace NetRpc
 
         public void Dispose()
         {
-            InvokeAsync();
+            InvokeAsync().SyncWait();
             _isEnd = true;
             _t?.Dispose();
         }

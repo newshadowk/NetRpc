@@ -5,16 +5,16 @@ namespace System.Reflection
 {
     public class SimpleDispatchProxyAsync : DispatchProxyAsync
     {
-        private IMethodInvoker _invoker;
+        private IMethodInvoker _invoker = null!;
 
-        public event EventHandler<EventArgsT<Exception>> ExceptionInvoked;
+        public event EventHandler<EventArgsT<Exception>>? ExceptionInvoked;
 
         private void SetParams(IMethodInvoker invoker)
         {
             _invoker = invoker;
         }
 
-        public static T Create<T>(IMethodInvoker invoker)
+        public static T Create<T>(IMethodInvoker invoker) where T : class
         {
             object proxy = Create<T, SimpleDispatchProxyAsync>();
             ((SimpleDispatchProxyAsync) proxy).SetParams(invoker);
@@ -28,7 +28,7 @@ namespace System.Reflection
             return proxy;
         }
 
-        public override object Invoke(MethodInfo method, object[] args)
+        public override object Invoke(MethodInfo method, object?[] args)
         {
             try
             {
@@ -41,7 +41,7 @@ namespace System.Reflection
             }
         }
 
-        public override async Task InvokeAsync(MethodInfo method, object[] args)
+        public override async Task InvokeAsync(MethodInfo method, object?[] args)
         {
             try
             {
@@ -54,7 +54,7 @@ namespace System.Reflection
             }
         }
 
-        public override async Task<T> InvokeAsyncT<T>(MethodInfo method, object[] args)
+        public override async Task<T> InvokeAsyncT<T>(MethodInfo method, object?[] args)
         {
             try
             {

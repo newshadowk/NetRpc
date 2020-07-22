@@ -23,23 +23,33 @@ namespace NetRpc
         /// </summary>
         public const int StreamBufferCacheCount = 53;
 
-        private static readonly string[] SizeSuffixes = { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+        private static readonly string[] SizeSuffixes = {"bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
 
         public static string SizeSuffix(long value, int decimalPlaces = 1)
         {
-            if (decimalPlaces < 0) { throw new ArgumentOutOfRangeException(nameof(decimalPlaces)); }
-            if (value < 0) { return "-" + SizeSuffix(-value); }
+            if (decimalPlaces < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(decimalPlaces));
+            }
+
+            if (value < 0)
+            {
+                return "-" + SizeSuffix(-value);
+            }
 
             // ReSharper disable FormatStringProblem
-            if (value == 0) { return string.Format("{0:n" + decimalPlaces + "} bytes", 0); }
+            if (value == 0)
+            {
+                return string.Format("{0:n" + decimalPlaces + "} bytes", 0);
+            }
             // ReSharper restore FormatStringProblem
 
             // mag is 0 for bytes, 1 for KB, 2, for MB, etc.
-            int mag = (int)Math.Log(value, 1024);
+            var mag = (int) Math.Log(value, 1024);
 
             // 1L << (mag * 10) == 2 ^ (10 * mag) 
             // [i.e. the number of bytes in the unit corresponding to mag]
-            decimal adjustedSize = (decimal)value / (1L << (mag * 10));
+            var adjustedSize = (decimal) value / (1L << (mag * 10));
 
             // make adjustment when the value is large enough that
             // it would round up to 1000 or more
@@ -56,7 +66,7 @@ namespace NetRpc
             // ReSharper restore FormatStringProblem
         }
 
-        public static string ListToStringForDisplay<T>(this IEnumerable<T> list, string split, bool displayCount = true)
+        public static string? ListToStringForDisplay<T>(this IEnumerable<T>? list, string split, bool displayCount = true)
         {
             StringBuilder sb = new StringBuilder();
             var toList = list as IList<T> ?? list.ToList();
@@ -76,8 +86,9 @@ namespace NetRpc
             return sb.ToString().TrimEndString(split);
         }
 
-        public static async Task SendStreamAsync(Func<byte[], Task> publishBuffer, Func<Task> publishBufferEnd, Stream stream, CancellationToken token,
-            Action started = null)
+        public static async Task SendStreamAsync(Func<ReadOnlyMemory<byte>, Task> publishBuffer, Func<Task> publishBufferEnd, Stream stream,
+            CancellationToken token,
+            Action? started = null)
         {
             using var bo = ArrayPool<byte>.Shared.RentOwner(StreamBufferSize);
             var readCount = await stream.GreedReadAsync(bo.Array, 0, StreamBufferSize, token);
@@ -86,9 +97,7 @@ namespace NetRpc
             {
                 if (readCount < StreamBufferSize)
                 {
-                    var tmpBuffer = new byte[readCount];
-                    Buffer.BlockCopy(bo.Array, 0, tmpBuffer, 0, readCount);
-                    await publishBuffer(tmpBuffer);
+                    await publishBuffer(bo.Array.AsMemory().Slice(0, readCount));
                     await publishBufferEnd();
                     return;
                 }
@@ -100,7 +109,7 @@ namespace NetRpc
             await publishBufferEnd();
         }
 
-        public static bool TryGetStream(this object obj, out Stream stream, out string streamName)
+        public static bool TryGetStream(this object? obj, out Stream? stream, out string? streamName)
         {
             stream = default;
             streamName = default;
@@ -129,7 +138,7 @@ namespace NetRpc
             return true;
         }
 
-        public static object SetStream(this object obj, Stream stream)
+        public static object SetStream(this object? obj, Stream stream)
         {
             if (obj == null)
                 return stream;
@@ -143,7 +152,7 @@ namespace NetRpc
             return obj;
         }
 
-        public static string ListToString<T>(this IEnumerable<T> list, string split)
+        public static string? ListToString<T>(this IEnumerable<T>? list, string split)
         {
             var sb = new StringBuilder();
             var toList = list as IList<T> ?? list.ToList();
@@ -156,15 +165,18 @@ namespace NetRpc
             return sb.ToString().TrimEndString(split);
         }
 
-        public static string TrimEndString(this string s, string endStr)
+        public static string? TrimEndString(this string? s, string endStr)
         {
+            if (s == null)
+                return s;
+
             if (!s.EndsWith(endStr))
                 return s;
 
             return s.TrimEndString(endStr.Length);
         }
 
-        public static string TrimEndString(this string s, int delLength)
+        public static string? TrimEndString(this string? s, int delLength)
         {
             if (s == null)
                 return null;
@@ -186,11 +198,11 @@ namespace NetRpc
             return new ActionInfo
             {
                 GenericArguments = method.GetGenericArguments().ToList().ConvertAll(GetTypeName).ToArray(),
-                FullName = method.ToFullMethodName(),
+                FullName = method.ToFullMethodName()
             };
         }
 
-        public static void AppendMethodInfo(this FaultException ex, ActionInfo action, object[] args)
+        public static void AppendMethodInfo(this FaultException ex, ActionInfo action, object?[] args)
         {
             if (!string.IsNullOrEmpty(ex.Action))
                 ex.Action += " | ";
@@ -199,7 +211,7 @@ namespace NetRpc
             ex.Action = ex.Action.TrimEndString(", ");
         }
 
-        public static bool IsFuncT(this Type t)
+        public static bool IsFuncT(this Type? t)
         {
             if (t == null)
                 return false;
@@ -216,7 +228,7 @@ namespace NetRpc
             return t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Task<>);
         }
 
-        public static long GetLength(this Stream stream)
+        public static long GetLength(this Stream? stream)
         {
             if (stream == null)
                 return 0;
@@ -237,40 +249,36 @@ namespace NetRpc
             return sn == "System.Private.CoreLib.dll" || sn == "CommonLanguageRuntimeLibrary";
         }
 
-        public static byte[] ToBytes(this object obj)
+        public static byte[]? ToBytes(this object? obj)
         {
             if (obj == default)
                 return default;
 
-            using (var stream = new MemoryStream())
-            {
-                var formatter = new BinaryFormatter();
-                formatter.Serialize(stream, obj);
-                stream.Flush();
-                return stream.ToArray();
-            }
+            using var stream = new MemoryStream();
+            var formatter = new BinaryFormatter();
+            formatter.Serialize(stream, obj);
+            stream.Flush();
+            return stream.ToArray();
         }
 
-        public static T ToObject<T>(this byte[] bytes)
+        public static T ToObject<T>(this byte[]? bytes)
         {
-            return (T) bytes.ToObject();
+            return (T) bytes.ToObject()!;
         }
 
-        public static object ToObject(this byte[] bytes)
+        public static object? ToObject(this byte[]? bytes)
         {
-            if (bytes == default)
-                return default;
+            if (bytes == null)
+                return null;
 
-            using (var stream = new MemoryStream(bytes, 0, bytes.Length, false))
-            {
-                var formatter = new BinaryFormatter();
-                var data = formatter.Deserialize(stream);
-                stream.Flush();
-                return data;
-            }
+            using var stream = new MemoryStream(bytes, 0, bytes.Length, false);
+            var formatter = new BinaryFormatter();
+            var data = formatter.Deserialize(stream);
+            stream.Flush();
+            return data;
         }
 
-        public static byte[] StreamToBytes(this Stream stream)
+        public static byte[]? StreamToBytes(this Stream? stream)
         {
             if (stream == null)
                 return null;
@@ -280,7 +288,7 @@ namespace NetRpc
             return bytes;
         }
 
-        public static Exception WarpException(Exception ex, ActionExecutingContext context = null)
+        public static Exception WarpException(Exception ex, ActionExecutingContext? context = null)
         {
             var bodyFe = ex as FaultException;
 
@@ -315,30 +323,37 @@ namespace NetRpc
             if (context.Stream == null || context.Stream.Length == 0)
                 return;
 
-            var rate = (double)progressCount / 100;
+            if (context.CallbackType != typeof(double))
+                return;
+
+            var rate = (double) progressCount / 100;
             var totalCount = context.Stream.Length;
 
-            context.Stream.Progress += (s, e) =>
+            context.Stream.ProgressAsync += async (s, e) =>
             {
-                var p = (double)e.Value / totalCount;
+                var p = (double) e.Value / totalCount;
                 if (p == 0)
                     return;
 
                 var p2 = p * rate * 100 + 100;
-                context.Callback(Convert.ChangeType(p2, context.CallbackType));
+                await context.Callback(Convert.ChangeType(p2, context.CallbackType));
             };
 
             var rawAction = context.Callback;
             context.Callback = o =>
             {
-                var postP = (double)o;
-                double retP;
-                if (postP > 100)
-                    retP = postP - 100;
-                else
-                    retP = postP * (100 - progressCount) / 100 + progressCount;
+                if (o is double postP)
+                {
+                    double retP;
+                    if (postP > 100)
+                        retP = postP - 100;
+                    else
+                        retP = postP * (100 - progressCount) / 100 + progressCount;
 
-                return rawAction(Convert.ChangeType(retP, context.CallbackType));
+                    return rawAction(Convert.ChangeType(retP, context.CallbackType));
+                }
+
+                throw new ArgumentException("Callback");
             };
         }
 
@@ -352,7 +367,7 @@ namespace NetRpc
                 p.SetValue(toObj, p.GetValue(fromObj, null), null);
         }
 
-        public static bool IsPropertiesDefault<T>(this T obj)
+        public static bool IsPropertiesDefault<T>(this T? obj) where T : class
         {
             if (obj == null)
                 return true;
@@ -371,7 +386,7 @@ namespace NetRpc
             return true;
         }
 
-        public static object GetDefaultValue(Type t)
+        public static object? GetDefaultValue(Type t)
         {
             if (t.IsValueType)
                 return Activator.CreateInstance(t);
@@ -413,7 +428,7 @@ namespace NetRpc
             }
         }
 
-        public static string ExceptionToString(this Exception e)
+        public static string ExceptionToString(this Exception? e)
         {
             if (e == null)
                 return "";
@@ -442,14 +457,32 @@ namespace NetRpc
             return propName.ToLower() == "streamname";
         }
 
+        public static void SyncWait(this Task task)
+        {
+            //pass the sync context.
+            Task.Run(task.Wait).Wait();
+        }
+
+#if NETSTANDARD2_1 || NETCOREAPP3_1
+        public static ValueTask ComWriteAsync(this Stream stream, ReadOnlyMemory<byte> buffer)
+        {
+            return stream.WriteAsync(buffer);
+        }
+#else
+        public static Task ComWriteAsync(this Stream stream, ReadOnlyMemory<byte> buffer)
+        {
+            return stream.WriteAsync(buffer.ToArray(), 0, buffer.Length);
+        }
+#endif
+
         private static async Task<int> GreedReadAsync(this Stream stream, byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            int sumCount = 0;
-            int nextCount = count;
-            int currOffset = offset;
+            var sumCount = 0;
+            var nextCount = count;
+            var currOffset = offset;
             while (true)
             {
-                int currCount = await stream.ReadAsync(buffer, currOffset, nextCount, cancellationToken);
+                var currCount = await stream.ReadAsync(buffer, currOffset, nextCount, cancellationToken);
                 if (currCount == 0)
                     break;
 

@@ -11,10 +11,10 @@ namespace NetRpc
 {
     public static class ApiWrapper
     {
-        public static object[] GetArgs(ParameterInfo[] ps, object[] psValue, Func<object, Task> callback, CancellationToken token, Stream stream)
+        public static object?[] GetArgs(ParameterInfo[] ps, object?[] psValue, Func<object?, Task>? callback, CancellationToken token, Stream? stream)
         {
             var psList = ps.ToList();
-            var dic = new Dictionary<int, object>();
+            var dic = new Dictionary<int, object?>();
 
             //Func<>
             var found = psList.FirstOrDefault(i => i.ParameterType.IsFuncT());
@@ -31,7 +31,7 @@ namespace NetRpc
             if (found != null)
                 dic.Add(psList.IndexOf(found), stream);
 
-            var objs = new List<object>();
+            var objs = new List<object?>();
             var psValueList = psValue.ToList();
 
             //Sort params
@@ -51,7 +51,7 @@ namespace NetRpc
             return objs.ToArray();
         }
 
-        public static async Task<object> GetTaskResult(dynamic invokeRet, bool isGenericType)
+        public static async Task<object?> GetTaskResult(dynamic invokeRet, bool isGenericType)
         {
             if (invokeRet is Task)
             {
@@ -131,7 +131,7 @@ namespace NetRpc
             }
         }
 
-        public static async Task<object> InvokeAsync(this MethodInfo methodInfo, object target, object[] args)
+        public static async Task<object> InvokeAsync(this MethodInfo methodInfo, object target, object?[] args)
         {
             dynamic ret;
             try

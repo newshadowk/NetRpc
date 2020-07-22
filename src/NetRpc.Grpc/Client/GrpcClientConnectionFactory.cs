@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Proxy.Grpc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 #if NETCOREAPP3_1
@@ -17,7 +15,7 @@ namespace NetRpc.Grpc
     public sealed class GrpcClientConnectionFactory : IClientConnectionFactory
     {
         private readonly ILogger _logger;
-        private Client _client;
+        private Client? _client;
 
         public GrpcClientConnectionFactory(IOptions<GrpcClientOptions> options, ILoggerFactory loggerFactory)
         {
@@ -34,7 +32,7 @@ namespace NetRpc.Grpc
             _client = new Client(GrpcChannel.ForAddress(opt.Url, opt.ChannelOptions), host, port, opt.ToString());
 #else
             if (string.IsNullOrEmpty(opt.PublicKey))
-                _client = new Client(new Channel(opt.Host, opt.Port, ChannelCredentials.Insecure), opt.Host, opt.Port, opt.ToString());
+                _client = new Client(new Channel(opt.Host, opt.Port, ChannelCredentials.Insecure), opt.Host!, opt.Port, opt.ToString());
             else
             {
                 Channel channel;
@@ -47,7 +45,7 @@ namespace NetRpc.Grpc
                     options.Add(new ChannelOption(ChannelOptions.SslTargetNameOverride, opt.SslTargetName));
                     channel = new Channel(opt.Host, opt.Port, ssl, options);
                 }
-                _client = new Client(channel, opt.Host, opt.Port, opt.ToString());
+                _client = new Client(channel, opt.Host!, opt.Port, opt.ToString());
             }
 #endif
             _client.Connect();
@@ -67,7 +65,7 @@ namespace NetRpc.Grpc
 
         public IClientConnection Create()
         {
-            return new GrpcClientConnection(_client, _logger);
+            return new GrpcClientConnection(_client!, _logger);
         }
     }
 }

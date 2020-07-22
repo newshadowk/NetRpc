@@ -33,6 +33,7 @@ namespace Proxy.Grpc
             if (_disposed)
                 return;
             _disposed = true;
+            //have not deadlock issue.
             _server.KillAsync().Wait();
         }
 

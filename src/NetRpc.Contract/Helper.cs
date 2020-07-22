@@ -6,7 +6,7 @@ namespace NetRpc
 {
     internal static class Helper
     {
-        public static string ExceptionToString(Exception e)
+        public static string ExceptionToString(Exception? e)
         {
             if (e == null)
                 return "";
@@ -29,7 +29,7 @@ namespace NetRpc
             return msgContent.ToString();
         }
 
-        public static string FormatTemplate(this string template)
+        public static string? FormatTemplate(this string? template)
         {
             if (template == null)
                 return null;

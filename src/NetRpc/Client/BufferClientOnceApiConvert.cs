@@ -1,22 +1,23 @@
 ﻿using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Logging;
 
 namespace NetRpc
 {
     internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
     {
-        private readonly BufferBlock<(byte[], BufferType)> _block =
-            new BufferBlock<(byte[], BufferType)>(new DataflowBlockOptions {BoundedCapacity = Helper.StreamBufferCacheCount});
-
+        private readonly DuplexPipe _streamPipe = new DuplexPipe(new PipeOptions(pauseWriterThreshold: Helper.StreamBufferCacheCount, resumeWriterThreshold: 1));
         private readonly IClientConnection _connection;
         private readonly ILogger _logger;
 
-        private BufferBlockStream _stream;
+        public event EventHandler<EventArgsT<object>>? ResultStream;
+        public event EventHandler<EventArgsT<object>>? Result;
+        public event AsyncEventHandler<EventArgsT<object>>? CallbackAsync;
+        public event EventHandler<EventArgsT<object>>? Fault;
 
         public BufferClientOnceApiConvert(IClientConnection connection, ILogger logger)
         {
@@ -26,14 +27,9 @@ namespace NetRpc
             _connection.ReceiveDisconnected += ConnectionReceiveDisconnected;
         }
 
-        public event EventHandler<EventArgsT<object>> ResultStream;
-        public event EventHandler<EventArgsT<object>> Result;
-        public event AsyncEventHandler<EventArgsT<object>> CallbackAsync;
-        public event EventHandler<EventArgsT<object>> Fault;
-
         public ConnectionInfo ConnectionInfo => _connection.ConnectionInfo;
 
-        public async Task StartAsync(string authorizationToken)
+        public async Task StartAsync(string? authorizationToken)
         {
             await _connection.StartAsync(authorizationToken);
         }
@@ -43,7 +39,7 @@ namespace NetRpc
             return _connection.SendAsync(new Request(RequestType.Cancel).All, true);
         }
 
-        public Task SendBufferAsync(byte[] body)
+        public Task SendBufferAsync(ReadOnlyMemory<byte> body)
         {
             return _connection.SendAsync(new Request(RequestType.Buffer, body).All);
         }
@@ -53,7 +49,7 @@ namespace NetRpc
             return _connection.SendAsync(new Request(RequestType.BufferEnd).All, true);
         }
 
-        public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream stream, bool isPost, CancellationToken token)
+        public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, CancellationToken token)
         {
             await _connection.SendAsync(
                 new Request(RequestType.Cmd, callParam.ToBytes()).All,
@@ -65,29 +61,36 @@ namespace NetRpc
         public void Dispose()
         {
             _connection?.Dispose();
+            _streamPipe.Dispose();
         }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_1
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
             if (_connection != null)
-                return _connection.DisposeAsync();
-            return new ValueTask();
+                await _connection.DisposeAsync();
+            await _streamPipe.DisposeAsync();
         }
 #endif
 
-        private BufferBlockStream GetRequestStream(long length)
+        private Stream GetReplyStream(long length)
         {
-            _stream = new BufferBlockStream(_block, length);
+            var stream = new ProxyStream(_streamPipe.Input.AsStream(), length);
 
-            void OnEnd(object sender, EventArgs e)
+#pragma warning disable 1998
+            async Task OnEnd(object sender, EventArgs e)
+#pragma warning restore 1998
             {
-                ((ReadStream) sender).Finished -= OnEnd;
+                ((ReadStream) sender).FinishedAsync -= OnEnd;
+#if NETSTANDARD2_1 || NETCOREAPP3_1
+                await DisposeAsync();
+#else
                 Dispose();
+#endif
             }
 
-            _stream.Finished += OnEnd;
-            return _stream;
+            stream.FinishedAsync += OnEnd;
+            return stream;
         }
 
         private void ConnectionReceiveDisconnected(object sender, EventArgsT<Exception> e)
@@ -96,15 +99,15 @@ namespace NetRpc
             Dispose();
         }
 
-        private async Task ConnectionReceivedAsync(object sender, EventArgsT<byte[]> e)
+        private async Task ConnectionReceivedAsync(object sender, EventArgsT<ReadOnlyMemory<byte>> e)
         {
             var r = new Reply(e.Value);
             switch (r.Type)
             {
                 case ReplyType.ResultStream:
                 {
-                    if (TryToObject(r.Body, out long body))
-                        OnResultStream(new EventArgsT<object>(GetRequestStream(body)));
+                    if (TryToObject(r.Body, out long length))
+                        OnResultStream(new EventArgsT<object>(GetReplyStream(length)));
                     else
                         await OnFaultSerializationExceptionAsync();
                     break;
@@ -115,7 +118,7 @@ namespace NetRpc
                     {
                         if (body.HasStream)
                         {
-                            var obj = body.Result.SetStream(GetRequestStream(body.StreamLength));
+                            var obj = body.Result.SetStream(GetReplyStream(body.StreamLength));
                             OnResultStream(new EventArgsT<object>(obj));
                         }
                         else
@@ -132,7 +135,7 @@ namespace NetRpc
                 case ReplyType.Callback:
                 {
                     if (TryToObject(r.Body, out var body))
-                        await OnCallbackAsync(new EventArgsT<object>(body));
+                        await OnCallbackAsync(new EventArgsT<object>(body!));
                     else
                         await OnFaultSerializationExceptionAsync();
                     break;
@@ -141,27 +144,29 @@ namespace NetRpc
                 {
                     if (TryToObject(r.Body, out var body))
                     {
-                        OnFault(new EventArgsT<object>(body));
+                        OnFault(new EventArgsT<object>(body!));
                         await InvokeDisposeAsync();
                     }
                     else
                         await OnFaultSerializationExceptionAsync();
-
                     break;
                 }
                 case ReplyType.Buffer:
-                    await _block.SendAsync((r.Body, BufferType.Buffer));
+                    await _streamPipe.OutputStream.ComWriteAsync(r.Body);
                     break;
                 case ReplyType.BufferCancel:
-                    await _block.SendAsync((default, BufferType.Cancel));
+                    await _streamPipe.OutputStream.ComWriteAsync(r.Body);
+                    await _streamPipe.Output.CompleteAsync(new TaskCanceledException());
                     await InvokeDisposeAsync();
                     break;
                 case ReplyType.BufferFault:
-                    await _block.SendAsync((default, BufferType.Fault));
+                    await _streamPipe.OutputStream.ComWriteAsync(r.Body);
+                    await _streamPipe.Output.CompleteAsync(new BufferException());
                     await InvokeDisposeAsync();
                     break;
                 case ReplyType.BufferEnd:
-                    await _block.SendAsync((r.Body, BufferType.End));
+                    await _streamPipe.OutputStream.ComWriteAsync(r.Body);
+                    await _streamPipe.Output.CompleteAsync();
                     await InvokeDisposeAsync();
                     break;
                 default:
@@ -189,11 +194,11 @@ namespace NetRpc
             ResultStream?.Invoke(this, e);
         }
 
-        private bool TryToObject(byte[] body, out object obj)
+        private bool TryToObject(ReadOnlyMemory<byte> body, out object? obj)
         {
             try
             {
-                obj = body.ToObject<object>();
+                obj = body.ToArray().ToObject<object>();
                 return true;
             }
             catch (Exception e)
@@ -204,15 +209,15 @@ namespace NetRpc
             }
         }
 
-        private bool TryToObject<T>(byte[] body, out T obj)
+        private bool TryToObject<T>(ReadOnlyMemory<byte> body, out T obj) 
         {
             if (TryToObject(body, out var obj2))
             {
-                obj = (T) obj2;
+                obj = (T) obj2!;
                 return true;
             }
 
-            obj = default;
+            obj = default!;
             return false;
         }
 
@@ -222,7 +227,9 @@ namespace NetRpc
             await InvokeDisposeAsync();
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         private async Task InvokeDisposeAsync()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
 #if NETSTANDARD2_1 || NETCOREAPP3_1
             await DisposeAsync();

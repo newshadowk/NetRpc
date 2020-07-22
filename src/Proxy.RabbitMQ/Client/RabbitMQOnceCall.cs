@@ -15,10 +15,10 @@ namespace RabbitMQ.Base
         private readonly IConnection _connect;
         private readonly ILogger _logger;
         private readonly string _rpcQueue;
-        private string _clientToServiceQueue;
+        private string _clientToServiceQueue = null!;
         private volatile bool _disposed;
-        private volatile IModel _model;
-        private string _serviceToClientQueue;
+        private volatile IModel _model = null!;
+        private string _serviceToClientQueue = null!;
         private bool isFirstSend = true;
 
         public RabbitMQOnceCall(IConnection connect, string rpcQueue, ILogger logger)
@@ -45,7 +45,7 @@ namespace RabbitMQ.Base
             }
         }
 
-        public event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;
+        public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>?>>? ReceivedAsync;
 
         public async Task CreateChannelAsync()
         {
@@ -64,7 +64,7 @@ namespace RabbitMQ.Base
             {
                 var p = _model.CreateBasicProperties();
                 _model.BasicPublish("", _rpcQueue, p, buffer);
-                await OnReceivedAsync(new EventArgsT<byte[]>(null));
+                await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>?>(null));
                 return;
             }
 
@@ -113,10 +113,10 @@ namespace RabbitMQ.Base
                     }
                 }
             else
-                await OnReceivedAsync(new EventArgsT<byte[]>(e.Body.ToArray()));
+                await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>?>(e.Body));
         }
 
-        private Task OnReceivedAsync(EventArgsT<byte[]> e)
+        private Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>?> e)
         {
             return ReceivedAsync.InvokeAsync(this, e);
         }

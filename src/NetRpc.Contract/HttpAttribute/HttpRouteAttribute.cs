@@ -11,6 +11,6 @@ namespace NetRpc
             Template = Template.FormatTemplate();
         }
 
-        public string Template { get; }
+        public string? Template { get; }
     }
 }

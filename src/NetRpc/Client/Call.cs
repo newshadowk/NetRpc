@@ -14,7 +14,7 @@ namespace NetRpc
         private readonly ContractInfo _contract;
         private readonly IOnceCallFactory _factory;
         private readonly ClientMiddlewareBuilder _middlewareBuilder;
-        private readonly string _optionsName;
+        private readonly string? _optionsName;
         private readonly IServiceProvider _serviceProvider;
         private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
         private volatile int _timeoutInterval;
@@ -28,7 +28,7 @@ namespace NetRpc
             IOnceCallFactory factory,
             int timeoutInterval,
             bool forwardHeader,
-            string optionsName)
+            string? optionsName)
         {
             _clientProxyId = clientProxyId;
             _serviceProvider = serviceProvider;
@@ -41,10 +41,10 @@ namespace NetRpc
             _middlewareBuilder = new ClientMiddlewareBuilder(middlewareOptions, serviceProvider);
         }
 
-        public Dictionary<string, object> AdditionHeader { get; set; } = new Dictionary<string, object>();
+        public Dictionary<string, object?> AdditionHeader { get; set; } = new Dictionary<string, object?>();
 
-        public async Task<object> CallAsync(MethodInfo methodInfo, Func<object, Task> callback, CancellationToken token, Stream stream,
-            params object[] pureArgs)
+        public async Task<object> CallAsync(MethodInfo methodInfo, Func<object?, Task>? callback, CancellationToken token, Stream? stream,
+            params object?[] pureArgs)
         {
             //merge header
             var mergeHeader = MergeHeader(AdditionHeader, _actionExecutingContextAccessor.Context?.Header);
@@ -65,16 +65,16 @@ namespace NetRpc
             if (_middlewareBuilder != null)
             {
                 await _middlewareBuilder.InvokeAsync(clientContext);
-                return clientContext.Result;
+                return clientContext.Result!;
             }
 
             //onceTransfer will dispose after stream translate finished in OnceCall.
             return await call.CallAsync(mergeHeader, methodContext, callback, token, stream, pureArgs);
         }
 
-        private static ReadStream GetReadStream(Stream stream)
+        private static ReadStream? GetReadStream(Stream? stream)
         {
-            ReadStream readStream;
+            ReadStream? readStream;
             switch (stream)
             {
                 case null:
@@ -91,9 +91,9 @@ namespace NetRpc
             return readStream;
         }
 
-        private Dictionary<string, object> MergeHeader(Dictionary<string, object> additionHeader, Dictionary<string, object> contextHeader)
+        private Dictionary<string, object?> MergeHeader(Dictionary<string, object?> additionHeader, Dictionary<string, object?>? contextHeader)
         {
-            var dic = new Dictionary<string, object>();
+            var dic = new Dictionary<string, object?>();
 
             if (_forwardHeader)
             {
@@ -102,22 +102,19 @@ namespace NetRpc
                         dic.Add(key, contextHeader[key]);
             }
 
-            if (additionHeader != null && additionHeader.Count > 0)
+            if (additionHeader.Count > 0)
                 foreach (var key in additionHeader.Keys)
                     dic[key] = additionHeader[key];
 
             return dic;
         }
 
-        private static string GetAuthorizationToken(Dictionary<string, object> additionHeader)
+        private static string? GetAuthorizationToken(Dictionary<string, object?> additionHeader)
         {
-            if (additionHeader == null)
-                return null;
-
             if (!additionHeader.TryGetValue("Authorization", out var v))
                 return null;
 
-            var s = v.ToString();
+            var s = v!.ToString();
             if (s == null || !s.StartsWith("Bearer "))
                 return null;
 

@@ -43,7 +43,7 @@ namespace NetRpc.OpenTracing
             return span;
         }
 
-        public static string ToDisplayJson<T>(this T obj, int maxLength)
+        public static string? ToDisplayJson<T>(this T? obj, int maxLength) where T : class
         {
             if (obj == null)
                 return null;
@@ -57,8 +57,11 @@ namespace NetRpc.OpenTracing
             return s;
         }
 
-        public static bool HasStream(this Type t)
+        public static bool HasStream(this Type? t)
         {
+            if (t == null)
+                return false;
+
             if (t == typeof(Stream))
                 return true;
 

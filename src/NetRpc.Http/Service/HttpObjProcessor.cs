@@ -50,12 +50,14 @@ namespace NetRpc.Http
             section = await reader.ReadNextSectionAsync();
             ValidateSection(section);
             var fileName = GetFileName(section.ContentDisposition);
+            if (fileName == null)
+                throw new ArgumentNullException("", "File name is null.");
             dataObj.TrySetStreamName(fileName);
             var proxyStream = new ProxyStream(section.Body, dataObj.StreamLength);
             return new HttpObj {HttpDataObj = dataObj, ProxyStream = proxyStream};
         }
 
-        private static string Match(string src, string left, string right)
+        private static string? Match(string src, string left, string right)
         {
             var r = Regex.Match(src, $"(?<={left}).+(?={right})");
             if (r.Captures.Count > 0)
@@ -63,7 +65,7 @@ namespace NetRpc.Http
             return null;
         }
 
-        private static string GetFileName(string contentDisposition)
+        private static string? GetFileName(string contentDisposition)
         {
             //Content-Disposition: form-data; name="stream"; filename="t1.docx"
             return Match(contentDisposition, "filename=\"", "\"");
@@ -133,9 +135,6 @@ namespace NetRpc.Http
 
         private static object GetDataObjFromQuery(HttpRequest request, Type dataObjType)
         {
-            if (dataObjType == null)
-                return null;
-
             var dataObj = Activator.CreateInstance(dataObjType);
             var ps = dataObjType.GetProperties();
             var targetObj = dataObj;
@@ -211,6 +210,10 @@ namespace NetRpc.Http
 
     internal sealed class ProcessItem
     {
+        public ProcessItem()
+        {
+        }
+
         public HttpRequest HttpRequest { get; set; }
         public HttpRoutInfo HttpRoutInfo { get; set; }
         public string FormatRawPath { get; set; }

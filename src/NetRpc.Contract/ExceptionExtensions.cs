@@ -24,32 +24,28 @@ namespace NetRpc
             }
         }
 
-        private static byte[] ToBytes(this object obj)
+        private static byte[]? ToBytes(this object? obj)
         {
-            if (obj == default)
-                return default;
+            if (obj == null)
+                return null;
 
-            using (var stream = new MemoryStream())
-            {
-                var formatter = new BinaryFormatter();
-                formatter.Serialize(stream, obj);
-                stream.Flush();
-                return stream.ToArray();
-            }
+            using var stream = new MemoryStream();
+            var formatter = new BinaryFormatter();
+            formatter.Serialize(stream, obj);
+            stream.Flush();
+            return stream.ToArray();
         }
 
-        private static object ToObject(this byte[] bytes)
+        private static object? ToObject(this byte[]? bytes)
         {
-            if (bytes == default)
-                return default;
+            if (bytes == null)
+                return null;
 
-            using (var stream = new MemoryStream(bytes, 0, bytes.Length, false))
-            {
-                var formatter = new BinaryFormatter();
-                var data = formatter.Deserialize(stream);
-                stream.Flush();
-                return data;
-            }
+            using var stream = new MemoryStream(bytes, 0, bytes.Length, false);
+            var formatter = new BinaryFormatter();
+            var data = formatter.Deserialize(stream);
+            stream.Flush();
+            return data;
         }
     }
 }

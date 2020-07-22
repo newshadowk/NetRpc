@@ -2,6 +2,6 @@
 {
     public interface IOrphanClientProxyProvider
     {
-        ClientProxy<TService> CreateProxy<TService>(string optionsName);
+        ClientProxy<TService>? CreateProxy<TService>(string optionsName) where TService : class;
     }
 }

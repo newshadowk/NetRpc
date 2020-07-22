@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -25,21 +24,21 @@ namespace NetRpc.Grpc
                     });
 
                     foreach (var contract in contracts)
-                        services.AddNRpcServiceContract(contract.ContractInfo.Type, contract.InstanceType);
+                        services.AddNRpcServiceContract(contract.ContractInfo.Type, contract.InstanceType!);
                 })
                 .Build();
         }
 #endif
 
         public static ClientProxy<TService> CreateClientProxy<TService>(GrpcClientOptions options, int timeoutInterval = 1200000,
-            int hearbeatInterval = 10000)
+            int hearbeatInterval = 10000) where TService : class
         {
             var opt = new GrpcClientConnectionFactoryOptions(options);
             return CreateClientProxy<TService>(opt, timeoutInterval, hearbeatInterval);
         }
 
         public static ClientProxy<TService> CreateClientProxy<TService>(GrpcClientConnectionFactoryOptions options, int timeoutInterval = 1200000,
-            int hearbeatInterval = 10000)
+            int hearbeatInterval = 10000) where TService : class
         {
             return new GrpcClientProxy<TService>(options.Factory,
                 new SimpleOptions<NClientOption>(new NClientOption
@@ -49,7 +48,7 @@ namespace NetRpc.Grpc
                     }
                 ), new NullOptions<ClientMiddlewareOptions>(), 
                 ActionExecutingContextAccessor.Default, 
-                null,
+                null!,
                 NullLoggerFactory.Instance);
         }
     }

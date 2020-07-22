@@ -6,14 +6,14 @@ namespace NetRpc.Http
 {
     public interface ICallback
     {
-        Task Callback(string callId, string data);
+        Task Callback(string? callId, string? data);
 
-        Task UploadProgress(string callId, string data);
+        Task UploadProgress(string? callId, string? data);
     }
 
     public sealed class CallbackHub : Hub<ICallback>
     {
-        public static event EventHandler<string> Canceled;
+        public static event EventHandler<string>? Canceled;
 
         public Task<string> GetConnectionId()
         {

@@ -15,17 +15,17 @@ namespace RabbitMQ.Base
 
         private readonly IModel _clientToServiceModel;
         private readonly string _serviceToClientQueue;
-        private string _clientToServiceQueue;
+        private string _clientToServiceQueue = null!;
         private bool _disposed;
         private readonly bool _isPost;
 
-        public event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;
+        public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
 
         public CallSession(IConnection connection, IModel mainModel, BasicDeliverEventArgs e, ILogger logger)
         {
             _clientToServiceModel = connection.CreateModel();
             _isPost = e.BasicProperties.ReplyTo == null;
-            _serviceToClientQueue = e.BasicProperties.ReplyTo;
+            _serviceToClientQueue = e.BasicProperties.ReplyTo!;
             _mainModel = mainModel;
             _e = e;
             _logger = logger;
@@ -37,12 +37,12 @@ namespace RabbitMQ.Base
             {
                 _clientToServiceQueue = _clientToServiceModel.QueueDeclare().QueueName;
                 var clientToServiceConsumer = new AsyncEventingBasicConsumer(_clientToServiceModel);
-                clientToServiceConsumer.Received += (s, e) => OnReceivedAsync(new EventArgsT<byte[]>(e.Body.ToArray()));
+                clientToServiceConsumer.Received += (s, e) => OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Body));
                 _clientToServiceModel.BasicConsume(_clientToServiceQueue, true, clientToServiceConsumer);
                 Send(Encoding.UTF8.GetBytes(_clientToServiceQueue));
             }
 
-            OnReceivedAsync(new EventArgsT<byte[]>(_e.Body.ToArray()));
+            OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(_e.Body));
         }
 
         public void Send(byte[] buffer)
@@ -71,7 +71,7 @@ namespace RabbitMQ.Base
             }
         }
 
-        private Task OnReceivedAsync(EventArgsT<byte[]> e)
+        private Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>> e)
         {
             return ReceivedAsync.InvokeAsync(this, e);
         }

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,46 +18,46 @@ namespace NetRpc
         /// <summary>
         /// Result of invoked action.
         /// </summary>
-        public object Result { get; set; }
+        public object? Result { get; set; }
 
-        public Dictionary<string, object> Header { get; set; } = new Dictionary<string, object>();
+        public Dictionary<string, object?> Header { get; set; }
 
         /// <summary>
         /// A central location for sharing state between components during the invoking process.
         /// </summary>
-        public Dictionary<object, object> Properties { get; set; } = new Dictionary<object, object>();
+        public Dictionary<object, object?> Properties { get; set; } = new Dictionary<object, object?>();
 
-        public ContractMethod ContractMethod { get; set; }
+        public ContractMethod ContractMethod { get; }
 
-        public InstanceMethod InstanceMethod { get; set; }
+        public InstanceMethod InstanceMethod { get; }
 
         public ContractInfo ContractInfo { get; }
 
-        public Func<object, Task> Callback { get; }
+        public Func<object?, Task>? Callback { get; }
 
         public CancellationToken CancellationToken { get; }
 
-        public ReadStream Stream { get; }
+        public ReadStream? Stream { get; }
 
         /// <summary>
         /// Args of invoked action without stream and action.
         /// </summary>
-        public object[] PureArgs { get; }
+        public object?[] PureArgs { get; }
 
-        public string OptionsName { get; }
+        public string? OptionsName { get; }
 
         public ClientActionExecutingContext(Guid clientProxyId,
             IServiceProvider serviceProvider, 
-            string optionsName,
+            string? optionsName,
             IOnceCall onceCall,
             InstanceMethod instanceMethod,
-            Func<object, Task> callback,
+            Func<object?, Task>? callback,
             CancellationToken token,
             ContractInfo contractInfo,
             ContractMethod contractMethod,
-            ReadStream stream,
-            Dictionary<string, object> header,
-            object[] pureArgs)
+            ReadStream? stream,
+            Dictionary<string, object?> header,
+            object?[] pureArgs)
         {
             ClientProxyId = clientProxyId;
             StartTime = DateTimeOffset.Now;
@@ -73,7 +71,7 @@ namespace NetRpc
             Stream = stream;
             PureArgs = pureArgs;
             OptionsName = optionsName;
-            Header = header ?? new Dictionary<string, object>();
+            Header = header;
         }
     }
 }

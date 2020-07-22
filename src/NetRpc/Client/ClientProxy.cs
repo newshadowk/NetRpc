@@ -8,14 +8,14 @@ using Microsoft.Extensions.Options;
 
 namespace NetRpc
 {
-    public class ClientProxy<TService> : IClientProxy<TService>
+    public class ClientProxy<TService> : IClientProxy<TService> where TService : class
     {
         private bool _disposed;
         private readonly object _lockDispose = new object();
-        public event EventHandler Connected;
-        public event EventHandler DisConnected;
-        public event EventHandler<EventArgsT<Exception>> ExceptionInvoked;
-        public event Func<IClientProxy, Task> Heartbeat;
+        public event EventHandler? Connected;
+        public event EventHandler? DisConnected;
+        public event EventHandler<EventArgsT<Exception>>? ExceptionInvoked;
+        public event AsyncEventHandler? HeartbeatAsync;
         private readonly object _lockObj = new object();
         private readonly IOnceCallFactory _factory;
         private readonly ILogger _logger;
@@ -24,7 +24,7 @@ namespace NetRpc
         private readonly Call _call;
         public Guid Id { get; } = Guid.NewGuid();
 
-        public Dictionary<string, object> AdditionHeader
+        public Dictionary<string, object?> AdditionHeader
         {
             get => _call.AdditionHeader;
             set => _call.AdditionHeader = value;
@@ -36,7 +36,7 @@ namespace NetRpc
             IActionExecutingContextAccessor actionExecutingContextAccessor,
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
-            string optionsName = null)
+            string? optionsName = null)
         {
             _factory = factory;
             _logger = loggerFactory.CreateLogger("NetRpc");
@@ -63,7 +63,7 @@ namespace NetRpc
             IActionExecutingContextAccessor actionExecutingContextAccessor,
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
-            string optionsName = null)
+            string? optionsName = null)
             : this(new OnceCallFactory(factory, loggerFactory),
                 nClientOptions,
                 clientMiddlewareOptions,
@@ -116,7 +116,7 @@ namespace NetRpc
             _tHearbeat.Start();
             if (isImmediate)
 #pragma warning disable 4014
-                HeartbeatAsync();
+                InvokeHeartbeatAsync();
 #pragma warning restore 4014
         }
 
@@ -125,9 +125,9 @@ namespace NetRpc
             _tHearbeat.Stop();
         }
 
-        public async Task HeartbeatAsync()
+        public async Task InvokeHeartbeatAsync()
         {
-            await OnHeartbeat();
+            await OnHeartbeatAsync();
             IsConnected = true;
         }
 
@@ -135,7 +135,7 @@ namespace NetRpc
         {
             try
             {
-                await OnHeartbeat();
+                await OnHeartbeatAsync();
                 IsConnected = true;
             }
             catch (Exception e)
@@ -154,13 +154,9 @@ namespace NetRpc
             DisConnected?.Invoke(this, EventArgs.Empty);
         }
 
-        private Task OnHeartbeat()
+        private Task OnHeartbeatAsync()
         {
-            var func = Heartbeat;
-            if (func != null)
-                return func(this);
-
-            return Task.CompletedTask;
+            return HeartbeatAsync.InvokeAsync(this, EventArgs.Empty);
         }
 
         public void Dispose()

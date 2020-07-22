@@ -83,6 +83,7 @@ namespace NetRpc.Http.Client
 
         public void Dispose()
         {
+            //have not deadlock issue.
             _connection.StopAsync().Wait();
         }
 

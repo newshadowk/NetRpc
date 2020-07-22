@@ -8,12 +8,12 @@ namespace NetRpc
 {
     internal class InvokeFunc
     {
-        public Func<object> Func { get; }
+        public Func<object?> Func { get; }
 
-        public WriteOnceBlock<(ExceptionDispatchInfo exceptionDispatchInfo, object result)> InvokedFlag { get; } =
-            new WriteOnceBlock<(ExceptionDispatchInfo exceptionDispatchInfo, object result)>(null);
+        public WriteOnceBlock<(ExceptionDispatchInfo? exceptionDispatchInfo, object? result)> InvokedFlag { get; } =
+            new WriteOnceBlock<(ExceptionDispatchInfo? exceptionDispatchInfo, object? result)>(null);
 
-        public InvokeFunc(Func<object> func)
+        public InvokeFunc(Func<object?> func)
         {
             Func = func;
         }
@@ -59,7 +59,8 @@ namespace NetRpc
             });
 
             _funcQ.Post(invokeFunc);
-            (ExceptionDispatchInfo exceptionDispatchInfo, _) = invokeFunc.InvokedFlag.Receive();
+
+            var (exceptionDispatchInfo, _) = invokeFunc.InvokedFlag.Receive();
             exceptionDispatchInfo?.Throw();
         }
 
@@ -72,7 +73,7 @@ namespace NetRpc
             });
 
             _funcQ.Post(invokeFunc);
-            (ExceptionDispatchInfo exceptionDispatchInfo, _) = await invokeFunc.InvokedFlag.ReceiveAsync();
+            var (exceptionDispatchInfo, _) = await invokeFunc.InvokedFlag.ReceiveAsync();
             exceptionDispatchInfo?.Throw();
         }
 
@@ -80,9 +81,9 @@ namespace NetRpc
         {
             var invokeFunc = new InvokeFunc(() => callback.Invoke());
             _funcQ.Post(invokeFunc);
-            (ExceptionDispatchInfo exceptionDispatchInfo, object result) = await invokeFunc.InvokedFlag.ReceiveAsync();
+            var (exceptionDispatchInfo, result) = await invokeFunc.InvokedFlag.ReceiveAsync();
             exceptionDispatchInfo?.Throw();
-            return (TResult)result;
+            return (TResult)result!;
         }
 
         public Task BeginInvoke(Action action)

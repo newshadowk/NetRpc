@@ -10,13 +10,13 @@ namespace NetRpc
     {
         ConnectionInfo ConnectionInfo { get; }
 
-        Task<object> CallAsync(Dictionary<string, object> header, MethodContext methodContext, Func<object, Task> callback, CancellationToken token, Stream stream,
-            params object[] pureArgs);
+        Task<object> CallAsync(Dictionary<string, object?> header, MethodContext methodContext, Func<object?, Task>? callback, CancellationToken token, Stream? stream,
+            params object?[] pureArgs);
 
-        Task StartAsync(string authorizationToken);
+        Task StartAsync(string? authorizationToken);
 
-        event EventHandler SendRequestStreamStarted;
+        event EventHandler? SendRequestStreamStarted;
 
-        event EventHandler SendRequestStreamFinished;
+        event EventHandler? SendRequestStreamFinished;
     }
 }

@@ -12,8 +12,8 @@ namespace NetRpc.Http
     public class SwaggerUiIndexMiddleware
     {
         private readonly Microsoft.AspNetCore.Http.RequestDelegate _next;
-        private volatile string _json;
-        private volatile string _html;
+        private volatile string? _json;
+        private volatile string? _html;
 
         public SwaggerUiIndexMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next)
         {

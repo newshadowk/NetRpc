@@ -17,7 +17,7 @@ namespace NetRpc
         private static readonly MethodInfo GetServiceInfo =
             typeof(ClientMiddlewareBuilder).GetMethod(nameof(GetService), BindingFlags.NonPublic | BindingFlags.Static);
 
-        private ClientRequestDelegate _requestDelegate;
+        private ClientRequestDelegate? _requestDelegate;
         private readonly object _lockRequestDelegate = new object();
         private readonly IList<Func<ClientRequestDelegate, ClientRequestDelegate>> _components = new List<Func<ClientRequestDelegate, ClientRequestDelegate>>();
 
@@ -27,7 +27,7 @@ namespace NetRpc
             _components.Add(CreateMiddleware(serviceProvider, typeof(ClientMethodInvokeMiddleware), new object[] { }));
         }
 
-        public async Task<object> InvokeAsync(ClientActionExecutingContext context)
+        public async Task<object?> InvokeAsync(ClientActionExecutingContext context)
         {
             var requestDelegate = GetRequestDelegate();
             await requestDelegate.Invoke(context);

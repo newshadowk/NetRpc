@@ -4,6 +4,7 @@ namespace NetRpc
 {
     internal class ClientMethodInvokeMiddleware
     {
+        // ReSharper disable once UnusedParameter.Local
         public ClientMethodInvokeMiddleware(ClientRequestDelegate next)
         {
         }

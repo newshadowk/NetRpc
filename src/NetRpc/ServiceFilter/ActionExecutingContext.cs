@@ -10,11 +10,11 @@ namespace NetRpc
 {
     public class ActionExecutingContext : IActionExecutingContext
     {
-        private object _result;
+        private object? _result;
 
-        public event EventHandler SendResultStreamStarted;
+        public event EventHandler? SendResultStreamStarted;
 
-        public event EventHandler SendResultStreamFinished;
+        public event EventHandler? SendResultStreamFinished;
 
         public ChannelType ChannelType { get; }
 
@@ -22,7 +22,7 @@ namespace NetRpc
 
         public IServiceProvider ServiceProvider { get; }
 
-        public Dictionary<string, object> Header { get; }
+        public Dictionary<string, object?> Header { get; set; }
 
         public InstanceMethod InstanceMethod { get; }
 
@@ -34,9 +34,9 @@ namespace NetRpc
 
         public Contract Contract { get; }
 
-        public Type CallbackType { get; }
+        public Type? CallbackType { get; }
 
-        public Func<object, Task> Callback
+        public Func<object?, Task>? Callback
         {
             get
             {
@@ -61,7 +61,7 @@ namespace NetRpc
                     if (Args[i] == null)
                         continue;
 
-                    var t = Args[i].GetType();
+                    var t = Args[i]?.GetType();
                     if (t.IsFuncT())
                     {
                         Args[i] = FuncHelper.ConvertFunc(value, CallbackType);
@@ -73,37 +73,37 @@ namespace NetRpc
 
         public CancellationToken CancellationToken { get; }
 
-        public ReadStream Stream { get; }
+        public ReadStream? Stream { get; }
 
-        public object[] Args { get; }
+        public object?[] Args { get; }
 
         /// <summary>
         /// Args of invoked action without stream and action.
         /// </summary>
-        public object[] PureArgs { get; }
+        public object?[] PureArgs { get; }
 
         public ActionInfo ActionInfo { get; }
 
         /// <summary>
         /// A central location for sharing state between components during the invoking process.
         /// </summary>
-        public Dictionary<object, object> Properties { get; set; }
+        public Dictionary<object, object?> Properties { get; set; }
 
         public ActionExecutingContext(IServiceProvider serviceProvider,
-            Dictionary<string, object> header,
+            Dictionary<string, object?> header,
             Instance instance,
             MethodInfo instanceMethodInfo,
             ContractMethod contractMethod,
-            object[] args,
-            object[] pureArgs,
+            object?[] args,
+            object?[] pureArgs,
             ActionInfo actionInfo,
-            ReadStream stream,
+            ReadStream? stream,
             Contract contract,
             ChannelType channelType,
-            Func<object, Task> callback,
+            Func<object?, Task>? callback,
             CancellationToken token)
         {
-            Properties = new Dictionary<object, object>();
+            Properties = new Dictionary<object, object?>();
             StartTime = DateTimeOffset.Now;
             ServiceProvider = serviceProvider;
             ChannelType = channelType;
@@ -116,7 +116,6 @@ namespace NetRpc
             CallbackType = GetFuncType(args);
             ActionInfo = actionInfo;
             Callback = callback;
-            Callback = callback;
             Stream = stream;
             Contract = contract;
             CancellationToken = token;
@@ -126,14 +125,14 @@ namespace NetRpc
         /// <summary>
         /// Gets or sets value inside an action filter will short-circuit the action and any remaining action filters.
         /// </summary>
-        public object Result
+        public object? Result
         {
             get => _result;
             set
             {
                 if (value is Task)
                     throw new InvalidCastException("MiddlewareContext Result can not be a Task.");
-                _result = value;
+                _result = value!;
             }
         }
 
@@ -147,10 +146,10 @@ namespace NetRpc
                 if (Args[i] == null)
                     continue;
 
-                if (Args[i].GetType().IsCancellationToken())
+                if (Args[i]!.GetType().IsCancellationToken())
                     Args[i] = CancellationToken;
 
-                if (Args[i].GetType().IsSubclassOf(typeof(Stream)))
+                if (Args[i]!.GetType().IsSubclassOf(typeof(Stream)))
                     Args[i] = Stream;
             }
         }
@@ -160,7 +159,7 @@ namespace NetRpc
             return $"Header:{DicToStringForDisplay(Header)}, MethodName:{InstanceMethod.MethodInfo.Name}, Args:{Args.ListToStringForDisplay(",")}";
         }
 
-        private static Type GetFuncType(object[] args)
+        private static Type? GetFuncType(IEnumerable<object?> args)
         {
             foreach (var i in args)
             {
@@ -175,7 +174,7 @@ namespace NetRpc
             return null;
         }
 
-        public static string DicToStringForDisplay(Dictionary<string, object> header)
+        public static string DicToStringForDisplay(Dictionary<string, object?> header)
         {
             var s = "";
             foreach (var p in header)

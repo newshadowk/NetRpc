@@ -13,7 +13,7 @@ namespace NetRpc.Grpc
         private readonly AsyncLock _sendLock = new AsyncLock();
         private readonly Client _client;
         private readonly ILogger _logger;
-        private AsyncDuplexStreamingCall<StreamBuffer, StreamBuffer> _api;
+        private AsyncDuplexStreamingCall<StreamBuffer, StreamBuffer> _api = null!;
         private volatile bool _isEnd;
 
         public GrpcClientConnection(Client client, ILogger logger)
@@ -22,9 +22,9 @@ namespace NetRpc.Grpc
             _logger = logger;
         }
 
-        public event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;
+        public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
 
-        public event EventHandler<EventArgsT<Exception>> ReceiveDisconnected;
+        public event EventHandler<EventArgsT<Exception>>? ReceiveDisconnected;
 
         public void Dispose()
         {
@@ -68,7 +68,7 @@ namespace NetRpc.Grpc
             ChannelType =  ChannelType.Grpc
         };
 
-        public async Task SendAsync(byte[] buffer, bool isEnd = false, bool isPost = false)
+        public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false)
         {
             if (_isEnd)
                 return;
@@ -76,7 +76,7 @@ namespace NetRpc.Grpc
             //add a lock here will not slowdown send speed.
             using (await _sendLock.LockAsync())
             {
-                var sb = new StreamBuffer {Body = ByteString.CopyFrom(buffer)};
+                var sb = new StreamBuffer { Body = ByteString.CopyFrom(buffer.Span) };
                 _logger.LogDebug($"Send count:{Helper.SizeSuffix(sb.Body.Length)}");
                 await _api.RequestStream.WriteAsync(sb);
             }
@@ -89,10 +89,11 @@ namespace NetRpc.Grpc
         }
 
 #pragma warning disable 1998
-        public async Task StartAsync(string authorizationToken)
+
+        public async Task StartAsync(string? authorizationToken)
 #pragma warning restore 1998
         {
-            Metadata headers = null;
+            Metadata? headers = null;
             if (authorizationToken != null)
             {
                 headers = new Metadata
@@ -111,7 +112,7 @@ namespace NetRpc.Grpc
                 try
                 {
                     while (await _api.ResponseStream.MoveNext(CancellationToken.None))
-                        await OnReceivedAsync(new EventArgsT<byte[]>(_api.ResponseStream.Current.Body.ToByteArray()));
+                        await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(new ReadOnlyMemory<byte>(_api.ResponseStream.Current.Body.ToByteArray())));
                 }
                 catch (Exception e)
                 {
@@ -121,7 +122,7 @@ namespace NetRpc.Grpc
             });
         }
 
-        private Task OnReceivedAsync(EventArgsT<byte[]> e)
+        private Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>> e)
         {
             return ReceivedAsync.InvokeAsync(this, e);
         }

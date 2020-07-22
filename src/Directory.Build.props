@@ -7,6 +7,7 @@
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <RepositoryUrl>https://github.com/newshadowk/NetRpc</RepositoryUrl>
     <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
     <AssemblyOriginatorKeyFile>../NetRpc.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

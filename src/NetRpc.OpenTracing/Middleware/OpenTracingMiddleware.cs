@@ -25,7 +25,7 @@ namespace NetRpc.OpenTracing
                 return;
             }
 
-            using var scope = GetScope(context, tracer, options.Value);
+            using var scope = GetScope(context, tracer);
 
             try
             {
@@ -42,10 +42,10 @@ namespace NetRpc.OpenTracing
             }
         }
 
-        private static IScope GetScope(ActionExecutingContext context, ITracer tracer, OpenTracingOptions options)
+        private static IScope GetScope(ActionExecutingContext context, ITracer tracer)
         {
             //get spanContext
-            ISpanContext spanContext;
+            ISpanContext? spanContext;
             if (context.Header == null)
                 spanContext = null;
             else
