@@ -43,7 +43,7 @@ namespace NetRpc
             Tags = new ReadOnlyCollection<string>(GetTags(contractTypeTag, methodInfo));
         }
 
-        public MergeArgType? MergeArgType { get; }
+        public MergeArgType MergeArgType { get; }
 
         public ReadOnlyCollection<string> Tags { get; }
 
@@ -111,7 +111,7 @@ namespace NetRpc
             return true;
         }
 
-        private static MergeArgType? GetMergeArgType(MethodInfo m)
+        private static MergeArgType GetMergeArgType(MethodInfo m)
         {
             string? streamName = null;
             TypeName? action = null;

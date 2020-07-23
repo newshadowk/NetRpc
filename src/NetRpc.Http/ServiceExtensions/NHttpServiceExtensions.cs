@@ -54,14 +54,14 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNHttpGateway<TService>(this IServiceCollection services,
-            Action<HttpClientOptions> httpClientConfigureOptions = null,
-            Action<NClientOption> clientConfigureOptions = null,
-            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
+            Action<HttpClientOptions>? httpClientConfigureOptions = null,
+            Action<NClientOption>? clientConfigureOptions = null,
+            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
         {
             services.AddNHttpClient(httpClientConfigureOptions, clientConfigureOptions, serviceLifetime);
             services.AddNRpcClientContract<TService>(serviceLifetime);
             services.AddNRpcServiceContract(typeof(TService),
-                p => ((ClientProxy<TService>) p.GetService(typeof(ClientProxy<TService>))).Proxy,
+                p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))).Proxy,
                 serviceLifetime);
             return services;
         }

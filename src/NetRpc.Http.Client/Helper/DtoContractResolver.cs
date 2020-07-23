@@ -11,13 +11,8 @@ namespace NetRpc.Http.Client
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
             JsonProperty property = base.CreateProperty(member, memberSerialization);
-
-            if (property.PropertyType.HasStream())
-            {
-                property.ShouldSerialize =
-                    instance => false;
-            }
-
+            if (property.PropertyType.HasStream()) 
+                property.ShouldSerialize = instance => false;
             return property;
         }
     }

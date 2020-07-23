@@ -13,7 +13,7 @@ namespace NetRpc.Http.Client
             _connection = connection;
         }
 
-        public event EventHandler<CallbackEventArgs> Callback;
+        public event EventHandler<CallbackEventArgs>? Callback;
 
         public void OnCallback(CallbackEventArgs e)
         {

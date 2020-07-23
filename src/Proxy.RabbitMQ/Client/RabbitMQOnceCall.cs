@@ -58,7 +58,7 @@ namespace RabbitMQ.Base
             consumer.Received += ConsumerReceived;
         }
 
-        public async Task SendAsync(byte[] buffer, bool isPost)
+        public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isPost)
         {
             if (isPost)
             {

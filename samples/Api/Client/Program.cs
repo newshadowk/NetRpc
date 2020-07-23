@@ -31,10 +31,10 @@ namespace Client
             _clientProxy.ExceptionInvoked += (s, e) => Console.WriteLine("[event] ExceptionInvoked");
 
             //Heartbeat
-            _clientProxy.Heartbeat += s =>
+            _clientProxy.HeartbeatAsync += (s, e) =>
             {
                 Console.WriteLine("[event] Heartbeat");
-                ((IService)s.Proxy).Hearbeat();
+                ((IService)((IClientProxy)s).Proxy).Hearbeat();
                 return Task.CompletedTask;
             };
             //clientProxy.StartHeartbeat(true);

@@ -16,6 +16,11 @@ namespace NetRpc
 
         public Stream? CacheStream { get; set; }
 
+        protected void WriteCache(byte[] buffer, int offset, int count)
+        {
+            CacheStream?.Write(buffer, offset, count);
+        }
+
         protected async Task WriteCacheAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             if (CacheStream == null)
@@ -24,11 +29,16 @@ namespace NetRpc
         }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_1
-       protected ValueTask WriteCacheAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+        protected ValueTask WriteCacheAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
         {
             if (CacheStream == null)
                 return new ValueTask();
             return CacheStream.WriteAsync(buffer, cancellationToken);
+        }
+
+        protected void WriteCache(ReadOnlySpan<byte> buffer)
+        {
+            CacheStream?.Write(buffer);
         }
 #endif
 

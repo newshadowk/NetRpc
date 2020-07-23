@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
@@ -31,7 +32,9 @@ namespace NetRpc
 #if NETSTANDARD2_1 || NETCOREAPP3_1
         public async ValueTask DisposeAsync()
         {
-             if (OutputStream != null)
+            Debug.WriteLine("pipe DisposeAsync");
+
+            if (OutputStream != null)
                  await OutputStream.DisposeAsync();
              if (InputStream != null)
                  await InputStream.DisposeAsync();

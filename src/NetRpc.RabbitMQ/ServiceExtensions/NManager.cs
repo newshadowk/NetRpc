@@ -23,22 +23,23 @@ namespace NetRpc.RabbitMQ
                     });
 
                     foreach (var contract in contracts)
-                        services.AddNRpcServiceContract(contract.ContractInfo.Type, contract.InstanceType);
+                        services.AddNRpcServiceContract(contract.ContractInfo.Type, contract.InstanceType!);
                 })
                 .Build();
         }
 
         public static ClientProxy<TService> CreateClientProxy<TService>(RabbitMQClientConnectionFactoryOptions options, int timeoutInterval = 1200000,
-            int hearbeatInterval = 10000)
+            int hearbeatInterval = 10000) where TService : class
         {
             return new ClientProxy<TService>(options.Factory, new SimpleOptions<NClientOption>(new NClientOption
             {
                 HearbeatInterval = hearbeatInterval,
                 TimeoutInterval = timeoutInterval
-            }), new NullOptions<ClientMiddlewareOptions>(), ActionExecutingContextAccessor.Default,  null, NullLoggerFactory.Instance);
+            }), new NullOptions<ClientMiddlewareOptions>(), ActionExecutingContextAccessor.Default,  null!, NullLoggerFactory.Instance);
         }
 
         public static ClientProxy<TService> CreateClientProxy<TService>(MQOptions options, int timeoutInterval = 1200000, int hearbeatInterval = 10000)
+            where TService : class
         {
             var opt = new RabbitMQClientConnectionFactoryOptions(options, NullLoggerFactory.Instance);
             return CreateClientProxy<TService>(opt, timeoutInterval, hearbeatInterval);

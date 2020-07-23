@@ -59,9 +59,9 @@ namespace ServiceMq
             e.Value.Start();
         }
 
-        private static async Task Value_Received(object sender, EventArgsT<byte[]> e)
+        private static async Task Value_Received(object sender, EventArgsT<ReadOnlyMemory<byte>> e)
         {
-            var s = Encoding.UTF8.GetString(e.Value);
+            var s = Encoding.UTF8.GetString(e.Value.Span);
             Console.WriteLine($"{s}");
             var callSession = (CallSession)sender;
             callSession.Dispose();

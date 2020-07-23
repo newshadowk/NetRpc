@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class NRabbitMQServiceExtensions
     {
         public static IServiceCollection AddNRabbitMQService(this IServiceCollection services,
-            Action<RabbitMQServiceOptions> configureOptions = null)
+            Action<RabbitMQServiceOptions>? configureOptions = null)
         {
             if (configureOptions != null)
                 services.Configure(configureOptions);
@@ -17,8 +17,8 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNRabbitMQClient(this IServiceCollection services,
-            Action<RabbitMQClientOptions> mQClientConfigureOptions = null,
-            Action<NClientOption> clientConfigureOptions = null,
+            Action<RabbitMQClientOptions>? mQClientConfigureOptions = null,
+            Action<NClientOption>? clientConfigureOptions = null,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
             if (mQClientConfigureOptions != null)
@@ -45,9 +45,9 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNRabbitMQGateway<TService>(this IServiceCollection services,
-            Action<RabbitMQClientOptions> mQClientConfigureOptions = null,
-            Action<NClientOption> clientConfigureOptions = null,
-            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
+            Action<RabbitMQClientOptions>? mQClientConfigureOptions = null,
+            Action<NClientOption>? clientConfigureOptions = null,
+            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
         {
             services.AddNRabbitMQClient(mQClientConfigureOptions, clientConfigureOptions, serviceLifetime);
             services.AddNRpcClientContract<TService>(serviceLifetime);

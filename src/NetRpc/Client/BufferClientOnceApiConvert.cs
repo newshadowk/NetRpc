@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Runtime.Serialization;
@@ -61,7 +62,6 @@ namespace NetRpc
         public void Dispose()
         {
             _connection?.Dispose();
-            _streamPipe.Dispose();
         }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_1
@@ -69,13 +69,12 @@ namespace NetRpc
         {
             if (_connection != null)
                 await _connection.DisposeAsync();
-            await _streamPipe.DisposeAsync();
         }
 #endif
 
         private Stream GetReplyStream(long length)
         {
-            var stream = new ProxyStream(_streamPipe.Input.AsStream(), length);
+            var stream = new ProxyStream(_streamPipe.Input.AsStream(), length, true);
 
 #pragma warning disable 1998
             async Task OnEnd(object sender, EventArgs e)

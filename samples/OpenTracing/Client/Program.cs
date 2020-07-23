@@ -14,7 +14,7 @@ namespace Client
             //await p.Proxy.Call("msg");
             //await p.Proxy.Call("msg");
 
-            using (var s = File.OpenRead(@"D:\TestFile\400MB.exe"))
+            using (var s = File.OpenRead(@"D:\TestFile\130MB.exe"))
             {
                 var stream = await p.Proxy.Echo(s);
                 MemoryStream ms = new MemoryStream();

@@ -38,7 +38,7 @@ namespace NetRpc.Http
                     });
 
                     foreach (var contract in contracts)
-                        services.AddNRpcServiceContract(contract.ContractInfo.Type, contract.InstanceType);
+                        services.AddNRpcServiceContract(contract.ContractInfo.Type, contract.InstanceType!);
                 })
                 .Configure(app =>
                 {

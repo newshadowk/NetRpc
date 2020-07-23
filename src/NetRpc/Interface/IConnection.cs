@@ -18,6 +18,7 @@ namespace NetRpc
 
         Task StartAsync(string? authorizationToken);
     }
+
     public interface IServiceConnection : IDisposable
 #if NETSTANDARD2_1 || NETCOREAPP3_1
         , IAsyncDisposable

@@ -67,7 +67,7 @@ namespace NetRpc
                 if (ocp.PostStream != null)
                     rs = new ProxyStream(new MemoryStream(ocp.PostStream));
                 else
-                    rs = new ProxyStream(_streamPipe.InputStream, ocp.StreamLength);
+                    rs = new ProxyStream(_streamPipe.InputStream, ocp.StreamLength, true);
             }
             else
                 rs = null;

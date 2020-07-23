@@ -25,7 +25,7 @@ namespace NetRpc.Http
         private readonly bool _ignoreWhenNotMatched;
         private readonly IServiceProvider _serviceProvider;
         private readonly HttpObjProcessorManager _httpObjProcessorManager;
-        private CancellationTokenSource _cts;
+        private CancellationTokenSource? _cts;
         private readonly FormOptions _defaultFormOptions = new FormOptions();
 
         public HttpServiceOnceApiConvert(List<Contract> contracts,
@@ -47,7 +47,7 @@ namespace NetRpc.Http
             CallbackHub.Canceled += CallbackHubCanceled;
         }
 
-        public Task SendBufferAsync(byte[] buffer)
+        public Task SendBufferAsync(ReadOnlyMemory<byte> buffer)
         {
             return Task.CompletedTask;
         }
@@ -87,17 +87,17 @@ namespace NetRpc.Http
             return new ServiceOnceCallParam(actionInfo, pureArgs, httpObj.HttpDataObj.StreamLength, httpObj.ProxyStream, header);
         }
 
-        public async Task<bool> SendResultAsync(CustomResult result, Stream stream, string streamName, ActionExecutingContext context)
+        public async Task<bool> SendResultAsync(CustomResult result, Stream? stream, string? streamName, ActionExecutingContext context)
         {
             if (!result.HasStream)
                 await _connection.SendAsync(new Result(result.Result));
             else
-                await _connection.SendWithStreamAsync(result, stream, streamName);
+                await _connection.SendWithStreamAsync(result, stream!, streamName!);
 
             return false;
         }
 
-        public Task SendFaultAsync(Exception body, ActionExecutingContext context)
+        public Task SendFaultAsync(Exception body, ActionExecutingContext? context)
         {
             if (body is HttpNotMatchedException ||
                 body is MethodNotFoundException)
@@ -128,7 +128,7 @@ namespace NetRpc.Http
             return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(0, body.Message), ClientConstValue.DefaultExceptionStatusCode));
         }
 
-        public Task SendCallbackAsync(object callbackObj)
+        public Task SendCallbackAsync(object? callbackObj)
         {
             return _connection.CallBack(callbackObj);
         }
@@ -152,12 +152,14 @@ namespace NetRpc.Http
             section = await reader.ReadNextSectionAsync();
             ValidateSection(section);
             var fileName = GetFileName(section.ContentDisposition);
+            if (fileName == null)
+                throw new ArgumentNullException(null, "File name is null.");
             dataObj.TrySetStreamName(fileName);
             var proxyStream = new ProxyStream(section.Body, dataObj.StreamLength);
             return (dataObj, proxyStream);
         }
 
-        private static string Match(string src, string left, string right)
+        private static string? Match(string src, string left, string right)
         {
             var r = Regex.Match(src, $"(?<={left}).+(?={right})");
             if (r.Captures.Count > 0)
@@ -165,7 +167,7 @@ namespace NetRpc.Http
             return null;
         }
 
-        private static string GetFileName(string contentDisposition)
+        private static string? GetFileName(string contentDisposition)
         {
             //Content-Disposition: form-data; name="stream"; filename="t1.docx"
             return Match(contentDisposition, "filename=\"", "\"");
@@ -219,9 +221,9 @@ namespace NetRpc.Http
             throw new HttpNotMatchedException($"Request url:'{_context.Request.Path.Value}' is not matched.");
         }
 
-        private Dictionary<string, object> GetHeader()
+        private Dictionary<string, object?> GetHeader()
         {
-            var ret = new Dictionary<string, object>();
+            var ret = new Dictionary<string, object?>();
             foreach (var pair in _context.Request.Headers)
                 ret.Add(pair.Key, pair.Value.Count > 0 ? pair.Value[0] : null);
             return ret;
@@ -232,19 +234,14 @@ namespace NetRpc.Http
             //dataObjType
             var method = ApiWrapper.GetMethodInfo(ai, _contracts, _serviceProvider);
             var dataObjType = method.contractMethod.MergeArgType.Type;
-            return await _httpObjProcessorManager.ProcessAsync(new ProcessItem
-            {
-                DataObjType = dataObjType,
-                HttpRoutInfo = hri,
-                HttpRequest = _context.Request,
-                FormatRawPath = rawPath
-            });
+
+            return await _httpObjProcessorManager.ProcessAsync(new ProcessItem(_context.Request, hri, rawPath, dataObjType));
         }
 
         private void CallbackHubCanceled(object sender, string e)
         {
             if (_connection.CallId == e || string.IsNullOrEmpty(e))
-                _cts.Cancel();
+                _cts?.Cancel();
         }
     }
 }

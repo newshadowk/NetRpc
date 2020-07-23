@@ -18,12 +18,12 @@ namespace NetRpc.RabbitMQ
             _call.ReceivedAsync += CallReceived;
         }
 
-        private async Task CallReceived(object sender, global::RabbitMQ.Base.EventArgsT<byte[]> e)
+        private async Task CallReceived(object sender, global::RabbitMQ.Base.EventArgsT<ReadOnlyMemory<byte>?> e)
         {
             if (e.Value == null)
-                await OnReceivedAsync(new EventArgsT<byte[]>(NullReply.All));
+                await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(NullReply.All));
             else
-                await OnReceivedAsync(new EventArgsT<byte[]>(e.Value));
+                await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Value.Value));
         }
 
         public void Dispose()
@@ -47,11 +47,11 @@ namespace NetRpc.RabbitMQ
             ChannelType = ChannelType.RabbitMQ
         };
 
-        public event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;
+        public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
 
-        public event EventHandler<EventArgsT<Exception>> ReceiveDisconnected;
+        public event EventHandler<EventArgsT<Exception>>? ReceiveDisconnected;
 
-        public Task SendAsync(byte[] buffer, bool isEnd = false, bool isPost = false)
+        public Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false)
         {
             return _call.SendAsync(buffer, isPost);
         }
@@ -61,7 +61,7 @@ namespace NetRpc.RabbitMQ
             await _call.CreateChannelAsync();
         }
 
-        private Task OnReceivedAsync(EventArgsT<byte[]> e)
+        private Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>> e)
         {
             return ReceivedAsync.InvokeAsync(this, e);
         }

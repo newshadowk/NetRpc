@@ -34,7 +34,7 @@ namespace NetRpc.Http
 
         public string? CallId { get; set; }
 
-        public ProxyStream Stream
+        public ProxyStream? Stream
         {
             set
             {
@@ -61,7 +61,7 @@ namespace NetRpc.Http
             }
         }
 
-        public async Task CallBack(object callbackObj)
+        public async Task CallBack(object? callbackObj)
         {
             try
             {

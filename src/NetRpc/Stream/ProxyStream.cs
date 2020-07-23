@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if NETSTANDARD2_1 || NETCOREAPP3_1
+using System;
+#endif
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +11,8 @@ namespace NetRpc
     {
         private readonly Stream _stream;
         private readonly long _length;
+        private readonly bool _manualPosition;
+        private long _p;
 
         public ProxyStream(Stream stream)
         {
@@ -23,10 +27,11 @@ namespace NetRpc
             _stream = stream;
         }
 
-        public ProxyStream(Stream stream, long length)
+        public ProxyStream(Stream stream, long length, bool manualPosition = false)
         {
             _stream = stream;
             _length = length;
+            _manualPosition = manualPosition;
         }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_1
@@ -37,6 +42,8 @@ namespace NetRpc
             try
             {
                 readCount = await _stream.ReadAsync(buffer, cancellationToken);
+                if (_manualPosition)
+                    _p += readCount;
                 await WriteCacheAsync(buffer, cancellationToken);
                 await InvokeStartAsync();
                 await OnProgressAsync(new SizeEventArgs(Position));
@@ -55,7 +62,26 @@ namespace NetRpc
 
         public override int Read(Span<byte> buffer)
         {
-            throw new NotImplementedException();
+            int readCount;
+            try
+            {
+                readCount = _stream.Read(buffer);
+                if (_manualPosition)
+                    _p += readCount;
+                WriteCache(buffer);
+                InvokeStartAsync().AsyncWait();
+                OnProgressAsync(new SizeEventArgs(Position)).AsyncWait();
+            }
+            catch
+            {
+                InvokeFinishAsync(new SizeEventArgs(Position)).AsyncWait();
+                throw;
+            }
+
+            if (readCount == 0)
+                InvokeFinishAsync(new SizeEventArgs(Position)).AsyncWait();
+
+            return readCount;
         }
 
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = new CancellationToken())
@@ -77,7 +103,26 @@ namespace NetRpc
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            throw new NotImplementedException();
+            int readCount;
+            try
+            {
+                readCount = _stream.Read(buffer, offset, count);
+                if (_manualPosition)
+                    _p += readCount;
+                WriteCache(buffer, offset, readCount);
+                InvokeStartAsync().AsyncWait();
+                OnProgressAsync(new SizeEventArgs(Position)).AsyncWait();
+            }
+            catch
+            {
+                InvokeFinishAsync(new SizeEventArgs(Position)).AsyncWait();
+                throw;
+            }
+
+            if (readCount == 0)
+                InvokeFinishAsync(new SizeEventArgs(Position)).AsyncWait();
+
+            return readCount;
         }
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -86,6 +131,8 @@ namespace NetRpc
             try
             {
                 readCount = await _stream.ReadAsync(buffer, offset, count, cancellationToken);
+                if (_manualPosition)
+                    _p += readCount;
                 await WriteCacheAsync(buffer, offset, readCount, cancellationToken);
                 await InvokeStartAsync();
                 await OnProgressAsync(new SizeEventArgs(Position));
@@ -133,8 +180,19 @@ namespace NetRpc
 
         public override long Position
         {
-            get => _stream.Position;
-            set => _stream.Position = value;
+            get
+            {
+                if (_manualPosition)
+                    return _p; 
+                return _stream.Position;
+            }
+            set
+            {
+                if (_manualPosition)
+                    _p = value;
+                else
+                    _stream.Position = value;
+            }
         }
     }
 }

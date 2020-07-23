@@ -28,7 +28,7 @@ namespace NetRpc.RabbitMQ
             _loggerFactory = loggerFactory;
         }
 
-        protected override ClientProxy<TService> CreateProxyInner<TService>(string optionsName)
+        protected override ClientProxy<TService>? CreateProxyInner<TService>(string optionsName)
         {
             var options = _rabbitMQClientOptions.Get(optionsName);
             if (options.IsPropertiesDefault())
@@ -70,7 +70,7 @@ namespace NetRpc.RabbitMQ
             _loggerFactory = loggerFactory;
         }
 
-        public ClientProxy<TService> CreateProxy<TService>(string optionsName)
+        public ClientProxy<TService>? CreateProxy<TService>(string optionsName) where TService : class
         {
             var options = _rabbitMQClientOptions.Get(optionsName);
             if (options.IsPropertiesDefault())

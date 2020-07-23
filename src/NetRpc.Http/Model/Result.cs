@@ -16,7 +16,7 @@ namespace NetRpc.Http
         {
         }
 
-        public static Result FromPainText(string ret, int statusCode)
+        public static Result FromPainText(string? ret, int statusCode)
         {
             return new Result
             {
@@ -36,7 +36,7 @@ namespace NetRpc.Http
             };
         }
 
-        public Result(object ret)
+        public Result(object? ret)
         {
             StatusCode = 200;
             Ret = ret;

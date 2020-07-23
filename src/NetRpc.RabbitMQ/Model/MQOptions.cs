@@ -2,12 +2,12 @@
 {
     public class MQOptions
     {
-        public string User { get; set; }
-        public string Password { get; set; }
-        public string Host { get; set; }
-        public string VirtualHost { get; set; }
+        public string User { get; set; } = null!;
+        public string Password { get; set; } = null!;
+        public string Host { get; set; } = null!;
+        public string VirtualHost { get; set; } = null!;
         public int Port { get; set; }
-        public string RpcQueue { get; set; }
+        public string RpcQueue { get; set; } = null!;
         public int PrefetchCount { get; set; }
 
         public MQOptions(string host, string virtualHost, string rpcQueue, int port, string user, string password, int prefetchCount = 1)

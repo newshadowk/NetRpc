@@ -11,7 +11,7 @@ namespace NetRpc.RabbitMQ
         public RabbitMQServiceConnection(CallSession callSession)
         {
             _callSession = callSession;
-            _callSession.ReceivedAsync += (s, e) => OnReceivedAsync(new EventArgsT<byte[]>(e.Value));
+            _callSession.ReceivedAsync += (s, e) => OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Value));
         }
 
         public void Dispose()
@@ -27,9 +27,9 @@ namespace NetRpc.RabbitMQ
         }
 #endif
 
-        public event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;
+        public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
 
-        public Task SendAsync(byte[] buffer)
+        public Task SendAsync(ReadOnlyMemory<byte> buffer)
         {
             return Task.Run(() => { _callSession.Send(buffer); });
         }
@@ -40,7 +40,7 @@ namespace NetRpc.RabbitMQ
             return Task.CompletedTask;
         }
 
-        private Task OnReceivedAsync(EventArgsT<byte[]> e)
+        private Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>> e)
         {
             return ReceivedAsync.InvokeAsync(this, e);
         }

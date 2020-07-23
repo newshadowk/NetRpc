@@ -28,7 +28,7 @@ namespace NetRpc.Http
 
         public bool MatchContentType(string contentType)
         {
-            return contentType == "multipart/form-data";
+            return contentType.StartsWith("multipart/form-data");
         }
 
         public async Task<HttpObj> ProcessAsync(ProcessItem item)
@@ -116,7 +116,7 @@ namespace NetRpc.Http
 
         public Task<HttpObj> ProcessAsync(ProcessItem item)
         {
-            return Task.FromResult(new HttpObj {HttpDataObj = GetHttpDataObjFromQuery(item.HttpRequest, item.DataObjType) });
+            return Task.FromResult(new HttpObj {HttpDataObj = GetHttpDataObjFromQuery(item.HttpRequest, item.DataObjType)});
         }
 
         private static HttpDataObj GetHttpDataObjFromQuery(HttpRequest request, Type dataObjType)
@@ -168,7 +168,7 @@ namespace NetRpc.Http
                         }
 
                         // ReSharper disable once PossibleNullReferenceException
-                        var parsedValue = p.PropertyType.GetMethod("Parse", new[] { typeof(string) }).Invoke(null, new object[] { values[0] });
+                        var parsedValue = p.PropertyType.GetMethod("Parse", new[] {typeof(string)}).Invoke(null, new object[] {values[0]});
                         p.SetValue(dataObj, parsedValue);
                     }
                     catch (Exception ex)
@@ -204,19 +204,24 @@ namespace NetRpc.Http
 
                     return obj;
                 }
+
             throw new HttpFailedException($"ContentType:'{item.HttpRequest.ContentType}' is not supported.");
         }
     }
 
     internal sealed class ProcessItem
     {
-        public ProcessItem()
+        public ProcessItem(HttpRequest httpRequest, HttpRoutInfo httpRoutInfo, string formatRawPath, Type? dataObjType)
         {
+            HttpRequest = httpRequest;
+            HttpRoutInfo = httpRoutInfo;
+            FormatRawPath = formatRawPath;
+            DataObjType = dataObjType;
         }
 
-        public HttpRequest HttpRequest { get; set; }
-        public HttpRoutInfo HttpRoutInfo { get; set; }
-        public string FormatRawPath { get; set; }
-        public Type DataObjType { get; set; }
+        public HttpRequest HttpRequest { get; }
+        public HttpRoutInfo HttpRoutInfo { get; }
+        public string FormatRawPath { get; }
+        public Type? DataObjType { get; }
     }
 }

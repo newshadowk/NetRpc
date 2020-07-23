@@ -15,13 +15,13 @@ namespace NetRpc.Http.Client
         private readonly string _connectionId;
         private readonly HubCallBackNotifier _notifier;
         private readonly int _timeoutInterval;
-        private TypeName _callbackAction;
+        private TypeName? _callbackAction;
         private readonly string _callId = Guid.NewGuid().ToString();
 
-        public event EventHandler<EventArgsT<object>> ResultStream;
-        public event EventHandler<EventArgsT<object>> Result;
-        public event AsyncEventHandler<EventArgsT<object>> CallbackAsync;
-        public event EventHandler<EventArgsT<object>> Fault;
+        public event EventHandler<EventArgsT<object>>? ResultStream;
+        public event EventHandler<EventArgsT<object>>? Result;
+        public event AsyncEventHandler<EventArgsT<object>>? CallbackAsync;
+        public event EventHandler<EventArgsT<object>>? Fault;
 
         public HttpClientOnceApiConvert(string apiUrl, string connectionId, HubCallBackNotifier notifier, int timeoutInterval)
         {
@@ -37,8 +37,9 @@ namespace NetRpc.Http.Client
         {
             if (e.CallId != _callId)
                 return;
-            var argType = _callbackAction.Type.GenericTypeArguments[0];
-            var obj = e.Data.ToDtoObject(argType);
+
+            var argType = _callbackAction!.Type.GenericTypeArguments[0];
+            var obj = e.Data.ToDtoObject(argType)!;
             //have not deadlock issue?
             OnCallbackAsync(new EventArgsT<object>(obj)).Wait();
         }
@@ -59,7 +60,7 @@ namespace NetRpc.Http.Client
             }
         }
 
-        public Task StartAsync(string authorizationToken)
+        public Task StartAsync(string? authorizationToken)
         {
             return Task.CompletedTask;
         }
@@ -69,7 +70,7 @@ namespace NetRpc.Http.Client
             return _notifier.CancelAsync(_callId);
         }
 
-        public Task SendBufferAsync(byte[] body)
+        public Task SendBufferAsync(ReadOnlyMemory<byte> body)
         {
             return Task.CompletedTask;
         }
@@ -79,7 +80,7 @@ namespace NetRpc.Http.Client
             return Task.CompletedTask;
         }
 
-        public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream stream, bool isPost, CancellationToken token)
+        public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, CancellationToken token)
         {
             _callbackAction = methodContext.ContractMethod.MergeArgType.CallbackAction;
             var postObj = methodContext.ContractMethod.CreateMergeArgTypeObj(_callId, _connectionId, stream?.Length ?? 0, callParam.PureArgs);
@@ -95,20 +96,20 @@ namespace NetRpc.Http.Client
             if (callParam.Header != null)
             {
                 foreach (var pair in callParam.Header)
-                    req.AddHeader(pair.Key, pair.Value.ToString());
+                    req.AddHeader(pair.Key, pair.Value?.ToString()!);
             }
 
             //request
             if (methodContext.ContractMethod.MergeArgType.StreamPropName != null)
             {
-                req.AddParameter("data", postObj.ToDtoJson(), ParameterType.RequestBody);
+                req.AddParameter("data", postObj.ToDtoJson()!, ParameterType.RequestBody);
                 // ReSharper disable once PossibleNullReferenceException
-                req.AddFile(methodContext.ContractMethod.MergeArgType.StreamPropName, stream.CopyTo, methodContext.ContractMethod.MergeArgType.StreamPropName,
-                    stream.Length);
+                req.AddFile(methodContext.ContractMethod.MergeArgType.StreamPropName, stream!.CopyTo, methodContext.ContractMethod.MergeArgType.StreamPropName,
+                    stream!.Length);
             }
             else
             {
-                req.AddJsonBody(postObj);
+                req.AddJsonBody(postObj!);
             }
 
             //send request
@@ -142,8 +143,8 @@ namespace NetRpc.Http.Client
                 {
                     var resultH = res.Headers.First(i => i.Name == ClientConstValue.CustomResultHeaderKey);
                     // ReSharper disable once PossibleNullReferenceException
-                    var hStr = HttpUtility.UrlDecode(resultH.Value.ToString(), Encoding.UTF8);
-                    var retInstance = hStr.ToDtoObject(realRetT);
+                    var hStr = HttpUtility.UrlDecode(resultH.Value?.ToString(), Encoding.UTF8);
+                    var retInstance = hStr.ToDtoObject(realRetT)!;
                     retInstance.SetStream(ms);
                     OnResultStream(new EventArgsT<object>(retInstance));
                 }
@@ -151,7 +152,7 @@ namespace NetRpc.Http.Client
             //return object
             else
             {
-                var value = res.Content.ToDtoObject(realRetT);
+                var value = res.Content.ToDtoObject(realRetT)!;
                 OnResult(new EventArgsT<object>(value));
             }
 
@@ -193,7 +194,7 @@ namespace NetRpc.Http.Client
             {
                 if (grouping.Key == (int) res.StatusCode)
                 {
-                    var fObj = (FaultExceptionJsonObj) res.Content.ToDtoObject(typeof(FaultExceptionJsonObj));
+                    var fObj = (FaultExceptionJsonObj) res.Content.ToDtoObject(typeof(FaultExceptionJsonObj))!;
                     var found = grouping.FirstOrDefault(i => i.ErrorCode == fObj.ErrorCode);
                     if (found != null)
                         throw CreateException(found.DetailType, res.Content);

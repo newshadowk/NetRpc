@@ -16,7 +16,7 @@ namespace NetRpc.RabbitMQ
     {
         private readonly BusyFlag _busyFlag;
         private readonly RequestHandler _requestHandler;
-        private Service _service;
+        private Service _service = null!;
         private readonly ILogger _logger;
 
         public RabbitMQHostedService(IOptions<RabbitMQServiceOptions> mqOptions, BusyFlag busyFlag, RequestHandler requestHandler, ILoggerFactory factory)

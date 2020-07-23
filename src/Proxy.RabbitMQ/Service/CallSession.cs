@@ -45,7 +45,7 @@ namespace RabbitMQ.Base
             OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(_e.Body));
         }
 
-        public void Send(byte[] buffer)
+        public void Send(ReadOnlyMemory<byte> buffer)
         {
             _clientToServiceModel.BasicPublish("", _serviceToClientQueue, null, buffer);
         }

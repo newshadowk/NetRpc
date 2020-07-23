@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -31,7 +30,7 @@ namespace NetRpc.Http
         public readonly SchemaRepository SchemaRepository = new SchemaRepository();
         private readonly SwaggerGeneratorOptions _options;
 
-        public OpenApiOperation Process(ContractMethod contractMethod, HttpRoutInfo routInfo, string method)
+        public OpenApiOperation? Process(ContractMethod contractMethod, HttpRoutInfo routInfo, string method)
         {
             if (contractMethod.IsHttpIgnore)
                 return null;
@@ -193,7 +192,7 @@ namespace NetRpc.Http
             return tags;
         }
 
-        private OpenApiRequestBody GenerateRequestBody(Type argType, string streamName)
+        private OpenApiRequestBody GenerateRequestBody(Type? argType, string? streamName)
         {
             var body = new OpenApiRequestBody();
 
@@ -253,10 +252,9 @@ namespace NetRpc.Http
             return ret;
         }
 
-        private static string AppendSummaryByCallbackAndCancel(string oldDes, TypeName action, TypeName cancelToken)
+        private static string AppendSummaryByCallbackAndCancel(string? oldDes, TypeName? action, TypeName? cancelToken)
         {
-            if (oldDes == null)
-                oldDes = "";
+            oldDes ??= "";
 
             var append = "";
             if (action != null)
@@ -278,7 +276,7 @@ namespace NetRpc.Http
 
         private void GenerateRequestBodyByForm(OpenApiRequestBody body, params TypeName[] typeNames)
         {
-            var properties = new Dictionary<string, OpenApiSchema>();
+            var properties = new Dictionary<string, OpenApiSchema?>();
             foreach (var typeName in typeNames)
                 properties.Add(typeName.Name, GenerateSchema(typeName.Type));
 
@@ -306,7 +304,7 @@ namespace NetRpc.Http
             });
         }
 
-        private OpenApiSchema GenerateSchema(Type type)
+        private OpenApiSchema? GenerateSchema(Type type)
         {
             if (type == typeof(Task))
                 return null;

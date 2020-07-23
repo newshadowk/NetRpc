@@ -457,7 +457,7 @@ namespace NetRpc
             return propName.ToLower() == "streamname";
         }
 
-        public static void SyncWait(this Task task)
+        public static void AsyncWait(this Task task)
         {
             //pass the sync context.
             Task.Run(task.Wait).Wait();

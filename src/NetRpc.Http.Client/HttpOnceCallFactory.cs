@@ -10,9 +10,9 @@ namespace NetRpc.Http.Client
     {
         private readonly HttpClientOptions _options;
         private readonly ILogger _logger;
-        private HubConnection _connection;
-        private HubCallBackNotifier _notifier;
-        private volatile string _connectionId;
+        private HubConnection? _connection;
+        private HubCallBackNotifier? _notifier;
+        private volatile string? _connectionId;
         private readonly AsyncLock _lockInit = new AsyncLock();
 
         public HttpOnceCallFactory(IOptions<HttpClientOptions> options, ILoggerFactory factory)
@@ -53,7 +53,7 @@ namespace NetRpc.Http.Client
             }
 #else
             // ReSharper disable once PossibleNullReferenceException
-            if (_connection.State == HubConnectionState.Disconnected)
+            if (_connection!.State == HubConnectionState.Disconnected)
             {
                 using (await _lockInit.LockAsync())
                 {
@@ -73,18 +73,18 @@ namespace NetRpc.Http.Client
                 }
             }
 #endif
-            return _connectionId;
+            return _connectionId!;
         }
 
         private void HubConnection_Callback(string callId, string data)
         {
-            _notifier.OnCallback(new CallbackEventArgs(callId, data));
+            _notifier?.OnCallback(new CallbackEventArgs(callId, data));
         }
 
         public void Dispose()
         {
             //have not deadlock issue.
-            _connection.StopAsync().Wait();
+            _connection?.StopAsync().Wait();
         }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_1
@@ -97,7 +97,7 @@ namespace NetRpc.Http.Client
         public async Task<IOnceCall> CreateAsync(int timeoutInterval)
         {
             var cid = await InitConnectionAsync();
-            var convert = new HttpClientOnceApiConvert(_options.ApiUrl, cid, _notifier, timeoutInterval);
+            var convert = new HttpClientOnceApiConvert(_options.ApiUrl, cid, _notifier!, timeoutInterval);
             return new OnceCall(convert, timeoutInterval, _logger);
         }
     }

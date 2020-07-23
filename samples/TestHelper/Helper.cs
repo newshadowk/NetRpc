@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using NetRpc.Grpc;
 using NetRpc.RabbitMQ;
 
@@ -43,7 +44,7 @@ namespace TestHelper
         {
             const int size = 81920;
             var bs = new byte[size];
-            var readCount = stream.Read(bs, 0, size);
+            var readCount = stream.ReadAsync(bs, 0, size).Result;
             var list = bs.ToList();
             list.RemoveRange(readCount, list.Count - readCount);
             var tgtBs = list.ToArray();

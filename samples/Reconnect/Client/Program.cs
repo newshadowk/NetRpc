@@ -54,7 +54,7 @@ namespace Client
             var clientProxy = _factory.CreateProxy<IService>("mq");
             clientProxy.Connected += ClientProxy_Connected;
             clientProxy.DisConnected += ClientProxy_DisConnected;
-            clientProxy.Heartbeat += ClientProxy_Heartbeat;
+            clientProxy.HeartbeatAsync += ClientProxy_Heartbeat;
             clientProxy.ExceptionInvoked += ClientProxy_ExceptionInvoked;
 
             Console.WriteLine("start");
@@ -88,7 +88,7 @@ namespace Client
             Console.WriteLine($"ClientProxy_ExceptionInvoked, {e.Value.Message}");
         }
 
-        private Task ClientProxy_Heartbeat(IClientProxy arg)
+        private Task ClientProxy_Heartbeat(object sender, EventArgs e)
         {
             Console.WriteLine("ClientProxy_Heartbeat");
             return Task.CompletedTask;

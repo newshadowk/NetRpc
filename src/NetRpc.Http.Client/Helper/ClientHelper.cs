@@ -10,7 +10,7 @@ namespace NetRpc.Http.Client
     {
         private static readonly JsonSerializerSettings Js = new JsonSerializerSettings{ContractResolver = DtoContractResolver.Instance};
 
-        public static object ToDtoObject(this string str, Type t)
+        public static object? ToDtoObject(this string str, Type t)
         {
             if (string.IsNullOrEmpty(str))
                 return default;
@@ -18,8 +18,11 @@ namespace NetRpc.Http.Client
             return JsonConvert.DeserializeObject(str, t, Js);
         }
 
-        public static bool HasStream(this Type t)
+        public static bool HasStream(this Type? t)
         {
+            if (t == null)
+                return false;
+
             if (t == typeof(Stream))
                 return true;
 
@@ -27,7 +30,7 @@ namespace NetRpc.Http.Client
             return propertyInfos.Any(i => i.PropertyType == typeof(Stream));
         }
 
-        public static PropertyInfo GetStreamPropertyInfo(this Type t)
+        public static PropertyInfo? GetStreamPropertyInfo(this Type t)
         {
             if (t == typeof(Stream))
                 return null;

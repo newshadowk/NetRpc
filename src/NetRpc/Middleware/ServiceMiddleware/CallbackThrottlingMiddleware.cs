@@ -92,7 +92,7 @@ namespace NetRpc
 
         public void Dispose()
         {
-            InvokeAsync().SyncWait();
+            InvokeAsync().AsyncWait();
             _isEnd = true;
             _t?.Dispose();
         }
