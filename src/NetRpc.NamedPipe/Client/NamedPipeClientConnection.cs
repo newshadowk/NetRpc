@@ -14,14 +14,17 @@ namespace NetRpc.Grpc
         }
 
         public ConnectionInfo ConnectionInfo { get; }
-        public event AsyncEventHandler<EventArgsT<byte[]>> ReceivedAsync;
-        public event EventHandler<EventArgsT<Exception>> ReceiveDisconnected;
-        public Task SendAsync(byte[] buffer, bool isEnd = false, bool isPost = false)
+
+        public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
+
+        public event EventHandler<EventArgsT<Exception>>? ReceiveDisconnected;
+
+        public Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false)
         {
             throw new NotImplementedException();
         }
 
-        public Task StartAsync(string authorizationToken)
+        public Task StartAsync(string? authorizationToken)
         {
             throw new NotImplementedException();
         }
