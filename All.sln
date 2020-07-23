@@ -185,8 +185,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientMq", "samples\Mq\Clie
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceMq", "samples\Mq\ServiceMq\ServiceMq.csproj", "{BC82B2B6-F2BD-47BB-9329-B18A1DBFB6E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetRpc.NamedPipe", "src\NetRpc.NamedPipe\NetRpc.NamedPipe.csproj", "{AE4B30B7-3A6B-44C6-A9E4-04BD83A672F4}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -481,10 +479,6 @@ Global
 		{BC82B2B6-F2BD-47BB-9329-B18A1DBFB6E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC82B2B6-F2BD-47BB-9329-B18A1DBFB6E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC82B2B6-F2BD-47BB-9329-B18A1DBFB6E2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AE4B30B7-3A6B-44C6-A9E4-04BD83A672F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AE4B30B7-3A6B-44C6-A9E4-04BD83A672F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AE4B30B7-3A6B-44C6-A9E4-04BD83A672F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AE4B30B7-3A6B-44C6-A9E4-04BD83A672F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
