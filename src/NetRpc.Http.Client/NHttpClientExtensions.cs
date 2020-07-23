@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (httpClientConfigureOptions != null)
                 services.Configure(httpClientConfigureOptions);
-            services.AddNRpcClientByOnceCallFactory<HttpOnceCallFactory>(clientConfigureOptions, serviceLifetime);
+            services.AddNClientByOnceCallFactory<HttpOnceCallFactory>(clientConfigureOptions, serviceLifetime);
             switch (serviceLifetime)
             {
                 case ServiceLifetime.Singleton:

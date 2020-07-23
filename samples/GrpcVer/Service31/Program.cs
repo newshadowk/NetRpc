@@ -46,7 +46,7 @@ namespace Service
                     //services.AddSignalR();
                     //services.AddNetRpcSwagger();
                     //services.AddNHttpService();
-                    services.AddNRpcServiceContract<IService, Service>();
+                    services.AddNServiceContract<IService, Service>();
                     //services.AddNRabbitMQService(i => i.CopyFrom(TestHelper.Helper.GetMQOptions()));
                     services.AddNGrpcService();
 

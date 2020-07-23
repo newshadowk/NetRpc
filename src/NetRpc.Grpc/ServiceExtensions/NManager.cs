@@ -17,14 +17,14 @@ namespace NetRpc.Grpc
                         if (nGrpcServiceOptions != null)
                             i.Ports = nGrpcServiceOptions.Ports;
                     });
-                    services.AddNRpcMiddleware(i =>
+                    services.AddNMiddleware(i =>
                     {
                         if (middlewareOptions != null)
                             i.AddItems(middlewareOptions.GetItems());
                     });
 
                     foreach (var contract in contracts)
-                        services.AddNRpcServiceContract(contract.ContractInfo.Type, contract.InstanceType!);
+                        services.AddNServiceContract(contract.ContractInfo.Type, contract.InstanceType!);
                 })
                 .Build();
         }

@@ -175,7 +175,7 @@ oje5QvrO/6bqyqI4VquOLl2BMY0xt6p3
                     services.AddSignalR();
                     services.AddNSwagger();
                     services.AddNHttpService();
-                    services.AddNRpcServiceContract<IService, Service>(ServiceLifetime.Scoped);
+                    services.AddNServiceContract<IService, Service>(ServiceLifetime.Scoped);
                     services.AddNGrpcClientContract<IClientService>(ServiceLifetime.Scoped);
                     services.AddNGrpcClient(o => { o.Url = "http://localhost:5000"; });
                     services.AddNGrpcService(o =>

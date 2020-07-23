@@ -25,7 +25,7 @@ namespace Service
                     services.AddNHttpService();
 
                     services.AddNGrpcService(i => { i.AddPort("0.0.0.0", 50003); });
-                    services.AddNRpcServiceContract<IService_2, Service>();
+                    services.AddNServiceContract<IService_2, Service>();
 
                     services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5003/swagger");
                     services.AddNJaeger(i =>

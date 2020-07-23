@@ -32,7 +32,7 @@ namespace Client
                     services.AddNRabbitMQClient();
                     services.Configure<RabbitMQClientOptions>("mq1", context.Configuration.GetSection("Mq1"));
                     services.Configure<RabbitMQClientOptions>("mq2", context.Configuration.GetSection("Mq2"));
-                    services.AddNRpcClientContract<IService>("mq1");
+                    services.AddNClientContract<IService>("mq1");
 
                     services.AddNGrpcClient();
                     services.Configure<GrpcClientOptions>("grpc1", i =>

@@ -21,7 +21,7 @@ namespace Client
                         i.Host = "localhost";
                         i.Port = 50001;
                     });
-                    services.AddNRpcClientContract<IService>();
+                    services.AddNClientContract<IService>();
                 })
                 .Build();
 

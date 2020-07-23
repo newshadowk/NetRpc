@@ -32,7 +32,7 @@ namespace Service_1
                     services.AddNHttpService();
 
                     services.AddNGrpcService(i => { i.AddPort("0.0.0.0", 50002); });
-                    services.AddNRpcServiceContract<IService_1, Service>();
+                    services.AddNServiceContract<IService_1, Service>();
 
                     services.Configure<GrpcClientOptions>("grpc",
                         i =>

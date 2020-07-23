@@ -27,7 +27,7 @@ namespace Client
                         i.Port = 50002;
                     });
                     services.AddNGrpcClient();
-                    services.AddNRpcClientContract<IService1>("grpc");
+                    services.AddNClientContract<IService1>("grpc");
 
                     services.Configure<RabbitMQClientOptions>("mq", i => { i.CopyFrom(Helper.GetMQOptions()); });
 

@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (configureOptions != null)
                 services.Configure(configureOptions);
-            services.AddNRpcService();
+            services.AddNService();
             services.AddHostedService<RabbitMQHostedService>();
             return services;
         }
@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (mQClientConfigureOptions != null)
                 services.Configure(mQClientConfigureOptions);
-            services.AddNRpcClientByClientConnectionFactory<RabbitMQClientConnectionFactory>(clientConfigureOptions, serviceLifetime);
+            services.AddNClientByClientConnectionFactory<RabbitMQClientConnectionFactory>(clientConfigureOptions, serviceLifetime);
             switch (serviceLifetime)
             {
                 case ServiceLifetime.Singleton:
@@ -50,8 +50,8 @@ namespace Microsoft.Extensions.DependencyInjection
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
         {
             services.AddNRabbitMQClient(mQClientConfigureOptions, clientConfigureOptions, serviceLifetime);
-            services.AddNRpcClientContract<TService>(serviceLifetime);
-            services.AddNRpcServiceContract(typeof(TService),
+            services.AddNClientContract<TService>(serviceLifetime);
+            services.AddNServiceContract(typeof(TService),
                 p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))).Proxy,
                 serviceLifetime);
             return services;

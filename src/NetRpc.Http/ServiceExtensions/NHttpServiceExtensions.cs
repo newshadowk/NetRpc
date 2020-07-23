@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<IHttpObjProcessor, FormUrlEncodedObjProcessor>();
 
             services.TryAddTransient<PathProcessor>();
-            services.AddNRpcService();
+            services.AddNService();
             return services;
         }
 
@@ -59,8 +59,8 @@ namespace Microsoft.Extensions.DependencyInjection
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
         {
             services.AddNHttpClient(httpClientConfigureOptions, clientConfigureOptions, serviceLifetime);
-            services.AddNRpcClientContract<TService>(serviceLifetime);
-            services.AddNRpcServiceContract(typeof(TService),
+            services.AddNClientContract<TService>(serviceLifetime);
+            services.AddNServiceContract(typeof(TService),
                 p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))).Proxy,
                 serviceLifetime);
             return services;
