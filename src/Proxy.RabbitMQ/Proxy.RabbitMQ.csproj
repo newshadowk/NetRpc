@@ -21,7 +21,7 @@
   <ItemGroup>
     <!-- do not upgrade to 6.0.0 +, is not work with current code. -->
     <PackageReference Include="RabbitMQ.Client" Version="6.1.0" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.11.0" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.11.1" />
   </ItemGroup>
 
 </Project>

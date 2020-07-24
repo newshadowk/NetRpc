@@ -149,7 +149,7 @@ namespace NetRpc
         private static List<HttpRoutInfo> GetRouts(Type contractType, MethodInfo methodInfo)
         {
             var contractTrimAsync = contractType.IsDefined(typeof(HttpTrimAsyncAttribute));
-            //var methodTrimAsync = methodInfo.IsDefined(typeof(HttpTrimAsyncAttribute)) || contractTrimAsync;
+            var methodTrimAsync = methodInfo.IsDefined(typeof(HttpTrimAsyncAttribute)) || contractTrimAsync;
 
             var contractRoutes = contractType.GetCustomAttributes<HttpRouteAttribute>(true);
             var tag = contractType.GetCustomAttribute<TagAttribute>(true);
@@ -169,7 +169,8 @@ namespace NetRpc
                         r.Template,
                         m.Template,
                         m.HttpMethod,
-                        contractTrimAsync
+                        contractTrimAsync,
+                        methodTrimAsync
                     ));
                 }
 
@@ -181,7 +182,8 @@ namespace NetRpc
                         r.Template,
                         mr.Template,
                         null,
-                        contractTrimAsync
+                        contractTrimAsync,
+                        methodTrimAsync
                     ));
                 }
             }
@@ -195,11 +197,12 @@ namespace NetRpc
                     null,
                     null,
                     null,
-                    contractTrimAsync
+                    contractTrimAsync,
+                    methodTrimAsync
                 ));
             }
 
-            //
+            //merger to result.
             var ret = new List<HttpRoutInfo>();
             foreach (var group in tempInfos.GroupBy(i => i.Path))
             {
@@ -239,7 +242,8 @@ namespace NetRpc
             public string? Method { get; }
             public string Path { get; }
 
-            public TempInfo(Type contractType, MethodInfo methodInfo, string? contractTemplate, string? methodTemplate, string? method, bool contractTrimAsync)
+            public TempInfo(Type contractType, MethodInfo methodInfo, string? contractTemplate, string? methodTemplate, string? method, bool contractTrimAsync, 
+                bool methodTrimAsync)
             {
                 Method = method;
 
@@ -262,8 +266,8 @@ namespace NetRpc
                 else
                     methodPath = methodTemplate;
 
-                if (contractTrimAsync)
-                    methodPath = contractPath.TrimEndString("Async")!;
+                if (methodTrimAsync)
+                    methodPath = methodPath.TrimEndString("Async")!;
 
                 if (methodPath.StartsWith("/"))
                 {

@@ -10,6 +10,16 @@ using Helper = TestHelper.Helper;
 
 namespace Service
 {
+    public class Service3 : IService3
+    {
+        public async Task Call(CObj2 obj)
+        {
+            Console.WriteLine(obj);
+        }
+    }
+
+ 
+
     public class ServiceAsync : IServiceAsync
     {
         public Task<CustomObj> Call2Async(CObj obj, string s1, string s2)
