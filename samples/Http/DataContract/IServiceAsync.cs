@@ -6,31 +6,6 @@ using NetRpc;
 
 namespace DataContract
 {
-    public interface IService3
-    {
-        Task Call(CObj2 obj);
-    }
-
-    public class C1
-    {
-        public string P1 { get; set; }
-    }
-
-    public class CObj2
-    {
-        //[Example(NameEnum.Mary)]
-        //public NameEnum2 Name { get; set; }
-
-        //public string P1 { get; set; }
-        public NameEnum2 P1 { get; set; }
-    }
-
-    public enum NameEnum2
-    {
-        John,
-        Mary
-    }
-
     [HttpTrimAsync]
     [HttpRoute("Service")]
     [FaultExceptionDefine(typeof(CustomException), 400, 1, "errorCode1 error description")]
@@ -118,5 +93,11 @@ namespace DataContract
         public string P3 { get; set; }
 
         public int I4 { get; set; }
+    }
+
+    [HttpTrimAsync]
+    public interface IService3Async
+    {
+        Task CallAsync();
     }
 }

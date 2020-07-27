@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using DataContract;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
@@ -28,7 +27,7 @@ namespace Service
                     services.AddSignalR();
                     services.AddNSwagger();
                     services.AddNHttpService();
-                    services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+                    services.AddNServiceContract<IService2Async, Service2Async>();
                 })
                 .Configure(app =>
                 {
