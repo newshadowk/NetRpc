@@ -5,6 +5,6 @@ namespace NetRpc.Http
 {
     public interface INSwaggerProvider
     {
-        OpenApiDocument GetSwagger(string apiRootPath, List<Contract> contracts);
+        OpenApiDocument GetSwagger(string? apiRootPath, List<Contract> contracts, string? key);
     }
 }

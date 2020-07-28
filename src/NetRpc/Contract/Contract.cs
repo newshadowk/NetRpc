@@ -16,7 +16,7 @@ namespace NetRpc
 
         public ReadOnlyCollection<MethodParameter> InnerSystemTypeParameters { get; }
 
-        public ContractMethod(Type contractType, string contractTypeTag, MethodInfo methodInfo, List<MethodParameter> parameters,
+        public ContractMethod(Type contractType, bool hasSwaggerRole, string contractTypeTag, MethodInfo methodInfo, List<MethodParameter> parameters,
             List<FaultExceptionAttribute> faultExceptionAttributes, List<HttpHeaderAttribute> httpHeaderAttributes,
             List<ResponseTextAttribute> responseTextAttributes, List<SecurityApiKeyAttribute> securityApiKeyAttributes)
         {
@@ -41,7 +41,20 @@ namespace NetRpc
             IsMQPost = GetCustomAttribute<MQPostAttribute>(contractType, methodInfo) != null;
 
             Tags = new ReadOnlyCollection<string>(GetTags(contractTypeTag, methodInfo));
+
+            //SwaggerRole
+            if (hasSwaggerRole)
+            {
+                var contractRoleAttributes = contractType.GetCustomAttributes<SwaggerRoleAttribute>(true).ToList();
+                var roles = GetRoles(contractRoleAttributes, methodInfo);
+                Roles = new ReadOnlyCollection<string>(roles);
+            }
         }
+
+        /// <summary>
+        /// if null means all contract methods roles is unset.
+        /// </summary>
+        public ReadOnlyCollection<string>? Roles { get; }
 
         public MergeArgType MergeArgType { get; }
 
@@ -62,6 +75,28 @@ namespace NetRpc
         public bool IsTracerIgnore { get; }
 
         public bool IsMQPost { get; }
+
+        public bool InRole(string role)
+        {
+            if (Roles == null)
+                return true;
+
+            return Roles.Any(i => i == role);
+        }
+
+        public bool InRoles(IList<string> roles)
+        {
+            if (Roles == null)
+                return true;
+
+            foreach (var role in roles)
+            {
+                if (Roles.Any(i => i == role))
+                    return true;
+            }
+
+            return false;
+        }
 
         public ReadOnlyCollection<FaultExceptionAttribute> FaultExceptionAttributes { get; }
 
@@ -118,7 +153,7 @@ namespace NetRpc
             TypeName? cancelToken = null;
 
             // ReSharper disable once PossibleNullReferenceException
-            var typeName = $"{m.DeclaringType.Namespace}_{m.DeclaringType.Name}_{m.Name}Param2";
+            var typeName = $"{m.DeclaringType!.Namespace}_{m.DeclaringType.Name}_{m.Name}Param2";
             var typeNameWithoutStreamName = $"{m.DeclaringType.Namespace}_{m.DeclaringType.Name}_{m.Name}Param";
             var cis = new List<CustomsPropertyInfo>();
 
@@ -138,7 +173,7 @@ namespace NetRpc
                 //callback
                 if (p.ParameterType.IsFuncT())
                 {
-                    action = new TypeName(p.Name, p.ParameterType);
+                    action = new TypeName(p.Name!, p.ParameterType);
                     addedCallId = true;
                     continue;
                 }
@@ -146,17 +181,17 @@ namespace NetRpc
                 //cancel
                 if (p.ParameterType == typeof(CancellationToken?) || p.ParameterType == typeof(CancellationToken))
                 {
-                    cancelToken = new TypeName(p.Name, p.ParameterType);
+                    cancelToken = new TypeName(p.Name!, p.ParameterType);
                     addedCallId = true;
                     continue;
                 }
 
                 //ExampleAttribute
-                var found = attributeData.Find(i => (string) i.ConstructorArguments[0].Value == p.Name);
+                var found = attributeData.Find(i => (string) i.ConstructorArguments[0].Value! == p.Name);
                 if (found != null)
-                    cis.Add(new CustomsPropertyInfo(p.ParameterType, p.Name, found));
+                    cis.Add(new CustomsPropertyInfo(p.ParameterType, p.Name!, found));
                 else
-                    cis.Add(new CustomsPropertyInfo(p.ParameterType, p.Name));
+                    cis.Add(new CustomsPropertyInfo(p.ParameterType, p.Name!));
             }
 
             //connectionId callId
@@ -202,7 +237,7 @@ namespace NetRpc
             return instance;
         }
 
-        private static T GetCustomAttribute<T>(Type contractType, MethodInfo methodInfo) where T : Attribute
+        private static T? GetCustomAttribute<T>(Type contractType, MethodInfo methodInfo) where T : Attribute
         {
             var methodA = methodInfo.GetCustomAttribute<T>(true);
             if (methodA != null)
@@ -224,10 +259,68 @@ namespace NetRpc
             ret.Add(contractTypeTag);
 
             var tags = methodInfo.GetCustomAttributes<TagAttribute>(true);
-            foreach (var t in tags) 
+            foreach (var t in tags)
                 ret.Add(t.Name);
 
             return ret;
+        }
+
+        private static List<string> GetRoles(List<SwaggerRoleAttribute> contractRoleAttributes, MethodInfo methodInfo)
+        {
+            var roles = new List<string>();
+            var notRoles = new List<string>();
+
+            contractRoleAttributes.AddRange(methodInfo.GetCustomAttributes<SwaggerRoleAttribute>(true));
+
+            foreach (var attr in contractRoleAttributes)
+            {
+                var r = Parse(attr.Role);
+                roles.AddRange(r.roles);
+                notRoles.AddRange(r.notRoles);
+            }
+
+            roles = roles.Distinct().ToList();
+            notRoles = notRoles.Distinct().ToList();
+
+            var ret = new List<string>();
+            foreach (var role in roles)
+            {
+                if (!notRoles.Exists(i => i == role))
+                    ret.Add(role);
+            }
+
+            return ret;
+        }
+
+        private static (List<string> roles, List<string> notRoles) Parse(string s)
+        {
+            List<string> roles = new List<string>();
+            List<string> notRoles = new List<string>();
+
+            if (s == null)
+                return (roles, notRoles);
+
+            s = s.Trim().ToLower();
+            if (s == "")
+                return (roles, notRoles);
+
+            var ss = s.Split(',');
+            foreach (var s1 in ss)
+            {
+                if (s1 == null)
+                    continue;
+
+                var s2 = s1.Trim();
+                if (s2 == "")
+                    continue;
+
+                if (s2.StartsWith("!"))
+                    notRoles.Add(s2);
+                else
+                    roles.Add(s1);
+            }
+
+            return (roles, notRoles);
         }
     }
 
@@ -239,7 +332,7 @@ namespace NetRpc
 
             SecurityApiKeyDefineAttributes = new ReadOnlyCollection<SecurityApiKeyDefineAttribute>(
                 type.GetCustomAttributes<SecurityApiKeyDefineAttribute>(true).ToList());
-     
+
             var methodInfos = type.GetInterfaceMethods().ToList();
             var faultDic = GetItemsFromDefines<FaultExceptionAttribute, FaultExceptionDefineAttribute>(type, methodInfos,
                 (i, define) => i.DetailType == define.DetailType);
@@ -248,11 +341,13 @@ namespace NetRpc
             var httpHeaderDic = GetAttributes<HttpHeaderAttribute>(type, methodInfos);
             var responseTextDic = GetAttributes<ResponseTextAttribute>(type, methodInfos);
             var tag = GetTag(type);
+            var hasSwaggerRole = HasSwaggerRole(type, methodInfos);
 
             var methods = new List<ContractMethod>();
             foreach (var f in faultDic)
                 methods.Add(new ContractMethod(
-                    type, 
+                    type,
+                    hasSwaggerRole,
                     tag,
                     f.Key,
                     GetMethodParameters(f.Key),
@@ -273,6 +368,15 @@ namespace NetRpc
 
         public ReadOnlyCollection<string> Tags { get; }
 
+        public ReadOnlyCollection<ContractMethod> GetMethods(IList<string> roles)
+        {
+            List<ContractMethod> ret = new List<ContractMethod>();
+            foreach (var m in Methods)
+                if (m.InRoles(roles))
+                    ret.Add(m);
+            return new ReadOnlyCollection<ContractMethod>(ret);
+        }
+
         private static List<MethodParameter> GetMethodParameters(MethodInfo methodInfo)
         {
             var ret = new List<MethodParameter>();
@@ -280,7 +384,7 @@ namespace NetRpc
             {
                 if (p.ParameterType.IsFuncT() || p.ParameterType == typeof(Stream))
                     continue;
-                ret.Add(new MethodParameter(p.Name, p.ParameterType));
+                ret.Add(new MethodParameter(p.Name!, p.ParameterType));
             }
 
             return ret;
@@ -343,6 +447,20 @@ namespace NetRpc
             methods.ForEach(i => ret.AddRange(i.Tags));
             return ret.Distinct().ToList();
         }
+
+        private static bool HasSwaggerRole(Type contractType, IEnumerable<MethodInfo> methodInfos)
+        {
+            if (contractType.GetCustomAttributes<SwaggerRoleAttribute>(true).Any())
+                return true;
+
+            foreach (var m in methodInfos)
+            {
+                if (m.GetCustomAttributes<SwaggerRoleAttribute>().Any())
+                    return true;
+            }
+
+            return false;
+        }
     }
 
     public class Contract
@@ -353,15 +471,15 @@ namespace NetRpc
 
         public Type? InstanceType { get; private set; }
 
-        public MethodInfo GetInstanceMethodInfo(string name, IServiceProvider serviceProvider)
+        public MethodInfo GetMethodInstanceInfo(string name, IServiceProvider serviceProvider)
         {
             if (InstanceType != null)
-                return InstanceType.GetMethod(name);
+                return InstanceType.GetMethod(name)!;
 
             if (_instanceFactory != null)
             {
                 InstanceType = _instanceFactory(serviceProvider).GetType();
-                return InstanceType.GetMethod(name);
+                return InstanceType.GetMethod(name)!;
             }
 
             throw new ArgumentNullException();

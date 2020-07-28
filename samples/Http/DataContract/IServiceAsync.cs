@@ -99,5 +99,11 @@ namespace DataContract
     public interface IService3Async
     {
         Task CallAsync();
+
+        Task Call2Async();
+
+        Task Call3Async();
+
+        Task Call4Async();
     }
 }

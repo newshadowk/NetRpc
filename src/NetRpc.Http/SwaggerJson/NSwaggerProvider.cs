@@ -7,27 +7,29 @@ namespace NetRpc.Http
     internal class NSwaggerProvider : INSwaggerProvider
     {
         private readonly PathProcessor _pathProcessor;
+        private readonly SwaggerKeyRoles _keyRoles;
         private readonly OpenApiDocument _doc;
 
-        public NSwaggerProvider(PathProcessor pathProcessor)
+        public NSwaggerProvider(PathProcessor pathProcessor, SwaggerKeyRoles keyRoles)
         {
             _pathProcessor = pathProcessor;
+            _keyRoles = keyRoles;
             _doc = new OpenApiDocument();
         }
 
-        public OpenApiDocument GetSwagger(string apiRootPath, List<Contract> contracts)
+        public OpenApiDocument GetSwagger(string? apiRootPath, List<Contract> contracts, string? key)
         {
-            Process(apiRootPath, contracts);
+            Process(apiRootPath, contracts, key);
             return _doc;
         }
 
-        private void Process(string apiRootPath, List<Contract> contracts)
+        private void Process(string? apiRootPath, List<Contract> contracts, string? key)
         {
             //tags
             ProcessTags(contracts);
 
             //path
-            ProcessPath(apiRootPath, contracts);
+            ProcessPath(apiRootPath, contracts, key);
 
             //Components
             ProcessComponents(contracts);
@@ -67,12 +69,14 @@ namespace NetRpc.Http
             }
         }
 
-        private void ProcessPath(string apiRootPath, List<Contract> contracts)
+        private void ProcessPath(string? apiRootPath, List<Contract> contracts, string? key)
         {
             _doc.Paths = new OpenApiPaths();
             foreach (var contract in contracts)
             {
-                foreach (var contractMethod in contract.ContractInfo.Methods)
+                var roles = _keyRoles.GetRoles(key);
+                var roleMethods = contract.ContractInfo.GetMethods(roles);
+                foreach (var contractMethod in roleMethods)
                 {
                     foreach (var route in contractMethod.Route.SwaggerRouts)
                     {

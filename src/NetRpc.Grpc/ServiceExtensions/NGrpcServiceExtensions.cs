@@ -61,8 +61,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.Configure<NClientOption>(i => i.ForwardHeader = true);
             services.AddNGrpcClientContract<TService>(serviceLifetime);
             services.AddNServiceContract(typeof(TService),
-                p => ((IClientProxy<TService>) p.GetService(typeof(IClientProxy<TService>))).Proxy, 
-                serviceLifetime);
+                p => ((IClientProxy<TService>) p.GetService(typeof(IClientProxy<TService>))).Proxy, serviceLifetime);
             return services;
         }
 

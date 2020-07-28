@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
@@ -15,8 +17,11 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class NHttpServiceExtensions
     {
-        public static IServiceCollection AddNSwagger(this IServiceCollection services)
+        public static IServiceCollection AddNSwagger(this IServiceCollection services, Action<SwaggerOptions>? configureOptions = null)
         {
+            if (configureOptions != null)
+                services.Configure(configureOptions);
+
             var paths = Helper.GetCommentsXmlPaths();
             services.AddSwaggerGen(i =>
             {
@@ -33,11 +38,13 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddControllers().AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 #endif
+
             services.TryAddTransient<INSwaggerProvider, NSwaggerProvider>();
+            services.TryAddSingleton<SwaggerKeyRoles>();
             return services;
         }
 
-        public static IServiceCollection AddNHttpService(this IServiceCollection services, Action<HttpServiceOptions> httpServiceConfigureOptions = null)
+        public static IServiceCollection AddNHttpService(this IServiceCollection services, Action<HttpServiceOptions>? httpServiceConfigureOptions = null)
         {
             if (httpServiceConfigureOptions != null)
                 services.Configure(httpServiceConfigureOptions);

@@ -32,7 +32,7 @@ namespace NetRpc.Http
             // api/swagger
             if (IsUrl(requestPath, swaggerRootPath))
             {
-                context.Response.Redirect($"{swaggerRootPath}/index.html");
+                context.Response.Redirect($"{swaggerRootPath}/index.html{context.Request.QueryString}");
             }
             // api/swagger/index.html
             else if (IsUrl(requestPath, $"{swaggerRootPath}/index.html"))
@@ -44,7 +44,11 @@ namespace NetRpc.Http
                     _html = await ReadStringAsync(".index.html");
                     _html = _html.Replace("{url}", swaggerFilePath);
 
-                    var doc = nSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.Contracts);
+                    string? key = null;
+                    if (context.Request.Query.TryGetValue("k", out var kValue)) 
+                        key = kValue.ToString();
+
+                    var doc = nSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.Contracts, key);
                     _json = ToJson(doc);
                 }
 
@@ -79,8 +83,7 @@ namespace NetRpc.Http
 
         private static async Task<string> ReadStringAsync(string resourcePath)
         {
-            var stream = typeof(SwaggerUiIndexMiddleware).GetTypeInfo().Assembly.GetManifestResourceStream($"{ConstValue.SwaggerUi3Base}{resourcePath}");
-            // ReSharper disable once AssignNullToNotNullAttribute
+            var stream = typeof(SwaggerUiIndexMiddleware).GetTypeInfo().Assembly.GetManifestResourceStream($"{ConstValue.SwaggerUi3Base}{resourcePath}")!;
             using var reader = new StreamReader(stream);
             return await reader.ReadToEndAsync();
         }

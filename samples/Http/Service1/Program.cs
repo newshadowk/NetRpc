@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using DataContract;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
@@ -25,9 +26,26 @@ namespace Service
                 {
                     services.AddCors();
                     services.AddSignalR();
-                    services.AddNSwagger();
+                    services.AddNSwagger(i =>
+                    {
+                        i.Items.Add(new KeyRoles
+                        {
+                            Key = "k1",
+                            Roles = new List<string>{"R1"}
+                        });
+                        i.Items.Add(new KeyRoles
+                        {
+                            Key = "k2",
+                            Roles = new List<string> { "R2" }
+                        });
+                        i.Items.Add(new KeyRoles
+                        {
+                            Key = "k3",
+                            Roles = new List<string> { "R3" }
+                        });
+                    });
                     services.AddNHttpService();
-                    services.AddNServiceContract<IService2Async, Service2Async>();
+                    services.AddNServiceContract<IService3Async, Service3Async>();
                 })
                 .Configure(app =>
                 {

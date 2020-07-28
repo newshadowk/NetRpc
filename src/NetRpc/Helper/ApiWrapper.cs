@@ -100,12 +100,12 @@ namespace NetRpc
             var methodObj = contract.ContractInfo.Methods.FirstOrDefault(i => i.MethodInfo.ToFullMethodName() == action.FullName);
             if (methodObj != null)
             {
-                var instanceMethodInfo = contract.GetInstanceMethodInfo(methodObj.MethodInfo.Name, serviceProvider);
+                var instanceMethodInfo = contract.GetMethodInstanceInfo(methodObj.MethodInfo.Name, serviceProvider);
                 if (action.GenericArguments.Length > 0)
                 {
                     var ts = action.GenericArguments.ToList().ConvertAll(Type.GetType).ToArray();
                     // ReSharper disable once PossibleNullReferenceException
-                    instanceMethodInfo = instanceMethodInfo.MakeGenericMethod(ts);
+                    instanceMethodInfo = instanceMethodInfo.MakeGenericMethod(ts!);
                 }
 
                 return (instanceMethodInfo, methodObj);
@@ -136,8 +136,7 @@ namespace NetRpc
             dynamic ret;
             try
             {
-                // ReSharper disable once PossibleNullReferenceException
-                ret = methodInfo.Invoke(target, args);
+                ret = methodInfo.Invoke(target, args)!;
             }
             catch (TargetInvocationException e)
             {
