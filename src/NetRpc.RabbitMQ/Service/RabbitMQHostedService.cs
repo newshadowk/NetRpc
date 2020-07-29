@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NetRpc.Contract;
 using RabbitMQ.Base;
 
 namespace NetRpc.RabbitMQ

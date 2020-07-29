@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NetRpc
+namespace NetRpc.Contract
 {
     internal static class Helper
     {

@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddNServiceContract(this IServiceCollection services, Type serviceType, Type implementationType,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
-            services.Configure<ContractOptions>(i => i.Contracts.Add(new Contract(serviceType, implementationType)));
+            services.Configure<ContractOptions>(i => i.Contracts.Add(new ContractInfo(serviceType, implementationType)));
 
             switch (serviceLifetime)
             {
@@ -40,10 +40,25 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
+        public static IServiceCollection AddNServiceContract(this IServiceCollection services, Type serviceType, object implementationInstance)
+        {
+            services.Configure<ContractOptions>(i => i.Contracts.Add(new ContractInfo(serviceType, implementationInstance.GetType())));
+            services.AddSingleton(serviceType, implementationInstance);
+            return services;
+        }
+
+        public static IServiceCollection AddNServiceContract<TService, TImplementation>(this IServiceCollection services,
+            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
+            where TImplementation : class, TService
+        {
+            services.AddNServiceContract(typeof(TService), typeof(TImplementation), serviceLifetime);
+            return services;
+        }
+
         public static IServiceCollection AddNServiceContract(this IServiceCollection services, Type serviceType,
             Func<IServiceProvider, object> implementationFactory, ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
-            services.Configure<ContractOptions>(i => i.Contracts.Add(new Contract(serviceType, implementationFactory)));
+            services.Configure<ContractOptions>(i => i.Contracts.Add(new ContractInfo(serviceType)));
 
             switch (serviceLifetime)
             {
@@ -63,24 +78,9 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection AddNServiceContract(this IServiceCollection services, Type serviceType, object implementationInstance)
-        {
-            services.Configure<ContractOptions>(i => i.Contracts.Add(new Contract(serviceType, implementationInstance.GetType())));
-            services.AddSingleton(serviceType, implementationInstance);
-            return services;
-        }
-
-        public static IServiceCollection AddNServiceContract<TService, TImplementation>(this IServiceCollection services,
-            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
-            where TImplementation : class, TService
-        {
-            services.AddNServiceContract(typeof(TService), typeof(TImplementation), serviceLifetime);
-            return services;
-        }
-
         internal static List<Instance> GetContractInstances(this IServiceProvider serviceProvider, ContractOptions options)
         {
-            return options.Contracts.ConvertAll(i => new Instance(i, serviceProvider.GetRequiredService(i.ContractInfo.Type)));
+            return options.Contracts.ConvertAll(i => new Instance(i, serviceProvider.GetRequiredService(i.Type)));
         }
 
         #endregion

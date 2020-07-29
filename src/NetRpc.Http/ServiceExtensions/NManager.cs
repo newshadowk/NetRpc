@@ -9,7 +9,7 @@ namespace NetRpc.Http
     public static class NManager
     {
         public static IWebHost CreateHost(int port, string hubPath, bool isSwagger, HttpServiceOptions httpServiceOptions, MiddlewareOptions middlewareOptions,
-            params Contract[] contracts)
+            params ContractParam[] contracts)
         {
             return WebHost.CreateDefaultBuilder(null)
 #if NETCOREAPP2_1
@@ -38,7 +38,7 @@ namespace NetRpc.Http
                     });
 
                     foreach (var contract in contracts)
-                        services.AddNServiceContract(contract.ContractInfo.Type, contract.InstanceType!);
+                        services.AddNServiceContract(contract.ContractType, contract.InstanceType!);
                 })
                 .Configure(app =>
                 {

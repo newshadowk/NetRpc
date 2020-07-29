@@ -14,9 +14,9 @@ namespace NetRpc
 
         public List<InstanceMethod> Methods { get; } = new List<InstanceMethod>();
 
-        public Contract Contract { get; }
+        public ContractInfo Contract { get; }
 
-        public Instance(Contract contract, object target)
+        public Instance(ContractInfo contract, object target)
         {
             Contract = contract;
             Target = target;

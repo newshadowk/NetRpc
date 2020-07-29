@@ -16,12 +16,12 @@ namespace Service
             var mOpt = new MiddlewareOptions();
             mOpt.UseMiddleware<TestGlobalExceptionMiddleware>();
             var mqHost = NManager.CreateHost(Helper.GetMQOptions(),
-                mOpt, new Contract<IService, Service>(), new Contract<IServiceAsync, ServiceAsync>());
+                mOpt, new ContractParam<IService, Service>(), new ContractParam<IServiceAsync, ServiceAsync>());
             mqHost.RunAsync();
 
             //grpc
             var grpcHost = NetRpc.Grpc.NManager.CreateHost(Helper.GetGrpcServiceOptions(),
-                null, new Contract<IService, Service>(), new Contract<IServiceAsync, ServiceAsync>());
+                null, new ContractParam<IService, Service>(), new ContractParam<IServiceAsync, ServiceAsync>());
             grpcHost.RunAsync();
             Console.Read();
         }

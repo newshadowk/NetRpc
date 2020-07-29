@@ -4,6 +4,6 @@ namespace NetRpc
 {
     public class ContractOptions
     {
-        public List<Contract> Contracts { get; } = new List<Contract>();
+        public List<ContractInfo> Contracts { get; } = new List<ContractInfo>();
     }
 }

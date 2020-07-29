@@ -5,6 +5,7 @@ using Google.Protobuf;
 using Proxy.Grpc;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using NetRpc.Contract;
 
 namespace NetRpc.Grpc
 {

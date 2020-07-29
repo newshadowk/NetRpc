@@ -13,7 +13,7 @@ namespace Service
         {
             var o = new NGrpcServiceOptions();
             o.AddPort("0.0.0.0", 50001);
-            await NManager.CreateHost(o, null, new Contract<IService, Service>()).RunAsync();
+            await NManager.CreateHost(o, null, new ContractParam<IService, Service>()).RunAsync();
         }
     }
 

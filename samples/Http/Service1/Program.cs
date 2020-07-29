@@ -28,20 +28,25 @@ namespace Service
                     services.AddSignalR();
                     services.AddNSwagger(i =>
                     {
-                        i.Items.Add(new KeyRoles
+                        i.Items.Add(new KeyRole
                         {
                             Key = "k1",
-                            Roles = new List<string>{"R1"}
+                            Role = "R1"
                         });
-                        i.Items.Add(new KeyRoles
+                        i.Items.Add(new KeyRole
                         {
                             Key = "k2",
-                            Roles = new List<string> { "R2" }
+                            Role = "R2"
                         });
-                        i.Items.Add(new KeyRoles
+                        i.Items.Add(new KeyRole
                         {
                             Key = "k3",
-                            Roles = new List<string> { "R3" }
+                            Role = "R3"
+                        });
+                        i.Items.Add(new KeyRole
+                        {
+                            Key = "kall",
+                            Role = "RAll"
                         });
                     });
                     services.AddNHttpService();

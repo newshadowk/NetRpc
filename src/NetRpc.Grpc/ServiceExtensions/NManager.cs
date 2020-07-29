@@ -7,7 +7,7 @@ namespace NetRpc.Grpc
     public static class NManager
     {
 #if !NETCOREAPP3_1
-        public static IHost CreateHost(NGrpcServiceOptions nGrpcServiceOptions, MiddlewareOptions middlewareOptions, params Contract[] contracts)
+        public static IHost CreateHost(NGrpcServiceOptions nGrpcServiceOptions, MiddlewareOptions middlewareOptions, params ContractParam[] contracts)
         {
             return new HostBuilder()
                 .ConfigureServices((context, services) =>
@@ -24,7 +24,7 @@ namespace NetRpc.Grpc
                     });
 
                     foreach (var contract in contracts)
-                        services.AddNServiceContract(contract.ContractInfo.Type, contract.InstanceType!);
+                        services.AddNServiceContract(contract.ContractType, contract.InstanceType!);
                 })
                 .Build();
         }

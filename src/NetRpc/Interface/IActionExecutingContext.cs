@@ -28,7 +28,7 @@ namespace NetRpc
 
         ContractMethod ContractMethod { get; }
 
-        ContractInfo ContractInfo { get; }
+        ContractInfo Contract { get; }
 
         Func<object?, Task>? Callback { get; }
 

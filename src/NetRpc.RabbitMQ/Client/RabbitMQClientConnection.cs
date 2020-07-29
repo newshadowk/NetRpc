@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using NetRpc.Contract;
 using RabbitMQ.Base;
 using RabbitMQ.Client;
 

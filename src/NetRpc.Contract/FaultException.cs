@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace NetRpc
+namespace NetRpc.Contract
 {
     [Serializable]
     public sealed class FaultException<T> : FaultException where T : Exception

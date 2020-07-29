@@ -1,4 +1,4 @@
-﻿namespace NetRpc
+﻿namespace NetRpc.Contract
 {
     public class HttpGetAttribute : HttpMethodAttribute
     {

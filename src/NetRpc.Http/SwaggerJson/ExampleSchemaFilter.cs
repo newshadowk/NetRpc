@@ -2,6 +2,7 @@
 using System.Reflection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using NetRpc.Contract;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace NetRpc.Http

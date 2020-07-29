@@ -1,4 +1,6 @@
-﻿namespace NetRpc
+﻿using NetRpc.Contract;
+
+namespace NetRpc
 {
     public sealed class ConnectionInfo
     {

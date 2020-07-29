@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
 using NetRpc;
+using NetRpc.Contract;
 using NetRpc.Http.Client;
 using Helper = TestHelper.Helper;
 

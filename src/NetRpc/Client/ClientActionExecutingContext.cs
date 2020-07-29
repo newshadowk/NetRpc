@@ -31,7 +31,7 @@ namespace NetRpc
 
         public InstanceMethod InstanceMethod { get; }
 
-        public ContractInfo ContractInfo { get; }
+        public ContractInfo Contract { get; }
 
         public Func<object?, Task>? Callback { get; }
 
@@ -53,7 +53,7 @@ namespace NetRpc
             InstanceMethod instanceMethod,
             Func<object?, Task>? callback,
             CancellationToken token,
-            ContractInfo contractInfo,
+            ContractInfo contract,
             ContractMethod contractMethod,
             ReadStream? stream,
             Dictionary<string, object?> header,
@@ -65,7 +65,7 @@ namespace NetRpc
             OnceCall = onceCall;
             InstanceMethod = instanceMethod;
             Callback = callback;
-            ContractInfo = contractInfo;
+            Contract = contract;
             ContractMethod = contractMethod;
             CancellationToken = token;
             Stream = stream;

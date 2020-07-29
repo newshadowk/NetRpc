@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.OpenApi.Models;
+using NetRpc.Contract;
 
 namespace NetRpc.Http
 {
@@ -17,13 +18,13 @@ namespace NetRpc.Http
             _doc = new OpenApiDocument();
         }
 
-        public OpenApiDocument GetSwagger(string? apiRootPath, List<Contract> contracts, string? key)
+        public OpenApiDocument GetSwagger(string? apiRootPath, List<ContractInfo> contracts, string? key)
         {
             Process(apiRootPath, contracts, key);
             return _doc;
         }
 
-        private void Process(string? apiRootPath, List<Contract> contracts, string? key)
+        private void Process(string? apiRootPath, List<ContractInfo> contracts, string? key)
         {
             //tags
             ProcessTags(contracts);
@@ -35,16 +36,16 @@ namespace NetRpc.Http
             ProcessComponents(contracts);
         }
 
-        private void ProcessTags(List<Contract> contracts)
+        private void ProcessTags(List<ContractInfo> contracts)
         {
             var tags = new List<string>();
-            contracts.ForEach(i => tags.AddRange(i.ContractInfo.Tags));
+            contracts.ForEach(i => tags.AddRange(i.Tags));
             var distTags = tags.Distinct();
             foreach (var distTag in distTags)
                 _doc.Tags.Add(new OpenApiTag { Name = distTag });
         }
 
-        private void ProcessComponents(List<Contract> contracts)
+        private void ProcessComponents(List<ContractInfo> contracts)
         {
             //Schemas
             _doc.Components = new OpenApiComponents
@@ -54,7 +55,7 @@ namespace NetRpc.Http
 
             //SecurityScheme
             var dic = new Dictionary<string, SecurityApiKeyDefineAttribute>();
-            contracts.ForEach(i => i.ContractInfo.SecurityApiKeyDefineAttributes.ToList().ForEach(j => dic[j.Key] = j));
+            contracts.ForEach(i => i.SecurityApiKeyDefineAttributes.ToList().ForEach(j => dic[j.Key] = j));
             foreach (var item in dic.Values)
             {
                 var scheme = new OpenApiSecurityScheme
@@ -69,13 +70,13 @@ namespace NetRpc.Http
             }
         }
 
-        private void ProcessPath(string? apiRootPath, List<Contract> contracts, string? key)
+        private void ProcessPath(string? apiRootPath, List<ContractInfo> contracts, string? key)
         {
             _doc.Paths = new OpenApiPaths();
             foreach (var contract in contracts)
             {
                 var roles = _keyRoles.GetRoles(key);
-                var roleMethods = contract.ContractInfo.GetMethods(roles);
+                var roleMethods = contract.GetMethods(roles);
                 foreach (var contractMethod in roleMethods)
                 {
                     foreach (var route in contractMethod.Route.SwaggerRouts)

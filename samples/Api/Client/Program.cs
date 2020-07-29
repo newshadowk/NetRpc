@@ -7,6 +7,7 @@ using DataContract;
 using Grpc.Core;
 using Microsoft.Extensions.Logging.Abstractions;
 using NetRpc;
+using NetRpc.Contract;
 using NetRpc.Grpc;
 using NetRpc.RabbitMQ;
 using Helper = TestHelper.Helper;

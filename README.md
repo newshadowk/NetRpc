@@ -696,7 +696,7 @@ Task CallByCustomExceptionAsync();
 [FaultException(typeof(CustomException2), 400, 2, "errorCode2 error description")]
 public interface IServiceAsync
 ```
-## [Http] Attribute*
+## [Http] Method Attribute
 Support some Attributes, pls see demo.
 ```c#
 [HttpTrimAsync]   //trim 'async' at end.
@@ -730,6 +730,65 @@ public class CallObj
     public int P2 { get; set; }
 }
 ```
+## [Http] Swagger Role Attribute
+Add a param **key** 'k' to url:  
+http://localhost:5000/swagger/index.html?k=k1  
+will filter the interface in Swagger UI, how to config is blow:
+```c#
+//servcie side
+services.AddNSwagger(i =>
+                    {
+                        i.Items.Add(new KeyRole
+                        {
+                            Key = "k1",
+                            Role = "R1"
+                        });
+                        i.Items.Add(new KeyRole
+                        {
+                            Key = "k2",
+                            Role = "R2"
+                        });
+                        i.Items.Add(new KeyRole
+                        {
+                            Key = "k3",
+                            Role = "R3"
+                        });
+                        i.Items.Add(new KeyRole
+                        {
+                            Key = "kall",
+                            Role = "RAll"
+                        });
+                    });
+
+[SwaggerRole("RAll")]
+public class Service3Async : IService3Async
+{
+    [SwaggerRole("R1,!RAll")]    //!RALL mean exclude RALL
+    public async Task CallAsync()
+    {
+        Console.WriteLine("CallAsync");
+    }
+
+    [SwaggerRole("R1")]
+    [SwaggerRole("R3")]
+    public async Task Call2Async()
+    {
+        Console.WriteLine("Call2Async");
+    }
+
+    [SwaggerRole("R2,R3")]
+    public async Task Call3Async()
+    {
+        Console.WriteLine("Call3Async");
+    }
+
+    public async Task Call4Async()
+    {
+        Console.WriteLine("Call4Async");
+    }
+}
+```
+
 ## [Http] HttpHeaderAttribute
 Add a header field to swagger.
 ```c#

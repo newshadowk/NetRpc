@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NetRpc
+namespace NetRpc.Contract
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface, AllowMultiple = true, Inherited = false)]
     public sealed class FaultExceptionAttribute : Attribute

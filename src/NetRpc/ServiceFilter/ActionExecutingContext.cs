@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using NetRpc.Contract;
 
 namespace NetRpc
 {
@@ -28,11 +29,9 @@ namespace NetRpc
 
         public ContractMethod ContractMethod { get; }
 
-        public ContractInfo ContractInfo => Contract.ContractInfo;
-
         public Instance Instance { get; }
 
-        public Contract Contract { get; }
+        public ContractInfo Contract { get; }
 
         public Type? CallbackType { get; }
 
@@ -98,7 +97,7 @@ namespace NetRpc
             object?[] pureArgs,
             ActionInfo actionInfo,
             ReadStream? stream,
-            Contract contract,
+            ContractInfo contract,
             ChannelType channelType,
             Func<object?, Task>? callback,
             CancellationToken token)

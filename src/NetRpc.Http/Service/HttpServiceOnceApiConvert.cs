@@ -18,17 +18,16 @@ namespace NetRpc.Http
 {
     internal sealed class HttpServiceOnceApiConvert : IServiceOnceApiConvert
     {
-        private readonly List<Contract> _contracts;
+        private readonly List<ContractInfo> _contracts;
         private readonly HttpContext _context;
         private readonly HttpConnection _connection;
         private readonly string _rootPath;
         private readonly bool _ignoreWhenNotMatched;
-        private readonly IServiceProvider _serviceProvider;
         private readonly HttpObjProcessorManager _httpObjProcessorManager;
         private CancellationTokenSource? _cts;
         private readonly FormOptions _defaultFormOptions = new FormOptions();
 
-        public HttpServiceOnceApiConvert(List<Contract> contracts,
+        public HttpServiceOnceApiConvert(List<ContractInfo> contracts,
             HttpContext context,
             string rootPath,
             bool ignoreWhenNotMatched,
@@ -42,7 +41,6 @@ namespace NetRpc.Http
             _connection = new HttpConnection(context, hub, logger);
             _rootPath = rootPath;
             _ignoreWhenNotMatched = ignoreWhenNotMatched;
-            _serviceProvider = serviceProvider;
             _httpObjProcessorManager = httpObjProcessorManager;
             CallbackHub.Canceled += CallbackHubCanceled;
         }
@@ -211,7 +209,7 @@ namespace NetRpc.Http
             }
 
             foreach (var contract in _contracts)
-            foreach (var contractMethod in contract.ContractInfo.Methods)
+            foreach (var contractMethod in contract.Methods)
             {
                 var hri = contractMethod.Route.MatchPath(rawPath, _context.Request.Method);
                 if (hri != null)
@@ -232,8 +230,8 @@ namespace NetRpc.Http
         private async Task<HttpObj> GetHttpDataObjAndStream(ActionInfo ai, HttpRoutInfo hri, string rawPath)
         {
             //dataObjType
-            var method = ApiWrapper.GetMethodInfo(ai, _contracts, _serviceProvider);
-            var dataObjType = method.contractMethod.MergeArgType.Type;
+            var contractMethod = ApiWrapper.GetContractMethod(ai, _contracts);
+            var dataObjType = contractMethod.MergeArgType.Type;
 
             return await _httpObjProcessorManager.ProcessAsync(new ProcessItem(_context.Request, hri, rawPath, dataObjType));
         }

@@ -10,10 +10,10 @@ using Helper = TestHelper.Helper;
 
 namespace Service
 {
-    [SwaggerRole("All")]
+    [SwaggerRole("RAll")]
     public class Service3Async : IService3Async
     {
-        [SwaggerRole("R1,!All")]
+        [SwaggerRole("R1,!RAll")]
         public async Task CallAsync()
         {
             Console.WriteLine("CallAsync");

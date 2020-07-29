@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.NetworkInformation;
 using System.Runtime.Serialization;
 using NetRpc;
+using NetRpc.Contract;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 

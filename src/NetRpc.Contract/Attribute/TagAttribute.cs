@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NetRpc
+namespace NetRpc.Contract
 {
     /// <summary>
     /// Interface AllowMultiple is false, Method is true.

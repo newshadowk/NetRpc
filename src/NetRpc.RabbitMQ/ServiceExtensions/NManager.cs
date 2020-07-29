@@ -6,7 +6,7 @@ namespace NetRpc.RabbitMQ
 {
     public static class NManager
     {
-        public static IHost CreateHost(MQOptions mqOptions, MiddlewareOptions middlewareOptions, params Contract[] contracts)
+        public static IHost CreateHost(MQOptions mqOptions, MiddlewareOptions middlewareOptions, params ContractParam[] contracts)
         {
             return new HostBuilder()
                 .ConfigureServices((context, services) =>
@@ -23,7 +23,7 @@ namespace NetRpc.RabbitMQ
                     });
 
                     foreach (var contract in contracts)
-                        services.AddNServiceContract(contract.ContractInfo.Type, contract.InstanceType!);
+                        services.AddNServiceContract(contract.ContractType, contract.InstanceType!);
                 })
                 .Build();
         }

@@ -15,7 +15,7 @@ namespace Service
             o.AddPort("0.0.0.0", 50001);
             var options = new MiddlewareOptions();
             options.UseCallbackThrottling(1000);
-            var host = NManager.CreateHost(o, options, new Contract<IService, Service>());
+            var host = NManager.CreateHost(o, options, new ContractParam<IService, Service>());
             await host.RunAsync();
         }
     }

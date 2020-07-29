@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web;
 using DataContract;
 using NetRpc;
+using NetRpc.Contract;
 using NetRpc.Http.Client;
 using RestSharp.Extensions;
 using Helper = TestHelper.Helper;

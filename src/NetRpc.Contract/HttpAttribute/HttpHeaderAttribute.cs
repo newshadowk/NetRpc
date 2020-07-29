@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NetRpc
+namespace NetRpc.Contract
 {
     [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
     public class HttpHeaderAttribute : Attribute

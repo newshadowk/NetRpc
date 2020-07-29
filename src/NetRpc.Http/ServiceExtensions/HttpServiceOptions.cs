@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.Extensions.Options;
@@ -18,23 +19,16 @@ namespace NetRpc.Http
         public bool IgnoreWhenNotMatched { get; set; }
     }
 
-    public class KeyRoles
+    public class KeyRole
     {
         public string Key { get; set; } = null!;
-        public List<string> Roles { get; set; } = new List<string>();
 
-        public static KeyRoles ToLower(KeyRoles kr)
-        {
-            KeyRoles ret = new KeyRoles();
-            ret.Key = kr.Key.ToLower();
-            kr.Roles.ForEach(i => ret.Roles.Add(i.ToLower()));
-            return ret;
-        }
+        public string Role { get; set; } = null!;
     }
 
     public sealed class SwaggerOptions
     {
-        public List<KeyRoles> Items { get; set; } = new List<KeyRoles>();
+        public List<KeyRole> Items { get; set; } = new List<KeyRole>();
     }
 
     public class SwaggerKeyRoles
@@ -42,8 +36,8 @@ namespace NetRpc.Http
         public SwaggerKeyRoles(IOptions<SwaggerOptions> options)
         {
             var dic = new Dictionary<string, ReadOnlyCollection<string>>();
-            foreach (var item in options.Value.Items.Select(KeyRoles.ToLower)) 
-                dic.Add(item.Key, new ReadOnlyCollection<string>(item.Roles));
+            foreach (var i in options.Value.Items) 
+                dic.Add(i.Key.ToLower(), new ReadOnlyCollection<string>(SplitRole(i.Role)));
             _map = new ReadOnlyDictionary<string, ReadOnlyCollection<string>>(dic);
         }
 
@@ -53,7 +47,25 @@ namespace NetRpc.Http
         {
             if (key == null)
                 return new ReadOnlyCollection<string>(new List<string>());
-            return _map[key.ToLower()];
+            if (_map.TryGetValue(key.ToLower(), out var values))
+                return values;
+            return new ReadOnlyCollection<string>(new List<string>());
+        }
+
+        private static List<string> SplitRole(string role)
+        {
+            if (role == null)
+                return new List<string>();
+            
+            var ret = new List<string>();
+            var ss = role.ToLower().Split(",", StringSplitOptions.RemoveEmptyEntries);
+            foreach (var s in ss)
+            {
+                var s1 = s.Trim();
+                ret.Add(s1);
+            }
+
+            return ret;
         }
     }
 }

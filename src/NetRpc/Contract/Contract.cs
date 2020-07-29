@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using NetRpc.Contract;
 
 namespace NetRpc
 {
@@ -16,7 +17,7 @@ namespace NetRpc
 
         public ReadOnlyCollection<MethodParameter> InnerSystemTypeParameters { get; }
 
-        public ContractMethod(Type contractType, bool hasSwaggerRole, string contractTypeTag, MethodInfo methodInfo, List<MethodParameter> parameters,
+        public ContractMethod(Type contractType, Type? instanceType, bool hasSwaggerRole, string contractTypeTag, MethodInfo methodInfo, List<MethodParameter> parameters,
             List<FaultExceptionAttribute> faultExceptionAttributes, List<HttpHeaderAttribute> httpHeaderAttributes,
             List<ResponseTextAttribute> responseTextAttributes, List<SecurityApiKeyAttribute> securityApiKeyAttributes)
         {
@@ -45,8 +46,9 @@ namespace NetRpc
             //SwaggerRole
             if (hasSwaggerRole)
             {
-                var contractRoleAttributes = contractType.GetCustomAttributes<SwaggerRoleAttribute>(true).ToList();
-                var roles = GetRoles(contractRoleAttributes, methodInfo);
+                var contractRoleAttributes = instanceType!.GetCustomAttributes<SwaggerRoleAttribute>(true).ToList();
+                var instanceMethod = instanceType!.GetMethod(methodInfo.Name)!;
+                var roles = GetRoles(contractRoleAttributes, instanceMethod);
                 Roles = new ReadOnlyCollection<string>(roles);
             }
         }
@@ -315,7 +317,12 @@ namespace NetRpc
                     continue;
 
                 if (s2.StartsWith("!"))
+                {
+                    s2 = s2.Substring(1);
+                    if (s2 == "")
+                        continue;
                     notRoles.Add(s2);
+                }
                 else
                     roles.Add(s1);
             }
@@ -326,27 +333,30 @@ namespace NetRpc
 
     public sealed class ContractInfo
     {
-        public ContractInfo(Type type)
+        /// <param name="contractType"></param>
+        /// <param name="instanceType">Set instanceType for get SwaggerRole attributes, in http channel service side.</param>
+        public ContractInfo(Type contractType, Type? instanceType = null)
         {
-            Type = type;
+            Type = contractType;
 
             SecurityApiKeyDefineAttributes = new ReadOnlyCollection<SecurityApiKeyDefineAttribute>(
-                type.GetCustomAttributes<SecurityApiKeyDefineAttribute>(true).ToList());
+                Type.GetCustomAttributes<SecurityApiKeyDefineAttribute>(true).ToList());
 
-            var methodInfos = type.GetInterfaceMethods().ToList();
-            var faultDic = GetItemsFromDefines<FaultExceptionAttribute, FaultExceptionDefineAttribute>(type, methodInfos,
+            var methodInfos = Type.GetInterfaceMethods().ToList();
+            var faultDic = GetItemsFromDefines<FaultExceptionAttribute, FaultExceptionDefineAttribute>(Type, methodInfos,
                 (i, define) => i.DetailType == define.DetailType);
-            var apiKeysDic = GetItemsFromDefines<SecurityApiKeyAttribute, SecurityApiKeyDefineAttribute>(type, methodInfos,
+            var apiKeysDic = GetItemsFromDefines<SecurityApiKeyAttribute, SecurityApiKeyDefineAttribute>(Type, methodInfos,
                 (i, define) => i.Key == define.Key);
-            var httpHeaderDic = GetAttributes<HttpHeaderAttribute>(type, methodInfos);
-            var responseTextDic = GetAttributes<ResponseTextAttribute>(type, methodInfos);
-            var tag = GetTag(type);
-            var hasSwaggerRole = HasSwaggerRole(type, methodInfos);
+            var httpHeaderDic = GetAttributes<HttpHeaderAttribute>(Type, methodInfos);
+            var responseTextDic = GetAttributes<ResponseTextAttribute>(Type, methodInfos);
+            var tag = GetTag(Type);
+            var hasSwaggerRole = HasSwaggerRole(instanceType, methodInfos);
 
             var methods = new List<ContractMethod>();
             foreach (var f in faultDic)
                 methods.Add(new ContractMethod(
-                    type,
+                    Type,
+                    instanceType,
                     hasSwaggerRole,
                     tag,
                     f.Key,
@@ -448,8 +458,11 @@ namespace NetRpc
             return ret.Distinct().ToList();
         }
 
-        private static bool HasSwaggerRole(Type contractType, IEnumerable<MethodInfo> methodInfos)
+        private static bool HasSwaggerRole(Type? contractType, IEnumerable<MethodInfo> methodInfos)
         {
+            if (contractType == null)
+                return false;
+
             if (contractType.GetCustomAttributes<SwaggerRoleAttribute>(true).Any())
                 return true;
 
@@ -460,49 +473,6 @@ namespace NetRpc
             }
 
             return false;
-        }
-    }
-
-    public class Contract
-    {
-        private readonly Func<IServiceProvider, object>? _instanceFactory;
-
-        public ContractInfo ContractInfo { get; }
-
-        public Type? InstanceType { get; private set; }
-
-        public MethodInfo GetMethodInstanceInfo(string name, IServiceProvider serviceProvider)
-        {
-            if (InstanceType != null)
-                return InstanceType.GetMethod(name)!;
-
-            if (_instanceFactory != null)
-            {
-                InstanceType = _instanceFactory(serviceProvider).GetType();
-                return InstanceType.GetMethod(name)!;
-            }
-
-            throw new ArgumentNullException();
-        }
-
-        public Contract(Type contractType, Type instanceType)
-        {
-            InstanceType = instanceType;
-            ContractInfo = new ContractInfo(contractType);
-        }
-
-        public Contract(Type contractType, Func<IServiceProvider, object> instanceFactory)
-        {
-            _instanceFactory = instanceFactory;
-            ContractInfo = new ContractInfo(contractType);
-        }
-    }
-
-    public sealed class Contract<TService, TImplementation> : Contract where TService : class
-        where TImplementation : class, TService
-    {
-        public Contract() : base(typeof(TService), typeof(TImplementation))
-        {
         }
     }
 }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using NetRpc.Contract;
 
 namespace NetRpc
 {
@@ -90,7 +91,7 @@ namespace NetRpc
         private async Task<ActionExecutingContext> GetContext()
         {
             var onceCallParam = await _convert.GetServiceOnceCallParamAsync();
-            var (instanceMethodInfo, contractMethod, instance) = ApiWrapper.GetMethodInfo(onceCallParam.Action, _instances, _serviceProvider);
+            var (instanceMethodInfo, contractMethod, instance) = ApiWrapper.GetMethodInfo(onceCallParam.Action, _instances);
 
             //get parameters
             var parameters = contractMethod.MethodInfo.GetParameters();

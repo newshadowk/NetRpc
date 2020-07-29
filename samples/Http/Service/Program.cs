@@ -19,7 +19,7 @@ namespace Service
                 true,
                 new HttpServiceOptions { ApiRootPath = "/api" },
                 null,
-                new Contract<IServiceAsync, ServiceAsync>());
+                new ContractParam<IServiceAsync, ServiceAsync>());
             await webHost.RunAsync();
 
             //const string origins = "_myAllowSpecificOrigins";

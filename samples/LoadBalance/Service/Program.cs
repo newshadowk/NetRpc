@@ -15,7 +15,7 @@ namespace Service
         {
             var host = NManager.CreateHost(Helper.GetMQOptions(),
                 null,
-                new Contract<IServiceAsync, ServiceAsync>());
+                new ContractParam<IServiceAsync, ServiceAsync>());
 
             Console.WriteLine("Service Opened.");
             await host.RunAsync();
