@@ -77,7 +77,7 @@ namespace NetRpc.Grpc
             //add a lock here will not slowdown send speed.
             using (await _sendLock.LockAsync())
             {
-                var sb = new StreamBuffer { Body = ByteString.CopyFrom(buffer.Span) };
+                var sb = new StreamBuffer { Body = ByteString.CopyFrom(buffer.ToArray()) };
                 _logger.LogDebug($"Send count:{Helper.SizeSuffix(sb.Body.Length)}");
                 await _api.RequestStream.WriteAsync(sb);
             }
@@ -90,7 +90,6 @@ namespace NetRpc.Grpc
         }
 
 #pragma warning disable 1998
-
         public async Task StartAsync(string? authorizationToken)
 #pragma warning restore 1998
         {
