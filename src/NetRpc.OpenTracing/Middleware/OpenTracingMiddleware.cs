@@ -18,7 +18,6 @@ namespace NetRpc.OpenTracing
 
         public async Task InvokeAsync(ActionExecutingContext context, ITracer tracer, IOptions<OpenTracingOptions> options)
         {
-            Console.WriteLine("OpenTracingMiddleware");
             if (context.ContractMethod.IsTracerIgnore)
             {
                 await _next(context);
