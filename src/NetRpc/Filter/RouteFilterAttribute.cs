@@ -25,8 +25,8 @@ namespace NetRpc
         {
             var f = context.ServiceProvider.GetService(typeof(IClientProxyFactory));
             // ReSharper disable once PossibleNullReferenceException
-            var mi = f.GetType().GetMethod(nameof(IClientProxyFactory.CreateProxy)).MakeGenericMethod(_contactType);
-            var clientProxy = (IClientProxy)mi.Invoke(f, new object?[] { _optionsName });
+            var mi = f.GetType().GetMethod(nameof(IClientProxyFactory.CreateProxy))!.MakeGenericMethod(_contactType);
+            var clientProxy = (IClientProxy)mi.Invoke(f, new object?[] { _optionsName })!;
             var proxyMethodInfos = clientProxy.Proxy.GetType().GetMethods();
             var methodName = _methodName ?? context.InstanceMethod.MethodInfo.Name;
 

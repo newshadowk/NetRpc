@@ -27,9 +27,9 @@ namespace NetRpc.Grpc
         {
 
 #if NETCOREAPP3_1
-            var host = new Uri(opt.Url).Host;
-            var port = new Uri(opt.Url).Port;
-            _client = new Client(GrpcChannel.ForAddress(opt.Url, opt.ChannelOptions), host, port, opt.ToString());
+            var host = new Uri(opt.Url!).Host;
+            var port = new Uri(opt.Url!).Port;
+            _client = new Client(GrpcChannel.ForAddress(opt.Url!, opt.ChannelOptions!), host, port, opt.ToString());
 #else
             if (string.IsNullOrEmpty(opt.PublicKey))
                 _client = new Client(new Channel(opt.Host, opt.Port, ChannelCredentials.Insecure), opt.Host!, opt.Port, opt.ToString());
@@ -59,6 +59,8 @@ namespace NetRpc.Grpc
 #if NETSTANDARD2_1 || NETCOREAPP3_1
         public System.Threading.Tasks.ValueTask DisposeAsync()
         {
+            if (_client == null)
+                return new System.Threading.Tasks.ValueTask();
             return _client.DisposeAsync();
         }
 #endif

@@ -25,7 +25,7 @@ namespace NetRpc.Grpc
             ExceptionInvoked += GrpcClientProxy_ExceptionInvoked;
         }
 
-        private void GrpcClientProxy_ExceptionInvoked(object sender, EventArgsT<Exception> e)
+        private void GrpcClientProxy_ExceptionInvoked(object? sender, EventArgsT<Exception> e)
         {
             if (e.Value is RpcException)
                 IsConnected = false;

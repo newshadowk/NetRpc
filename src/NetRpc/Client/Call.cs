@@ -43,7 +43,7 @@ namespace NetRpc
 
         public Dictionary<string, object?> AdditionHeader { get; set; } = new Dictionary<string, object?>();
 
-        public async Task<object> CallAsync(MethodInfo methodInfo, Func<object?, Task>? callback, CancellationToken token, Stream? stream,
+        public async Task<object?> CallAsync(MethodInfo methodInfo, Func<object?, Task>? callback, CancellationToken token, Stream? stream,
             params object?[] pureArgs)
         {
             //merge header

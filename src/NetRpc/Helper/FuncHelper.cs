@@ -10,7 +10,7 @@ namespace NetRpc
             var f = (Delegate)func;
             if (f == null)
                 return null;
-            return o => (Task) f.DynamicInvoke(o);
+            return o => (Task) f.DynamicInvoke(o)!;
         }
 
         public static object? ConvertFunc(Func<object?, Task>? func, Type? type)
@@ -22,8 +22,7 @@ namespace NetRpc
 
             var fp = new FuncProxy(func);
             var makeGenericType = typeof(Func<,>).MakeGenericType(type, typeof(Task));
-            // ReSharper disable once PossibleNullReferenceException
-            var methodInfo = typeof(FuncProxy).GetMethod("InvokeAsync").MakeGenericMethod(type);
+            var methodInfo = typeof(FuncProxy).GetMethod("InvokeAsync")!.MakeGenericMethod(type);
             var @delegate = Delegate.CreateDelegate(makeGenericType, fp, methodInfo);
             return @delegate;
         }

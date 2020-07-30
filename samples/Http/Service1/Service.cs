@@ -42,14 +42,23 @@ namespace Service
     {
         public async Task<string> Call1Async(string p1, int p2)
         {
-            Console.WriteLine($"[Call1Async]...{p1}, {p2}");
-            return "ret";
+            string s = $"[Call1Async]...{p1}, {p2}";
+            Console.WriteLine(s);
+            return s;
         }
 
         public async Task<string> Call2Async(CallObj obj)
         {
-            Console.WriteLine($"[Call2Async]...{obj.P1}, {obj.P2}");
-            return "ret";
+            string s = $"[Call2Async]...{obj.P1}, {obj.P2}";
+            Console.WriteLine(s);
+            return s;
+        }
+
+        public async Task<string> Call3Async(CallObj obj)
+        {
+            string s = $"[Call3Async]...{obj.P1}, {obj.P2}";
+            Console.WriteLine(s);
+            return s;
         }
     }
 

@@ -28,7 +28,7 @@ namespace System.Reflection
             return proxy;
         }
 
-        public override object Invoke(MethodInfo method, object?[] args)
+        public override object? Invoke(MethodInfo method, object?[] args)
         {
             try
             {
@@ -54,7 +54,7 @@ namespace System.Reflection
             }
         }
 
-        public override async Task<T> InvokeAsyncT<T>(MethodInfo method, object?[] args)
+        public override async Task<T?> InvokeAsyncT<T>(MethodInfo method, object?[] args) where T : class
         {
             try
             {

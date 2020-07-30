@@ -33,14 +33,14 @@ namespace NetRpc
 
         public ConnectionInfo ConnectionInfo => _convert.ConnectionInfo;
 
-        public Task<object> CallAsync(Dictionary<string, object?> header, MethodContext methodContext, Func<object?, Task>? callback, CancellationToken token,
+        public Task<object?> CallAsync(Dictionary<string, object?> header, MethodContext methodContext, Func<object?, Task>? callback, CancellationToken token,
             Stream? stream, params object?[] pureArgs)
         {
             if (callback != null)
                 _callbackDispatcher = new AsyncDispatcher();
 
             var action = methodContext.InstanceMethod.MethodInfo.ToActionInfo();
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource<object?>();
             var t = Task.Run(async () =>
             {
                 _convert.ResultStream += (s, e) => { SetStreamResult(tcs, e.Value); };
@@ -118,7 +118,7 @@ namespace NetRpc
             return tcs.Task;
         }
 
-        private void SetStreamResult(TaskCompletionSource<object> tcs, object result)
+        private void SetStreamResult(TaskCompletionSource<object?> tcs, object result)
         {
             //current thread is receive thread by lower layer (rabbitMQ or Grpc), can not be block.
             //run a thread to handle Stream result, avoid sync read stream by user.
@@ -126,7 +126,7 @@ namespace NetRpc
             Task.Run(() => { tcs.SetResult(result); });
         }
 
-        private void SetCancel(TaskCompletionSource<object> tcs)
+        private void SetCancel(TaskCompletionSource<object?> tcs)
         {
             _reg?.Dispose();
             _timeOutCts.Cancel();
@@ -135,7 +135,7 @@ namespace NetRpc
             tcs.TrySetCanceled();
         }
 
-        private void SetFault(TaskCompletionSource<object> tcs, object result)
+        private void SetFault(TaskCompletionSource<object?> tcs, object result)
         {
             _reg?.Dispose();
             _timeOutCts.Cancel();
@@ -144,7 +144,7 @@ namespace NetRpc
             tcs.TrySetException((Exception) result);
         }
 
-        private void SetResult(TaskCompletionSource<object> tcs, object result)
+        private void SetResult(TaskCompletionSource<object?> tcs, object? result)
         {
             _reg?.Dispose();
             _timeOutCts.Cancel();

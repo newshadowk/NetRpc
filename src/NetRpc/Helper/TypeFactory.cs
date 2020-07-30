@@ -53,7 +53,7 @@ namespace NetRpc
         {
             var myAsmName = new AssemblyName(Guid.NewGuid().ToString());
             var asmBuilder = AssemblyBuilder.DefineDynamicAssembly(myAsmName, AssemblyBuilderAccess.Run);
-            _moduleBuilder = asmBuilder.DefineDynamicModule(myAsmName.Name);
+            _moduleBuilder = asmBuilder.DefineDynamicModule(myAsmName.Name!);
         }
 
         public TypeInfo BuildType(string typeName, List<CustomsPropertyInfo> ps)
@@ -67,7 +67,7 @@ namespace NetRpc
                 TypeAttributes.Public);
 
             AddPropertyToTypeBuilder(typeBuilder, ps);
-            return typeBuilder.CreateTypeInfo();
+            return typeBuilder.CreateTypeInfo()!;
         }
 
         private static void AddPropertyToTypeBuilder(TypeBuilder myTypeBuilder, List<CustomsPropertyInfo> ps)
@@ -124,7 +124,7 @@ namespace NetRpc
                 var fields = new List<FieldInfo>();
                 var constructorArguments = new List<object>();
                 foreach (var arg in att.ConstructorArguments)
-                    constructorArguments.Add(arg.Value);
+                    constructorArguments.Add(arg.Value!);
 
                 if (att.NamedArguments != null && att.NamedArguments.Count > 0)
                 {
@@ -137,7 +137,7 @@ namespace NetRpc
                             if (string.Compare(filed.Name, arg.MemberInfo.Name, StringComparison.Ordinal) == 0)
                             {
                                 fields.Add(filed);
-                                namedFieldValues.Add(arg.TypedValue.Value);
+                                namedFieldValues.Add(arg.TypedValue.Value!);
                             }
                         }
                     }

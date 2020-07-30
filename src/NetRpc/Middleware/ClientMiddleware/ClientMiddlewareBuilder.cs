@@ -15,7 +15,7 @@ namespace NetRpc
         internal const string InvokeAsyncMethodName = "InvokeAsync";
 
         private static readonly MethodInfo GetServiceInfo =
-            typeof(ClientMiddlewareBuilder).GetMethod(nameof(GetService), BindingFlags.NonPublic | BindingFlags.Static);
+            typeof(ClientMiddlewareBuilder).GetMethod(nameof(GetService), BindingFlags.NonPublic | BindingFlags.Static)!;
 
         private ClientRequestDelegate? _requestDelegate;
         private readonly object _lockRequestDelegate = new object();

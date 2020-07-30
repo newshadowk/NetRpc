@@ -21,7 +21,7 @@ namespace NetRpc.Http
         private readonly List<ContractInfo> _contracts;
         private readonly HttpContext _context;
         private readonly HttpConnection _connection;
-        private readonly string _rootPath;
+        private readonly string? _rootPath;
         private readonly bool _ignoreWhenNotMatched;
         private readonly HttpObjProcessorManager _httpObjProcessorManager;
         private CancellationTokenSource? _cts;
@@ -29,7 +29,7 @@ namespace NetRpc.Http
 
         public HttpServiceOnceApiConvert(List<ContractInfo> contracts,
             HttpContext context,
-            string rootPath,
+            string? rootPath,
             bool ignoreWhenNotMatched,
             IHubContext<CallbackHub, ICallback> hub,
             HttpObjProcessorManager httpObjProcessorManager,
@@ -236,7 +236,7 @@ namespace NetRpc.Http
             return await _httpObjProcessorManager.ProcessAsync(new ProcessItem(_context.Request, hri, rawPath, dataObjType));
         }
 
-        private void CallbackHubCanceled(object sender, string e)
+        private void CallbackHubCanceled(object? sender, string e)
         {
             if (_connection.CallId == e || string.IsNullOrEmpty(e))
                 _cts?.Cancel();

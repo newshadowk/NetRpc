@@ -15,7 +15,7 @@ namespace NetRpc.Grpc
 
         public override string ToString()
         {
-            return Url;
+            return Url ?? "";
         }
 #else
         public string? Host { get; set; }

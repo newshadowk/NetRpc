@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class NGrpcServiceExtensions
     {
 #if !NETCOREAPP3_1
-        public static IServiceCollection AddNGrpcService(this IServiceCollection services, Action<NGrpcServiceOptions> configureOptions = null)
+        public static IServiceCollection AddNGrpcService(this IServiceCollection services, Action<NGrpcServiceOptions>? configureOptions = null)
         {
             if (configureOptions != null)
                 services.Configure(configureOptions);
@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 #else
-        public static IServiceCollection AddNGrpcService(this IServiceCollection services, Action<Grpc.AspNetCore.Server.GrpcServiceOptions> configureOptions = null)
+        public static IServiceCollection AddNGrpcService(this IServiceCollection services, Action<Grpc.AspNetCore.Server.GrpcServiceOptions>? configureOptions = null)
         {
             if (configureOptions != null)
                 services.AddGrpc(configureOptions);

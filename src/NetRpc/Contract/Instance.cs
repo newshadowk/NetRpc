@@ -40,7 +40,7 @@ namespace NetRpc
                 ActionFilters.Add(targetF);
 
             // ReSharper disable once AssignNullToNotNullAttribute
-            var cloneList = InstanceCache.InstanceTypeActionFilters.GetOrAdd(methodInfo.DeclaringType,
+            var cloneList = InstanceCache.InstanceTypeActionFilters.GetOrAdd(methodInfo.DeclaringType!,
                 i => i.GetCustomAttributes<ActionFilterAttribute>(true).ToList()).ToList();
 
             ActionFilters.AddRange(InstanceCache.MethodActionFilters.GetOrAdd(methodInfo,

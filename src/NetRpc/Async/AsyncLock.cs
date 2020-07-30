@@ -20,7 +20,7 @@ namespace NetRpc
             var wait = _semaphore.WaitAsync();
             return wait.IsCompleted
                 ? _release
-                : wait.ContinueWith((_, state) => new Release((AsyncLock) state),
+                : wait.ContinueWith((_, state) => new Release((AsyncLock) state!),
                     this, CancellationToken.None,
                     TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
         }

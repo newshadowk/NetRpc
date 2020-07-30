@@ -8,16 +8,16 @@ namespace NetRpc
         private static readonly AsyncLocal<IServiceProvider> Local = new AsyncLocal<IServiceProvider>();
         private static readonly AsyncLocal<IServiceProvider> LocalScope = new AsyncLocal<IServiceProvider>();
 
-        public static IServiceProvider Provider
+        public static IServiceProvider? Provider
         {
             get => Local.Value;
-            set => Local.Value = value;
+            set => Local.Value = value!;
         }
 
-        public static IServiceProvider ScopeProvider
+        public static IServiceProvider? ScopeProvider
         {
             get => LocalScope.Value;
-            set => LocalScope.Value = value;
+            set => LocalScope.Value = value!;
         }
     }
 }

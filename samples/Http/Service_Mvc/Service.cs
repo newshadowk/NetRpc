@@ -24,6 +24,11 @@ namespace Service_Mvc
             Console.WriteLine($"[Call2Async]...{obj.P1}, {obj.P2}");
             return "ret";
         }
+
+        public Task<string> Call3Async(CallObj obj)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class ServiceAsync : IServiceAsync

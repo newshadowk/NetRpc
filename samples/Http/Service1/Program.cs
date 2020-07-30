@@ -50,7 +50,7 @@ namespace Service
                         });
                     });
                     services.AddNHttpService();
-                    services.AddNServiceContract<IService3Async, Service3Async>();
+                    services.AddNServiceContract<IService2Async, Service2Async>();
                 })
                 .Configure(app =>
                 {

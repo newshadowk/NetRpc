@@ -42,10 +42,10 @@ namespace NetRpc.Http
 
         public static object ToObjectForHttp(string json, Type t)
         {
-            object dataObj;
+            object? dataObj;
             try
             {
-                dataObj = json.ToDtoObject(t);
+                dataObj = json.ToDtoObject(t)!;
             }
             catch (Exception e)
             {
@@ -63,9 +63,9 @@ namespace NetRpc.Http
             return path;
         }
 
-        public static object[] GetPureArgsFromDataObj(Type? dataObjType, object dataObj)
+        public static object?[] GetPureArgsFromDataObj(Type? dataObjType, object dataObj)
         {
-            var ret = new List<object>();
+            var ret = new List<object?>();
             if (dataObjType == null)
                 return ret.ToArray();
             foreach (var p in dataObjType.GetProperties())
@@ -107,7 +107,7 @@ namespace NetRpc.Http
             return Path.Combine(dir, name);
         }
 
-        public static object GetPropertyValue(object classInstance, string propertyName)
+        public static object? GetPropertyValue(object classInstance, string propertyName)
         {
             return classInstance.GetType().InvokeMember(propertyName, BindingFlags.GetProperty,
                 null, classInstance, new object[] { });

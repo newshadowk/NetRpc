@@ -69,7 +69,7 @@ namespace NetRpc.Http
             var ret = new List<PropertyInfo>();
             if (ps.Count == 1 && !ps[0].PropertyType.IsSystemType())
             {
-                instance = ps[0].GetValue(Value);
+                instance = ps[0].GetValue(Value)!;
                 ps = ps[0].PropertyType.GetProperties().ToList();
             }
 

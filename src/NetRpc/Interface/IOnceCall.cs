@@ -10,7 +10,7 @@ namespace NetRpc
     {
         ConnectionInfo ConnectionInfo { get; }
 
-        Task<object> CallAsync(Dictionary<string, object?> header, MethodContext methodContext, Func<object?, Task>? callback, CancellationToken token, Stream? stream,
+        Task<object?> CallAsync(Dictionary<string, object?> header, MethodContext methodContext, Func<object?, Task>? callback, CancellationToken token, Stream? stream,
             params object?[] pureArgs);
 
         Task StartAsync(string? authorizationToken);

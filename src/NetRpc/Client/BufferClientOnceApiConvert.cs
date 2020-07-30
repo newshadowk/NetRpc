@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Runtime.Serialization;
@@ -16,7 +15,7 @@ namespace NetRpc
         private readonly ILogger _logger;
 
         public event EventHandler<EventArgsT<object>>? ResultStream;
-        public event EventHandler<EventArgsT<object>>? Result;
+        public event EventHandler<EventArgsT<object?>>? Result;
         public event AsyncEventHandler<EventArgsT<object>>? CallbackAsync;
         public event EventHandler<EventArgsT<object>>? Fault;
 
@@ -92,13 +91,13 @@ namespace NetRpc
             return stream;
         }
 
-        private void ConnectionReceiveDisconnected(object sender, EventArgsT<Exception> e)
+        private void ConnectionReceiveDisconnected(object? sender, EventArgsT<Exception> e)
         {
             OnFault(new EventArgsT<object>(new ReceiveDisconnectedException(e.Value.Message)));
             Dispose();
         }
 
-        private async Task ConnectionReceivedAsync(object sender, EventArgsT<ReadOnlyMemory<byte>> e)
+        private async Task ConnectionReceivedAsync(object? sender, EventArgsT<ReadOnlyMemory<byte>> e)
         {
             var r = new Reply(e.Value);
             switch (r.Type)
@@ -122,7 +121,7 @@ namespace NetRpc
                         }
                         else
                         {
-                            OnResult(new EventArgsT<object>(body.Result));
+                            OnResult(new EventArgsT<object?>(body.Result));
                             await InvokeDisposeAsync();
                         }
                     }
@@ -173,7 +172,7 @@ namespace NetRpc
             }
         }
 
-        private void OnResult(EventArgsT<object> e)
+        private void OnResult(EventArgsT<object?> e)
         {
             Result?.Invoke(this, e);
         }

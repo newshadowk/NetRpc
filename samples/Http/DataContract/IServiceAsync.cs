@@ -58,26 +58,30 @@ namespace DataContract
     }
 
     [HttpTrimAsync]
-    [HttpRoute("IRout1")]
-    [Tag("RoutTag1")]
+    //[HttpRoute("IRout1")]
+    //[Tag("RoutTag1")]
     public interface IService2Async
     {
-        [Tag("CallTag1")]
-        [HttpPost]
-        [HttpRoute("Call1/{p1}")]
-        [HttpGet("/Root/Call/{p1}")]
-        [HttpTrimAsync]
-        Task<string> Call1Async(string p1, int p2);
+        //[Tag("CallTag1")]
+        //[HttpPost]
+        //[HttpRoute("Call1/{p1}")]
+        //[HttpGet("/Root/Call/{p1}")]
+        //[HttpTrimAsync]
+        //Task<string> Call1Async(string p1, int p2);
 
-        [HttpGet]
-        [HttpDelete]
-        [HttpHead]
-        [HttpPut]
-        [HttpPatch]
-        [HttpOptions]
-        [HttpGet("Call2/{P1}/{P2}/Get")]
-        [HttpPost("Call2/{P1}/Post")]
-        Task<string> Call2Async(CallObj obj);
+        //[HttpGet]
+        //[HttpDelete]
+        //[HttpHead]
+        //[HttpPut]
+        //[HttpPatch]
+        //[HttpOptions]
+        //[HttpGet("Call2/{P1}/{P2}/Get")]
+        //[HttpPost("Call2/{P1}/Post")]
+        //Task<string> Call2Async(CallObj obj);
+
+        [HttpGet("Call3/{P1}?vp2={P2}")]
+        //[HttpGet("Call3/{P1}?vp2={P2}")]
+        Task<string> Call3Async(CallObj obj);
     }
 
     [Serializable]

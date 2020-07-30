@@ -74,7 +74,7 @@ namespace NetRpc
         {
         }
 
-        private void ProxyExceptionInvoked(object sender, EventArgsT<Exception> e)
+        private void ProxyExceptionInvoked(object? sender, EventArgsT<Exception> e)
         {
             OnExceptionInvoked(e);
         }

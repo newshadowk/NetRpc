@@ -129,7 +129,7 @@ namespace NetRpc
             var found = ps.FirstOrDefault(i => i.PropertyType == typeof(Stream));
             if (found == null)
                 return false;
-            stream = (Stream) found.GetValue(obj);
+            stream = (Stream) found.GetValue(obj)!;
 
             //streamName
             found = ps.FirstOrDefault(i => i.Name.IsStreamName());
@@ -191,7 +191,7 @@ namespace NetRpc
         public static string ToFullMethodName(this MethodInfo method)
         {
             // ReSharper disable once PossibleNullReferenceException
-            return $"{method.DeclaringType.Name}/{method.Name}";
+            return $"{method.DeclaringType!.Name}/{method.Name}";
         }
 
         public static ActionInfo ToActionInfo(this MethodInfo method)
@@ -297,7 +297,7 @@ namespace NetRpc
             if (bodyFe == null && !(ex is OperationCanceledException))
             {
                 var gt = typeof(FaultException<>).MakeGenericType(ex.GetType());
-                var fe = (FaultException) Activator.CreateInstance(gt, ex);
+                var fe = (FaultException) Activator.CreateInstance(gt, ex)!;
                 if (context != null)
                     fe.AppendMethodInfo(context.ActionInfo, context.Args);
                 return fe;
@@ -408,7 +408,7 @@ namespace NetRpc
 
         public static object CreateAndCopy(this object srcObj, Type tgtObjType)
         {
-            var tgtObj = Activator.CreateInstance(tgtObjType);
+            var tgtObj = Activator.CreateInstance(tgtObjType)!;
             srcObj.CopyPropertiesFrom(tgtObj);
             return tgtObj;
         }
@@ -437,14 +437,14 @@ namespace NetRpc
             var msgContent = new StringBuilder($"\r\n\r\n[{e.GetType().Name}]\r\n");
             msgContent.Append(GetMsgContent(e));
 
-            List<Exception> lastE = new List<Exception>();
-            Exception currE = e.InnerException;
+            var lastE = new List<Exception?>();
+            var currE = e.InnerException;
             lastE.Add(e);
             lastE.Add(currE);
             while (currE != null && !lastE.Contains(currE))
             {
                 msgContent.Append($"\r\n[{currE.GetType().Name}]\r\n");
-                msgContent.Append(GetMsgContent(e.InnerException));
+                msgContent.Append(GetMsgContent(e.InnerException!));
                 currE = currE.InnerException;
                 lastE.Add(currE);
             }
@@ -512,8 +512,8 @@ namespace NetRpc
         private static string GetTypeName(Type t)
         {
             if (t.IsSystemType())
-                return t.FullName;
-            return t.AssemblyQualifiedName;
+                return t.FullName!;
+            return t.AssemblyQualifiedName!;
         }
     }
 }

@@ -28,6 +28,8 @@ namespace NetRpc.Http
 
         public bool MatchContentType(string contentType)
         {
+            if (contentType == null)
+                return false;
             return contentType.StartsWith("multipart/form-data");
         }
 
@@ -44,7 +46,7 @@ namespace NetRpc.Http
             var ms = new MemoryStream();
             await section.Body.CopyToAsync(ms);
             var body = Encoding.UTF8.GetString(ms.ToArray());
-            var dataObj = Helper.ToHttpDataObj(body, item.DataObjType);
+            var dataObj = Helper.ToHttpDataObj(body, item.DataObjType!);
 
             //stream
             section = await reader.ReadNextSectionAsync();
@@ -98,7 +100,7 @@ namespace NetRpc.Http
             using (var sr = new StreamReader(item.HttpRequest.Body, Encoding.UTF8))
                 body = await sr.ReadToEndAsync();
 
-            var dataObj = Helper.ToHttpDataObj(body, item.DataObjType);
+            var dataObj = Helper.ToHttpDataObj(body, item.DataObjType!);
             return new HttpObj {HttpDataObj = dataObj};
         }
     }
@@ -116,7 +118,7 @@ namespace NetRpc.Http
 
         public Task<HttpObj> ProcessAsync(ProcessItem item)
         {
-            return Task.FromResult(new HttpObj {HttpDataObj = GetHttpDataObjFromQuery(item.HttpRequest, item.DataObjType)});
+            return Task.FromResult(new HttpObj {HttpDataObj = GetHttpDataObjFromQuery(item.HttpRequest, item.DataObjType!)});
         }
 
         private static HttpDataObj GetHttpDataObjFromQuery(HttpRequest request, Type dataObjType)
@@ -135,14 +137,14 @@ namespace NetRpc.Http
 
         private static object GetDataObjFromQuery(HttpRequest request, Type dataObjType)
         {
-            var dataObj = Activator.CreateInstance(dataObjType);
+            var dataObj = Activator.CreateInstance(dataObjType)!;
             var ps = dataObjType.GetProperties();
             var targetObj = dataObj;
 
             // dataObj is CustomObj? get inside properties.
             if (ps.Length == 1 && !ps[0].PropertyType.IsSystemType())
             {
-                targetObj = Activator.CreateInstance(ps[0].PropertyType);
+                targetObj = Activator.CreateInstance(ps[0].PropertyType)!;
                 ps[0].SetValue(dataObj, targetObj);
             }
 
@@ -168,7 +170,7 @@ namespace NetRpc.Http
                         }
 
                         // ReSharper disable once PossibleNullReferenceException
-                        var parsedValue = p.PropertyType.GetMethod("Parse", new[] {typeof(string)}).Invoke(null, new object[] {values[0]});
+                        var parsedValue = p.PropertyType.GetMethod("Parse", new[] {typeof(string)})!.Invoke(null, new object[] {values[0]});
                         p.SetValue(dataObj, parsedValue);
                     }
                     catch (Exception ex)

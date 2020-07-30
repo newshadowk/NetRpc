@@ -15,10 +15,10 @@ namespace System.Reflection
             return CreateProxyInstance(baseType, interfaceType);
         }
 
-        public abstract object Invoke(MethodInfo method, object?[] args);
+        public abstract object? Invoke(MethodInfo method, object?[] args);
 
         public abstract Task InvokeAsync(MethodInfo method, object?[] args);
 
-        public abstract Task<T> InvokeAsyncT<T>(MethodInfo method, object?[] args);
+        public abstract Task<T?> InvokeAsyncT<T>(MethodInfo method, object?[] args) where T : class;
     }
 }

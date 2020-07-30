@@ -10,10 +10,7 @@ namespace NetRpc
 {
     public sealed class HttpRoutInfo
     {
-        /// <summary>
-        /// S/Get/C/\w+/sss
-        /// </summary>
-        private readonly string _regPatternPath;
+        private readonly string _regPatternPathWithoutQuery;
 
         public ReadOnlyCollection<string> PathParams { get; }
 
@@ -38,8 +35,8 @@ namespace NetRpc
             if (mc.Count == 0)
                 return new Dictionary<string, string>();
 
-            foreach (Match o in mc)
-                keys.Add(o.Value.Substring(2, o.Value.Length - 3));
+            foreach (Match? o in mc)
+                keys.Add(o!.Value.Substring(2, o.Value.Length - 3));
 
             //S/Get/C/\{p1}/D/\{p2} =>
             //S/Get/C/(\w+)/D/(\w+)
@@ -64,9 +61,14 @@ namespace NetRpc
         public string ContractTag { get; }
 
         /// <summary>
-        /// S/Get/C/{p1}/sss
+        /// S/Get/C/{p1}/sss?vp2={p2}
         /// </summary>
         public string Path { get; }
+
+        /// <summary>
+        /// S/Get/C/{p1}/ss
+        /// </summary>
+        public string PathWithoutQuery { get; }
 
         /// <summary>
         /// S/Get/C/{p1}/sss => S/Get/C/\w+/sss$
@@ -85,21 +87,22 @@ namespace NetRpc
         public bool IsMatch(string path, string method)
         {
             if (HttpMethods.Count == 0)
-                return Regex.IsMatch(path, _regPatternPath);
+                return Regex.IsMatch(path, _regPatternPathWithoutQuery);
 
-            return HttpMethods.Any(i => i == method) && Regex.IsMatch(path, _regPatternPath);
+            return HttpMethods.Any(i => i == method) && Regex.IsMatch(path, _regPatternPathWithoutQuery);
         }
 
         public HttpRoutInfo(string contractTag, string path)
         {
             ContractTag = contractTag;
             Path = path;
-            _regPatternPath = ReplacePathStr(path);
-
+            PathWithoutQuery = path.Substring(0, path.IndexOf('?'));
+            _regPatternPathWithoutQuery = ReplacePathStr(PathWithoutQuery);
+            
             var ps = new List<string>();
             var c = Regex.Matches(path, @"(?<={)\w+(?=})");
-            foreach (Match o in c)
-                ps.Add(o.Value);
+            foreach (Match? o in c)
+                ps.Add(o!.Value);
 
             PathParams = new ReadOnlyCollection<string>(ps);
         }
@@ -147,12 +150,22 @@ namespace NetRpc
             return ris;
         }
 
+        private static List<HttpRouteAttribute> GetRoutAttributes(Type contractType)
+        {
+            var contractRoutes = contractType.GetCustomAttributes<HttpRouteAttribute>(true).ToList();
+            if (contractRoutes.Any())
+                return contractRoutes.ToList();
+
+            contractRoutes.Add(new HttpRouteAttribute(contractType.Name));
+            return contractRoutes;
+        }
+
         private static List<HttpRoutInfo> GetRouts(Type contractType, MethodInfo methodInfo)
         {
             var contractTrimAsync = contractType.IsDefined(typeof(HttpTrimAsyncAttribute));
             var methodTrimAsync = methodInfo.IsDefined(typeof(HttpTrimAsyncAttribute)) || contractTrimAsync;
 
-            var contractRoutes = contractType.GetCustomAttributes<HttpRouteAttribute>(true);
+            var contractRoutes = GetRoutAttributes(contractType);
             var tag = contractType.GetCustomAttribute<TagAttribute>(true);
             var methodHttpMethods = methodInfo.GetCustomAttributes<HttpMethodAttribute>(true).ToList();
             var methodRoutes = methodInfo.GetCustomAttributes<HttpRouteAttribute>(true).ToList();
@@ -224,7 +237,7 @@ namespace NetRpc
             return Routs.FirstOrDefault(i => i.IsMatch(rawPath, method));
         }
 
-        private static string GetTag(TagAttribute tag, Type contractType, bool contractTrimAsync)
+        private static string GetTag(TagAttribute? tag, Type contractType, bool contractTrimAsync)
         {
             string contractPath;
             //contractPath

@@ -107,7 +107,7 @@ namespace NetRpc
             ServiceProvider = serviceProvider;
             ChannelType = channelType;
             Header = header;
-            InstanceMethod = instance.Methods.Find(i => i.MethodInfo == instanceMethodInfo);
+            InstanceMethod = instance.Methods.Find(i => i.MethodInfo == instanceMethodInfo)!;
             ContractMethod = contractMethod;
             Instance = instance;
             Args = args;

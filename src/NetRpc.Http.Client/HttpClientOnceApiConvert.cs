@@ -20,7 +20,7 @@ namespace NetRpc.Http.Client
         private readonly string _callId = Guid.NewGuid().ToString();
 
         public event EventHandler<EventArgsT<object>>? ResultStream;
-        public event EventHandler<EventArgsT<object>>? Result;
+        public event EventHandler<EventArgsT<object?>>? Result;
         public event AsyncEventHandler<EventArgsT<object>>? CallbackAsync;
         public event EventHandler<EventArgsT<object>>? Fault;
 
@@ -154,7 +154,7 @@ namespace NetRpc.Http.Client
             else
             {
                 var value = res.Content.ToDtoObject(realRetT)!;
-                OnResult(new EventArgsT<object>(value));
+                OnResult(new EventArgsT<object?>(value));
             }
 
             //Dispose: all stream data already received.
@@ -207,7 +207,7 @@ namespace NetRpc.Http.Client
                 throw CreateException(typeof(Exception), res.Content);
         }
 
-        private void OnResult(EventArgsT<object> e)
+        private void OnResult(EventArgsT<object?> e)
         {
             Result?.Invoke(this, e);
         }
