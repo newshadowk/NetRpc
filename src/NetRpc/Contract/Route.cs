@@ -96,7 +96,8 @@ namespace NetRpc
         {
             ContractTag = contractTag;
             Path = path;
-            PathWithoutQuery = path.Substring(0, path.IndexOf('?'));
+            //PathWithoutQuery = path.Substring(0, path.IndexOf('?'));
+            PathWithoutQuery = path;
             _regPatternPathWithoutQuery = ReplacePathStr(PathWithoutQuery);
             
             var ps = new List<string>();

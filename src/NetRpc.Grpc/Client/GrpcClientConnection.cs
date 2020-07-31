@@ -29,6 +29,8 @@ namespace NetRpc.Grpc
 
         public void Dispose()
         {
+            Console.WriteLine("!!!GrpcClientConnection Dispose");
+
             if (_isEnd)
                 return;
 

@@ -128,20 +128,17 @@ namespace Service
         public override async Task DuplexStreamingServerMethod(IAsyncStreamReader<StreamBuffer> requestStream, IServerStreamWriter<StreamBuffer> responseStream,
             ServerCallContext context)
         {
-            //Task.Run(async() =>
-            //{
-                try
-                {
-                    while (await requestStream.MoveNext(CancellationToken.None))
-                        Console.WriteLine("count:" + requestStream.Current.Body.Length);
-                    Console.WriteLine("end ---------");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
-            //});
+            try
+            {
+                while (await requestStream.MoveNext(CancellationToken.None))
+                    Console.WriteLine("count:" + requestStream.Current.Body.Length);
+                Console.WriteLine("end ---------");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
     }
 

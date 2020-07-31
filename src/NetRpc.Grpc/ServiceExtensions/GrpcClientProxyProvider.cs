@@ -36,6 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
             if (options.IsPropertiesDefault())
                 return null;
 
+            Console.WriteLine($"!!!CreateProxy {typeof(TService).Name}");
             var f = new GrpcClientConnectionFactory(new SimpleOptions<GrpcClientOptions>(options), _loggerFactory);
             var clientProxy = new GrpcClientProxy<TService>(f,  
                 new SimpleOptions<NClientOption>(_nClientOption.CurrentValue),
@@ -77,6 +78,7 @@ namespace Microsoft.Extensions.DependencyInjection
             if (options.IsPropertiesDefault())
                 return null;
 
+            Console.WriteLine($"!!!CreateProxy {typeof(TService).Name}");
             var f = new GrpcClientConnectionFactory(new SimpleOptions<GrpcClientOptions>(options), _loggerFactory);
             var clientProxy = new GrpcClientProxy<TService>(f, 
                 new SimpleOptions<NClientOption>(_nClientOption.CurrentValue),

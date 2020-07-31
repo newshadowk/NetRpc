@@ -131,6 +131,7 @@ namespace NetRpc
             _reg?.Dispose();
             _timeOutCts.Cancel();
             _callbackDispatcher?.Dispose();
+            Console.WriteLine($"!!!SetCancel _convert.Dispose()");
             _convert.Dispose();
             tcs.TrySetCanceled();
         }
@@ -140,6 +141,7 @@ namespace NetRpc
             _reg?.Dispose();
             _timeOutCts.Cancel();
             _callbackDispatcher?.Dispose();
+            Console.WriteLine($"!!!SetFault _convert.Dispose()");
             _convert.Dispose();
             tcs.TrySetException((Exception) result);
         }
@@ -149,6 +151,7 @@ namespace NetRpc
             _reg?.Dispose();
             _timeOutCts.Cancel();
             _callbackDispatcher?.Dispose();
+            Console.WriteLine($"!!!SetResult _convert.Dispose()");
             _convert.Dispose();
             tcs.TrySetResult(result);
         }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Proxy.Grpc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -14,17 +15,20 @@ namespace NetRpc.Grpc
 {
     public sealed class GrpcClientConnectionFactory : IClientConnectionFactory
     {
+        private readonly IOptions<GrpcClientOptions> _options;
         private readonly ILogger _logger;
         private Client? _client;
 
         public GrpcClientConnectionFactory(IOptions<GrpcClientOptions> options, ILoggerFactory loggerFactory)
         {
+            _options = options;
             _logger = loggerFactory.CreateLogger("NetRpc");
             Reset(options.Value);
         }
 
         private void Reset(GrpcClientOptions opt)
         {
+            Console.WriteLine($"!!!_client Reset, {opt}");
 
 #if NETCOREAPP3_1
             var host = new Uri(opt.Url!).Host;
@@ -53,6 +57,7 @@ namespace NetRpc.Grpc
 
         public void Dispose()
         {
+            Console.WriteLine($"!!!_client Dispose {_options.Value}");
             _client?.Dispose();
         }
 
