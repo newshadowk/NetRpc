@@ -33,7 +33,7 @@ namespace NetRpc
 
         public ConnectionInfo ConnectionInfo => _convert.ConnectionInfo;
 
-        public Task<object?> CallAsync(Dictionary<string, object?> header, MethodContext methodContext, Func<object?, Task>? callback, CancellationToken token,
+        public async Task<object?> CallAsync(Dictionary<string, object?> header, MethodContext methodContext, Func<object?, Task>? callback, CancellationToken token,
             Stream? stream, params object?[] pureArgs)
         {
             if (callback != null)
@@ -44,7 +44,7 @@ namespace NetRpc
             var t = Task.Run(async () =>
             {
                 _convert.ResultStream += (s, e) => { SetStreamResult(tcs, e.Value); };
-                _convert.Result += (s, e) => { SetResult(tcs, e.Value); };
+                _convert.ResultAsync += async (s, e) => await SetResultAsync(tcs, e.Value);
 
                 if (callback != null)
                     _convert.CallbackAsync += async (s, e) =>
@@ -60,7 +60,7 @@ namespace NetRpc
                         }
                     };
 
-                _convert.Fault += (s, e) => SetFault(tcs, e.Value);
+                _convert.FaultAsync += async (s, e) => await SetFaultAsync(tcs, e.Value);
 
                 try
                 {
@@ -71,7 +71,7 @@ namespace NetRpc
 
                     if (token.IsCancellationRequested)
                     {
-                        SetCancel(tcs);
+                        await SetCancelAsync(tcs);
                         return;
                     }
 
@@ -87,7 +87,7 @@ namespace NetRpc
                         }
                         catch (Exception e)
                         {
-                            SetFault(tcs, e);
+                            await SetFaultAsync(tcs, e);
                         }
                     });
 
@@ -96,10 +96,10 @@ namespace NetRpc
 
                     //timeout
 #pragma warning disable 4014
-                    Task.Delay(_timeoutInterval, _timeOutCts.Token).ContinueWith(i =>
+                    Task.Delay(_timeoutInterval, _timeOutCts.Token).ContinueWith(async i =>
 #pragma warning restore 4014
                     {
-                        SetFault(tcs, new TimeoutException($"Service is not response over {_timeoutInterval} ms, time out."));
+                        await SetFaultAsync(tcs, new TimeoutException($"Service is not response over {_timeoutInterval} ms, time out."));
                     }, _timeOutCts.Token);
 
                     //send stream
@@ -108,14 +108,14 @@ namespace NetRpc
                 }
                 catch (Exception e)
                 {
-                    SetFault(tcs, e);
+                    await SetFaultAsync(tcs, e);
                 }
             }, token);
 
             if (t.IsCanceled)
-                SetCancel(tcs);
+                await SetCancelAsync(tcs);
 
-            return tcs.Task;
+            return await tcs.Task;
         }
 
         private void SetStreamResult(TaskCompletionSource<object?> tcs, object result)
@@ -126,33 +126,33 @@ namespace NetRpc
             Task.Run(() => { tcs.SetResult(result); });
         }
 
-        private void SetCancel(TaskCompletionSource<object?> tcs)
+        private async Task SetCancelAsync(TaskCompletionSource<object?> tcs)
         {
             _reg?.Dispose();
             _timeOutCts.Cancel();
             _callbackDispatcher?.Dispose();
             Console.WriteLine($"!!!SetCancel _convert.Dispose()");
-            _convert.Dispose();
+            await _convert.DisposeAsync();
             tcs.TrySetCanceled();
         }
 
-        private void SetFault(TaskCompletionSource<object?> tcs, object result)
+        private async Task SetFaultAsync(TaskCompletionSource<object?> tcs, object result)
         {
             _reg?.Dispose();
             _timeOutCts.Cancel();
             _callbackDispatcher?.Dispose();
             Console.WriteLine($"!!!SetFault _convert.Dispose()");
-            _convert.Dispose();
+            await _convert.DisposeAsync();
             tcs.TrySetException((Exception) result);
         }
 
-        private void SetResult(TaskCompletionSource<object?> tcs, object? result)
+        private async Task SetResultAsync(TaskCompletionSource<object?> tcs, object? result)
         {
             _reg?.Dispose();
             _timeOutCts.Cancel();
             _callbackDispatcher?.Dispose();
             Console.WriteLine($"!!!SetResult _convert.Dispose()");
-            _convert.Dispose();
+            await _convert.DisposeAsync();
             tcs.TrySetResult(result);
         }
 

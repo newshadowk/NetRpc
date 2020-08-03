@@ -11,7 +11,7 @@ namespace NetRpc
     public class ClientProxy<TService> : IClientProxy<TService> where TService : class
     {
         private bool _disposed;
-        private readonly object _lockDispose = new object();
+        private readonly AsyncLock _lockDispose = new AsyncLock();
         public event EventHandler? Connected;
         public event EventHandler? DisConnected;
         public event EventHandler<EventArgsT<Exception>>? ExceptionInvoked;
@@ -159,35 +159,37 @@ namespace NetRpc
             return HeartbeatAsync.InvokeAsync(this, EventArgs.Empty);
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            Dispose(true);
+            await DisposeAsync(true);
             GC.SuppressFinalize(this);
         }
 
         ~ClientProxy()
         {
-            Dispose(false);
+#pragma warning disable 4014
+            DisposeAsync(false);
+#pragma warning restore 4014
         }
 
-        protected virtual void Dispose(bool disposing)
+        protected virtual async ValueTask DisposeAsync(bool disposing)
         {
-            lock (_lockDispose)
+            using (await _lockDispose.LockAsync())
             {
                 if (_disposed)
                     return;
 
                 if (disposing)
-                    DisposeManaged();
+                    await DisposeManagedAsync();
 
                 _disposed = true;
             }
         }
 
-        private void DisposeManaged()
+        private async ValueTask DisposeManagedAsync()
         {
             _tHearbeat?.Dispose();
-            _factory.Dispose();
+            await _factory.DisposeAsync();
         }
 
         private void OnExceptionInvoked(EventArgsT<Exception> e)

@@ -15,9 +15,9 @@ namespace NetRpc
         private readonly ILogger _logger;
 
         public event EventHandler<EventArgsT<object>>? ResultStream;
-        public event EventHandler<EventArgsT<object?>>? Result;
+        public event AsyncEventHandler<EventArgsT<object?>>? ResultAsync;
         public event AsyncEventHandler<EventArgsT<object>>? CallbackAsync;
-        public event EventHandler<EventArgsT<object>>? Fault;
+        public event AsyncEventHandler<EventArgsT<object>>? FaultAsync;
 
         public BufferClientOnceApiConvert(IClientConnection connection, ILogger logger)
         {
@@ -58,43 +58,30 @@ namespace NetRpc
             return true;
         }
 
-        public void Dispose()
-        {
-            _connection?.Dispose();
-        }
-
-#if NETSTANDARD2_1 || NETCOREAPP3_1
         public async ValueTask DisposeAsync()
         {
             if (_connection != null)
                 await _connection.DisposeAsync();
         }
-#endif
 
         private Stream GetReplyStream(long length)
         {
             var stream = new ProxyStream(_streamPipe.Input.AsStream(), length, true);
 
-#pragma warning disable 1998
             async Task OnEnd(object sender, EventArgs e)
-#pragma warning restore 1998
             {
                 ((ReadStream) sender).FinishedAsync -= OnEnd;
-#if NETSTANDARD2_1 || NETCOREAPP3_1
                 await DisposeAsync();
-#else
-                Dispose();
-#endif
             }
 
             stream.FinishedAsync += OnEnd;
             return stream;
         }
 
-        private void ConnectionReceiveDisconnected(object? sender, EventArgsT<Exception> e)
+        private async void ConnectionReceiveDisconnected(object? sender, EventArgsT<Exception> e)
         {
-            OnFault(new EventArgsT<object>(new ReceiveDisconnectedException(e.Value.Message)));
-            Dispose();
+            await OnFaultAsync(new EventArgsT<object>(new ReceiveDisconnectedException(e.Value.Message)));
+            await DisposeAsync();
         }
 
         private async Task ConnectionReceivedAsync(object? sender, EventArgsT<ReadOnlyMemory<byte>> e)
@@ -121,8 +108,8 @@ namespace NetRpc
                         }
                         else
                         {
-                            OnResult(new EventArgsT<object?>(body.Result));
-                            await InvokeDisposeAsync();
+                            await OnResultAsync(new EventArgsT<object?>(body.Result));
+                            await DisposeAsync();
                         }
                     }
                     else
@@ -142,8 +129,8 @@ namespace NetRpc
                 {
                     if (TryToObject(r.Body, out var body))
                     {
-                        OnFault(new EventArgsT<object>(body!));
-                        await InvokeDisposeAsync();
+                        await OnFaultAsync(new EventArgsT<object>(body!));
+                        await DisposeAsync();
                     }
                     else
                         await OnFaultSerializationExceptionAsync();
@@ -155,26 +142,26 @@ namespace NetRpc
                 case ReplyType.BufferCancel:
                     await _streamPipe.OutputStream.ComWriteAsync(r.Body);
                     await _streamPipe.Output.CompleteAsync(new TaskCanceledException());
-                    await InvokeDisposeAsync();
+                    await DisposeAsync();
                     break;
                 case ReplyType.BufferFault:
                     await _streamPipe.OutputStream.ComWriteAsync(r.Body);
                     await _streamPipe.Output.CompleteAsync(new BufferException());
-                    await InvokeDisposeAsync();
+                    await DisposeAsync();
                     break;
                 case ReplyType.BufferEnd:
                     await _streamPipe.OutputStream.ComWriteAsync(r.Body);
                     await _streamPipe.Output.CompleteAsync();
-                    await InvokeDisposeAsync();
+                    await DisposeAsync();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        private void OnResult(EventArgsT<object?> e)
+        private Task OnResultAsync(EventArgsT<object?> e)
         {
-            Result?.Invoke(this, e);
+            return ResultAsync.InvokeAsync(this, e);
         }
 
         private Task OnCallbackAsync(EventArgsT<object> e)
@@ -182,9 +169,9 @@ namespace NetRpc
             return CallbackAsync.InvokeAsync(this, e);
         }
 
-        private void OnFault(EventArgsT<object> e)
+        private Task OnFaultAsync(EventArgsT<object> e)
         {
-            Fault?.Invoke(this, e);
+            return FaultAsync.InvokeAsync(this, e);
         }
 
         private void OnResultStream(EventArgsT<object> e)
@@ -221,19 +208,8 @@ namespace NetRpc
 
         private async Task OnFaultSerializationExceptionAsync()
         {
-            OnFault(new EventArgsT<object>(new SerializationException("Deserialization failure when receive data.")));
-            await InvokeDisposeAsync();
-        }
-
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        private async Task InvokeDisposeAsync()
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-        {
-#if NETSTANDARD2_1 || NETCOREAPP3_1
+            await OnFaultAsync(new EventArgsT<object>(new SerializationException("Deserialization failure when receive data.")));
             await DisposeAsync();
-#else
-            Dispose();
-#endif
         }
     }
 }

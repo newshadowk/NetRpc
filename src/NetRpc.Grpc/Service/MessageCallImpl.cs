@@ -24,6 +24,7 @@ namespace NetRpc.Grpc
         {
             _busyFlag.Increment();
             GrpcServiceConnection? connection = null;
+
             try
             {
                 connection = new GrpcServiceConnection(requestStream, responseStream, _logger);
@@ -32,7 +33,7 @@ namespace NetRpc.Grpc
             finally
             {
                 if (connection != null) 
-                    await connection.AllDisposeAsync();
+                    await connection.DisposeFinishAsync();
                 _busyFlag.Decrement();
             }
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace NetRpc
 {
@@ -18,22 +19,22 @@ namespace NetRpc
             return clientProxy;
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            Dispose(true);
+            await DisposeAsync(true);
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void Dispose(bool disposing)
+        protected virtual async ValueTask DisposeAsync(bool disposing)
         {
             if (disposing)
-                DisposeManaged();
+                await DisposeManaged();
         }
 
-        private void DisposeManaged()
+        private async ValueTask DisposeManaged()
         {
             foreach (var proxy in _caches.Values) 
-                ((IClientProxy) proxy.Value!)!.Dispose();
+                await ((IClientProxy) proxy.Value!)!.DisposeAsync();
         }
     }
 }

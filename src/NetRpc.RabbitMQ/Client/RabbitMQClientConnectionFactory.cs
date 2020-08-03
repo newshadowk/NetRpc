@@ -20,10 +20,10 @@ namespace NetRpc.RabbitMQ
             _connection = _options.CreateConnectionFactory().CreateConnection();
         }
 
-        public void Dispose()
+        public System.Threading.Tasks.ValueTask DisposeAsync()
         {
             if (_disposed)
-                return;
+                return new System.Threading.Tasks.ValueTask();
             _disposed = true;
 
             try
@@ -35,15 +35,8 @@ namespace NetRpc.RabbitMQ
             {
                 _logger.LogWarning(e, null);
             }
-        }
-
-#if NETSTANDARD2_1 || NETCOREAPP3_1
-        public System.Threading.Tasks.ValueTask DisposeAsync()
-        {
-            Dispose();
             return new System.Threading.Tasks.ValueTask();
         }
-#endif
 
         public IClientConnection Create()
         {

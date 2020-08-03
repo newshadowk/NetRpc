@@ -17,7 +17,8 @@ namespace NetRpc.Http
         }
 
         public async Task Invoke(HttpContext httpContext, IOptions<ContractOptions> contractOptions, IHubContext<CallbackHub, ICallback> hub,
-            IOptions<HttpServiceOptions> httpOptions, RequestHandler requestHandler, HttpObjProcessorManager httpObjProcessorManager, IServiceProvider serviceProvider)
+            IOptions<HttpServiceOptions> httpOptions, RequestHandler requestHandler, HttpObjProcessorManager httpObjProcessorManager,
+            IServiceProvider serviceProvider)
         {
             //if grpc channel message go to next.
             if (httpContext.Request.Path.Value.EndsWith("DuplexStreamingServerMethod"))
@@ -27,11 +28,8 @@ namespace NetRpc.Http
             }
 
             bool notMatched;
-#if NETCOREAPP3_1
-            await
-#endif
-            using (var convert = new HttpServiceOnceApiConvert(contractOptions.Value.Contracts, httpContext,
-                httpOptions.Value.ApiRootPath, httpOptions.Value.IgnoreWhenNotMatched, hub, httpObjProcessorManager, serviceProvider))
+            await using (var convert = new HttpServiceOnceApiConvert(contractOptions.Value.Contracts, httpContext, httpOptions.Value.ApiRootPath,
+                httpOptions.Value.IgnoreWhenNotMatched, hub, httpObjProcessorManager, serviceProvider))
             {
                 await requestHandler.HandleAsync(convert, ChannelType.Http);
                 notMatched = convert.NotMatched;

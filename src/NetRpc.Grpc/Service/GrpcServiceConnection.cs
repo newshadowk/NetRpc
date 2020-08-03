@@ -24,18 +24,12 @@ namespace NetRpc.Grpc
             _logger = logger;
         }
 
-        public void Dispose()
-        {
-        }
-
-#if NETSTANDARD2_1 || NETCOREAPP3_1
         public ValueTask DisposeAsync()
         {
             return new ValueTask();
         }
-#endif
 
-        public async Task AllDisposeAsync()
+        public async Task DisposeFinishAsync()
         {
             //before dispose requestStream need to
             //wait 60 second to receive 'completed' from client side.

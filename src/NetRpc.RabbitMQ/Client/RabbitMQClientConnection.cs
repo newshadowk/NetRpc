@@ -27,18 +27,11 @@ namespace NetRpc.RabbitMQ
                 await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Value.Value));
         }
 
-        public void Dispose()
-        {
-            _call.Dispose();
-        }
-
-#if NETSTANDARD2_1 || NETCOREAPP3_1
         public ValueTask DisposeAsync()
         {
-            Dispose();
+            _call.Dispose();
             return new ValueTask();
         }
-#endif
 
         public ConnectionInfo ConnectionInfo => new ConnectionInfo
         {

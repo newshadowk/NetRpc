@@ -14,19 +14,12 @@ namespace NetRpc
             _logger = loggerFactory.CreateLogger("NetRpc");
         }
 
-        public void Dispose()
-        {
-            _factory?.Dispose();
-        }
-
-#if NETSTANDARD2_1 || NETCOREAPP3_1
         public ValueTask DisposeAsync()
         {
             if (_factory != null)
                 return _factory.DisposeAsync();
             return new ValueTask();
         }
-#endif
 
         public Task<IOnceCall> CreateAsync(int timeoutInterval)
         {

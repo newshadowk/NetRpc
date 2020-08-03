@@ -7,10 +7,7 @@ using Channel = Grpc.Core.Channel;
 
 namespace Proxy.Grpc
 {
-    public class Client : IDisposable
-#if NETSTANDARD2_1 || NETCOREAPP3_1
-        , IAsyncDisposable
-#endif
+    public class Client : IAsyncDisposable
     {
         private readonly Channel _channel;
         private volatile bool _disposed;
@@ -36,31 +33,17 @@ namespace Proxy.Grpc
             CallClient = new MessageCall.MessageCallClient(_channel);
         }
 
-#if NETSTANDARD2_1 || NETCOREAPP3_1
         public async System.Threading.Tasks.ValueTask DisposeAsync()
         {
             if (_disposed)
                 return;
-#if NETCOREAPP3_1
-            _channel?.Dispose();
-#else
-            await _channel?.ShutdownAsync();
-#endif
-            _disposed = true;
-        }
-#endif
-        public void Dispose()
-        {
-            if (_disposed)
-                return;
-            _disposed = true;
 
 #if NETCOREAPP3_1
-            _channel?.Dispose();
+            _channel.Dispose();
 #else
-            //have not deadlock issue.
-            _channel?.ShutdownAsync().Wait();
+            await _channel.ShutdownAsync();
 #endif
+            _disposed = true;
         }
     }
 }

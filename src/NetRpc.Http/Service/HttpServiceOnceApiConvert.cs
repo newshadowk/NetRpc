@@ -181,19 +181,12 @@ namespace NetRpc.Http
                 throw new HttpFailedException("Has not ContentDispositionHeader.");
         }
 
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
             CallbackHub.Canceled -= CallbackHubCanceled;
             _connection.Dispose();
-        }
-
-#if NETCOREAPP3_1
-        public ValueTask DisposeAsync()
-        {
-            Dispose();
             return new ValueTask();
         }
-#endif
 
         public bool NotMatched { get; private set; }
 

@@ -43,7 +43,7 @@ namespace NetRpc.Grpc
                 }
             }
 
-            _service.Dispose();
+            await _service.DisposeAsync();
         }
     }
 }

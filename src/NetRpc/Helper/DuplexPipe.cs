@@ -6,10 +6,7 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    internal sealed class DuplexPipe : IDuplexPipe, IDisposable
-#if NETSTANDARD2_1 || NETCOREAPP3_1
-        , IAsyncDisposable
-#endif
+    internal sealed class DuplexPipe : IDuplexPipe, IAsyncDisposable
     {
         public PipeReader Input { get; }
 
@@ -29,22 +26,17 @@ namespace NetRpc
             OutputStream = Output.AsStream();
         }
 
-#if NETSTANDARD2_1 || NETCOREAPP3_1
         public async ValueTask DisposeAsync()
         {
-            Debug.WriteLine("pipe DisposeAsync");
-
+#if NETSTANDARD2_1 || NETCOREAPP3_1
             if (OutputStream != null)
-                 await OutputStream.DisposeAsync();
-             if (InputStream != null)
-                 await InputStream.DisposeAsync();
-        }
-#endif
-
-        public void Dispose()
-        {
+                await OutputStream.DisposeAsync();
+            if (InputStream != null)
+                await InputStream.DisposeAsync();
+#else
             OutputStream?.Dispose();
             InputStream?.Dispose();
+#endif
         }
     }
 }

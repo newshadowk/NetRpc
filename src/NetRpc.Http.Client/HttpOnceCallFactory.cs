@@ -81,18 +81,11 @@ namespace NetRpc.Http.Client
             _notifier?.OnCallback(new CallbackEventArgs(callId, data));
         }
 
-        public void Dispose()
-        {
-            //have not deadlock issue.
-            _connection?.StopAsync().Wait();
-        }
-
-#if NETSTANDARD2_1 || NETCOREAPP3_1
         public async ValueTask DisposeAsync()
         {
-            await _connection.StopAsync();
+            if (_connection != null)
+                await _connection.StopAsync();
         }
-#endif
 
         public async Task<IOnceCall> CreateAsync(int timeoutInterval)
         {

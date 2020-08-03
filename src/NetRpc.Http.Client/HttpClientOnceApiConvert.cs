@@ -20,9 +20,9 @@ namespace NetRpc.Http.Client
         private readonly string _callId = Guid.NewGuid().ToString();
 
         public event EventHandler<EventArgsT<object>>? ResultStream;
-        public event EventHandler<EventArgsT<object?>>? Result;
+        public event AsyncEventHandler<EventArgsT<object?>>? ResultAsync;
         public event AsyncEventHandler<EventArgsT<object>>? CallbackAsync;
-        public event EventHandler<EventArgsT<object>>? Fault;
+        public event AsyncEventHandler<EventArgsT<object>>? FaultAsync;
 
         public HttpClientOnceApiConvert(string apiUrl, string connectionId, HubCallBackNotifier notifier, int timeoutInterval)
         {
@@ -154,28 +154,21 @@ namespace NetRpc.Http.Client
             else
             {
                 var value = res.Content.ToDtoObject(realRetT)!;
-                OnResult(new EventArgsT<object?>(value));
+                await OnResultAsync(new EventArgsT<object?>(value));
             }
 
             //Dispose: all stream data already received.
             //When Exception occur before will dispose outside.
-            Dispose();
+            await DisposeAsync();
             return false;
         }
 
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
             if (_notifier != null)
                 _notifier.Callback -= Notifier_Callback;
-        }
-
-#if NETSTANDARD2_1 || NETCOREAPP3_1
-        public ValueTask DisposeAsync()
-        {
-            Dispose();
             return new ValueTask();
         }
-#endif
 
         private static void TryThrowFault(MethodContext methodContext, IRestResponse res)
         {
@@ -207,9 +200,9 @@ namespace NetRpc.Http.Client
                 throw CreateException(typeof(Exception), res.Content);
         }
 
-        private void OnResult(EventArgsT<object?> e)
+        private Task OnResultAsync(EventArgsT<object?> e)
         {
-            Result?.Invoke(this, e);
+            return ResultAsync.InvokeAsync(this, e);
         }
 
         private void OnResultStream(EventArgsT<object> e)

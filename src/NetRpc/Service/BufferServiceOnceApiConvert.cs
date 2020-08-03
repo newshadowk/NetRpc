@@ -158,14 +158,6 @@ namespace NetRpc
             await _connection.SendAsync(reply.All);
         }
 
-        public void Dispose()
-        {
-            _connection?.Dispose();
-            _streamPipe.Dispose();
-            _cts?.Dispose();
-        }
-
-#if NETSTANDARD2_1 || NETCOREAPP3_1
         public async ValueTask DisposeAsync()
         {
             if (_connection != null)
@@ -173,6 +165,5 @@ namespace NetRpc
             await _streamPipe.DisposeAsync();
             _cts?.Dispose();
         }
-#endif
     }
 }

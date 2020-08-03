@@ -5,10 +5,7 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    public interface IClientOnceApiConvert : IDisposable
-#if NETSTANDARD2_1 || NETCOREAPP3_1
-        , IAsyncDisposable
-#endif
+    public interface IClientOnceApiConvert : IAsyncDisposable
     {
         ConnectionInfo ConnectionInfo { get; }
 
@@ -24,8 +21,9 @@ namespace NetRpc
         Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, CancellationToken token);
 
         event EventHandler<EventArgsT<object>>? ResultStream;
-        event EventHandler<EventArgsT<object?>>? Result;
+        event AsyncEventHandler<EventArgsT<object?>>? ResultAsync;
         event AsyncEventHandler<EventArgsT<object>>? CallbackAsync;
-        event EventHandler<EventArgsT<object>>? Fault;
+        event AsyncEventHandler<EventArgsT<object>>? FaultAsync;
+
     }
 }

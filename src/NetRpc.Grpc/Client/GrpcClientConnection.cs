@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using Google.Protobuf;
 using Proxy.Grpc;
 using Grpc.Core;
@@ -15,7 +16,8 @@ namespace NetRpc.Grpc
         private readonly Client _client;
         private readonly ILogger _logger;
         private AsyncDuplexStreamingCall<StreamBuffer, StreamBuffer> _api = null!;
-        private volatile bool _isEnd;
+        private readonly WriteOnceBlock<int> _end = new WriteOnceBlock<int>(i => i);
+
         private string id = Guid.NewGuid().ToString();
 
         public GrpcClientConnection(Client client, ILogger logger)
@@ -28,42 +30,40 @@ namespace NetRpc.Grpc
 
         public event EventHandler<EventArgsT<Exception>>? ReceiveDisconnected;
 
-        public void Dispose()
-        {
-            W("GrpcClientConnection Dispose");
-            
+        private bool _isDispose;
+        
+        private static readonly AsyncLock LockDispose = new AsyncLock();
 
-            if (_isEnd)
-                return;
-
-            _isEnd = true;
-            try
-            {
-                _api.RequestStream.CompleteAsync();
-            }
-            catch (Exception e)
-            {
-                _logger.LogWarning(e, "GrpcClientConnection Dispose");
-            }
-        }
-
-#if NETSTANDARD2_1 || NETCOREAPP3_1
         public async ValueTask DisposeAsync()
         {
-            if (_isEnd)
-                return;
+            W("dispose lock start");
 
-            _isEnd = true;
-            try
+            using (await LockDispose.LockAsync())
             {
-                await _api.RequestStream.CompleteAsync();
-            }
-            catch (Exception e)
-            {
-                _logger.LogWarning(e, "GrpcClientConnection DisposeAsync");
+                if (_isDispose)
+                    return;
+
+                try
+                {
+                    W("dispose start");
+                    await _api.RequestStream.CompleteAsync();
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning(e, "GrpcClientConnection Dispose");
+                }
+
+                _isDispose = true;
             }
         }
-#endif
+
+        public async Task DisposeFinishAsync()
+        {
+            //before dispose requestStream need to
+            //wait 60 second to receive 'completed' from client side.
+            await Task.WhenAny(Task.Delay(1000 * 60),
+                _end.ReceiveAsync());
+        }
 
         public ConnectionInfo ConnectionInfo => new ConnectionInfo
         {
@@ -76,8 +76,6 @@ namespace NetRpc.Grpc
         public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false)
         {
             W($"sendasync, isend:{isEnd}");
-            if (_isEnd)
-                return;
 
             //add a lock here will not slowdown send speed.
             using (await _sendLock.LockAsync())
@@ -89,9 +87,8 @@ namespace NetRpc.Grpc
 
             if (isEnd)
             {
-                _isEnd = true;
                 W("RequestStream.CompleteAsync");
-                await _api.RequestStream.CompleteAsync();
+                await DisposeAsync();
             }
         }
 
@@ -124,6 +121,7 @@ namespace NetRpc.Grpc
                         W($"movenext:, count, {byteArray.Length}");
                         await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(new ReadOnlyMemory<byte>(byteArray)));
                     }
+
                     W($"movenext end, {id}");
                 }
                 catch (Exception e)
@@ -131,6 +129,10 @@ namespace NetRpc.Grpc
                     W($"_api.ResponseStream.MoveNext error");
                     _logger.LogWarning(e, "_api.ResponseStream.MoveNext error");
                     OnReceiveDisconnected(new EventArgsT<Exception>(e));
+                }
+                finally
+                {
+                    _end.Post(1);
                 }
             });
         }

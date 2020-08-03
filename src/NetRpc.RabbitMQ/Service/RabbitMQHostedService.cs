@@ -45,11 +45,7 @@ namespace NetRpc.RabbitMQ
             _busyFlag.Increment();
             try
             {
-#if NETSTANDARD2_1 || NETCOREAPP3_1
-                await
-#endif 
-
-                using var connection = new RabbitMQServiceConnection(e.Value);
+                await using var connection = new RabbitMQServiceConnection(e.Value);
                 await _requestHandler.HandleAsync(connection, ChannelType.RabbitMQ);
             }
             finally

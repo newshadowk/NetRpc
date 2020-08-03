@@ -15,13 +15,12 @@ namespace NetRpc.Grpc
 {
     public sealed class GrpcClientConnectionFactory : IClientConnectionFactory
     {
-        private readonly IOptions<GrpcClientOptions> _options;
         private readonly ILogger _logger;
         private Client? _client;
+        private GrpcClientConnection? _connection; 
 
         public GrpcClientConnectionFactory(IOptions<GrpcClientOptions> options, ILoggerFactory loggerFactory)
         {
-            _options = options;
             _logger = loggerFactory.CreateLogger("NetRpc");
             Reset(options.Value);
         }
@@ -55,24 +54,20 @@ namespace NetRpc.Grpc
             _client.Connect();
         }
 
-        public void Dispose()
+        public async System.Threading.Tasks.ValueTask DisposeAsync()
         {
-            Console.WriteLine($"!!!_client Dispose {_options.Value}");
-            _client?.Dispose();
-        }
+            //connection dispose before client dispose.
+            if (_connection != null)
+                await _connection.DisposeFinishAsync();
 
-#if NETSTANDARD2_1 || NETCOREAPP3_1
-        public System.Threading.Tasks.ValueTask DisposeAsync()
-        {
-            if (_client == null)
-                return new System.Threading.Tasks.ValueTask();
-            return _client.DisposeAsync();
+            if (_client != null)
+                await _client.DisposeAsync();
         }
-#endif
 
         public IClientConnection Create()
         {
-            return new GrpcClientConnection(_client!, _logger);
+            _connection = new GrpcClientConnection(_client!, _logger);
+            return _connection;
         }
     }
 }

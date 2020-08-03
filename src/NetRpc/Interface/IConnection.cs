@@ -3,10 +3,7 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    public interface IClientConnection : IDisposable
-#if NETSTANDARD2_1 || NETCOREAPP3_1
-        , IAsyncDisposable
-#endif
+    public interface IClientConnection : IAsyncDisposable
     {
         ConnectionInfo ConnectionInfo { get; }
 
@@ -19,11 +16,10 @@ namespace NetRpc
         Task StartAsync(string? authorizationToken);
     }
 
-    public interface IServiceConnection : IDisposable
-#if NETSTANDARD2_1 || NETCOREAPP3_1
-        , IAsyncDisposable
-#endif
+    public interface IServiceConnection
     {
+        ValueTask DisposeAsync();
+
         event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>> ReceivedAsync;
 
         Task SendAsync(ReadOnlyMemory<byte> buffer);
