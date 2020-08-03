@@ -21,7 +21,7 @@ namespace Client
             //await p.Proxy.Call("hello world.");
 
             //var channel = Grpc.Net.Client.GrpcChannel.ForAddress("https://localhost:5001", new GrpcChannelOptions() { });
-            //var channel = GrpcChannel.ForAddress("http://localhost:5000");
+            var channel = GrpcChannel.ForAddress("http://localhost:5000");
             //var client = new Greeter.GreeterClient(channel);
             //var r = client.SayHello(new HelloRequest() { Name = "n1" });
             //r = client.SayHello(new HelloRequest() { Name = "n2" });
@@ -35,24 +35,15 @@ namespace Client
             //await m.RequestStream.CompleteAsync();
             //Console.WriteLine("end");
 
-            var clientProxy = NetRpc.Grpc.NManager.CreateClientProxy<IService>(new GrpcClientOptions()
-            {
-                Url = "http://localhost:5000"
-            });
 
-            //var clientProxy = NManager.CreateClientProxy<IService>(TestHelper.Helper.GetMQOptions());
 
-            await clientProxy.Proxy.Call("1111");
-            //await clientProxy.Proxy.Call("222");
 
-            //using (var fs = File.OpenRead(@"d:\testfile\10mb.db"))
+            //var clientProxy = NetRpc.Grpc.NManager.CreateClientProxy<IService>(new GrpcClientOptions()
             //{
-            //    var stream = await clientProxy.Proxy.Echo(fs);
-            //    using (var fw = File.OpenWrite(@"d:\testfile\tgt.db"))
-            //    {
-            //        await stream.CopyToAsync(fw);
-            //    }
-            //}
+            //    Url = "http://localhost:5000"
+            //});
+
+            //await clientProxy.Proxy.Call("1111");
 
             Console.Read();
         }

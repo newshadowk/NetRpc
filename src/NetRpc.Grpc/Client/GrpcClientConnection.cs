@@ -16,6 +16,7 @@ namespace NetRpc.Grpc
         private readonly ILogger _logger;
         private AsyncDuplexStreamingCall<StreamBuffer, StreamBuffer> _api = null!;
         private volatile bool _isEnd;
+        private string id = Guid.NewGuid().ToString();
 
         public GrpcClientConnection(Client client, ILogger logger)
         {
@@ -29,7 +30,8 @@ namespace NetRpc.Grpc
 
         public void Dispose()
         {
-            Console.WriteLine("!!!GrpcClientConnection Dispose");
+            W("GrpcClientConnection Dispose");
+            
 
             if (_isEnd)
                 return;
@@ -73,6 +75,7 @@ namespace NetRpc.Grpc
 
         public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false)
         {
+            W($"sendasync, isend:{isEnd}");
             if (_isEnd)
                 return;
 
@@ -87,6 +90,7 @@ namespace NetRpc.Grpc
             if (isEnd)
             {
                 _isEnd = true;
+                W("RequestStream.CompleteAsync");
                 await _api.RequestStream.CompleteAsync();
             }
         }
@@ -113,11 +117,18 @@ namespace NetRpc.Grpc
             {
                 try
                 {
+                    W($"movenext start, {id}");
                     while (await _api.ResponseStream.MoveNext(CancellationToken.None))
-                        await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(new ReadOnlyMemory<byte>(_api.ResponseStream.Current.Body.ToByteArray())));
+                    {
+                        var byteArray = _api.ResponseStream.Current.Body.ToByteArray();
+                        W($"movenext:, count, {byteArray.Length}");
+                        await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(new ReadOnlyMemory<byte>(byteArray)));
+                    }
+                    W($"movenext end, {id}");
                 }
                 catch (Exception e)
                 {
+                    W($"_api.ResponseStream.MoveNext error");
                     _logger.LogWarning(e, "_api.ResponseStream.MoveNext error");
                     OnReceiveDisconnected(new EventArgsT<Exception>(e));
                 }
@@ -132,6 +143,11 @@ namespace NetRpc.Grpc
         private void OnReceiveDisconnected(EventArgsT<Exception> e)
         {
             ReceiveDisconnected?.Invoke(this, e);
+        }
+
+        private void W(string s)
+        {
+            Console.WriteLine($"!!!,{DateTime.Now:MM-dd HH:mm:ss.fff}, {id}, {s}");
         }
     }
 }

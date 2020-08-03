@@ -42,33 +42,16 @@ namespace Service
                         opts => opts.ShutdownTimeout = TimeSpan.FromSeconds(10));
 
                     services.AddHttpContextAccessor();
-                    //services.AddCors();
-                    //services.AddSignalR();
-                    //services.AddNetRpcSwagger();
-                    //services.AddNHttpService();
                     services.AddNServiceContract<IService, Service>();
-                    //services.AddNRabbitMQService(i => i.CopyFrom(TestHelper.Helper.GetMQOptions()));
                     services.AddNGrpcService();
+
+
+
 
                 })
                 .Configure(app =>
                 {
-                    //app.UseCors(set =>
-                    //{
-                    //    set.SetIsOriginAllowed(origin => true)
-                    //        .AllowAnyHeader()
-                    //        .AllowAnyMethod()
-                    //        .AllowCredentials();
-                    //});
-
-                    //app.UseRouting();
-                    //app.UseEndpoints(endpoints =>
-                    //{
-                    //    endpoints.MapHub<CallbackHub>("/callback");
-                    //});
-                    //app.UseNetRpcSwagger();
-                    //app.UseNHttp();
-                    //app.UseMiddleware<SwaggerUiIndexMiddleware>();
+                 
                     app.UseNGrpc();
                 }).Build();
 
