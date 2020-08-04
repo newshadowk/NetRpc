@@ -81,17 +81,16 @@ namespace NetRpc.Http.Client
             _notifier?.OnCallback(new CallbackEventArgs(callId, data));
         }
 
-        public async ValueTask DisposeAsync()
-        {
-            if (_connection != null)
-                await _connection.StopAsync();
-        }
-
         public async Task<IOnceCall> CreateAsync(int timeoutInterval)
         {
             var cid = await InitConnectionAsync();
             var convert = new HttpClientOnceApiConvert(_options.ApiUrl, cid, _notifier!, timeoutInterval);
             return new OnceCall(convert, timeoutInterval, _logger);
+        }
+
+        public void Dispose()
+        {
+            _connection?.StopAsync();
         }
     }
 }

@@ -43,12 +43,14 @@ namespace NetRpc
             await _call.CallAsync(targetMethod, callback, token, stream, otherArgs);
         }
 
-        public async Task<T?> InvokeAsyncT<T>(MethodInfo targetMethod, object?[] args) where T : class
+        public async Task<T> InvokeAsyncT<T>(MethodInfo targetMethod, object?[] args)
         {
             var (callback, token, stream, otherArgs) = GetArgs(args);
             token.ThrowIfCancellationRequested();
             var ret = await _call.CallAsync(targetMethod, callback, token, stream, otherArgs);
-            return (T?) ret;
+            if (ret == null)
+                return default!;
+            return (T) ret;
         }
 
         private static (Func<object?, Task>? callback, CancellationToken token, Stream? stream, object?[] otherArgs) GetArgs(object?[] args)

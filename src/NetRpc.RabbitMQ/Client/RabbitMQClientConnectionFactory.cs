@@ -20,10 +20,16 @@ namespace NetRpc.RabbitMQ
             _connection = _options.CreateConnectionFactory().CreateConnection();
         }
 
-        public System.Threading.Tasks.ValueTask DisposeAsync()
+        public IClientConnection Create()
+        {
+            lock (_lockObj)
+                return new RabbitMQClientConnection(_connection, _options, _logger);
+        }
+
+        public void Dispose()
         {
             if (_disposed)
-                return new System.Threading.Tasks.ValueTask();
+                return;
             _disposed = true;
 
             try
@@ -35,13 +41,6 @@ namespace NetRpc.RabbitMQ
             {
                 _logger.LogWarning(e, null);
             }
-            return new System.Threading.Tasks.ValueTask();
-        }
-
-        public IClientConnection Create()
-        {
-            lock (_lockObj)
-                return new RabbitMQClientConnection(_connection, _options, _logger);
         }
     }
 }

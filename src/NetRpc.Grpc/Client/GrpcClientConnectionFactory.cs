@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using Proxy.Grpc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 #if NETCOREAPP3_1
-using System;
 using Grpc.Net.Client;
 #else
 using Grpc.Core;
+using System.Collections.Generic;
 #endif
 
 namespace NetRpc.Grpc
@@ -27,8 +26,6 @@ namespace NetRpc.Grpc
 
         private void Reset(GrpcClientOptions opt)
         {
-            Console.WriteLine($"!!!_client Reset, {opt}");
-
 #if NETCOREAPP3_1
             var host = new Uri(opt.Url!).Host;
             var port = new Uri(opt.Url!).Port;
@@ -53,8 +50,14 @@ namespace NetRpc.Grpc
 #endif
             _client.Connect();
         }
+    
+        public IClientConnection Create()
+        {
+            _connection = new GrpcClientConnection(_client!, _logger);
+            return _connection;
+        }
 
-        public async System.Threading.Tasks.ValueTask DisposeAsync()
+        public async void Dispose()
         {
             //connection dispose before client dispose.
             if (_connection != null)
@@ -62,12 +65,6 @@ namespace NetRpc.Grpc
 
             if (_client != null)
                 await _client.DisposeAsync();
-        }
-
-        public IClientConnection Create()
-        {
-            _connection = new GrpcClientConnection(_client!, _logger);
-            return _connection;
         }
     }
 }

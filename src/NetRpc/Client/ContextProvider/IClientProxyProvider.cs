@@ -2,7 +2,7 @@
 
 namespace NetRpc
 {
-    public interface IClientProxyProvider : IAsyncDisposable
+    public interface IClientProxyProvider : IDisposable
     {
         ClientProxy<TService>? CreateProxy<TService>(string optionsName) where TService : class;
     }

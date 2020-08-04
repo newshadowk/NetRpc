@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using NetRpc;
 using NetRpc.Http;
 using NetRpc.Http.Client;
@@ -15,6 +16,8 @@ namespace Service_Mvc
     {
         public async Task<string> Call1Async(string p1, int p2)
         {
+            IServiceScope d = GlobalServiceProvider.Provider.GetRequiredService<IServiceScopeFactory>().CreateScope();
+
             Console.WriteLine($"[Call1Async]...{p1}, {p2}");
             return "ret";
         }

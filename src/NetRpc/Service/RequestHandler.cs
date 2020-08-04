@@ -32,16 +32,15 @@ namespace NetRpc
             {
                 var contractOptions = _serviceProvider.GetRequiredService<IOptions<ContractOptions>>();
                 var rpcContextAccessor = _serviceProvider.GetRequiredService<IActionExecutingContextAccessor>();
-
-                using var scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
+                using IServiceScope scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
                 GlobalServiceProvider.Provider = _serviceProvider;
                 GlobalServiceProvider.ScopeProvider = scope.ServiceProvider;
                 var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
 
-                var onceTransfer = new ServiceOnceTransfer(instances, 
-                    scope.ServiceProvider, 
-                    convert, 
-                    _middlewareBuilder, 
+                var onceTransfer = new ServiceOnceTransfer(instances,
+                    scope.ServiceProvider,
+                    convert,
+                    _middlewareBuilder,
                     rpcContextAccessor,
                     channelType,
                     _logger);

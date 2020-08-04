@@ -103,7 +103,7 @@ namespace NetRpc
                     return;
                 }
 
-                await publishBuffer(bo.Array);
+                await publishBuffer(bo.Array.AsMemory().Slice(0, readCount));
                 readCount = await stream.GreedReadAsync(bo.Array, 0, StreamBufferSize, token);
             }
 

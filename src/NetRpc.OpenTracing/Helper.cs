@@ -43,7 +43,7 @@ namespace NetRpc.OpenTracing
             return span;
         }
 
-        public static string? ToDisplayJson<T>(this T? obj, int maxLength) where T : class
+        public static string? ToDisplayJson<T>(this T obj, int maxLength)
         {
             if (obj == null)
                 return null;

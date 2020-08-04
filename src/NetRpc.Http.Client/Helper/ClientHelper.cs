@@ -39,7 +39,7 @@ namespace NetRpc.Http.Client
             return propertyInfos.FirstOrDefault(i => i.PropertyType == typeof(Stream));
         }
 
-        public static string? ToDtoJson<T>(this T? obj) where T : class
+        public static string? ToDtoJson<T>(this T obj)
         {
             if (obj == null)
                 return null;

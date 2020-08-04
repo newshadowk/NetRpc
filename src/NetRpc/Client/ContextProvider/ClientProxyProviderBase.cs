@@ -19,22 +19,22 @@ namespace NetRpc
             return clientProxy;
         }
 
-        public async ValueTask DisposeAsync()
+        public void Dispose()
         {
-            await DisposeAsync(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        protected virtual async ValueTask DisposeAsync(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (disposing)
-                await DisposeManaged();
+                DisposeManaged();
         }
 
-        private async ValueTask DisposeManaged()
+        private void DisposeManaged()
         {
             foreach (var proxy in _caches.Values) 
-                await ((IClientProxy) proxy.Value!)!.DisposeAsync();
+                ((IClientProxy) proxy.Value!)!.Dispose();
         }
     }
 }

@@ -9,7 +9,7 @@ namespace NetRpc
         new TService Proxy { get; }
     }
 
-    public interface IClientProxy : IAsyncDisposable
+    public interface IClientProxy : IDisposable
     {
         event EventHandler? Connected;
         event EventHandler? DisConnected;

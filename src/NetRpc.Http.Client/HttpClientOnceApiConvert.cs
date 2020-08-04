@@ -34,7 +34,7 @@ namespace NetRpc.Http.Client
                 _notifier.Callback += Notifier_Callback;
         }
 
-        private void Notifier_Callback(object sender, CallbackEventArgs e)
+        private void Notifier_Callback(object? sender, CallbackEventArgs e)
         {
             if (e.CallId != _callId)
                 return;

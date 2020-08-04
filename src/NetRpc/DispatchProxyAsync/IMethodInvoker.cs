@@ -8,6 +8,6 @@ namespace System.Reflection
 
         Task InvokeAsync(MethodInfo targetMethod, object?[] args);
 
-        Task<T?> InvokeAsyncT<T>(MethodInfo targetMethod, object?[] args) where T : class;
+        Task<T> InvokeAsyncT<T>(MethodInfo targetMethod, object?[] args);
     }
 }

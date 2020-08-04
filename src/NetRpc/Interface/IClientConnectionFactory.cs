@@ -2,7 +2,7 @@
 
 namespace NetRpc
 {
-    public interface IClientConnectionFactory : IAsyncDisposable
+    public interface IClientConnectionFactory : IDisposable
     {
         IClientConnection Create();
     }

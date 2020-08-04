@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,6 +51,7 @@ namespace Client
             _clientProxy = NetRpc.Grpc.NManager.CreateClientProxy<IService>(grpcF);
             _proxy = _clientProxy.Proxy;
             _proxyAsync = NetRpc.Grpc.NManager.CreateClientProxy<IServiceAsync>(grpcF).Proxy;
+
             RunTest();
             await RunTestAsync();
 

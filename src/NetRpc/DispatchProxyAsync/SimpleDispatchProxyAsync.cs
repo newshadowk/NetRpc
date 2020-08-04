@@ -54,7 +54,7 @@ namespace System.Reflection
             }
         }
 
-        public override async Task<T?> InvokeAsyncT<T>(MethodInfo method, object?[] args) where T : class
+        public override async Task<T> InvokeAsyncT<T>(MethodInfo method, object?[] args)
         {
             try
             {

@@ -128,34 +128,34 @@ namespace NetRpc
 
         private async Task SetCancelAsync(TaskCompletionSource<object?> tcs)
         {
+            // ReSharper disable once MethodHasAsyncOverload
             _reg?.Dispose();
             _timeOutCts.Cancel();
             _callbackDispatcher?.Dispose();
-            Console.WriteLine($"!!!SetCancel _convert.Dispose()");
             await _convert.DisposeAsync();
             tcs.TrySetCanceled();
         }
 
         private async Task SetFaultAsync(TaskCompletionSource<object?> tcs, object result)
         {
+            // ReSharper disable once MethodHasAsyncOverload
             _reg?.Dispose();
             _timeOutCts.Cancel();
             _callbackDispatcher?.Dispose();
-            Console.WriteLine($"!!!SetFault _convert.Dispose()");
             await _convert.DisposeAsync();
             tcs.TrySetException((Exception) result);
         }
 
         private async Task SetResultAsync(TaskCompletionSource<object?> tcs, object? result)
         {
+            // ReSharper disable once MethodHasAsyncOverload
             _reg?.Dispose();
             _timeOutCts.Cancel();
             _callbackDispatcher?.Dispose();
-            Console.WriteLine($"!!!SetResult _convert.Dispose()");
             await _convert.DisposeAsync();
             tcs.TrySetResult(result);
         }
-
+    
         private void OnSendRequestStreamStarted()
         {
             SendRequestStreamStarted?.Invoke(this, EventArgs.Empty);

@@ -19,6 +19,6 @@ namespace System.Reflection
 
         public abstract Task InvokeAsync(MethodInfo method, object?[] args);
 
-        public abstract Task<T?> InvokeAsyncT<T>(MethodInfo method, object?[] args) where T : class;
+        public abstract Task<T> InvokeAsyncT<T>(MethodInfo method, object?[] args);
     }
 }
