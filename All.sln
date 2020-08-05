@@ -185,8 +185,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientMq", "samples\Mq\Clie
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceMq", "samples\Mq\ServiceMq\ServiceMq.csproj", "{BC82B2B6-F2BD-47BB-9329-B18A1DBFB6E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{E15B2AA1-81FA-467D-A77C-A9419F733ACC}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -481,10 +479,6 @@ Global
 		{BC82B2B6-F2BD-47BB-9329-B18A1DBFB6E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC82B2B6-F2BD-47BB-9329-B18A1DBFB6E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC82B2B6-F2BD-47BB-9329-B18A1DBFB6E2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E15B2AA1-81FA-467D-A77C-A9419F733ACC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E15B2AA1-81FA-467D-A77C-A9419F733ACC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E15B2AA1-81FA-467D-A77C-A9419F733ACC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E15B2AA1-81FA-467D-A77C-A9419F733ACC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -567,7 +561,6 @@ Global
 		{FB0DB319-22B5-4582-841D-3A22BD192C3B} = {A605A1E7-7065-4ED1-87D8-3C6159F33A0A}
 		{EAC7B84D-99F5-4BE2-B619-056233F1C99C} = {FB0DB319-22B5-4582-841D-3A22BD192C3B}
 		{BC82B2B6-F2BD-47BB-9329-B18A1DBFB6E2} = {FB0DB319-22B5-4582-841D-3A22BD192C3B}
-		{E15B2AA1-81FA-467D-A77C-A9419F733ACC} = {A605A1E7-7065-4ED1-87D8-3C6159F33A0A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9C903E86-5147-4487-B701-7548555524C0}
