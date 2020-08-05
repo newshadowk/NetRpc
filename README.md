@@ -13,7 +13,7 @@ class Program
     {
         var o = new GrpcServiceOptions();
         o.AddPort("0.0.0.0", 50001);
-        var host = NetRpc.Grpc.NManager.CreateHost(o, null, new Contract<IService, Service>()).RunAsync();
+        var host = NetRpc.Grpc.NManager.CreateHost(o, null, new Contract<IService, Service>());
         await host.RunAsync();
     }
 }
