@@ -201,6 +201,20 @@ namespace NetRpc
                         methodTrimAsync
                     ));
                 }
+
+                //add default
+                if (methodHttpMethods.Count == 0 && methodRoutes.Count == 0)
+                {
+                    tempInfos.Add(new TempInfo(
+                        contractType,
+                        methodInfo,
+                        r.Template,
+                        null,
+                        null,
+                        contractTrimAsync,
+                        methodTrimAsync
+                    ));
+                }
             }
 
             //add default
