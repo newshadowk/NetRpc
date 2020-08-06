@@ -181,7 +181,7 @@ namespace NetRpc.Http
             foreach (KeyValuePair<string, StringValues> p in pairs)
             {
                 string pName;
-                if (queryParams.TryGetValue(p.Key, out var outName))
+                if (queryParams.TryGetValue(p.Key.ToLower(), out var outName))
                     pName = outName;
                 else
                     pName = p.Key;

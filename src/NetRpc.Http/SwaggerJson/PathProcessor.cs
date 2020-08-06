@@ -56,7 +56,8 @@ namespace NetRpc.Http
             if (isSupportBody)
             {
                 AddPathParams(contractMethod, operation, routInfo);
-                operation.RequestBody = GenerateRequestBody(contractMethod.MergeArgType.TypeWithoutStreamName, contractMethod.MergeArgType.StreamPropName);
+                if (!routInfo.IsAllParamsInPath)
+                    operation.RequestBody = GenerateRequestBody(contractMethod.MergeArgType.TypeWithoutStreamName, contractMethod.MergeArgType.StreamPropName);
             }
             else
                 AddQueryPathParams(contractMethod, operation, routInfo);
@@ -127,7 +128,7 @@ namespace NetRpc.Http
             //validate
             foreach (var p in rout.PathParams)
             {
-                if (contractMethod.InnerSystemTypeParameters.All(i => i.Name != p))
+                if (contractMethod.InnerSystemTypeParameters.All(i => i.Name.ToLower() != p))
                     throw new InvalidOperationException(
                         $"{rout.Path}, '{p}' is not found in method params:{contractMethod.InnerSystemTypeParameters.Select(i => i.Name).ListToString(", ")}");
             }
