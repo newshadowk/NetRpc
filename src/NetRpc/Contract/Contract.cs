@@ -37,8 +37,8 @@ namespace NetRpc
             IsTracerArgsIgnore = GetCustomAttribute<TracerArgsIgnoreAttribute>(contractType, methodInfo) != null;
             IsTraceReturnIgnore = GetCustomAttribute<TracerReturnIgnoreAttribute>(contractType, methodInfo) != null;
 
-            Route = new MethodRoute(contractType, methodInfo);
             MergeArgType = GetMergeArgType(methodInfo);
+            Route = new MethodRoute(contractType, methodInfo);
             IsMQPost = GetCustomAttribute<MQPostAttribute>(contractType, methodInfo) != null;
 
             Tags = new ReadOnlyCollection<string>(GetTags(contractTypeTag, methodInfo));

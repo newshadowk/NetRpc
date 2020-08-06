@@ -378,8 +378,7 @@ namespace NetRpc
             foreach (var p in properties)
             {
                 var value = p.GetValue(obj, null);
-                var defaultValue = GetDefaultValue(p.PropertyType);
-
+                var defaultValue = p.PropertyType.GetDefaultValue();
                 if (!Equals(value, defaultValue))
                     return false;
             }
@@ -387,11 +386,10 @@ namespace NetRpc
             return true;
         }
 
-        public static object? GetDefaultValue(Type t)
+        public static object? GetDefaultValue(this Type t)
         {
             if (t.IsValueType)
                 return Activator.CreateInstance(t);
-
             return null;
         }
 

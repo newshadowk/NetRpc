@@ -58,8 +58,8 @@ namespace DataContract
     }
 
     [HttpTrimAsync]
-    //[HttpRoute("IRout1")]
-    //[Tag("RoutTag1")]
+    [HttpRoute("IRout1")]
+    [Tag("RoutTag1")]
     public interface IService2Async
     {
         //[Tag("CallTag1")]
@@ -79,8 +79,8 @@ namespace DataContract
         //[HttpPost("Call2/{P1}/Post")]
         //Task<string> Call2Async(CallObj obj);
 
-        [HttpGet("Call3/{P1}?vp2={P2}")]
         //[HttpGet("Call3/{P1}?vp2={P2}")]
+        [HttpPost("Call3/{P1}?vp2={P2}")]
         Task<string> Call3Async(CallObj obj);
     }
 

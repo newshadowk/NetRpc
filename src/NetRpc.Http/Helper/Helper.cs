@@ -63,13 +63,13 @@ namespace NetRpc.Http
             return path;
         }
 
-        public static object?[] GetPureArgsFromDataObj(Type? dataObjType, object dataObj)
+        public static object?[] GetPureArgsFromDataObj(Type? dataObjType, object? dataObj)
         {
             var ret = new List<object?>();
             if (dataObjType == null)
                 return ret.ToArray();
             foreach (var p in dataObjType.GetProperties())
-                ret.Add(GetPropertyValue(dataObj, p.Name));
+                ret.Add(GetPropertyValue(dataObj, p));
             return ret.ToArray();
         }
 
@@ -107,9 +107,12 @@ namespace NetRpc.Http
             return Path.Combine(dir, name);
         }
 
-        public static object? GetPropertyValue(object classInstance, string propertyName)
+        public static object? GetPropertyValue(object? classInstance, PropertyInfo p)
         {
-            return classInstance.GetType().InvokeMember(propertyName, BindingFlags.GetProperty,
+            if (classInstance == null)
+                return p.PropertyType.GetDefaultValue();
+            
+            return classInstance.GetType().InvokeMember(p.Name, BindingFlags.GetProperty,
                 null, classInstance, new object[] { });
         }
 

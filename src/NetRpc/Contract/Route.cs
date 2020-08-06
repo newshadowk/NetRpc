@@ -28,7 +28,7 @@ namespace NetRpc
 
             //S/Get/C/{p1}/D/{p2} =>
             //S/Get/C/\{p1}/D/\{p2}
-            var tmpP = Regex.Escape(Path);
+            var tmpP = Regex.Escape(PathWithoutQuery);
 
             var keys = new List<string>();
             var mc = Regex.Matches(tmpP, @"\\{\w+}");
@@ -66,6 +66,11 @@ namespace NetRpc
         public string Path { get; }
 
         /// <summary>
+        /// ?vp2={P2}, key:vp2, value:P2
+        /// </summary>
+        public Dictionary<string, string> QueryParams { get; }
+
+        /// <summary>
         /// S/Get/C/{p1}/ss
         /// </summary>
         public string PathWithoutQuery { get; }
@@ -96,8 +101,22 @@ namespace NetRpc
         {
             ContractTag = contractTag;
             Path = path;
-            //PathWithoutQuery = path.Substring(0, path.IndexOf('?'));
-            PathWithoutQuery = path;
+
+            string? pathQuery;
+            var idx = path.IndexOf('?');
+            if (idx != -1)
+            {
+                PathWithoutQuery = path.Substring(0, idx);
+                pathQuery = path.Substring(idx);
+            }
+            else
+            {
+                PathWithoutQuery = path;
+                pathQuery = null;
+            }
+
+            QueryParams = GetQueryParams(pathQuery);
+
             _regPatternPathWithoutQuery = ReplacePathStr(PathWithoutQuery);
             
             var ps = new List<string>();
@@ -106,6 +125,39 @@ namespace NetRpc
                 ps.Add(o!.Value);
 
             PathParams = new ReadOnlyCollection<string>(ps);
+        }
+
+        private static Dictionary<string, string> GetQueryParams(string? pathQuery)
+        {
+            //pathQuery null
+            if (string.IsNullOrWhiteSpace(pathQuery))
+                return new Dictionary<string, string>();
+
+            //pathQuery ?
+            if (pathQuery!.Length == 1)
+                return new Dictionary<string, string>();
+
+            //pathQuery ?vp2={P2}&vp3={P3}
+            pathQuery = pathQuery.Substring(1);
+            var ret = new Dictionary<string, string>();
+            try
+            {
+                var ss = pathQuery.Split('&');
+                foreach (var s in ss)
+                {
+                    //vp2={P2}
+                    var pair = s.Split('=');
+                    //pair[0]:vp2
+                    //pair[1]:{P2}
+                    ret.Add(pair[0], pair[1].Substring(1, pair[1].Length - 2));
+                }
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException($"{pathQuery}", e);
+            }
+
+            return ret;
         }
 
         public override string ToString()
