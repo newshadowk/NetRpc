@@ -3,7 +3,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
@@ -88,8 +87,7 @@ namespace NetRpc
         }
 
         public static async Task SendStreamAsync(Func<ReadOnlyMemory<byte>, Task> publishBuffer, Func<Task> publishBufferEnd, Stream stream,
-            CancellationToken token,
-            Action? started = null)
+            CancellationToken token, Action? started = null)
         {
             using var bo = ArrayPool<byte>.Shared.RentOwner(StreamBufferSize);
             var readCount = await stream.GreedReadAsync(bo.Array, 0, StreamBufferSize, token);
@@ -108,49 +106,6 @@ namespace NetRpc
             }
 
             await publishBufferEnd();
-        }
-
-        public static bool TryGetStream(this object? obj, out Stream? stream, out string? streamName)
-        {
-            stream = default;
-            streamName = default;
-
-            if (obj == null)
-                return false;
-
-            if (obj is Stream objS)
-            {
-                stream = objS;
-                return true;
-            }
-
-            //stream
-            var ps = obj.GetType().GetProperties();
-            var found = ps.FirstOrDefault(i => i.PropertyType == typeof(Stream));
-            if (found == null)
-                return false;
-            stream = (Stream) found.GetValue(obj)!;
-
-            //streamName
-            found = ps.FirstOrDefault(i => i.Name.IsStreamName());
-            if (found != null)
-                streamName = found.GetValue(obj) as string;
-
-            return true;
-        }
-
-        public static object SetStream(this object? obj, Stream stream)
-        {
-            if (obj == null)
-                return stream;
-
-            var ps = obj.GetType().GetProperties();
-            var found = ps.FirstOrDefault(i => i.PropertyType == typeof(Stream));
-            if (found == null)
-                return obj;
-
-            found.SetValue(obj, stream);
-            return obj;
         }
 
         public static string? ListToString<T>(this IEnumerable<T>? list, string split)
@@ -188,47 +143,6 @@ namespace NetRpc
             return s.Substring(0, s.Length - delLength);
         }
 
-        public static string ToFullMethodName(this MethodInfo method)
-        {
-            // ReSharper disable once PossibleNullReferenceException
-            return $"{method.DeclaringType!.Name}/{method.Name}";
-        }
-
-        public static ActionInfo ToActionInfo(this MethodInfo method)
-        {
-            return new ActionInfo
-            {
-                GenericArguments = method.GetGenericArguments().ToList().ConvertAll(GetTypeName).ToArray(),
-                FullName = method.ToFullMethodName()
-            };
-        }
-
-        public static void AppendMethodInfo(this FaultException ex, ActionInfo action, object?[] args)
-        {
-            if (!string.IsNullOrEmpty(ex.Action))
-                ex.Action += " | ";
-
-            ex.Action += $"{action}, {args.ListToString(", ")}";
-            ex.Action = ex.Action.TrimEndString(", ");
-        }
-
-        public static bool IsFuncT(this Type? t)
-        {
-            if (t == null)
-                return false;
-            return t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Func<,>);
-        }
-
-        public static bool IsCancellationToken(this Type t)
-        {
-            return t == typeof(CancellationToken?) || t == typeof(CancellationToken);
-        }
-
-        public static bool IsTaskT(this Type t)
-        {
-            return t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Task<>);
-        }
-
         public static long GetLength(this Stream? stream)
         {
             if (stream == null)
@@ -242,12 +156,6 @@ namespace NetRpc
             {
                 return 0;
             }
-        }
-
-        public static bool IsSystemType(this Type t)
-        {
-            var sn = t.Module.ScopeName;
-            return sn == "System.Private.CoreLib.dll" || sn == "CommonLanguageRuntimeLibrary";
         }
 
         public static byte[]? ToBytes(this object? obj)
@@ -450,12 +358,6 @@ namespace NetRpc
             return msgContent.ToString();
         }
 
-        public static bool IsStreamName(this string propName)
-        {
-            // ReSharper disable once StringLiteralTypo
-            return propName.ToLower() == "streamname";
-        }
-
         public static void AsyncWait(this Task task)
         {
             //pass the sync context.
@@ -507,11 +409,5 @@ namespace NetRpc
             return ret;
         }
 
-        private static string GetTypeName(Type t)
-        {
-            if (t.IsSystemType())
-                return t.FullName!;
-            return t.AssemblyQualifiedName!;
-        }
     }
 }

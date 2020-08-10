@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using NetRpc.Contract;
 
 namespace NetRpc
@@ -37,8 +36,7 @@ namespace NetRpc
             IsTracerArgsIgnore = GetCustomAttribute<TracerArgsIgnoreAttribute>(contractType, methodInfo) != null;
             IsTraceReturnIgnore = GetCustomAttribute<TracerReturnIgnoreAttribute>(contractType, methodInfo) != null;
 
-            MergeArgType = GetMergeArgType(methodInfo);
-            Route = new MethodRoute(contractType, methodInfo, MergeArgType);
+            Route = new MethodRoute(contractType, methodInfo);
             IsMQPost = GetCustomAttribute<MQPostAttribute>(contractType, methodInfo) != null;
 
             Tags = new ReadOnlyCollection<string>(GetTags(contractTypeTag, methodInfo));
@@ -57,8 +55,6 @@ namespace NetRpc
         /// if null means all contract methods roles is unset.
         /// </summary>
         public ReadOnlyCollection<string>? Roles { get; }
-
-        public MergeArgType MergeArgType { get; }
 
         public ReadOnlyCollection<string> Tags { get; }
 
@@ -119,7 +115,7 @@ namespace NetRpc
                 return new List<MethodParameter>();
 
             var ret = new List<MethodParameter>();
-            if (ps.Count == 1 && !ps[0].Type.IsSystemType())
+            if (ps.IsSingleCustomValue())
                 ps = ps[0].Type.GetProperties().ToList().ConvertAll(i => new MethodParameter(i.Name, i.PropertyType));
 
             foreach (var p in ps)
@@ -136,7 +132,7 @@ namespace NetRpc
             if (ps.Count == 0)
                 return false;
 
-            if (ps.Count == 1 && !ps[0].Type.IsSystemType())
+            if (ps.IsSingleCustomValue())
             {
                 if (ps[0].Type.GetProperties().Any(i => !i.PropertyType.IsSystemType()))
                     return false;
@@ -148,89 +144,21 @@ namespace NetRpc
             return true;
         }
 
-        private static MergeArgType GetMergeArgType(MethodInfo m)
-        {
-            string? streamName = null;
-            TypeName? action = null;
-            TypeName? cancelToken = null;
-
-            // ReSharper disable once PossibleNullReferenceException
-            var typeName = $"{m.DeclaringType!.Namespace}_{m.DeclaringType.Name}_{m.Name}Param2";
-            var typeNameWithoutStreamName = $"{m.DeclaringType.Namespace}_{m.DeclaringType.Name}_{m.Name}Param";
-            var cis = new List<CustomsPropertyInfo>();
-
-            var attributeData = CustomAttributeData.GetCustomAttributes(m).Where(i => i.AttributeType == typeof(ExampleAttribute)).ToList();
-            var addedCallId = false;
-            var addedStream = false;
-            foreach (var p in m.GetParameters())
-            {
-                //Stream
-                if (p.ParameterType == typeof(Stream))
-                {
-                    streamName = p.Name;
-                    addedStream = true;
-                    continue;
-                }
-
-                //callback
-                if (p.ParameterType.IsFuncT())
-                {
-                    action = new TypeName(p.Name!, p.ParameterType);
-                    addedCallId = true;
-                    continue;
-                }
-
-                //cancel
-                if (p.ParameterType == typeof(CancellationToken?) || p.ParameterType == typeof(CancellationToken))
-                {
-                    cancelToken = new TypeName(p.Name!, p.ParameterType);
-                    addedCallId = true;
-                    continue;
-                }
-
-                //ExampleAttribute
-                var found = attributeData.Find(i => (string) i.ConstructorArguments[0].Value! == p.Name);
-                if (found != null)
-                    cis.Add(new CustomsPropertyInfo(p.ParameterType, p.Name!, found));
-                else
-                    cis.Add(new CustomsPropertyInfo(p.ParameterType, p.Name!));
-            }
-
-            //connectionId callId
-            if (addedCallId)
-            {
-                cis.Add(new CustomsPropertyInfo(typeof(string), CallConst.ConnectionIdName));
-                cis.Add(new CustomsPropertyInfo(typeof(string), CallConst.CallIdName));
-            }
-
-            //StreamLength
-            if (addedStream)
-                cis.Add(new CustomsPropertyInfo(typeof(long), CallConst.StreamLength));
-
-            var t = TypeFactory.BuildType(typeName, cis);
-            var t2 = BuildTypeWithoutStreamName(typeNameWithoutStreamName, cis);
-
-            if (cis.Count == 0)
-                return new MergeArgType(null, null, null, null, null);
-
-            return new MergeArgType(t, t2, streamName, action, cancelToken);
-        }
-
         public object? CreateMergeArgTypeObj(string? callId, string? connectionId, long streamLength, object?[] args)
         {
-            if (MergeArgType.Type == null)
+            if (Route.DefaultRout.MergeArgType.Type == null)
                 return null;
 
-            var instance = Activator.CreateInstance(MergeArgType.Type);
+            var instance = Activator.CreateInstance(Route.DefaultRout.MergeArgType.Type);
             var newArgs = args.ToList();
 
-            //_connectionId _callId streamLength
+            //_connId _callId streamLength
             newArgs.Add(connectionId);
             newArgs.Add(callId);
             newArgs.Add(streamLength);
 
             var i = 0;
-            foreach (var p in MergeArgType.Type.GetProperties())
+            foreach (var p in Route.DefaultRout.MergeArgType.Type.GetProperties())
             {
                 p.SetValue(instance, newArgs[i]);
                 i++;
@@ -246,13 +174,6 @@ namespace NetRpc
                 return methodA;
 
             return contractType.GetCustomAttribute<T>(true);
-        }
-
-        private static Type BuildTypeWithoutStreamName(string typeName, List<CustomsPropertyInfo> cis)
-        {
-            var list = cis.ToList();
-            list.RemoveAll(i => i.PropertyName.IsStreamName() && i.Type == typeof(string));
-            return TypeFactory.BuildType(typeName, list);
         }
 
         private static List<string> GetTags(string contractTypeTag, MethodInfo methodInfo)

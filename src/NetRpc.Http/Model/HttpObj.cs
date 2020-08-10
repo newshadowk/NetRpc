@@ -14,7 +14,7 @@ namespace NetRpc.Http
 
     internal sealed class HttpDataObj
     {
-        public string? ConnectionId { get; set; }
+        public string? ConnId { get; set; }
 
         public string? CallId { get; set; }
 
@@ -22,7 +22,15 @@ namespace NetRpc.Http
 
         public object? Value { get; set; }
 
-        public Type Type { get; set; } = null!;
+        /// <summary>
+        /// web api type.
+        /// </summary>
+        public Type ShowType { get; set; } = null!;
+
+        /// <summary>
+        /// rpc type.
+        /// </summary>
+        public Type RealType { get; set; } = null!;
 
         public bool TrySetStreamName(string streamName)
         {
@@ -75,21 +83,12 @@ namespace NetRpc.Http
         private void CheckValue()
         {
             //if null, create default.
-            Value ??= Activator.CreateInstance(Type);
+            Value ??= Activator.CreateInstance(ShowType);
 
             //if inner obj null, create default.
-            var ps = Type.GetProperties().ToList();
-            if (ps.Count == 1 && !ps[0].PropertyType.IsSystemType() && ps[0].GetValue(Value) == null)
+            var ps = ShowType.GetProperties().ToList();
+            if (ps.IsSingleCustomValue() && ps[0].GetValue(Value) == null)
                 ps[0].SetValue(Value, Activator.CreateInstance(ps[0].PropertyType));
-        }
-
-        private object GetDefaultValue()
-        {
-            var instance = Activator.CreateInstance(Type);
-            var ps = Type.GetProperties().ToList();
-            if (ps.Count == 1 && !ps[0].PropertyType.IsSystemType())
-                ps[0].SetValue(instance, Activator.CreateInstance(ps[0].PropertyType));
-            return instance;
         }
 
         private static void SetPropertyValue(object classInstance, PropertyInfo tgtProperty, object propertyValue)
@@ -108,11 +107,11 @@ namespace NetRpc.Http
 
         private (object instance, List<PropertyInfo> ps) GetInnerSystemTypeParameters()
         {
-            var ps = Type.GetProperties().ToList();
+            var ps = ShowType.GetProperties().ToList();
 
             object instance = Value!;
             var ret = new List<PropertyInfo>();
-            if (ps.Count == 1 && !ps[0].PropertyType.IsSystemType())
+            if (ps.IsSingleCustomValue())
             {
                 instance = ps[0].GetValue(Value)!;
                 ps = ps[0].PropertyType.GetProperties().ToList();

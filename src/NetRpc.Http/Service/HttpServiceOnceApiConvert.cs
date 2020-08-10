@@ -2,16 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 using NetRpc.Http.Client;
 
 namespace NetRpc.Http
@@ -25,7 +20,6 @@ namespace NetRpc.Http
         private readonly bool _ignoreWhenNotMatched;
         private readonly HttpObjProcessorManager _httpObjProcessorManager;
         private CancellationTokenSource? _cts;
-        private readonly FormOptions _defaultFormOptions = new FormOptions();
 
         public HttpServiceOnceApiConvert(List<ContractInfo> contracts,
             HttpContext context,
@@ -75,13 +69,13 @@ namespace NetRpc.Http
         {
             var (actionInfo, hri, rawPath) = GetActionInfo();
             var header = GetHeader();
-            var httpObj = await GetHttpDataObjAndStream(actionInfo, hri, rawPath);
+            var httpObj = await GetHttpDataObjAndStream(hri, rawPath);
             
             _connection.CallId = httpObj.HttpDataObj.CallId;
-            _connection.ConnectionId = httpObj.HttpDataObj.ConnectionId;
+            _connection.ConnId = httpObj.HttpDataObj.ConnId;
             _connection.Stream = httpObj.ProxyStream;
 
-            var pureArgs = Helper.GetPureArgsFromDataObj(httpObj.HttpDataObj.Type, httpObj.HttpDataObj.Value);
+            var pureArgs = GetPureArgsFromDataObj(httpObj.HttpDataObj.ShowType, httpObj.HttpDataObj.Value);
             return new ServiceOnceCallParam(actionInfo, pureArgs, httpObj.HttpDataObj.StreamLength, httpObj.ProxyStream, header);
         }
 
@@ -131,56 +125,6 @@ namespace NetRpc.Http
             return _connection.CallBack(callbackObj);
         }
 
-        public async Task<(HttpDataObj obj, ProxyStream stream)> GetFromFormDataAsync(Type dataObjType)
-        {
-            var boundary = MultipartRequestHelper.GetBoundary(
-                MediaTypeHeaderValue.Parse(_context.Request.ContentType),
-                _defaultFormOptions.MultipartBoundaryLengthLimit);
-            var reader = new MultipartReader(boundary, _context.Request.Body);
-            var section = await reader.ReadNextSectionAsync();
-
-            //body
-            ValidateSection(section);
-            var ms = new MemoryStream();
-            await section.Body.CopyToAsync(ms);
-            var body = Encoding.UTF8.GetString(ms.ToArray());
-            var dataObj = Helper.ToHttpDataObj(body, dataObjType);
-
-            //stream
-            section = await reader.ReadNextSectionAsync();
-            ValidateSection(section);
-            var fileName = GetFileName(section.ContentDisposition);
-            if (fileName == null)
-                throw new ArgumentNullException(null, "File name is null.");
-            dataObj.TrySetStreamName(fileName);
-            var proxyStream = new ProxyStream(section.Body, dataObj.StreamLength);
-            return (dataObj, proxyStream);
-        }
-
-        private static string? Match(string src, string left, string right)
-        {
-            var r = Regex.Match(src, $"(?<={left}).+(?={right})");
-            if (r.Captures.Count > 0)
-                return r.Captures[0].Value;
-            return null;
-        }
-
-        private static string? GetFileName(string contentDisposition)
-        {
-            //Content-Disposition: form-data; name="stream"; filename="t1.docx"
-            return Match(contentDisposition, "filename=\"", "\"");
-        }
-
-        private static void ValidateSection(MultipartSection section)
-        {
-            var hasContentDispositionHeader =
-                ContentDispositionHeaderValue.TryParse(
-                    section.ContentDisposition, out _);
-
-            if (!hasContentDispositionHeader)
-                throw new HttpFailedException("Has not ContentDispositionHeader.");
-        }
-
         public ValueTask DisposeAsync()
         {
             CallbackHub.Canceled -= CallbackHubCanceled;
@@ -189,6 +133,18 @@ namespace NetRpc.Http
         }
 
         public bool NotMatched { get; private set; }
+
+
+
+        private static object?[] GetPureArgsFromDataObj(Type? dataObjType, object? dataObj)
+        {
+            var ret = new List<object?>();
+            if (dataObjType == null)
+                return ret.ToArray();
+            foreach (var p in dataObjType.GetProperties())
+                ret.Add(Helper.GetPropertyValue(dataObj, p));
+            return ret.ToArray();
+        }
 
         private (ActionInfo ai, HttpRoutInfo hri, string rawPath) GetActionInfo()
         {
@@ -220,13 +176,10 @@ namespace NetRpc.Http
             return ret;
         }
 
-        private async Task<HttpObj> GetHttpDataObjAndStream(ActionInfo ai, HttpRoutInfo hri, string rawPath)
+        private async Task<HttpObj> GetHttpDataObjAndStream(HttpRoutInfo hri, string rawPath)
         {
             //dataObjType
-            var contractMethod = ApiWrapper.GetContractMethod(ai, _contracts);
-            var dataObjType = contractMethod.MergeArgType.Type;
-
-            return await _httpObjProcessorManager.ProcessAsync(new ProcessItem(_context.Request, hri, rawPath, dataObjType));
+            return await _httpObjProcessorManager.ProcessAsync(new ProcessItem(_context.Request, hri, rawPath, hri.MergeArgType.Type));
         }
 
         private void CallbackHubCanceled(object? sender, string e)

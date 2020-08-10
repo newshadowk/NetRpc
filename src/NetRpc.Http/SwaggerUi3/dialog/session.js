@@ -2,11 +2,11 @@
 
 var connection = new signalR.HubConnectionBuilder().withUrl("{hubUrl}").build();
 
-//GetConnectionId
+//GetConnId
 connection.start().then(function() {
     addText("signalR connected!");
-    connection.invoke("GetConnectionId").then((cid) => {
-        addText("GetConnectionId, _connectionId:" + cid);
+    connection.invoke("GetConnId").then((cid) => {
+        addText("GetConnId, _connId:" + cid);
     });
 }).catch(function(err) {
     return console.error(err.toString());

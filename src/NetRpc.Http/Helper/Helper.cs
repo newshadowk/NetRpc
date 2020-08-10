@@ -35,8 +35,8 @@ namespace NetRpc.Http
                 StreamLength = streamLength,
                 Value = obj,
                 CallId = callId,
-                ConnectionId = connectionId,
-                Type = t
+                ConnId = connectionId,
+                ShowType = t
             };
         }
 
@@ -61,16 +61,6 @@ namespace NetRpc.Http
             path = path.Replace("//", "/");
             path = path.TrimStart('/');
             return path;
-        }
-
-        public static object?[] GetPureArgsFromDataObj(Type? dataObjType, object? dataObj)
-        {
-            var ret = new List<object?>();
-            if (dataObjType == null)
-                return ret.ToArray();
-            foreach (var p in dataObjType.GetProperties())
-                ret.Add(GetPropertyValue(dataObj, p));
-            return ret.ToArray();
         }
 
         public static bool IsEqualsOrSubclassOf(this Type t, Type c)
@@ -168,7 +158,7 @@ namespace NetRpc.Http
             if (dataObj == null)
                 return (null, null, 0);
 
-            var connectionId = (string?) GetValue(dataObj, ClientConstValue.ConnectionIdName);
+            var connectionId = (string?) GetValue(dataObj, ClientConstValue.ConnIdName);
             var callId = (string?) GetValue(dataObj, ClientConstValue.CallIdName);
             var streamLengthObj = GetValue(dataObj, ClientConstValue.StreamLength);
             var streamLength = (long?) streamLengthObj ?? 0;

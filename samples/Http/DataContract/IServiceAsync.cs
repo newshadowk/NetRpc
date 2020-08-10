@@ -80,8 +80,7 @@ namespace DataContract
         //Task<string> Call2Async(CallObj obj);
 
         //[HttpGet("Call3/{P1}?vp2={P2}")]
-        [HttpPost("Call3?vp2={P2}")]
-        Task<string> Call3Async(CallObj obj);
+        Task<string> Call3Async(CallObj obj, Func<Task, double> cb, CancellationToken token);
     }
 
     [Serializable]

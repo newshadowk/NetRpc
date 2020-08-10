@@ -12,28 +12,6 @@ using Helper = TestHelper.Helper;
 
 namespace Service_Mvc
 {
-    public class Service2Async : IService2Async
-    {
-        public async Task<string> Call1Async(string p1, int p2)
-        {
-            IServiceScope d = GlobalServiceProvider.Provider.GetRequiredService<IServiceScopeFactory>().CreateScope();
-
-            Console.WriteLine($"[Call1Async]...{p1}, {p2}");
-            return "ret";
-        }
-
-        public async Task<string> Call2Async(CallObj obj)
-        {
-            Console.WriteLine($"[Call2Async]...{obj.P1}, {obj.P2}");
-            return "ret";
-        }
-
-        public Task<string> Call3Async(CallObj obj)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
     public class ServiceAsync : IServiceAsync
     {
         private readonly IHttpContextAccessor _httpContextAccessor;

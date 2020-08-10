@@ -30,7 +30,7 @@ namespace NetRpc.Http
             _logger = logger;
         }
 
-        public string? ConnectionId { get; set; }
+        public string? ConnId { get; set; }
 
         public string? CallId { get; set; }
 
@@ -65,8 +65,8 @@ namespace NetRpc.Http
         {
             try
             {
-                if (ConnectionId != null)
-                    await _hub.Clients.Client(ConnectionId).Callback(CallId, callbackObj.ToDtoJson());
+                if (ConnId != null)
+                    await _hub.Clients.Client(ConnId).Callback(CallId, callbackObj.ToDtoJson());
             }
             catch (Exception e)
             {
@@ -78,8 +78,8 @@ namespace NetRpc.Http
         {
             try
             {
-                if (ConnectionId != null)
-                    await _hub.Clients.Client(ConnectionId).UploadProgress(CallId, args.ToDtoJson());
+                if (ConnId != null)
+                    await _hub.Clients.Client(ConnId).UploadProgress(CallId, args.ToDtoJson());
             }
             catch (Exception e)
             {

@@ -31,7 +31,7 @@ namespace Service_Mvc
             services.AddSignalR();
             services.AddNSwagger();
             services.AddNHttpService(i => i.ApiRootPath = "/api");
-            services.AddNServiceContract<IService2Async, Service2Async>(ServiceLifetime.Scoped);
+            services.AddNServiceContract<IServiceAsync, ServiceAsync>(ServiceLifetime.Scoped);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

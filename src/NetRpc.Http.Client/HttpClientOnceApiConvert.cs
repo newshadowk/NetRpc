@@ -13,7 +13,7 @@ namespace NetRpc.Http.Client
     internal sealed class HttpClientOnceApiConvert : IClientOnceApiConvert
     {
         private readonly string _apiUrl;
-        private readonly string _connectionId;
+        private readonly string _connId;
         private readonly HubCallBackNotifier _notifier;
         private readonly int _timeoutInterval;
         private TypeName? _callbackAction;
@@ -27,7 +27,7 @@ namespace NetRpc.Http.Client
         public HttpClientOnceApiConvert(string apiUrl, string connectionId, HubCallBackNotifier notifier, int timeoutInterval)
         {
             _apiUrl = apiUrl;
-            _connectionId = connectionId;
+            _connId = connectionId;
             _notifier = notifier;
             _timeoutInterval = timeoutInterval + 1000 * 5;
             if (_notifier != null)
@@ -83,8 +83,8 @@ namespace NetRpc.Http.Client
 
         public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, CancellationToken token)
         {
-            _callbackAction = methodContext.ContractMethod.MergeArgType.CallbackAction;
-            var postObj = methodContext.ContractMethod.CreateMergeArgTypeObj(_callId, _connectionId, stream?.Length ?? 0, callParam.PureArgs);
+            _callbackAction = methodContext.ContractMethod.Route.DefaultRout.MergeArgType.CallbackAction;
+            var postObj = methodContext.ContractMethod.CreateMergeArgTypeObj(_callId, _connId, stream?.Length ?? 0, callParam.PureArgs);
             var actionPath = methodContext.ContractMethod.Route.DefaultRout.Path;
             var reqUrl = $"{_apiUrl}/{actionPath}";
 
@@ -101,11 +101,12 @@ namespace NetRpc.Http.Client
             }
 
             //request
-            if (methodContext.ContractMethod.MergeArgType.StreamPropName != null)
+            if (methodContext.ContractMethod.Route.DefaultRout.MergeArgType.StreamPropName != null)
             {
                 req.AddParameter("data", postObj.ToDtoJson()!, ParameterType.RequestBody);
                 // ReSharper disable once PossibleNullReferenceException
-                req.AddFile(methodContext.ContractMethod.MergeArgType.StreamPropName, stream!.CopyTo, methodContext.ContractMethod.MergeArgType.StreamPropName,
+                req.AddFile(methodContext.ContractMethod.Route.DefaultRout.MergeArgType.StreamPropName!, stream!.CopyTo, 
+                    methodContext.ContractMethod.Route.DefaultRout.MergeArgType.StreamPropName!,
                     stream!.Length);
             }
             else

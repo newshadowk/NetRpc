@@ -2,7 +2,7 @@
 {
     public static class ClientConstValue
     {
-        public const string ConnectionIdName = "_connectionId";
+        public const string ConnIdName = "_connId";
         public const string CallIdName = "_callId";
         public const string StreamLength = "_streamLength";
         public const string CustomResultHeaderKey = "result";

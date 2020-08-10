@@ -45,7 +45,7 @@ namespace NetRpc.Http
             var operation = new OpenApiOperation
             {
                 Tags = GenerateTags(contractMethod),
-                Responses = GenerateResponses(contractMethod, contractMethod.MergeArgType.CancelToken != null),
+                Responses = GenerateResponses(contractMethod, routInfo.MergeArgType.CancelToken != null),
                 Parameters = new List<OpenApiParameter>()
             };
 
@@ -56,14 +56,14 @@ namespace NetRpc.Http
             if (isSupportBody)
             {
                 AddPathParams(contractMethod, operation, routInfo);
-                if (!routInfo.IsAllParamsInPath)
-                    operation.RequestBody = GenerateRequestBody(contractMethod.MergeArgType.TypeWithoutStreamName, contractMethod.MergeArgType.StreamPropName);
+                if (routInfo.MergeArgType.HasCustomType)
+                    operation.RequestBody = GenerateRequestBody(routInfo.MergeArgType.TypeWithoutStreamName, routInfo.MergeArgType.StreamPropName);
             }
             else
                 AddQueryPathParams(contractMethod, operation, routInfo);
 
             //Summary
-            AddSummary(contractMethod, operation);
+            AddSummary(contractMethod, operation, routInfo);
 
             //ApiSecurity
             AddApiSecurity(contractMethod, operation);
@@ -148,13 +148,13 @@ namespace NetRpc.Http
             }
         }
 
-        private void AddSummary(ContractMethod contractMethod, OpenApiOperation operation)
+        private void AddSummary(ContractMethod contractMethod, OpenApiOperation operation, HttpRoutInfo routInfo)
         {
             var filterContext = new OperationFilterContext(new ApiDescription(), _schemaGenerator, SchemaRepository, contractMethod.MethodInfo);
             foreach (var filter in _options.OperationFilters)
                 filter.Apply(operation, filterContext);
-            operation.Summary = AppendSummaryByCallbackAndCancel(operation.Summary, contractMethod.MergeArgType.CallbackAction,
-                contractMethod.MergeArgType.CancelToken);
+            operation.Summary = AppendSummaryByCallbackAndCancel(operation.Summary, routInfo.MergeArgType.CallbackAction,
+                routInfo.MergeArgType.CancelToken);
         }
 
         private static void AddApiSecurity(ContractMethod contractMethod, OpenApiOperation operation)

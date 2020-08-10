@@ -78,7 +78,7 @@ namespace NetRpc
         /// </summary>
         public string PathWithoutQuery { get; }
 
-        public bool IsAllParamsInPath { get; }
+        public MergeArgType MergeArgType { get; }
 
         /// <summary>
         /// S/Get/C/{p1}/sss => S/Get/C/\w+/sss$
@@ -102,7 +102,7 @@ namespace NetRpc
             return HttpMethods.Any(i => i == method) && Regex.IsMatch(path, _regPatternPathWithoutQuery);
         }
 
-        public HttpRoutInfo(string contractTag, string path, MergeArgType mergeArgType)
+        public HttpRoutInfo(string contractTag, string path, MethodInfo method)
         {
             ContractTag = contractTag;
             Path = path;
@@ -131,26 +131,15 @@ namespace NetRpc
 
             PathParams = new ReadOnlyCollection<string>(ps);
 
-            IsAllParamsInPath = GetIsAllParamsInPath(mergeArgType, PathParams);
+            MergeArgType = MergeArgTypeFactory.Create(method, GetPathQueryParams(ps, QueryParams));
         }
 
-        private static bool GetIsAllParamsInPath(MergeArgType mergeArgType, ReadOnlyCollection<string> pathParams)
+        private static List<string> GetPathQueryParams(IList<string> pathParams, Dictionary<string, string> queryParams)
         {
-            if (mergeArgType.Type == null)
-                return false;
-
-            // ps
-            var ps = mergeArgType.Type.GetProperties().ToList();
-            if (ps.Count == 1 && !ps[0].PropertyType.IsSystemType()) 
-                ps = ps[0].PropertyType.GetProperties().ToList();
-
-            foreach (var p in ps)
-            {
-                if (pathParams.All(i => i != p.Name.ToLower()))
-                    return false;
-            }
-
-            return true;
+            List<string> ret = new List<string>();
+            ret.AddRange(pathParams);
+            ret.AddRange(queryParams.Values.ToList());
+            return ret;
         }
 
         private static Dictionary<string, string> GetQueryParams(string? pathQuery)
@@ -200,13 +189,13 @@ namespace NetRpc
 
         public ReadOnlyCollection<HttpRoutInfo> SwaggerRouts { get; }
 
-        public MethodRoute(Type contractType, MethodInfo methodInfo, MergeArgType mergeArgType)
+        public MethodRoute(Type contractType, MethodInfo methodInfo)
         {
             //HttpRoutInfo
-            var list = GetRouts(contractType, methodInfo, mergeArgType);
+            var list = GetRouts(contractType, methodInfo);
             Routs = new ReadOnlyCollection<HttpRoutInfo>(list);
             DefaultRout = GetDefaultRout(list);
-            SwaggerRouts = new ReadOnlyCollection<HttpRoutInfo>(GetSwaggerRouts(list, mergeArgType));
+            SwaggerRouts = new ReadOnlyCollection<HttpRoutInfo>(GetSwaggerRouts(list, methodInfo));
         }
 
         private static HttpRoutInfo GetDefaultRout(IList<HttpRoutInfo> list)
@@ -217,12 +206,12 @@ namespace NetRpc
             return list[0];
         }
 
-        private static List<HttpRoutInfo> GetSwaggerRouts(List<HttpRoutInfo> list, MergeArgType type)
+        private static List<HttpRoutInfo> GetSwaggerRouts(List<HttpRoutInfo> list, MethodInfo methodInfo)
         {
             var ris = list.FindAll(i => i.HttpMethods.Count > 0);
             if (ris.Count == 0)
             {
-                var ri = new HttpRoutInfo(list[0].ContractTag, list[0].Path, type);
+                var ri = new HttpRoutInfo(list[0].ContractTag, list[0].Path, methodInfo);
                 ri.HttpMethods.Add("POST");
                 ris.Add(ri);
             }
@@ -239,7 +228,7 @@ namespace NetRpc
             return contractRoutes;
         }
 
-        private static List<HttpRoutInfo> GetRouts(Type contractType, MethodInfo methodInfo, MergeArgType mergeArgType)
+        private static List<HttpRoutInfo> GetRouts(Type contractType, MethodInfo methodInfo)
         {
             var contractTrimAsync = contractType.IsDefined(typeof(HttpTrimAsyncAttribute));
             var methodTrimAsync = methodInfo.IsDefined(typeof(HttpTrimAsyncAttribute)) || contractTrimAsync;
@@ -313,7 +302,7 @@ namespace NetRpc
             var ret = new List<HttpRoutInfo>();
             foreach (var group in tempInfos.GroupBy(i => i.Path))
             {
-                var r = new HttpRoutInfo(contractTag, group.Key, mergeArgType);
+                var r = new HttpRoutInfo(contractTag, group.Key, methodInfo);
                 foreach (TempInfo info in group)
                 {
                     if (info.Method != null)

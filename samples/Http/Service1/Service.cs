@@ -54,7 +54,14 @@ namespace Service
             return s;
         }
 
-        public async Task<string> Call3Async(CallObj obj)
+        //public async Task<string> Call3Async(CallObj obj)
+        //{
+        //    string s = $"[Call3Async]...{obj.P1}, {obj.P2}";
+        //    Console.WriteLine(s);
+        //    return s;
+        //}
+
+        public async Task<string> Call3Async(CallObj obj, Func<Task, double> cb, CancellationToken token)
         {
             string s = $"[Call3Async]...{obj.P1}, {obj.P2}";
             Console.WriteLine(s);

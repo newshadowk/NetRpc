@@ -10,16 +10,19 @@ namespace NetRpc
 
         public string? StreamPropName { get; }
 
+        public bool HasCustomType { get; }
+
         public TypeName? CallbackAction { get; }
 
         public TypeName? CancelToken { get; }
 
-        public MergeArgType(Type? type, Type? typeWithoutStreamName, string? streamPropName, TypeName? callbackAction, TypeName? cancelToken)
+        public MergeArgType(Type? type, Type? typeWithoutStreamName, string? streamPropName, TypeName? callbackAction, TypeName? cancelToken, bool hasCustomType)
         {
             Type = type;
             StreamPropName = streamPropName;
             CallbackAction = callbackAction;
             CancelToken = cancelToken;
+            HasCustomType = hasCustomType;
             TypeWithoutStreamName = typeWithoutStreamName;
         }
     }

@@ -36,7 +36,7 @@ namespace Service
                         i.Items.Add(new KeyRole
                         {
                             Key = "k2",
-                            Role = "R2"
+                            Role = "R1,R2"
                         });
                         i.Items.Add(new KeyRole
                         {

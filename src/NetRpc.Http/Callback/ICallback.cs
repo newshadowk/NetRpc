@@ -15,7 +15,7 @@ namespace NetRpc.Http
     {
         public static event EventHandler<string>? Canceled;
 
-        public Task<string> GetConnectionId()
+        public Task<string> GetConnId()
         {
             return Task.FromResult(Context.ConnectionId);
         }

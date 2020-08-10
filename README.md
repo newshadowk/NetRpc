@@ -628,7 +628,7 @@ app.UseNRpcSwagger();        // use NRpcSwagger middleware
 The demo show how to call a method with callback and cancel:
 ![Alt text](images/swagger.png)
 
-If define Callback Func\<T, Task> and CancelToken supported, need set **\_connectionId** and **_callId** when request.
+If define Callback Func\<T, Task> and CancelToken supported, need set **\_connId** and **_callId** when request.
 OperationCanceledException will receive respones with statuscode 600.  
 
 ![Alt text](images/callback.png)
@@ -658,11 +658,11 @@ Client code belows show how to get connectionId, how to receive callback, how to
 //client js side
 var connection = new signalR.HubConnectionBuilder().withUrl("{hubUrl}").build();
 
-//GetConnectionId function
+//GetConnId function
 connection.start().then(function () {
     addText("signalR connected!");
-    connection.invoke("GetConnectionId").then((cid) => {
-        addText("GetConnectionId, _connectionId:" + cid);
+    connection.invoke("GetConnId").then((cid) => {
+        addText("GetConnId, _connId:" + cid);
     });
 }).catch(function (err) {
     return console.error(err.toString());
@@ -699,9 +699,9 @@ public interface IServiceAsync
 ## [Http] Method Attribute
 Support some Attributes, pls see demo.
 ```c#
-[HttpTrimAsync]   //trim 'async' at end.
+[HttpTrimAsync]
 [HttpRoute("IRout1")]
-[Tag("RoutTag1")]   //swagger tag
+[Tag("RoutTag1")]
 public interface IService2Async
 {
     [Tag("CallTag1")]
@@ -720,6 +720,9 @@ public interface IService2Async
     [HttpGet("Call2/{P1}/{P2}/Get")]
     [HttpPost("Call2/{P1}/Post")]
     Task<string> Call2Async(CallObj obj);
+
+    [HttpGet("Call3/{P1}?vp2={P2}")]
+    Task<string> Call3Async(CallObj obj);
 }
 
 [Serializable]
@@ -746,12 +749,7 @@ services.AddNSwagger(i =>
                         i.Items.Add(new KeyRole
                         {
                             Key = "k2",
-                            Role = "R2"
-                        });
-                        i.Items.Add(new KeyRole
-                        {
-                            Key = "k3",
-                            Role = "R3"
+                            Role = "R2,R3"
                         });
                         i.Items.Add(new KeyRole
                         {

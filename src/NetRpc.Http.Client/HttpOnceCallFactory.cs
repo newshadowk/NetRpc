@@ -12,7 +12,7 @@ namespace NetRpc.Http.Client
         private readonly ILogger _logger;
         private HubConnection? _connection;
         private HubCallBackNotifier? _notifier;
-        private volatile string? _connectionId;
+        private volatile string? _connId;
         private readonly AsyncLock _lockInit = new AsyncLock();
 
         public HttpOnceCallFactory(IOptions<HttpClientOptions> options, ILoggerFactory factory)
@@ -44,8 +44,8 @@ namespace NetRpc.Http.Client
             try
             {
                 await _connection.StartAsync();
-                _connectionId = await _connection.InvokeAsync<string>("GetConnectionId");
-                return _connectionId;
+                _connId = await _connection.InvokeAsync<string>("GetConnId");
+                return _connId;
             }
             catch (Exception e)
             {
@@ -62,8 +62,8 @@ namespace NetRpc.Http.Client
                         try
                         {
                             await _connection.StartAsync();
-                            _connectionId = await _connection.InvokeAsync<string>("GetConnectionId");
-                            return _connectionId;
+                            _connId = await _connection.InvokeAsync<string>("GetConnId");
+                            return _connId;
                         }
                         catch (Exception e)
                         {
@@ -73,7 +73,7 @@ namespace NetRpc.Http.Client
                 }
             }
 #endif
-            return _connectionId!;
+            return _connId!;
         }
 
         private void HubConnection_Callback(string callId, string data)

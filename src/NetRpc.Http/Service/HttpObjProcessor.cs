@@ -131,8 +131,8 @@ namespace NetRpc.Http
                 StreamLength = 0,
                 Value = dataObj,
                 CallId = null,
-                ConnectionId = null,
-                Type = dataObj.GetType()
+                ConnId = null,
+                ShowType = dataObj.GetType()
             };
         }
     }
