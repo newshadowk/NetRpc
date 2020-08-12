@@ -75,7 +75,7 @@ namespace NetRpc.Http
             _connection.ConnId = httpObj.HttpDataObj.ConnId;
             _connection.Stream = httpObj.ProxyStream;
 
-            var pureArgs = GetPureArgsFromDataObj(httpObj.HttpDataObj.ShowType, httpObj.HttpDataObj.Value);
+            var pureArgs = GetPureArgsFromDataObj(httpObj.HttpDataObj.Type, httpObj.HttpDataObj.Value, hri);
             return new ServiceOnceCallParam(actionInfo, pureArgs, httpObj.HttpDataObj.StreamLength, httpObj.ProxyStream, header);
         }
 
@@ -85,7 +85,6 @@ namespace NetRpc.Http
                 await _connection.SendAsync(new Result(result.Result));
             else
                 await _connection.SendWithStreamAsync(result, stream!, streamName!);
-
             return false;
         }
 
@@ -134,15 +133,22 @@ namespace NetRpc.Http
 
         public bool NotMatched { get; private set; }
 
-
-
-        private static object?[] GetPureArgsFromDataObj(Type? dataObjType, object? dataObj)
+        private static object?[] GetPureArgsFromDataObj(Type? dataObjType, object? dataObj, HttpRoutInfo hri)
         {
             var ret = new List<object?>();
             if (dataObjType == null)
                 return ret.ToArray();
+
+            if (hri.MergeArgType.IsSingleValue)
+            {
+                var sv = Activator.CreateInstance(hri.MergeArgType.SingleValue!.ParameterType);
+                sv.CopyPropertiesFrom(dataObj!);
+                ret.Add(sv);
+                return ret.ToArray();
+            }
+
             foreach (var p in dataObjType.GetProperties())
-                ret.Add(Helper.GetPropertyValue(dataObj, p));
+                ret.Add(NetRpc.Helper.GetPropertyValue(dataObj, p));
             return ret.ToArray();
         }
 

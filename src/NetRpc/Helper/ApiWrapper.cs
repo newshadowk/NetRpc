@@ -27,7 +27,7 @@ namespace NetRpc
                 dic.Add(psList.IndexOf(found), token);
 
             //Stream
-            found = psList.FirstOrDefault(i => i.ParameterType == typeof(Stream));
+            found = psList.FirstOrDefault(i => i.ParameterType.IsStream());
             if (found != null)
                 dic.Add(psList.IndexOf(found), stream);
 

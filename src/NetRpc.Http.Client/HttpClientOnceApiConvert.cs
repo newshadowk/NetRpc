@@ -139,7 +139,7 @@ namespace NetRpc.Http.Client
             if (realRetT.HasStream())
             {
                 var ms = new MemoryStream(res.RawBytes);
-                if (methodContext.ContractMethod.MethodInfo.ReturnType.GetTypeFromReturnTypeDefinition() == typeof(Stream))
+                if (methodContext.ContractMethod.MethodInfo.ReturnType.GetTypeFromReturnTypeDefinition().IsStream())
                     OnResultStream(new EventArgsT<object>(ms));
                 else
                 {

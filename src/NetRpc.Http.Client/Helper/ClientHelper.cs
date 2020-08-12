@@ -23,20 +23,11 @@ namespace NetRpc.Http.Client
             if (t == null)
                 return false;
 
-            if (t == typeof(Stream))
+            if (t.IsStream())
                 return true;
 
             var propertyInfos = t.GetProperties();
-            return propertyInfos.Any(i => i.PropertyType == typeof(Stream));
-        }
-
-        public static PropertyInfo? GetStreamPropertyInfo(this Type t)
-        {
-            if (t == typeof(Stream))
-                return null;
-
-            var propertyInfos = t.GetProperties();
-            return propertyInfos.FirstOrDefault(i => i.PropertyType == typeof(Stream));
+            return propertyInfos.Any(i => i.PropertyType.IsStream());
         }
 
         public static string? ToDtoJson<T>(this T obj)

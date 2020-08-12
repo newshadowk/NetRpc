@@ -24,7 +24,7 @@ namespace Client
             await TestAsync();
 
             Console.WriteLine("---- Http test ----");
-            var httpOptions = new HttpClientOptions {ApiUrl = "http://localhost:5000", SignalRHubUrl = "http://localhost:5000/callback"};
+            var httpOptions = new HttpClientOptions { ApiUrl = "http://localhost:5000", SignalRHubUrl = "http://localhost:5000/callback" };
             _c1 = NetRpc.Http.Client.NManager.CreateClientProxy<IService>(httpOptions);
             _c2 = NetRpc.Http.Client.NManager.CreateClientProxy<IService2>(httpOptions);
             await TestAsync();

@@ -61,12 +61,33 @@ namespace Service
         //    return s;
         //}
 
-        public async Task<string> Call3Async(CallObj obj, Func<Task, double> cb, CancellationToken token)
+        public async Task<string> Call3Async(CallObj obj)
         {
             string s = $"[Call3Async]...{obj.P1}, {obj.P2}";
             Console.WriteLine(s);
             return s;
         }
+
+        public async Task<string> Call4Async(CallObj obj, Func<double, Task> cb, CancellationToken token)
+        {
+            string s = $"[Call4Async]...{obj.P1}, {obj.P2}";
+
+            for (int i = 0; i < 50; i++)
+            {
+                await cb(i);
+                await Task.Delay(100, token);
+            }
+            Console.WriteLine(s);
+            return s;
+        }
+
+        public async Task<string> Call5Async(string p1, int p2, Func<double, Task> cb, CancellationToken token)
+        {
+            string s = $"[Call5Async]...{p1}, {p2}";
+            Console.WriteLine(s);
+            return s;
+        }
+
     }
 
     public class ServiceAsync : IServiceAsync

@@ -132,7 +132,7 @@ namespace NetRpc.Http
                 Value = dataObj,
                 CallId = null,
                 ConnId = null,
-                ShowType = dataObj.GetType()
+                Type = dataObj.GetType()
             };
         }
     }
@@ -175,8 +175,16 @@ namespace NetRpc.Http
             List<KeyValuePair<string, StringValues>> pairs = new List<KeyValuePair<string, StringValues>>();
             if (request.Query != null)
                 pairs.AddRange(request.Query);
-            if (request.HasFormContentType && request.Form != null)
-                pairs.AddRange(request.Form);
+
+            try
+            {
+                //Form may be read by stream before.
+                if (request.HasFormContentType && request.Form != null)
+                    pairs.AddRange(request.Form);
+            }
+            catch
+            {
+            }
 
             foreach (KeyValuePair<string, StringValues> p in pairs)
             {

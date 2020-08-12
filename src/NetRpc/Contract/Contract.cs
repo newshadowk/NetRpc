@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using NetRpc.Contract;
@@ -12,17 +11,17 @@ namespace NetRpc
     {
         public MethodInfo MethodInfo { get; }
 
-        public ReadOnlyCollection<MethodParameter> Parameters { get; }
+        /// <summary>
+        /// Func/Cancel will map to _connId, _callId
+        /// </summary>
+        public ReadOnlyCollection<TypeName> InnerSystemTypeParameters { get; }
 
-        public ReadOnlyCollection<MethodParameter> InnerSystemTypeParameters { get; }
-
-        public ContractMethod(Type contractType, Type? instanceType, bool hasSwaggerRole, string contractTypeTag, MethodInfo methodInfo, List<MethodParameter> parameters,
+        public ContractMethod(Type contractType, Type? instanceType, bool hasSwaggerRole, string contractTypeTag, MethodInfo methodInfo, 
             List<FaultExceptionAttribute> faultExceptionAttributes, List<HttpHeaderAttribute> httpHeaderAttributes,
             List<ResponseTextAttribute> responseTextAttributes, List<SecurityApiKeyAttribute> securityApiKeyAttributes)
         {
             MethodInfo = methodInfo;
-            Parameters = new ReadOnlyCollection<MethodParameter>(parameters);
-            InnerSystemTypeParameters = new ReadOnlyCollection<MethodParameter>(GetInnerSystemTypeParameters(parameters));
+            InnerSystemTypeParameters = new ReadOnlyCollection<TypeName>(InnerType.GetInnerSystemTypeParameters(methodInfo));
             FaultExceptionAttributes = new ReadOnlyCollection<FaultExceptionAttribute>(faultExceptionAttributes);
             HttpHeaderAttributes = new ReadOnlyCollection<HttpHeaderAttribute>(httpHeaderAttributes);
             ResponseTextAttributes = new ReadOnlyCollection<ResponseTextAttribute>(responseTextAttributes);
@@ -74,14 +73,6 @@ namespace NetRpc
 
         public bool IsMQPost { get; }
 
-        public bool InRole(string role)
-        {
-            if (Roles == null)
-                return true;
-
-            return Roles.Any(i => i == role);
-        }
-
         public bool InRoles(IList<string> roles)
         {
             if (Roles == null)
@@ -104,40 +95,15 @@ namespace NetRpc
 
         public ReadOnlyCollection<SecurityApiKeyAttribute> SecurityApiKeyAttributes { get; }
 
-        public bool IsSupportAllParameter()
+        public bool IsParamsSupportPathQuery()
         {
-            return IsSupportAllParameter(Parameters);
+            return IsParamsSupportPathQuery(InnerSystemTypeParameters);
         }
 
-        private static List<MethodParameter> GetInnerSystemTypeParameters(IList<MethodParameter> ps)
-        {
-            if (ps.Count == 0)
-                return new List<MethodParameter>();
-
-            var ret = new List<MethodParameter>();
-            if (ps.IsSingleCustomValue())
-                ps = ps[0].Type.GetProperties().ToList().ConvertAll(i => new MethodParameter(i.Name, i.PropertyType));
-
-            foreach (var p in ps)
-            {
-                if (p.Type.IsSystemType())
-                    ret.Add(p);
-            }
-
-            return ret;
-        }
-
-        private static bool IsSupportAllParameter(IList<MethodParameter> ps)
+        private static bool IsParamsSupportPathQuery(IList<TypeName> ps)
         {
             if (ps.Count == 0)
                 return false;
-
-            if (ps.IsSingleCustomValue())
-            {
-                if (ps[0].Type.GetProperties().Any(i => !i.PropertyType.IsSystemType()))
-                    return false;
-                return true;
-            }
 
             if (ps.Any(i => !i.Type.IsSystemType()))
                 return false;
@@ -149,9 +115,10 @@ namespace NetRpc
             if (Route.DefaultRout.MergeArgType.Type == null)
                 return null;
 
+            args = InnerType.GetInnerPureArgs(args, Route.DefaultRout);
+
             var instance = Activator.CreateInstance(Route.DefaultRout.MergeArgType.Type);
             var newArgs = args.ToList();
-
             //_connId _callId streamLength
             newArgs.Add(connectionId);
             newArgs.Add(callId);
@@ -281,7 +248,6 @@ namespace NetRpc
                     hasSwaggerRole,
                     tag,
                     f.Key,
-                    GetMethodParameters(f.Key),
                     f.Value,
                     httpHeaderDic[f.Key],
                     responseTextDic[f.Key],
@@ -306,19 +272,6 @@ namespace NetRpc
                 if (m.InRoles(roles))
                     ret.Add(m);
             return new ReadOnlyCollection<ContractMethod>(ret);
-        }
-
-        private static List<MethodParameter> GetMethodParameters(MethodInfo methodInfo)
-        {
-            var ret = new List<MethodParameter>();
-            foreach (var p in methodInfo.GetParameters())
-            {
-                if (p.ParameterType.IsFuncT() || p.ParameterType == typeof(Stream))
-                    continue;
-                ret.Add(new MethodParameter(p.Name!, p.ParameterType));
-            }
-
-            return ret;
         }
 
         private static Dictionary<MethodInfo, List<T>> GetItemsFromDefines<T, TDefine>(Type contractType, IEnumerable<MethodInfo> methodInfos,

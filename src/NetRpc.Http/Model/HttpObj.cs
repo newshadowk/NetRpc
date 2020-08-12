@@ -20,17 +20,15 @@ namespace NetRpc.Http
 
         public long StreamLength { get; set; }
 
+        /// <summary>
+        /// Is a InnerValue from MergeArgType
+        /// </summary>
         public object? Value { get; set; }
 
         /// <summary>
-        /// web api type.
+        /// web api type. is a InnerType from MergeArgType
         /// </summary>
-        public Type ShowType { get; set; } = null!;
-
-        /// <summary>
-        /// rpc type.
-        /// </summary>
-        public Type RealType { get; set; } = null!;
+        public Type Type { get; set; } = null!;
 
         public bool TrySetStreamName(string streamName)
         {
@@ -57,9 +55,15 @@ namespace NetRpc.Http
             if (keyValues.Count == 0)
                 return;
 
+            if (keyValues.TryGetValue(CallConst.CallIdName, out var v1)) 
+                CallId = v1;
+
+            if (keyValues.TryGetValue(CallConst.ConnIdName, out var v2))
+                ConnId = v2;
+
             CheckValue();
 
-            var (instance, ps) = GetInnerSystemTypeParameters();
+            var ps = Type.GetProperties();
 
             //set values
             foreach (var p in keyValues)
@@ -70,7 +74,7 @@ namespace NetRpc.Http
                     try
                     {
                         //may be need type convert
-                        SetPropertyValue(instance, f, p.Value);
+                        SetPropertyValue(Value!, f, p.Value);
                     }
                     catch (Exception ex)
                     {
@@ -83,10 +87,10 @@ namespace NetRpc.Http
         private void CheckValue()
         {
             //if null, create default.
-            Value ??= Activator.CreateInstance(ShowType);
+            Value ??= Activator.CreateInstance(Type);
 
             //if inner obj null, create default.
-            var ps = ShowType.GetProperties().ToList();
+            var ps = Type.GetProperties().ToList();
             if (ps.IsSingleCustomValue() && ps[0].GetValue(Value) == null)
                 ps[0].SetValue(Value, Activator.CreateInstance(ps[0].PropertyType));
         }
@@ -103,27 +107,6 @@ namespace NetRpc.Http
             else
                 type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance,
                     new[] {Convert.ChangeType(propertyValue, tgtProperty.PropertyType)});
-        }
-
-        private (object instance, List<PropertyInfo> ps) GetInnerSystemTypeParameters()
-        {
-            var ps = ShowType.GetProperties().ToList();
-
-            object instance = Value!;
-            var ret = new List<PropertyInfo>();
-            if (ps.IsSingleCustomValue())
-            {
-                instance = ps[0].GetValue(Value)!;
-                ps = ps[0].PropertyType.GetProperties().ToList();
-            }
-
-            foreach (var p in ps)
-            {
-                if (p.PropertyType.IsSystemType())
-                    ret.Add(p);
-            }
-
-            return (instance, ret);
         }
     }
 }

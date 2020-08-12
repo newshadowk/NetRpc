@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
@@ -362,6 +363,15 @@ namespace NetRpc
         {
             //pass the sync context.
             Task.Run(task.Wait).Wait();
+        }
+
+        public static object? GetPropertyValue(object? classInstance, PropertyInfo p)
+        {
+            if (classInstance == null)
+                return p.PropertyType.GetDefaultValue();
+
+            return classInstance.GetType().InvokeMember(p.Name, BindingFlags.GetProperty,
+                null, classInstance, new object[] { });
         }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_1

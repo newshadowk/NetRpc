@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace NetRpc
 {
@@ -16,13 +17,19 @@ namespace NetRpc
 
         public TypeName? CancelToken { get; }
 
-        public MergeArgType(Type? type, Type? typeWithoutStreamName, string? streamPropName, TypeName? callbackAction, TypeName? cancelToken, bool hasCustomType)
+        public bool IsSingleValue { get; }
+
+        public ParameterInfo? SingleValue { get; }
+
+        public MergeArgType(Type? type, Type? typeWithoutStreamName, string? streamPropName, TypeName? callbackAction, TypeName? cancelToken, bool hasCustomType, bool isSingleValue, ParameterInfo? singleValue)
         {
             Type = type;
             StreamPropName = streamPropName;
             CallbackAction = callbackAction;
             CancelToken = cancelToken;
             HasCustomType = hasCustomType;
+            IsSingleValue = isSingleValue;
+            SingleValue = singleValue;
             TypeWithoutStreamName = typeWithoutStreamName;
         }
     }

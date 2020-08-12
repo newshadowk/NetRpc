@@ -148,7 +148,7 @@ namespace NetRpc
                 if (Args[i]!.GetType().IsCancellationToken())
                     Args[i] = CancellationToken;
 
-                if (Args[i]!.GetType().IsSubclassOf(typeof(Stream)))
+                if (Args[i]!.GetType().IsStream())
                     Args[i] = Stream;
             }
         }

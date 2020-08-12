@@ -37,8 +37,8 @@ namespace NetRpc.Http
             
             //is Support?
             var isSupportBody = IsSupportBody(method.ToOperationType());
-            var isSupportParams = contractMethod.IsSupportAllParameter();
-            if (!isSupportBody && !isSupportParams)
+            var isParamsSupportPathQuery = contractMethod.IsParamsSupportPathQuery();
+            if (!isSupportBody && !isParamsSupportPathQuery)
                 return null;
 
             //Operation

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -16,6 +15,11 @@ namespace NetRpc
             if (t == null)
                 return false;
             return t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Func<,>);
+        }
+
+        public static bool IsStream(this Type? t)
+        {
+            return t == typeof(Stream);
         }
 
         public static bool IsCancellationToken(this Type t)
@@ -74,7 +78,7 @@ namespace NetRpc
 
             //stream
             var ps = obj.GetType().GetProperties();
-            var found = ps.FirstOrDefault(i => i.PropertyType == typeof(Stream));
+            var found = ps.FirstOrDefault(i => i.PropertyType.IsStream());
             if (found == null)
                 return false;
             stream = (Stream)found.GetValue(obj)!;
@@ -93,7 +97,7 @@ namespace NetRpc
                 return stream;
 
             var ps = obj.GetType().GetProperties();
-            var found = ps.FirstOrDefault(i => i.PropertyType == typeof(Stream));
+            var found = ps.FirstOrDefault(i => i.PropertyType.IsStream());
             if (found == null)
                 return obj;
 
@@ -105,33 +109,6 @@ namespace NetRpc
         {
             // ReSharper disable once StringLiteralTypo
             return propName.ToLower() == "streamname";
-        }
-
-        public static bool IsSingleCustomValue(this IList<PropertyInfo> ps)
-        {
-            return ps.Count == 1 && !ps[0].PropertyType.IsSystemType();
-        }
-
-        public static bool IsSingleCustomValue(this IList<MethodParameter> ps)
-        {
-            return ps.Count == 1 && !ps[0].Type.IsSystemType();
-        }
-
-        public static bool IsSingleCustomValue(this IList<TypeName> ps)
-        {
-            return ps.Count == 1 && !ps[0].Type.IsSystemType();
-        }
-
-        public static (bool isSingleValue, ParameterInfo? singleValue) IsSingleCustomValue(this IList<ParameterInfo> ps)
-        {
-            var l = ps.ToList();
-            l.RemoveAll(i => i.ParameterType.IsFuncT() || i.ParameterType.IsCancellationToken());
-            var ret = l.Count == 1 && !l[0].ParameterType.IsSystemType();
-            ParameterInfo? singleValue = null;
-            if (ret) 
-                singleValue = l[0];
-
-            return (ret, singleValue);
         }
 
         private static string GetTypeName(Type t)

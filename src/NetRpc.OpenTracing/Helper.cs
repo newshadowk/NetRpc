@@ -62,11 +62,11 @@ namespace NetRpc.OpenTracing
             if (t == null)
                 return false;
 
-            if (t == typeof(Stream))
+            if (t.IsStream())
                 return true;
 
             var propertyInfos = t.GetProperties();
-            return propertyInfos.Any(i => i.PropertyType == typeof(Stream));
+            return propertyInfos.Any(i => i.PropertyType.IsStream());
         }
 
         public static void CopyBaggageItemsTo(this ISpanContext spanContext, ISpan span)

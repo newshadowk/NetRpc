@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using NetRpc.Contract;
@@ -21,7 +20,7 @@ namespace NetRpc
             var cis = new List<CustomsPropertyInfo>();
 
             //firstLevelParams
-            var firstLevelParams = GetFirstLevelParams(m, pathQueryParams);
+            var (firstLevelParams, isSingleValue, singleValue) = InnerType.GetFirstLevelParams(m, pathQueryParams);
 
             var attributeData = CustomAttributeData.GetCustomAttributes(m).Where(i => i.AttributeType == typeof(ExampleAttribute)).ToList();
             var addedCallId = false;
@@ -30,7 +29,7 @@ namespace NetRpc
             foreach (var p in firstLevelParams)
             {
                 //Stream
-                if (p.Type == typeof(Stream))
+                if (p.Type.IsStream())
                 {
                     streamName = p.Name;
                     addedStream = true;
@@ -78,46 +77,9 @@ namespace NetRpc
             var t2 = BuildTypeWithoutStreamName(typeNameWithoutStreamName, cis);
 
             if (cis.Count == 0)
-                return new MergeArgType(null, null, null, null, null, false);
+                return new MergeArgType(null, null, null, null, null, false, false, null);
 
-            return new MergeArgType(t, t2, streamName, action, cancelToken, hasCustomType);
-        }
-
-        private static List<TypeName> GetFirstLevelParams(MethodInfo m, IList<string> pathQueryParams)
-        {
-            var mps = m.GetParameters();
-            if (mps.Length == 0)
-                return new List<TypeName>();
-
-            List<TypeName> ret;
-
-            //M1(Obj obj, [Func cb], [CancelToken token])
-            var (isSingleValue, singleValue) = mps.IsSingleCustomValue();
-            if (isSingleValue)
-            {
-                var ps = singleValue!.ParameterType.GetProperties();
-                ret = ps.ToList().ConvertAll(i => new TypeName(i.Name, i.PropertyType));
-
-                //cb
-                var f = mps.FirstOrDefault(i =>i.ParameterType.IsFuncT());
-                if (f != null)
-                    ret.Add(new TypeName(f.Name, f.ParameterType));
-
-                //cancel token
-                f = mps.FirstOrDefault(i => i.ParameterType.IsCancellationToken());
-                if (f != null)
-                    ret.Add(new TypeName(f.Name, f.ParameterType));
-            }
-            else
-                ret = mps.ToList().ConvertAll(i => new TypeName(i.Name, i.ParameterType));
-
-            //filter by pathQueryParams
-            ret.RemoveAll(i => 
-                !i.Type.IsFuncT() && 
-                !i.Type.IsCancellationToken() && 
-                pathQueryParams.Any(j => j == i.Name.ToLower()));
-
-            return ret;
+            return new MergeArgType(t, t2, streamName, action, cancelToken, hasCustomType, isSingleValue, singleValue);
         }
 
         private static Type BuildTypeWithoutStreamName(string typeName, List<CustomsPropertyInfo> cis)
