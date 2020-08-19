@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,9 +58,9 @@ namespace DataContract
         Task<int> UploadAsync(Stream stream, string streamName, string p1, Func<int, Task> cb, CancellationToken token);
     }
 
-    [HttpTrimAsync]
-    [HttpRoute("IRout1")]
-    [Tag("RoutTag1")]
+    //[HttpTrimAsync]
+    //[HttpRoute("IRout1")]
+    //[Tag("RoutTag1")]
     public interface IService2Async
     {
         //[Tag("CallTag1")]
@@ -79,8 +80,26 @@ namespace DataContract
         //[HttpPost("Call2/{P1}/Post")]
         //Task<string> Call2Async(CallObj obj);
 
-        //[HttpGet]
-        Task<string> Call3Async(CallObj obj);
+        /// <summary>
+        /// Call3Async des
+        /// </summary>
+        /// <param name="obj">obj des</param>
+        /// <param name="s1">s1 des</param>
+        /// <returns></returns>
+        Task<string> Call3Async(CallObj obj, string s1);
+
+        //Task<string> Call3Async(CallObj obj);
+
+
+        ///// <summary>
+        ///// Call3Async des
+        ///// </summary>
+        ///// <param name="obj">obj des</param>
+        ///// <param name="s1">s1 des</param>
+        ///// <param name="cb">cb des</param>
+        ///// <param name="token">token des</param>
+        ///// <returns></returns>
+        //Task<string> Call3Async(CallObj obj, string s1, Func<double, Task> cb, CancellationToken token);
 
         //[HttpGet]
         //Task<string> Call4Async(CallObj obj, Func<double, Task> cb, CancellationToken token);
@@ -88,11 +107,20 @@ namespace DataContract
         //Task<string> Call5Async(string p1, int p2, Func<double, Task> cb, CancellationToken token);
     }
 
+    /// <summary>
+    /// CallObj summary
+    /// </summary>
     [Serializable]
     public class CallObj
     {
+        /// <summary>
+        /// test p1
+        /// </summary>
         public string P1 { get; set; }
-        
+
+        /// <summary>
+        /// test p2
+        /// </summary>
         public int P2 { get; set; }
     }
 
@@ -115,4 +143,6 @@ namespace DataContract
 
         Task Call4Async();
     }
+
+   
 }

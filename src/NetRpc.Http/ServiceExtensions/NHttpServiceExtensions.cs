@@ -23,6 +23,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.Configure(configureOptions);
 
             var paths = Helper.GetCommentsXmlPaths();
+
+            services.Configure<DocXmlOptions>(i => i.Paths.AddRange(paths));
+
             services.AddSwaggerGen(i =>
             {
 #if !NETCOREAPP3_1

@@ -5,9 +5,11 @@ namespace NetRpc
 {
     public sealed class MergeArgType
     {
+        public MethodInfo MethodInfo { get; }
+
         public Type? Type { get; }
 
-        public Type? TypeWithoutStreamName { get; }
+        public Type? TypeWithoutPathQueryStream { get; }
 
         public string? StreamPropName { get; }
 
@@ -21,7 +23,7 @@ namespace NetRpc
 
         public ParameterInfo? SingleValue { get; }
 
-        public MergeArgType(Type? type, Type? typeWithoutStreamName, string? streamPropName, TypeName? callbackAction, TypeName? cancelToken, bool hasCustomType, bool isSingleValue, ParameterInfo? singleValue)
+        public MergeArgType(Type? type, Type? typeWithoutPathQueryStream, string? streamPropName, TypeName? callbackAction, TypeName? cancelToken, bool hasCustomType, bool isSingleValue, ParameterInfo? singleValue, MethodInfo methodInfo)
         {
             Type = type;
             StreamPropName = streamPropName;
@@ -30,7 +32,8 @@ namespace NetRpc
             HasCustomType = hasCustomType;
             IsSingleValue = isSingleValue;
             SingleValue = singleValue;
-            TypeWithoutStreamName = typeWithoutStreamName;
+            MethodInfo = methodInfo;
+            TypeWithoutPathQueryStream = typeWithoutPathQueryStream;
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using Microsoft.OpenApi.Models;
 using NetRpc.Http.Client;
 
@@ -95,53 +94,6 @@ namespace NetRpc.Http
             if (name == null)
                 name = "";
             return Path.Combine(dir, name);
-        }
-
-        public static void SetSchemaType(this OpenApiSchema schema, Type t)
-        {
-            if (t == typeof(string))
-            {
-                schema.Type = "string";
-            }
-            else if (t == typeof(long))
-            {
-                schema.Type = "integer";
-                schema.Format = "int64";
-            }
-            else if (t == typeof(int))
-            {
-                schema.Type = "integer";
-            }
-            else if (t == typeof(double))
-            {
-                schema.Type = "number";
-                schema.Format = "double";
-            }
-            else if (t == typeof(float))
-            {
-                schema.Type = "number";
-            }
-            else if (t == typeof(byte))
-            {
-                schema.Type = "string";
-                schema.Format = "byte";
-            }
-            else if (t == typeof(bool))
-            {
-                schema.Type = "boolean";
-            }
-            else if (t == typeof(DateTime))
-            {
-                schema.Type = "string";
-                schema.Format = "date-time";
-            }
-            else if (t == typeof(Guid))
-            {
-                schema.Type = "string";
-                schema.Format = "uuid";
-            }
-            else
-                schema.Type = "string";
         }
 
         private static (string? connectionId, string? callId, long streamLength) GetAdditionData(object? dataObj)

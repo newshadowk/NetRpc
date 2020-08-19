@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.XPath;
 using DataContract;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
@@ -14,6 +15,31 @@ namespace Service
     {
         static async Task Main(string[] args)
         {
+            //C:\G2\NetRpc\samples\Http\Service1\bin\Debug\netcoreapp3.1\DataContract.xml
+
+
+
+            //var doc = new XPathDocument(@"d:\DataContract.xml");
+
+            ////var doc = new XmlDocument();
+            ////doc.Load(@"d:\DataContract.xml");
+
+            //XPathNavigator n = doc.CreateNavigator();
+
+            //var doc2 = new XmlDocument();
+            //doc2.Load(@"d:\DataContract.xml");
+            //var n = doc2.CreateNavigator();
+            //var node = n.SelectSingleNode($"/doc/members/member[@name='T:DataContract.CallObj']/summary");
+            //var nodeValue = node.Value;
+            //node.SetTypedValue("testvalue");
+
+            //XPathDocument xDoc = new XPathDocument(new XmlNodeReader(doc2));
+            //var n2 = xDoc.CreateNavigator();
+
+            //var node2 = n2.SelectSingleNode($"/doc/members/member[@name='T:DataContract.CallObj']/summary");
+
+            //return;
+
             var webHost = WebHost.CreateDefaultBuilder(null)
                 .ConfigureKestrel(i =>
                 {

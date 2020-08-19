@@ -59,7 +59,7 @@ namespace NetRpc
         /// <summary>
         /// if null, match all.
         /// </summary>
-        public IList<string> HttpMethods { get; } = new List<string>();
+        public IList<string> HttpMethods { get; set; } = new List<string>();
 
         public string ContractTag { get; }
 
@@ -132,6 +132,18 @@ namespace NetRpc
             PathParams = new ReadOnlyCollection<string>(ps);
 
             MergeArgType = MergeArgTypeFactory.Create(method, GetPathQueryParams(ps, QueryParams));
+        }
+
+        public HttpRoutInfo(HttpRoutInfo hri)
+        {
+            _regPatternPathWithoutQuery = hri._regPatternPathWithoutQuery;
+            PathParams = hri.PathParams;
+            HttpMethods = hri.HttpMethods;
+            ContractTag = hri.ContractTag;
+            Path = hri.Path;
+            QueryParams = hri.QueryParams;
+            PathWithoutQuery = hri.PathWithoutQuery;
+            MergeArgType = hri.MergeArgType;
         }
 
         private static List<string> GetPathQueryParams(IList<string> pathParams, Dictionary<string, string> queryParams)
@@ -211,7 +223,8 @@ namespace NetRpc
             var ris = list.FindAll(i => i.HttpMethods.Count > 0);
             if (ris.Count == 0)
             {
-                var ri = new HttpRoutInfo(list[0].ContractTag, list[0].Path, methodInfo);
+                var ri = new HttpRoutInfo(list[0]);
+                ri.HttpMethods = new List<string>();
                 ri.HttpMethods.Add("POST");
                 ris.Add(ri);
             }

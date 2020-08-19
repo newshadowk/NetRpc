@@ -14,14 +14,14 @@ namespace NetRpc
         /// <summary>
         /// Func/Cancel will map to _connId, _callId
         /// </summary>
-        public ReadOnlyCollection<TypeName> InnerSystemTypeParameters { get; }
+        public ReadOnlyCollection<PPInfo> InnerSystemTypeParameters { get; }
 
         public ContractMethod(Type contractType, Type? instanceType, bool hasSwaggerRole, string contractTypeTag, MethodInfo methodInfo, 
             List<FaultExceptionAttribute> faultExceptionAttributes, List<HttpHeaderAttribute> httpHeaderAttributes,
             List<ResponseTextAttribute> responseTextAttributes, List<SecurityApiKeyAttribute> securityApiKeyAttributes)
         {
             MethodInfo = methodInfo;
-            InnerSystemTypeParameters = new ReadOnlyCollection<TypeName>(InnerType.GetInnerSystemTypeParameters(methodInfo));
+            InnerSystemTypeParameters = new ReadOnlyCollection<PPInfo>(InnerType.GetInnerSystemTypeParameters(methodInfo));
             FaultExceptionAttributes = new ReadOnlyCollection<FaultExceptionAttribute>(faultExceptionAttributes);
             HttpHeaderAttributes = new ReadOnlyCollection<HttpHeaderAttribute>(httpHeaderAttributes);
             ResponseTextAttributes = new ReadOnlyCollection<ResponseTextAttribute>(responseTextAttributes);
@@ -100,7 +100,7 @@ namespace NetRpc
             return IsParamsSupportPathQuery(InnerSystemTypeParameters);
         }
 
-        private static bool IsParamsSupportPathQuery(IList<TypeName> ps)
+        private static bool IsParamsSupportPathQuery(IList<PPInfo> ps)
         {
             if (ps.Count == 0)
                 return false;
@@ -182,7 +182,7 @@ namespace NetRpc
             return ret;
         }
 
-        private static (List<string> roles, List<string> notRoles) Parse(string s)
+        private static (List<string> roles, List<string> notRoles) Parse(string? s)
         {
             List<string> roles = new List<string>();
             List<string> notRoles = new List<string>();
@@ -197,9 +197,6 @@ namespace NetRpc
             var ss = s.Split(',');
             foreach (var s1 in ss)
             {
-                if (s1 == null)
-                    continue;
-
                 var s2 = s1.Trim();
                 if (s2 == "")
                     continue;

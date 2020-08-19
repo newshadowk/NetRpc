@@ -68,4 +68,9 @@ namespace NetRpc.Http
             return ret;
         }
     }
+
+    public class DocXmlOptions
+    {
+        public List<string> Paths { get; set; } = new List<string>();
+    }
 }

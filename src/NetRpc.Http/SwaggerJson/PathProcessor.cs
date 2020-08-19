@@ -11,19 +11,6 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace NetRpc.Http
 {
-    internal sealed class PathItem
-    {
-        public string Key { get; }
-
-        public OpenApiPathItem Item { get; }
-
-        public PathItem(string key, OpenApiPathItem item)
-        {
-            Key = key;
-            Item = item;
-        }
-    }
-
     internal class PathProcessor
     {
         private readonly ISchemaGenerator _schemaGenerator;
@@ -57,7 +44,7 @@ namespace NetRpc.Http
             {
                 AddPathParams(contractMethod, operation, routInfo);
                 if (routInfo.MergeArgType.HasCustomType)
-                    operation.RequestBody = GenerateRequestBody(routInfo.MergeArgType.TypeWithoutStreamName, routInfo.MergeArgType.StreamPropName);
+                    operation.RequestBody = GenerateRequestBody(routInfo.MergeArgType.TypeWithoutPathQueryStream, routInfo.MergeArgType.StreamPropName);
             }
             else
                 AddQueryPathParams(contractMethod, operation, routInfo);
@@ -71,7 +58,7 @@ namespace NetRpc.Http
             return operation;
         }
 
-        private static void AddPathParams(ContractMethod contractMethod, OpenApiOperation operation, HttpRoutInfo routInfo)
+        private void AddPathParams(ContractMethod contractMethod, OpenApiOperation operation, HttpRoutInfo routInfo)
         {
             ValidatePath(contractMethod, routInfo);
 
@@ -79,35 +66,34 @@ namespace NetRpc.Http
             {
                 if (routInfo.IsPath(p.Name))
                 {
-                    var s = new OpenApiSchema();
-                    s.SetSchemaType(p.Type);
+                    var schema = _schemaGenerator.GenerateSchema(p.Type, SchemaRepository, p.PropertyInfo!, p.ParameterInfo!);
                     operation.Parameters.Add(new OpenApiParameter
                     {
                         In = ParameterLocation.Path,
                         Name = p.Name,
-                        Schema = s,
+                        Schema = schema,
+                        Description = schema.Description,
                         Required = true
                     });
                 }
             }
         }
 
-        private static void AddQueryPathParams(ContractMethod contractMethod, OpenApiOperation operation, HttpRoutInfo routInfo)
+        private void AddQueryPathParams(ContractMethod contractMethod, OpenApiOperation operation, HttpRoutInfo routInfo)
         {
             ValidatePath(contractMethod, routInfo);
 
             foreach (var p in contractMethod.InnerSystemTypeParameters)
             {
-                var s = new OpenApiSchema();
-                s.SetSchemaType(p.Type);
-
+                var schema = _schemaGenerator.GenerateSchema(p.Type, SchemaRepository, p.PropertyInfo!, p.ParameterInfo!);
                 if (routInfo.IsPath(p.Name))
                 {
                     operation.Parameters.Add(new OpenApiParameter
                     {
                         In = ParameterLocation.Path,
                         Name = p.Name,
-                        Schema = s,
+                        Schema = schema,
+                        Description = schema.Description,
                         Required = true
                     });
                 }
@@ -117,7 +103,8 @@ namespace NetRpc.Http
                     {
                         In = ParameterLocation.Query,
                         Name = p.Name,
-                        Schema = s
+                        Schema = schema,
+                        Description = schema.Description
                     });
                 }
             }

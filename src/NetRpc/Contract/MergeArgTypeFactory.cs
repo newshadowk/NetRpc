@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -6,23 +7,55 @@ using NetRpc.Contract;
 
 namespace NetRpc
 {
-    internal static class MergeArgTypeFactory
+    public static class MergeArgTypeFactory
     {
-        public static MergeArgType Create(MethodInfo m, IList<string> pathQueryParams)
+        /// <summary>
+        /// key:name value:nameIndex
+        /// </summary>
+        private static readonly Dictionary<string, int> TypeDic = new Dictionary<string, int>();
+
+        public static readonly List<InnerTypeMapItem> InnerTypeMap = new List<InnerTypeMapItem>();
+
+        private static string GetName(string name)
         {
+            if (TypeDic.TryGetValue(name, out var i))
+            {
+                i++;
+                var newName = name + i;
+                TypeDic[name] = i;
+                return newName;
+            }
+
+            TypeDic[name] = 0;
+            return name;
+        }
+
+        public static MergeArgType Create(MethodInfo method, List<string> pathQueryParams)
+        {
+            //GetFirstLevelParams
+            var (firstLevelParams, isSingleValue, singleValue) = InnerType.GetFirstLevelParams(method);
+
             string? streamName = null;
             TypeName? action = null;
             TypeName? cancelToken = null;
 
-            // ReSharper disable once PossibleNullReferenceException
-            var typeName = $"{m.DeclaringType!.Namespace}_{m.DeclaringType.Name}_{m.Name}Param2";
-            var typeNameWithoutStreamName = $"{m.DeclaringType.Namespace}_{m.DeclaringType.Name}_{m.Name}Param";
+            //paramName
+            string typeNameWithoutStreamName;
+            string typeName;
+            if (isSingleValue)
+            {
+                typeNameWithoutStreamName = GetName(singleValue!.Name!);
+                typeName = GetName(singleValue!.Name!);
+            }
+            else
+            {
+                typeNameWithoutStreamName = GetName($"{method.Name}Param");
+                typeName = GetName($"{method.Name}Param");
+            }
+
+            //cis
             var cis = new List<CustomsPropertyInfo>();
-
-            //firstLevelParams
-            var (firstLevelParams, isSingleValue, singleValue) = InnerType.GetFirstLevelParams(m, pathQueryParams);
-
-            var attributeData = CustomAttributeData.GetCustomAttributes(m).Where(i => i.AttributeType == typeof(ExampleAttribute)).ToList();
+            var attributeData = CustomAttributeData.GetCustomAttributes(method).Where(i => i.AttributeType == typeof(ExampleAttribute)).ToList();
             var addedCallId = false;
             var addedStream = false;
             var hasCustomType = false;
@@ -59,6 +92,7 @@ namespace NetRpc
                     cis.Add(new CustomsPropertyInfo(p.Type, p.Name!, found));
                 else
                     cis.Add(new CustomsPropertyInfo(p.Type, p.Name!));
+
                 hasCustomType = true;
             }
 
@@ -74,18 +108,43 @@ namespace NetRpc
                 cis.Add(new CustomsPropertyInfo(typeof(long), CallConst.StreamLength));
 
             var t = TypeFactory.BuildType(typeName, cis);
-            var t2 = BuildTypeWithoutStreamName(typeNameWithoutStreamName, cis);
+            var t2 = BuildTypePathQueryStream(typeNameWithoutStreamName, cis, pathQueryParams);
 
             if (cis.Count == 0)
-                return new MergeArgType(null, null, null, null, null, false, false, null);
+                return new MergeArgType(null, null, null, null, null, 
+                    false, false, null, null);
 
-            return new MergeArgType(t, t2, streamName, action, cancelToken, hasCustomType, isSingleValue, singleValue);
+            //SetInnerTypeMap
+            SetInnerTypeMap(t2, isSingleValue, singleValue!);
+
+            return new MergeArgType(t, t2, streamName, action, cancelToken, hasCustomType, isSingleValue, singleValue, method);
         }
 
-        private static Type BuildTypeWithoutStreamName(string typeName, List<CustomsPropertyInfo> cis)
+        private static void SetInnerTypeMap(Type mergeArgType, bool isSingleValue, ParameterInfo singleValue)
+        {
+            if (isSingleValue)
+            {
+                InnerTypeMap.Add(new InnerTypeMapItem(singleValue!.ParameterType, mergeArgType));
+
+                var ps1 = mergeArgType.GetProperties().ToList();
+                foreach (var p0 in singleValue.ParameterType.GetProperties())
+                {
+                    var f = ps1.FirstOrDefault(i => i.Name == p0.Name);
+                    if (f != null)
+                        InnerTypeMap.Add(new InnerTypeMapItem(p0, f));
+                }
+            }
+        }
+
+        private static Type BuildTypePathQueryStream(string typeName, List<CustomsPropertyInfo> cis, List<string> pathQueryParams)
         {
             var list = cis.ToList();
-            list.RemoveAll(i => i.PropertyName.IsStreamName() && i.Type == typeof(string));
+            list.RemoveAll(i => 
+                i.PropertyName.IsStreamName() && i.Type == typeof(string) // stream
+                ||
+                !i.Type.IsFuncT() && !i.Type.IsCancellationToken() && pathQueryParams.Any(j => j == i.PropertyName.ToLower()) // pathQueryParams
+                );
+
             return TypeFactory.BuildType(typeName, list);
         }
     }

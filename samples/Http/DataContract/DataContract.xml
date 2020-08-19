@@ -18,6 +18,29 @@
         <member name="M:DataContract.IServiceAsync.CallByResponseTextExceptionAsync">
             <response code="701">return the pain text.</response>
         </member>
+        <member name="M:DataContract.IService2Async.Call3Async(DataContract.CallObj,System.String)">
+            <summary>
+            Call3Async des
+            </summary>
+            <param name="obj">obj des</param>
+            <param name="s1">s1 des</param>
+            <returns></returns>
+        </member>
+        <member name="T:DataContract.CallObj">
+            <summary>
+            CallObj summary
+            </summary>
+        </member>
+        <member name="P:DataContract.CallObj.P1">
+            <summary>
+            test p1
+            </summary>
+        </member>
+        <member name="P:DataContract.CallObj.P2">
+            <summary>
+            test p2
+            </summary>
+        </member>
         <member name="T:DataContract.CustomObj">
             <summary>
             a CustomObj

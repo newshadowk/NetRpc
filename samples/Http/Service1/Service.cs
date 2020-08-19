@@ -54,14 +54,8 @@ namespace Service
             return s;
         }
 
+        public async Task<string> Call3Async(CallObj obj, string s1)
         //public async Task<string> Call3Async(CallObj obj)
-        //{
-        //    string s = $"[Call3Async]...{obj.P1}, {obj.P2}";
-        //    Console.WriteLine(s);
-        //    return s;
-        //}
-
-        public async Task<string> Call3Async(CallObj obj)
         {
             string s = $"[Call3Async]...{obj.P1}, {obj.P2}";
             Console.WriteLine(s);
@@ -87,7 +81,6 @@ namespace Service
             Console.WriteLine(s);
             return s;
         }
-
     }
 
     public class ServiceAsync : IServiceAsync

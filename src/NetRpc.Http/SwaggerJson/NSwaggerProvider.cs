@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using NetRpc.Contract;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace NetRpc.Http
 {
@@ -9,12 +11,17 @@ namespace NetRpc.Http
     {
         private readonly PathProcessor _pathProcessor;
         private readonly SwaggerKeyRoles _keyRoles;
+        private readonly SchemaGeneratorOptions _swaggerOptions;
+        private readonly DocXmlOptions _docXmlOptions;
         private readonly OpenApiDocument _doc;
 
-        public NSwaggerProvider(PathProcessor pathProcessor, SwaggerKeyRoles keyRoles)
+        public NSwaggerProvider(PathProcessor pathProcessor, SwaggerKeyRoles keyRoles, 
+            IOptions<SchemaGeneratorOptions> swaggerOptions, IOptions<DocXmlOptions> docXmlOptions)
         {
             _pathProcessor = pathProcessor;
             _keyRoles = keyRoles;
+            _swaggerOptions = swaggerOptions.Value;
+            _docXmlOptions = docXmlOptions.Value;
             _doc = new OpenApiDocument();
         }
 
@@ -26,6 +33,9 @@ namespace NetRpc.Http
 
         private void Process(string? apiRootPath, List<ContractInfo> contracts, string? key)
         {
+            //reset xml for inner type
+            XmlHelper.ResetXmlForInnerType(_swaggerOptions, _docXmlOptions, contracts);
+
             //tags
             ProcessTags(contracts);
 
