@@ -56,7 +56,6 @@ namespace NetRpc
 
             if (readCount == 0)
                 await InvokeFinishAsync(new SizeEventArgs(Position));
-
             return readCount;
         }
 

@@ -160,7 +160,8 @@ namespace NetRpc.Http
                     obj.HttpDataObj.SetValues(item.HttpRoutInfo.MatchesPathValues(item.FormatRawPath));
 
                     //set query values
-                    var valuesFromQuery = GetValuesFromQuery(item.HttpRequest, item.HttpRoutInfo.QueryParams);
+                    var valuesFromQuery = GetValuesFromQuery(item.HttpRequest, item.HttpRoutInfo.QueryParams, obj.ProxyStream != null);
+
                     obj.HttpDataObj.SetValues(valuesFromQuery);
 
                     return obj;
@@ -169,22 +170,16 @@ namespace NetRpc.Http
             throw new HttpFailedException($"ContentType:'{item.HttpRequest.ContentType}' is not supported.");
         }
 
-        private static Dictionary<string, string> GetValuesFromQuery(HttpRequest request, Dictionary<string, string> queryParams)
+        private static Dictionary<string, string> GetValuesFromQuery(HttpRequest request, Dictionary<string, string> queryParams, bool hasStream)
         {
             var ret = new Dictionary<string, string>();
             List<KeyValuePair<string, StringValues>> pairs = new List<KeyValuePair<string, StringValues>>();
             if (request.Query != null)
                 pairs.AddRange(request.Query);
 
-            try
-            {
-                //Form may be read by stream before.
-                if (request.HasFormContentType && request.Form != null)
-                    pairs.AddRange(request.Form);
-            }
-            catch
-            {
-            }
+            //Form may be read by stream before.
+            if (!hasStream && request.HasFormContentType)
+                pairs.AddRange(request.Form);
 
             foreach (KeyValuePair<string, StringValues> p in pairs)
             {

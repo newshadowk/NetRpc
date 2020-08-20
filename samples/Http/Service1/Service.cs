@@ -84,6 +84,8 @@ namespace Service
 
         public async Task<string> CallNone(CObj obj, Stream stream)
         {
+            MemoryStream ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
             return stream.Length.ToString();
         }
     }
