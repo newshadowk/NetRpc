@@ -54,9 +54,9 @@ namespace Service
             return s;
         }
 
-        public async Task<string> CallNone()
+        public async Task<string> CallNone(Stream stream)
         {
-            return "CallNone";
+            return stream.Length.ToString();
         }
 
         public async Task<string> Call3Async(CallObj obj, string s1)

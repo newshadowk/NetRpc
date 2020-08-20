@@ -61,11 +61,7 @@ namespace DataContract
     //[Tag("RoutTag1")]
     public interface IService2Async
     {
-        /// <summary>
-        /// CallNone des
-        /// </summary>
-        /// <returns></returns>
-        Task<string> CallNone();
+        Task<string> CallNone(Stream stream);
 
         //[Tag("CallTag1")]
         //[HttpPost]
@@ -84,17 +80,16 @@ namespace DataContract
         //[HttpPost("Call2/{P1}/Post")]
         //Task<string> Call2Async(CallObj obj);
 
-        /// <summary>
-        /// Call3Async des
-        /// </summary>
-        /// <param name="obj">obj des</param>
-        /// <param name="s1">s1 des</param>
-        /// <returns></returns>
-        [HttpPost("Call3/{s1}")]
-        Task<string> Call3Async(CallObj obj, string s1);
+        ///// <summary>
+        ///// Call3Async des
+        ///// </summary>
+        ///// <param name="obj">obj des</param>
+        ///// <param name="s1">s1 des</param>
+        ///// <returns></returns>
+        //[HttpPost("Call3/{s1}")]
+        //Task<string> Call3Async(CallObj obj, string s1);
 
         //Task<string> Call3Async(CallObj obj);
-
 
         ///// <summary>
         ///// Call3Async des

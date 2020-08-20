@@ -60,14 +60,6 @@ namespace NetRpc
             var hasCustomType = false;
             foreach (var p in firstLevelParams)
             {
-                //Stream
-                if (p.Type.IsStream())
-                {
-                    streamName = p.Name;
-                    addedStream = true;
-                    continue;
-                }
-
                 //callback
                 if (p.Type.IsFuncT())
                 {
@@ -84,6 +76,17 @@ namespace NetRpc
                     continue;
                 }
 
+                //hasCustomType
+                hasCustomType = true;
+
+                //Stream
+                if (p.Type.IsStream())
+                {
+                    streamName = p.Name;
+                    addedStream = true;
+                    continue;
+                }
+
                 //Custom Type
                 //ExampleAttribute
                 var found = attributeData.Find(i => (string)i.ConstructorArguments[0].Value! == p.Name);
@@ -91,8 +94,6 @@ namespace NetRpc
                     cis.Add(new CustomsPropertyInfo(p.Type, p.Name!, found));
                 else
                     cis.Add(new CustomsPropertyInfo(p.Type, p.Name!));
-
-                hasCustomType = true;
             }
 
             //connectionId callId
@@ -107,7 +108,7 @@ namespace NetRpc
                 cis.Add(new CustomsPropertyInfo(typeof(long), CallConst.StreamLength));
 
             var t = TypeFactory.BuildType(typeName, cis);
-            var t2 = BuildTypePathQueryStream(typeNameWithoutStreamName, cis, pathQueryParams);
+            var t2 = BuildTypeWithoutPathQueryStream(typeNameWithoutStreamName, cis, pathQueryParams);
 
             if (cis.Count == 0)
                 return new MergeArgType(null, null, null, null, null, 
@@ -135,7 +136,7 @@ namespace NetRpc
             }
         }
 
-        private static Type BuildTypePathQueryStream(string typeName, List<CustomsPropertyInfo> cis, List<string> pathQueryParams)
+        private static Type BuildTypeWithoutPathQueryStream(string typeName, List<CustomsPropertyInfo> cis, List<string> pathQueryParams)
         {
             var list = cis.ToList();
             list.RemoveAll(i => 
