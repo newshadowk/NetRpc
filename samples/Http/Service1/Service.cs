@@ -54,6 +54,11 @@ namespace Service
             return s;
         }
 
+        public async Task<string> CallNone()
+        {
+            return "CallNone";
+        }
+
         public async Task<string> Call3Async(CallObj obj, string s1)
         //public async Task<string> Call3Async(CallObj obj)
         {

@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using NetRpc;
 using NetRpc.Contract;
 
 namespace DataContract
@@ -63,6 +61,12 @@ namespace DataContract
     //[Tag("RoutTag1")]
     public interface IService2Async
     {
+        /// <summary>
+        /// CallNone des
+        /// </summary>
+        /// <returns></returns>
+        Task<string> CallNone();
+
         //[Tag("CallTag1")]
         //[HttpPost]
         //[HttpRoute("Call1/{p1}")]
@@ -86,6 +90,7 @@ namespace DataContract
         /// <param name="obj">obj des</param>
         /// <param name="s1">s1 des</param>
         /// <returns></returns>
+        [HttpPost("Call3/{s1}")]
         Task<string> Call3Async(CallObj obj, string s1);
 
         //Task<string> Call3Async(CallObj obj);

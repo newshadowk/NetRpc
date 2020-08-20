@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -112,7 +111,7 @@ namespace NetRpc
 
             if (cis.Count == 0)
                 return new MergeArgType(null, null, null, null, null, 
-                    false, false, null, null);
+                    false, false, null, method);
 
             //SetInnerTypeMap
             SetInnerTypeMap(t2, isSingleValue, singleValue!);
