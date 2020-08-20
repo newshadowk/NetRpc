@@ -25,7 +25,8 @@ namespace NetRpc.Http
             foreach (var i in MergeArgTypeFactory.InnerTypeMap)
             {
                 XPathNavigator? oldNode = pathRoot.SelectSingleNode($"/doc/members/member[@name='{i.OldStr}']/summary");
-                newPathMembers.AppendChild(GetXml(i.NewStr!, oldNode.Value));
+                if (oldNode != null)
+                    newPathMembers.AppendChild(GetXml(i.NewStr!, oldNode.Value));
             }
 
             return new XPathDocument(new XmlNodeReader(newDoc));
