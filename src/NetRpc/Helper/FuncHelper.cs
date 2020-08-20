@@ -5,11 +5,11 @@ namespace NetRpc
 {
     internal static class FuncHelper
     {
-        public static Func<object?, Task>? ConvertFunc(object func)
+        public static Func<object?, Task>? ConvertFunc(object? func)
         {
-            var f = (Delegate)func;
-            if (f == null)
+            if (func == null)
                 return null;
+            var f = (Delegate)func;
             return o => (Task) f.DynamicInvoke(o)!;
         }
 

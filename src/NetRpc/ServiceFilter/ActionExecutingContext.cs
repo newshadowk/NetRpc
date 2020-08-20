@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -39,22 +38,17 @@ namespace NetRpc
         {
             get
             {
-                var found = Args?.FirstOrDefault(i =>
+                var found = Args.FirstOrDefault(i =>
                 {
                     if (i == null)
                         return false;
 
                     return i.GetType().IsFuncT();
                 });
-                if (found == null)
-                    return null;
                 return FuncHelper.ConvertFunc(found);
             }
             set
             {
-                if (Args == null)
-                    return;
-
                 for (var i = 0; i < Args.Length; i++)
                 {
                     if (Args[i] == null)
@@ -137,9 +131,6 @@ namespace NetRpc
 
         private void ResetProps()
         {
-            if (Args == null)
-                return;
-
             for (var i = 0; i < Args.Length; i++)
             {
                 if (Args[i] == null)

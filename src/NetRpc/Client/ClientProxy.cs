@@ -188,7 +188,7 @@ namespace NetRpc
 
         private void DisposeManaged()
         {
-            _tHearbeat?.Dispose();
+            _tHearbeat.Dispose();
             _factory.Dispose();
         }
 

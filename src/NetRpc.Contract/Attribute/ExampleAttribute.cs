@@ -6,14 +6,14 @@ namespace NetRpc.Contract
     public class ExampleAttribute : Attribute
     {
         public string? Key { get; }
-        public object Value { get; }
+        public object? Value { get; }
 
-        public ExampleAttribute(object value)
+        public ExampleAttribute(object? value)
         {
             Value = value;
         }
 
-        public ExampleAttribute(string key, object value)
+        public ExampleAttribute(string key, object? value)
         {
             Key = key;
             Value = value;

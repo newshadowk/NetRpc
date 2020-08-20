@@ -56,20 +56,14 @@ namespace NetRpc
             //stream
             var contractMethod = _contract.Methods.First(i => i.MethodInfo == methodInfo);
             var instanceMethod = new InstanceMethod(methodInfo);
-            var methodContext = new MethodContext(contractMethod, instanceMethod);
             var readStream = GetReadStream(stream);
             var clientContext = new ClientActionExecutingContext(_clientProxyId, _serviceProvider, _optionsName, call, instanceMethod, callback, token,
                 _contract, contractMethod, readStream, mergeHeader, pureArgs);
 
             //invoke
-            if (_middlewareBuilder != null)
-            {
-                await _middlewareBuilder.InvokeAsync(clientContext);
-                return clientContext.Result!;
-            }
-
             //onceTransfer will dispose after stream translate finished in OnceCall.
-            return await call.CallAsync(mergeHeader, methodContext, callback, token, stream, pureArgs);
+            await _middlewareBuilder.InvokeAsync(clientContext);
+            return clientContext.Result!;
         }
 
         private static ReadStream? GetReadStream(Stream? stream)

@@ -25,7 +25,9 @@ namespace NetRpc
             OutputStream = Output.AsStream();
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async ValueTask DisposeAsync()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
 #if NETSTANDARD2_1 || NETCOREAPP3_1
             if (OutputStream != null)
@@ -33,8 +35,8 @@ namespace NetRpc
             if (InputStream != null)
                 await InputStream.DisposeAsync();
 #else
-            OutputStream?.Dispose();
-            InputStream?.Dispose();
+            OutputStream.Dispose();
+            InputStream.Dispose();
 #endif
         }
     }

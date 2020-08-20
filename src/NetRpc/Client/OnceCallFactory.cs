@@ -21,7 +21,7 @@ namespace NetRpc
 
         public void Dispose()
         {
-            _factory?.Dispose();
+            _factory.Dispose();
         }
     }
 }

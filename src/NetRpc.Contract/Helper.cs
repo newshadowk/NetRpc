@@ -21,7 +21,7 @@ namespace NetRpc.Contract
             while (currE != null && !lastE.Contains(currE))
             {
                 msgContent.Append("\r\n[InnerException]\r\n");
-                msgContent.Append(GetMsgContent(e.InnerException));
+                msgContent.Append(GetMsgContent(e.InnerException!));
                 currE = currE.InnerException;
                 lastE.Add(currE);
             }

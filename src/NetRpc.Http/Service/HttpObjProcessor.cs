@@ -15,7 +15,7 @@ namespace NetRpc.Http
 {
     internal interface IHttpObjProcessor
     {
-        bool MatchContentType(string contentType);
+        bool MatchContentType(string? contentType);
 
         Task<HttpObj> ProcessAsync(ProcessItem item);
     }
@@ -27,7 +27,7 @@ namespace NetRpc.Http
     {
         private readonly FormOptions _defaultFormOptions = new FormOptions();
 
-        public bool MatchContentType(string contentType)
+        public bool MatchContentType(string? contentType)
         {
             if (contentType == null)
                 return false;
@@ -90,7 +90,7 @@ namespace NetRpc.Http
     /// </summary>
     internal sealed class JsonHttpObjProcessor : IHttpObjProcessor
     {
-        public bool MatchContentType(string contentType)
+        public bool MatchContentType(string? contentType)
         {
             return contentType == "application/json";
         }
@@ -111,7 +111,7 @@ namespace NetRpc.Http
     /// </summary>
     internal sealed class FormUrlEncodedObjProcessor : IHttpObjProcessor
     {
-        public bool MatchContentType(string contentType)
+        public bool MatchContentType(string? contentType)
         {
             return contentType == "application/x-www-form-urlencoded" ||
                    string.IsNullOrWhiteSpace(contentType);

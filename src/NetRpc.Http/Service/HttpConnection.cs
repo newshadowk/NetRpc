@@ -123,8 +123,8 @@ namespace NetRpc.Http
 
         public void Dispose()
         {
-            _ra?.Dispose();
-            _progressEvent?.Dispose();
+            _ra.Dispose();
+            _progressEvent.Dispose();
         }
     }
 }

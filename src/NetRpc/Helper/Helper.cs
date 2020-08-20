@@ -69,6 +69,9 @@ namespace NetRpc
 
         public static string? ListToStringForDisplay<T>(this IEnumerable<T>? list, string split, bool displayCount = true)
         {
+            if (list == null)
+                return null;
+
             StringBuilder sb = new StringBuilder();
             var toList = list as IList<T> ?? list.ToList();
 
@@ -111,6 +114,9 @@ namespace NetRpc
 
         public static string? ListToString<T>(this IEnumerable<T>? list, string split)
         {
+            if (list == null)
+                return null;
+
             var sb = new StringBuilder();
             var toList = list as IList<T> ?? list.ToList();
             foreach (var s in toList)
@@ -161,8 +167,8 @@ namespace NetRpc
 
         public static byte[]? ToBytes(this object? obj)
         {
-            if (obj == default)
-                return default;
+            if (obj == null)
+                return null;
 
             using var stream = new MemoryStream();
             var formatter = new BinaryFormatter();

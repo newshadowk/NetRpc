@@ -95,12 +95,12 @@ namespace NetRpc.Http
                 ps[0].SetValue(Value, Activator.CreateInstance(ps[0].PropertyType));
         }
 
-        private static void SetPropertyValue(object classInstance, PropertyInfo tgtProperty, object propertyValue)
+        private static void SetPropertyValue(object classInstance, PropertyInfo tgtProperty, object? propertyValue)
         {
             var type = classInstance.GetType();
 
-            if (tgtProperty.PropertyType.IsEnum)
-                propertyValue = Enum.ToObject(tgtProperty.PropertyType, propertyValue);
+            if (tgtProperty.PropertyType.IsEnum) 
+                propertyValue = Enum.ToObject(tgtProperty.PropertyType, propertyValue!);
 
             if (propertyValue == DBNull.Value || propertyValue == null)
                 type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance, new object[] {null!});

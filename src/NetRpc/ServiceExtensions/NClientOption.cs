@@ -15,6 +15,6 @@
         /// <summary>
         /// Forward header from coming side, default value is false.
         /// </summary>
-        public bool ForwardHeader { get; set; } = false;
+        public bool ForwardHeader { get; set; }
     }
 }

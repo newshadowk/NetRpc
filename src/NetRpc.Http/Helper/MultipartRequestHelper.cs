@@ -32,7 +32,7 @@ namespace NetRpc.Http
                    && contentType.IndexOf("multipart/", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        public static bool HasFormDataContentDisposition(ContentDispositionHeaderValue contentDisposition)
+        public static bool HasFormDataContentDisposition(ContentDispositionHeaderValue? contentDisposition)
         {
             // Content-Disposition: form-data; name="key";
             return contentDisposition != null
@@ -41,7 +41,7 @@ namespace NetRpc.Http
                    && string.IsNullOrEmpty(contentDisposition.FileNameStar.Value);
         }
 
-        public static bool HasFileContentDisposition(ContentDispositionHeaderValue contentDisposition)
+        public static bool HasFileContentDisposition(ContentDispositionHeaderValue? contentDisposition)
         {
             // Content-Disposition: form-data; name="myfile1"; filename="Misc 002.jpg"
             return contentDisposition != null

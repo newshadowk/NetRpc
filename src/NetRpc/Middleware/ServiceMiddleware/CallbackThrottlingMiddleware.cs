@@ -92,7 +92,7 @@ namespace NetRpc
         {
             await InvokeAsync();
             _isEnd = true;
-            _t?.Dispose();
+            _t.Dispose();
         }
     }
 }

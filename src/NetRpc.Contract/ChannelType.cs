@@ -5,7 +5,6 @@
         Undefined,
         Grpc,
         RabbitMQ,
-        Http,
-        NamedPipe
+        Http
     }
 }

@@ -97,7 +97,7 @@ namespace NetRpc.Http
 
         public void Dispose()
         {
-            _tSpeed?.Dispose();
+            _tSpeed.Dispose();
         }
     }
 }

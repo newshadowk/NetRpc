@@ -1,9 +1,9 @@
-﻿using System;
-using Proxy.Grpc;
+﻿using Proxy.Grpc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 #if NETCOREAPP3_1
+using System;
 using Grpc.Net.Client;
 #else
 using Grpc.Core;

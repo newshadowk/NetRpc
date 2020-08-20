@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using Microsoft.Extensions.Options;
 
 namespace NetRpc.Http
@@ -54,9 +53,6 @@ namespace NetRpc.Http
 
         private static List<string> SplitRole(string role)
         {
-            if (role == null)
-                return new List<string>();
-            
             var ret = new List<string>();
             var ss = role.ToLower().Split(",", StringSplitOptions.RemoveEmptyEntries);
             foreach (var s in ss)

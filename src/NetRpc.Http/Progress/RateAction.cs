@@ -62,7 +62,7 @@ namespace NetRpc.Http
             {
                 Invoke();
                 _isEnd = true;
-                _t?.Dispose();
+                _t.Dispose();
             }
         }
     }

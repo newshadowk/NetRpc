@@ -1,14 +1,16 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
+#if NETCOREAPP2_1
+using Microsoft.AspNetCore.Internal;
+#endif
 
 namespace NetRpc.Http
 {
     public static class NManager
     {
-        public static IWebHost CreateHost(int port, string hubPath, bool isSwagger, HttpServiceOptions httpServiceOptions, MiddlewareOptions middlewareOptions,
+        public static IWebHost CreateHost(int port, string hubPath, bool isSwagger, HttpServiceOptions? httpServiceOptions, MiddlewareOptions? middlewareOptions,
             params ContractParam[] contracts)
         {
             return WebHost.CreateDefaultBuilder(null)

@@ -45,7 +45,7 @@ namespace NetRpc.OpenTracing
         {
             //get spanContext
             ISpanContext? spanContext;
-            if (context.Header == null)
+            if (context.Header.Count == 0)
                 spanContext = null;
             else
                 spanContext = tracer.Extract(BuiltinFormats.HttpHeaders, new RequestHeadersExtractAdapter(context.Header));

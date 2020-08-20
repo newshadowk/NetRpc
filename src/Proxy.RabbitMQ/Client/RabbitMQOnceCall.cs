@@ -17,7 +17,7 @@ namespace RabbitMQ.Base
         private readonly string _rpcQueue;
         private string _clientToServiceQueue = null!;
         private volatile bool _disposed;
-        private volatile IModel _model = null!;
+        private volatile IModel? _model;
         private string _serviceToClientQueue = null!;
         private bool isFirstSend = true;
 
@@ -62,7 +62,7 @@ namespace RabbitMQ.Base
         {
             if (isPost)
             {
-                var p = _model.CreateBasicProperties();
+                var p = _model!.CreateBasicProperties();
                 _model.BasicPublish("", _rpcQueue, p, buffer);
                 await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>?>(null));
                 return;
@@ -70,7 +70,7 @@ namespace RabbitMQ.Base
 
             if (isFirstSend)
             {
-                var p = _model.CreateBasicProperties();
+                var p = _model!.CreateBasicProperties();
                 p.ReplyTo = _serviceToClientQueue;
                 var cid = Guid.NewGuid().ToString();
                 p.CorrelationId = cid;

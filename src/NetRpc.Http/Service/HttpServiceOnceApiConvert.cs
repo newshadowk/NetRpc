@@ -141,7 +141,7 @@ namespace NetRpc.Http
 
             if (hri.MergeArgType.IsSingleValue)
             {
-                var sv = Activator.CreateInstance(hri.MergeArgType.SingleValue!.ParameterType);
+                var sv = Activator.CreateInstance(hri.MergeArgType.SingleValue!.ParameterType)!;
                 sv.CopyPropertiesFrom(dataObj!);
                 ret.Add(sv);
                 return ret.ToArray();
@@ -166,7 +166,7 @@ namespace NetRpc.Http
             foreach (var contract in _contracts)
             foreach (var contractMethod in contract.Methods)
             {
-                var hri = contractMethod.Route.MatchPath(rawPath, _context.Request.Method);
+                HttpRoutInfo? hri = contractMethod.Route.MatchPath(rawPath, _context.Request.Method);
                 if (hri != null)
                     return (contractMethod.MethodInfo.ToActionInfo(), hri, rawPath);
             }

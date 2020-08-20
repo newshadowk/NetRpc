@@ -89,8 +89,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddNMiddleware(this IServiceCollection services, Action<MiddlewareOptions> configureOptions)
         {
-            if (configureOptions != null)
-                services.Configure(configureOptions);
+            services.Configure(configureOptions);
             return services;
         }
 

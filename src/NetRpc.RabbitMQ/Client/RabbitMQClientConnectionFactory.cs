@@ -34,8 +34,8 @@ namespace NetRpc.RabbitMQ
 
             try
             {
-                _connection?.Close();
-                _connection?.Dispose();
+                _connection.Close();
+                _connection.Dispose();
             }
             catch (Exception e)
             {

@@ -91,8 +91,6 @@ namespace NetRpc.Http
             if (dir == null)
                 dir = "";
             var name = Path.GetFileNameWithoutExtension(s);
-            if (name == null)
-                name = "";
             return Path.Combine(dir, name);
         }
 

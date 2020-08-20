@@ -14,7 +14,7 @@ namespace NetRpc.Http.Client
     {
         private readonly string _apiUrl;
         private readonly string _connId;
-        private readonly HubCallBackNotifier _notifier;
+        private readonly HubCallBackNotifier? _notifier;
         private readonly int _timeoutInterval;
         private TypeName? _callbackAction;
         private readonly string _callId = Guid.NewGuid().ToString();
@@ -24,7 +24,7 @@ namespace NetRpc.Http.Client
         public event AsyncEventHandler<EventArgsT<object>>? CallbackAsync;
         public event AsyncEventHandler<EventArgsT<object>>? FaultAsync;
 
-        public HttpClientOnceApiConvert(string apiUrl, string connectionId, HubCallBackNotifier notifier, int timeoutInterval)
+        public HttpClientOnceApiConvert(string apiUrl, string connectionId, HubCallBackNotifier? notifier, int timeoutInterval)
         {
             _apiUrl = apiUrl;
             _connId = connectionId;
@@ -68,7 +68,7 @@ namespace NetRpc.Http.Client
 
         public Task SendCancelAsync()
         {
-            return _notifier.CancelAsync(_callId);
+            return _notifier!.CancelAsync(_callId);
         }
 
         public Task SendBufferAsync(ReadOnlyMemory<byte> body)
@@ -94,11 +94,8 @@ namespace NetRpc.Http.Client
             var req = new RestRequest(Method.POST);
 
             //header
-            if (callParam.Header != null)
-            {
-                foreach (var pair in callParam.Header)
-                    req.AddHeader(pair.Key, pair.Value?.ToString()!);
-            }
+            foreach (var pair in callParam.Header)
+                req.AddHeader(pair.Key, pair.Value?.ToString()!);
 
             //request
             if (methodContext.ContractMethod.Route.DefaultRout.MergeArgType.StreamPropName != null)
@@ -123,10 +120,10 @@ namespace NetRpc.Http.Client
             Task.Run(async () =>
 #pragma warning restore 4014
             {
-                token.Register(async () => { await _notifier.CancelAsync(_callId); });
+                token.Register(async () => { await _notifier!.CancelAsync(_callId); });
 
                 if (token.IsCancellationRequested)
-                    await _notifier.CancelAsync(_callId);
+                    await _notifier!.CancelAsync(_callId);
             });
 
             //ReSharper disable once MethodSupportsCancellation

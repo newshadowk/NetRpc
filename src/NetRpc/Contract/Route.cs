@@ -207,7 +207,7 @@ namespace NetRpc
             var list = GetRouts(contractType, methodInfo);
             Routs = new ReadOnlyCollection<HttpRoutInfo>(list);
             DefaultRout = GetDefaultRout(list);
-            SwaggerRouts = new ReadOnlyCollection<HttpRoutInfo>(GetSwaggerRouts(list, methodInfo));
+            SwaggerRouts = new ReadOnlyCollection<HttpRoutInfo>(GetSwaggerRouts(list));
         }
 
         private static HttpRoutInfo GetDefaultRout(IList<HttpRoutInfo> list)
@@ -218,7 +218,7 @@ namespace NetRpc
             return list[0];
         }
 
-        private static List<HttpRoutInfo> GetSwaggerRouts(List<HttpRoutInfo> list, MethodInfo methodInfo)
+        private static List<HttpRoutInfo> GetSwaggerRouts(List<HttpRoutInfo> list)
         {
             var ris = list.FindAll(i => i.HttpMethods.Count > 0);
             if (ris.Count == 0)
@@ -327,7 +327,7 @@ namespace NetRpc
             return ret;
         }
 
-        public HttpRoutInfo MatchPath(string rawPath, string method)
+        public HttpRoutInfo? MatchPath(string rawPath, string method)
         {
             return Routs.FirstOrDefault(i => i.IsMatch(rawPath, method));
         }

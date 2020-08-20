@@ -36,7 +36,7 @@ namespace NetRpc
 
             public void Dispose()
             {
-                _toRelease?._semaphore.Release();
+                _toRelease._semaphore.Release();
             }
         }
     }

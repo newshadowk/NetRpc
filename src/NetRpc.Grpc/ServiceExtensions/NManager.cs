@@ -7,7 +7,7 @@ namespace NetRpc.Grpc
     public static class NManager
     {
 #if !NETCOREAPP3_1
-        public static IHost CreateHost(NGrpcServiceOptions nGrpcServiceOptions, MiddlewareOptions middlewareOptions, params ContractParam[] contracts)
+        public static IHost CreateHost(NGrpcServiceOptions? nGrpcServiceOptions, MiddlewareOptions? middlewareOptions, params ContractParam[] contracts)
         {
             return new HostBuilder()
                 .ConfigureServices((context, services) =>

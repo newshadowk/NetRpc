@@ -17,7 +17,7 @@ namespace NetRpc.RabbitMQ
     {
         private readonly BusyFlag _busyFlag;
         private readonly RequestHandler _requestHandler;
-        private Service _service = null!;
+        private Service? _service;
         private readonly ILogger _logger;
 
         public RabbitMQHostedService(IOptions<RabbitMQServiceOptions> mqOptions, BusyFlag busyFlag, RequestHandler requestHandler, ILoggerFactory factory)
@@ -56,7 +56,7 @@ namespace NetRpc.RabbitMQ
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _service.Open();
+            _service?.Open();
             return Task.CompletedTask;
         }
 
@@ -77,7 +77,7 @@ namespace NetRpc.RabbitMQ
                 }
             }
 
-            _service.Dispose();
+            _service?.Dispose();
         }
     }
 }

@@ -49,37 +49,4 @@ namespace NetRpc.Http
             return char.ToLowerInvariant(name[0]) + name.Substring(1);
         }
     }
-
-    public class TestSchemaFilter : ISchemaFilter
-    {
-        public void Apply(OpenApiSchema schema, SchemaFilterContext context)
-        {
-            if (schema.Properties == null || schema.Properties.Count == 0)
-                return;
-
-            foreach (KeyValuePair<string, OpenApiSchema> property in schema.Properties)
-            {
-                property.Value.Description = "ttt111";
-                //if (ToCamelCase(propertyInfo.Name) == property.Key)
-                //{
-                //    if (attribute.Value == null)
-                //    {
-                //        property.Value.Example = new OpenApiNull();
-                //        break;
-                //    }
-
-                //    property.Value.Example = OpenApiAnyFactory.CreateFor(property.Value, attribute.Value);
-
-                //    //property.Value.Example = OpenApiAnyFactory.TryCreateFor(property.Value, attribute.Value, out IOpenApiAny openApiAny)
-                //    //    ? openApiAny
-                //    //    : null;
-                //}
-            }
-        }
-
-        private static string ToCamelCase(string name)
-        {
-            return char.ToLowerInvariant(name[0]) + name.Substring(1);
-        }
-    }
 }

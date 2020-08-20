@@ -100,7 +100,7 @@ namespace NetRpc
                     }
 
                     var actionExecutedContext = _actionExecutedContext;
-                    Rethrow(actionExecutedContext!);
+                    Rethrow(actionExecutedContext);
 
                     isCompleted = true;
                     return Task.CompletedTask;
@@ -111,7 +111,7 @@ namespace NetRpc
             }
         }
 
-        private static void Rethrow(ActionExecutedContext context)
+        private static void Rethrow(ActionExecutedContext? context)
         {
             if (context == null)
                 return;

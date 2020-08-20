@@ -15,7 +15,7 @@ namespace RabbitMQ.Base
 
         private readonly IModel _clientToServiceModel;
         private readonly string _serviceToClientQueue;
-        private string _clientToServiceQueue = null!;
+        private string? _clientToServiceQueue;
         private bool _disposed;
         private readonly bool _isPost;
 
