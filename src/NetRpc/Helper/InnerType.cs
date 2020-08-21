@@ -8,14 +8,14 @@ namespace NetRpc
     {
         public static bool IsSingleCustomValue(this IList<PropertyInfo> ps)
         {
-            return ps.Count == 1 && !ps[0].PropertyType.IsSystemType();
+            return ps.Count == 1 && !ps[0].PropertyType.IsSystemTypeOrEnum();
         }
 
         public static (bool isSingleValue, ParameterInfo? singleValue) IsSingleCustomValue(this IList<ParameterInfo> ps)
         {
             var l = ps.ToList();
             l.RemoveAll(i => i.ParameterType.IsFuncT() || i.ParameterType.IsCancellationToken() || i.ParameterType.IsStream());
-            var ret = l.Count == 1 && !l[0].ParameterType.IsSystemType();
+            var ret = l.Count == 1 && !l[0].ParameterType.IsSystemTypeOrEnum();
             ParameterInfo? singleValue = null;
             if (ret)
                 singleValue = l[0];
@@ -69,7 +69,7 @@ namespace NetRpc
 
             l.RemoveAll(i => i.Type.IsFuncT() || i.Type.IsCancellationToken() || i.Type.IsStream());
 
-            var isSingleValue = l.Count == 1 && !l[0].Type.IsSystemType();
+            var isSingleValue = l.Count == 1 && !l[0].Type.IsSystemTypeOrEnum();
 
             if (isSingleValue)
                 l = l[0].Type.GetProperties().ToList().ConvertAll(i => new PPInfo(i));

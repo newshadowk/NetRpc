@@ -59,7 +59,7 @@ namespace NetRpc
 
             if (srcObj is Stream || 
                 srcObj is Action ||
-                srcObj.GetType().IsSystemType())
+                srcObj.GetType().IsSystemTypeOrEnum())
                 return srcObj;
 
             return srcObj.CreateAndCopy(tgtObjType);

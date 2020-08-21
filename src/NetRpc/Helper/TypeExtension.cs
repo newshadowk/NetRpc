@@ -62,6 +62,14 @@ namespace NetRpc
             return sn == "System.Private.CoreLib.dll" || sn == "CommonLanguageRuntimeLibrary";
         }
 
+        public static bool IsSystemTypeOrEnum(this Type t)
+        {
+            if (t.IsEnum)
+                return true;
+            var sn = t.Module.ScopeName;
+            return sn == "System.Private.CoreLib.dll" || sn == "CommonLanguageRuntimeLibrary";
+        }
+
         public static bool TryGetStream(this object? obj, out Stream? stream, out string? streamName)
         {
             stream = default;

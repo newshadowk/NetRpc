@@ -105,7 +105,7 @@ namespace NetRpc
             if (ps.Count == 0)
                 return false;
 
-            if (ps.Any(i => !i.Type.IsSystemType()))
+            if (ps.Any(i => !i.Type.IsSystemTypeOrEnum()))
                 return false;
             return true;
         }
