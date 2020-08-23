@@ -30,10 +30,8 @@ namespace NetRpc
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
 #if NETSTANDARD2_1 || NETCOREAPP3_1
-            if (OutputStream != null)
-                await OutputStream.DisposeAsync();
-            if (InputStream != null)
-                await InputStream.DisposeAsync();
+            await OutputStream.DisposeAsync();
+            await InputStream.DisposeAsync();
 #else
             OutputStream.Dispose();
             InputStream.Dispose();

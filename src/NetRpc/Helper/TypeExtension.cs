@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -70,7 +71,7 @@ namespace NetRpc
             return sn == "System.Private.CoreLib.dll" || sn == "CommonLanguageRuntimeLibrary";
         }
 
-        public static bool TryGetStream(this object? obj, out Stream? stream, out string? streamName)
+        public static bool TryGetStream(this object? obj, [NotNullWhen(true)] out Stream? stream, [NotNullWhen(true)] out string? streamName)
         {
             stream = default;
             streamName = default;

@@ -179,8 +179,7 @@ namespace NetRpc
             ResultStream?.Invoke(this, e);
         }
 
-        //private bool TryToObject(ReadOnlyMemory<byte> body, [MaybeNullWhen(false)] out object? obj)
-        private bool TryToObject(ReadOnlyMemory<byte> body, [MaybeNullWhen(false)] out object obj)
+        private bool TryToObject(ReadOnlyMemory<byte> body, [NotNullWhen(true)] out object? obj)
         {
             try
             {
@@ -195,7 +194,7 @@ namespace NetRpc
             }
         }
 
-        private bool TryToObject<T>(ReadOnlyMemory<byte> body, out T obj) 
+        private bool TryToObject<T>(ReadOnlyMemory<byte> body, out T obj)
         {
             if (TryToObject(body, out var obj2))
             {

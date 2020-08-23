@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -67,6 +68,7 @@ namespace NetRpc
             // ReSharper restore FormatStringProblem
         }
 
+        [return: NotNullIfNotNull("list")]
         public static string? ListToStringForDisplay<T>(this IEnumerable<T>? list, string split, bool displayCount = true)
         {
             if (list == null)
@@ -112,6 +114,7 @@ namespace NetRpc
             await publishBufferEnd();
         }
 
+        [return: NotNullIfNotNull("list")]
         public static string? ListToString<T>(this IEnumerable<T>? list, string split)
         {
             if (list == null)
@@ -128,6 +131,7 @@ namespace NetRpc
             return sb.ToString().TrimEndString(split);
         }
 
+        [return: NotNullIfNotNull("s")]
         public static string? TrimEndString(this string? s, string endStr)
         {
             if (s == null)
@@ -139,6 +143,7 @@ namespace NetRpc
             return s.TrimEndString(endStr.Length);
         }
 
+        [return: NotNullIfNotNull("s")]
         public static string? TrimEndString(this string? s, int delLength)
         {
             if (s == null)
@@ -165,6 +170,7 @@ namespace NetRpc
             }
         }
 
+        [return: NotNullIfNotNull("obj")]
         public static byte[]? ToBytes(this object? obj)
         {
             if (obj == null)
@@ -177,11 +183,13 @@ namespace NetRpc
             return stream.ToArray();
         }
 
+        [return: NotNullIfNotNull("bytes")]
         public static T ToObject<T>(this byte[]? bytes)
         {
             return (T) bytes.ToObject()!;
         }
 
+        [return: NotNullIfNotNull("bytes")]
         public static object? ToObject(this byte[]? bytes)
         {
             if (bytes == null)
@@ -194,6 +202,7 @@ namespace NetRpc
             return data;
         }
 
+        [return: NotNullIfNotNull("stream")]
         public static byte[]? StreamToBytes(this Stream? stream)
         {
             if (stream == null)

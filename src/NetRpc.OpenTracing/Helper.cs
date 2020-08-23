@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
@@ -43,6 +44,7 @@ namespace NetRpc.OpenTracing
             return span;
         }
 
+        [return: NotNullIfNotNull("obj")]
         public static string? ToDisplayJson<T>(this T obj, int maxLength)
         {
             if (obj == null)

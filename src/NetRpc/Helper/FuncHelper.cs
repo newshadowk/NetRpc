@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace NetRpc
 {
     internal static class FuncHelper
     {
+        [return: NotNullIfNotNull("func")]
         public static Func<object?, Task>? ConvertFunc(object? func)
         {
             if (func == null)
@@ -13,6 +15,7 @@ namespace NetRpc
             return o => (Task) f.DynamicInvoke(o)!;
         }
 
+        [return: NotNullIfNotNull("func")]
         public static object? ConvertFunc(Func<object?, Task>? func, Type? type)
         {
             if (func == null)
