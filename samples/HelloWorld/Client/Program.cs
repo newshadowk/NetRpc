@@ -17,7 +17,13 @@ namespace Client
                 Port = 50001
             });
 
-            await p.Proxy.Call("hello world.");
+            int f = 0;
+            while (true)
+            {
+                f++;
+                Console.WriteLine(f);
+                await p.Proxy.Call("hello world.");
+            }
 
             Console.Read();
         }

@@ -80,7 +80,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
         internal static List<Instance> GetContractInstances(this IServiceProvider serviceProvider, ContractOptions options)
         {
-            return options.Contracts.ConvertAll(i => new Instance(i, serviceProvider.GetRequiredService(i.Type)));
+            return options.Contracts.ConvertAll(i =>
+            {
+                var requiredService = serviceProvider.GetRequiredService(i.Type);
+                return new Instance(i, requiredService);
+            });
         }
 
         #endregion

@@ -42,10 +42,10 @@ namespace NetRpc
             _logger = loggerFactory.CreateLogger("NetRpc");
 
             _call = new Call(Id,
+                ClientContractInfoCache.GetOrAdd<TService>(),
                 serviceProvider,
                 clientMiddlewareOptions.Value,
                 actionExecutingContextAccessor,
-                new ContractInfo(typeof(TService)),
                 factory,
                 nClientOptions.Value.TimeoutInterval,
                 nClientOptions.Value.ForwardHeader, optionsName);

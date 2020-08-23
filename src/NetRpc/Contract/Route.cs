@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -203,10 +204,15 @@ namespace NetRpc
 
         public MethodRoute(Type contractType, MethodInfo methodInfo)
         {
+            
             //HttpRoutInfo
             var list = GetRouts(contractType, methodInfo);
+
+        
+
             Routs = new ReadOnlyCollection<HttpRoutInfo>(list);
             DefaultRout = GetDefaultRout(list);
+          
             SwaggerRouts = new ReadOnlyCollection<HttpRoutInfo>(GetSwaggerRouts(list));
         }
 
@@ -245,7 +251,6 @@ namespace NetRpc
         {
             var contractTrimAsync = contractType.IsDefined(typeof(HttpTrimAsyncAttribute));
             var methodTrimAsync = methodInfo.IsDefined(typeof(HttpTrimAsyncAttribute)) || contractTrimAsync;
-
             var contractRoutes = GetRoutAttributes(contractType);
             var tag = contractType.GetCustomAttribute<TagAttribute>(true);
             var methodHttpMethods = methodInfo.GetCustomAttributes<HttpMethodAttribute>(true).ToList();

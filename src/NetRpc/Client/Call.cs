@@ -21,10 +21,10 @@ namespace NetRpc
         private readonly bool _forwardHeader;
 
         public Call(Guid clientProxyId,
+            ContractInfo contractInfo,
             IServiceProvider serviceProvider,
             ClientMiddlewareOptions middlewareOptions,
             IActionExecutingContextAccessor actionExecutingContextAccessor,
-            ContractInfo contract,
             IOnceCallFactory factory,
             int timeoutInterval,
             bool forwardHeader,
@@ -33,7 +33,7 @@ namespace NetRpc
             _clientProxyId = clientProxyId;
             _serviceProvider = serviceProvider;
             _actionExecutingContextAccessor = actionExecutingContextAccessor;
-            _contract = contract;
+            _contract = contractInfo;
             _factory = factory;
             _timeoutInterval = timeoutInterval;
             _forwardHeader = forwardHeader;

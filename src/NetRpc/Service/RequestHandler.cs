@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -32,11 +33,11 @@ namespace NetRpc
             {
                 var contractOptions = _serviceProvider.GetRequiredService<IOptions<ContractOptions>>();
                 var rpcContextAccessor = _serviceProvider.GetRequiredService<IActionExecutingContextAccessor>();
+
                 using IServiceScope scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
                 GlobalServiceProvider.Provider = _serviceProvider;
                 GlobalServiceProvider.ScopeProvider = scope.ServiceProvider;
                 var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
-
                 var onceTransfer = new ServiceOnceTransfer(instances,
                     scope.ServiceProvider,
                     convert,
@@ -44,7 +45,6 @@ namespace NetRpc
                     rpcContextAccessor,
                     channelType,
                     _logger);
-
                 await onceTransfer.StartAsync();
                 await onceTransfer.HandleRequestAsync();
             }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Pipelines;
 using System.Runtime.Serialization;
@@ -178,7 +179,8 @@ namespace NetRpc
             ResultStream?.Invoke(this, e);
         }
 
-        private bool TryToObject(ReadOnlyMemory<byte> body, out object? obj)
+        //private bool TryToObject(ReadOnlyMemory<byte> body, [MaybeNullWhen(false)] out object? obj)
+        private bool TryToObject(ReadOnlyMemory<byte> body, [MaybeNullWhen(false)] out object obj)
         {
             try
             {
