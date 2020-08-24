@@ -10,7 +10,7 @@ namespace NetRpc
         public static ContractInfo GetOrAdd<T>()
         {
             var type = typeof(T);
-            return _dic.GetOrAdd(type, new ContractInfo(type));
+            return _dic.GetOrAdd(type, t => new ContractInfo(t));
         }
     }
 }
