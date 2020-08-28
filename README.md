@@ -41,7 +41,10 @@ PM> Install-Package NetRpc.Http.Client
 
 ## Hello world!
 
-
+NetRpc for **Grpc** channel can be installed in your project with the following command.
+```
+PM> Install-Package NetRpc.Grpc
+```
 
 ```c#
 //service side
@@ -83,6 +86,7 @@ public interface IService
     void Call(string s);
 }
 ```
+Code here: [samples/HelloWorld](samples/HelloWorld).
 
 ## Overall
 NetRpc provide **RabbitMQ**/**Grpc**/**Http** Channels to connect, each one has different advantages.
