@@ -4,7 +4,42 @@
 NetRpc is a light weight rpc engine base on **RabbitMQ**, **Grpc**, **Http** targeting .NET Standard 2.0/2.1.  It use the simple interface to call each other, 
 provide callback/cancel during invoking, so especially suitable for handle **long running call**.
 
+## NuGet
+
+NetRpc for **Grpc** channel can be installed in your project with the following command.
+```
+PM> Install-Package NetRpc.Grpc
+```
+
+
+NetRpc also supports **Http**, **RabbitMQ** channel following packages are available to install:
+```
+PM> Install-Package NetRpc.Http
+PM> Install-Package NetRpc.RabbitMQ
+```
+
+Others install:
+
+```
+//Jeager tracing function.
+PM> Install-Package NetRpc.Jeager
+
+//Http channel for client only.
+PM> Install-Package NetRpc.Http.Client
+```
+
+|Name|Version|Downloads|
+|-|-|-|
+|[NetRpc.Grpc](https://www.nuget.org/packages/NetRpc.Grpc/) |[![NetRpc.Grpc](https://img.shields.io/nuget/v/NetRpc.Grpc)](https://www.nuget.org/packages/NetRpc.Grpc/)|[![NetRpc.Grpc](https://img.shields.io/nuget/dt/NetRpc.Grpc)](https://www.nuget.org/packages/NetRpc.Grpc/)|
+|[NetRpc.Http](https://www.nuget.org/packages/NetRpc.Http/) |[![NetRpc.Http](https://img.shields.io/nuget/v/NetRpc.Http)](https://www.nuget.org/packages/NetRpc.Http/)|[![NetRpc.Http](https://img.shields.io/nuget/dt/NetRpc.Http)](https://www.nuget.org/packages/NetRpc.Http/)|
+|[NetRpc.Http.Client](https://www.nuget.org/packages/NetRpc.Http.Client/) |[![NetRpc.Http.Client](https://img.shields.io/nuget/v/NetRpc.Http.Client)](https://www.nuget.org/packages/NetRpc.Http.Client/)|[![NetRpc.Http.Client](https://img.shields.io/nuget/dt/NetRpc.Http.Client)](https://www.nuget.org/packages/NetRpc.Http.Client/)|
+|[NetRpc.RabbitMQ](https://www.nuget.org/packages/NetRpc.RabbitMQ/) |[![NetRpc.RabbitMQ](https://img.shields.io/nuget/v/NetRpc.RabbitMQ)](https://www.nuget.org/packages/NetRpc.RabbitMQ/)|[![NetRpc.RabbitMQ](https://img.shields.io/nuget/dt/NetRpc.RabbitMQ)](https://www.nuget.org/packages/NetRpc.RabbitMQ/)|
+|[NetRpc.Jaeger](https://www.nuget.org/packages/NetRpc.Jaeger/) |[![NetRpc.Jaeger](https://img.shields.io/nuget/v/NetRpc.Jaeger)](https://www.nuget.org/packages/NetRpc.Jaeger/)|[![NetRpc.Jaeger](https://img.shields.io/nuget/dt/NetRpc.Jaeger)](https://www.nuget.org/packages/NetRpc.Jaeger/)|
+
 ## Hello world!
+
+
+
 ```c#
 //service side
 class Program
