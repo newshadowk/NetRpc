@@ -21,36 +21,23 @@ namespace NetRpc
             List<FaultExceptionAttribute> faultExceptionAttributes, List<HttpHeaderAttribute> httpHeaderAttributes,
             List<ResponseTextAttribute> responseTextAttributes, List<SecurityApiKeyAttribute> securityApiKeyAttributes)
         {
-
             MethodInfo = methodInfo;
             InnerSystemTypeParameters = new ReadOnlyCollection<PPInfo>(InnerType.GetInnerSystemTypeParameters(methodInfo));
-    
-
             FaultExceptionAttributes = new ReadOnlyCollection<FaultExceptionAttribute>(faultExceptionAttributes);
             HttpHeaderAttributes = new ReadOnlyCollection<HttpHeaderAttribute>(httpHeaderAttributes);
             ResponseTextAttributes = new ReadOnlyCollection<ResponseTextAttribute>(responseTextAttributes);
             SecurityApiKeyAttributes = new ReadOnlyCollection<SecurityApiKeyAttribute>(securityApiKeyAttributes);
-
           
             //IgnoreAttribute
             IsGrpcIgnore = GetCustomAttribute<GrpcIgnoreAttribute>(contractType, methodInfo) != null;
             IsRabbitMQIgnore = GetCustomAttribute<RabbitMQIgnoreAttribute>(contractType, methodInfo) != null;
             IsHttpIgnore = GetCustomAttribute<HttpIgnoreAttribute>(contractType, methodInfo) != null;
-
-
             IsTracerIgnore = GetCustomAttribute<TracerIgnoreAttribute>(contractType, methodInfo) != null;
             IsTracerArgsIgnore = GetCustomAttribute<TracerArgsIgnoreAttribute>(contractType, methodInfo) != null;
             IsTraceReturnIgnore = GetCustomAttribute<TracerReturnIgnoreAttribute>(contractType, methodInfo) != null;
 
-        
-
             Route = new MethodRoute(contractType, methodInfo);
-
-          
-
             IsMQPost = GetCustomAttribute<MQPostAttribute>(contractType, methodInfo) != null;
-
-
             Tags = new ReadOnlyCollection<string>(GetTags(contractTypeTag, methodInfo));
 
             //SwaggerRole

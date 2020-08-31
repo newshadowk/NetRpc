@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 
 namespace NetRpc
 {
-    public class ClientContractInfoCache
+    internal class ClientContractInfoCache
     {
         private static readonly ConcurrentDictionary<Type, ContractInfo> _dic = new ConcurrentDictionary<Type, ContractInfo>();
 

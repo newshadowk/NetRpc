@@ -204,11 +204,8 @@ namespace NetRpc
 
         public MethodRoute(Type contractType, MethodInfo methodInfo)
         {
-            
             //HttpRoutInfo
             var list = GetRouts(contractType, methodInfo);
-
-        
 
             Routs = new ReadOnlyCollection<HttpRoutInfo>(list);
             DefaultRout = GetDefaultRout(list);
