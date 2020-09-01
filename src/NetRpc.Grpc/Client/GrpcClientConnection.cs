@@ -74,7 +74,6 @@ namespace NetRpc.Grpc
             using (await _sendLock.LockAsync())
             {
                 var sb = new StreamBuffer { Body = ByteString.CopyFrom(buffer.ToArray()) };
-                _logger.LogDebug($"Send count:{Helper.SizeSuffix(sb.Body.Length)}");
                 await _api.RequestStream.WriteAsync(sb);
             }
 

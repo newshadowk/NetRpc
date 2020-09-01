@@ -47,7 +47,7 @@ namespace NetRpc
 
         public Task SendBufferEndAsync()
         {
-            return _connection.SendAsync(new Request(RequestType.BufferEnd).All, true);
+            return _connection.SendAsync(new Request(RequestType.BufferEnd).All);
         }
 
         public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, CancellationToken token)
