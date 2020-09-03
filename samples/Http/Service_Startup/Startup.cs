@@ -18,6 +18,7 @@ namespace Service_Startup
             services.AddCors();
             services.AddSignalR();
             services.AddNSwagger();
+            services.AddNMiniProfiler();
             services.AddNHttpService();
             services.AddHttpContextAccessor();
             services.AddNServiceContract<IServiceAsync, ServiceAsync>(ServiceLifetime.Scoped);
@@ -52,6 +53,7 @@ namespace Service_Startup
                 endpoints.MapHub<CallbackHub>("/callback");
             });
             app.UseNSwagger();
+            app.UseNMiniProfiler();
             app.UseNHttp();
         }
     }
