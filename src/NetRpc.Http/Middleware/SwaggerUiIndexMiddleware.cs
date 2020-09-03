@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
+using NetRpc.Http.Abstract;
 
 namespace NetRpc.Http
 {
@@ -21,7 +22,7 @@ namespace NetRpc.Http
         }
 
         public async Task Invoke(HttpContext context, INSwaggerProvider nSwaggerProvider,
-            IOptions<HttpServiceOptions> httpServiceOptions, IOptions<ContractOptions> contractOptions)
+            IOptions<HttpServiceOptions> httpServiceOptions, IOptions<ContractOptions> contractOptions, IInjectSwaggerHtml injectSwaggerHtml)
         {
             var apiRootApi = httpServiceOptions.Value.ApiRootPath;
             var swaggerRootPath = httpServiceOptions.Value.ApiRootPath + "/swagger";
@@ -43,6 +44,8 @@ namespace NetRpc.Http
                 {
                     _html = await ReadStringAsync(".index.html");
                     _html = _html.Replace("{url}", swaggerFilePath);
+
+                    _html = injectSwaggerHtml.InjectHtml(_html);
 
                     string? key = null;
                     if (context.Request.Query.TryGetValue("k", out var kValue)) 
