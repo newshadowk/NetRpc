@@ -43,8 +43,8 @@ namespace NetRpc
             string typeName;
             if (isSingleValue)
             {
-                typeNameWithoutStreamName = GetName(singleValue!.Name!);
-                typeName = GetName(singleValue!.Name!);
+                typeNameWithoutStreamName = GetName(singleValue!.ParameterType.Name);
+                typeName = GetName(singleValue!.ParameterType.Name);
             }
             else
             {
@@ -89,7 +89,7 @@ namespace NetRpc
 
                 //Custom Type
                 //ExampleAttribute
-                var found = attributeData.Find(i => (string)i.ConstructorArguments[0].Value! == p.Name);
+                var found = FindCustomAttributeData(attributeData, p);
                 if (found != null)
                     cis.Add(new CustomsPropertyInfo(p.Type, p.Name!, found));
                 else
@@ -118,6 +118,24 @@ namespace NetRpc
             SetInnerTypeMap(t2, isSingleValue, singleValue!);
 
             return new MergeArgType(t, t2, streamName, action, cancelToken, hasCustomType, isSingleValue, singleValue, method);
+        }
+
+        private static CustomAttributeData? FindCustomAttributeData(List<CustomAttributeData> methodsAd, PPInfo p)
+        {
+            var found = methodsAd.Find(i => (string)i.ConstructorArguments[0].Value! == p.Name);
+            if (found != null)
+                return found;
+
+            if (p.ParameterInfo != null)
+            {
+                found = CustomAttributeData.GetCustomAttributes(p.ParameterInfo).FirstOrDefault(i => i.AttributeType == typeof(ExampleAttribute));
+                if (found != null)
+                    return found;
+            }
+            else
+                return CustomAttributeData.GetCustomAttributes(p.PropertyInfo!).FirstOrDefault(i => i.AttributeType == typeof(ExampleAttribute));
+
+            return null;
         }
 
         private static void SetInnerTypeMap(Type mergeArgType, bool isSingleValue, ParameterInfo singleValue)

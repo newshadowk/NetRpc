@@ -1,5 +1,3 @@
-
-
 # NetRpc
 [![NuGet Badge](https://buildstats.info/nuget/NetRpc)](https://www.nuget.org/packages/NetRpc/)
 [![GitHub license](https://img.shields.io/badge/license-Mit-blue)](https://github.com/newshadowk/NetRpc/blob/master/LICENSE.md)
@@ -591,7 +589,7 @@ services.AddNRpcGateway<IService2>();
 ```
 Also privode middleware in the gateway service, can add access authority if needed.
 
-# OpenTracing
+## OpenTracing
 Set the tags relate to method, it contains:
 * Name
 * Params
@@ -601,7 +599,7 @@ Set the tags relate to method, it contains:
 For more details pls go to [samples/OpenTracing](samples/OpenTracing)
 ![Alt text](images/tracer.png)
 
-# Get HttpContext
+## Get HttpContext
 Use IHttpContextAccessor by services.AddHttpContextAccessor();
 
 # [Http] NetRpc.Http

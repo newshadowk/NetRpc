@@ -88,6 +88,11 @@ namespace Service
             await stream.CopyToAsync(ms);
             return stream.Length.ToString();
         }
+
+        public Task<string> CallNone2(CObj obj)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class ServiceAsync : IServiceAsync

@@ -10,10 +10,22 @@ using Newtonsoft.Json.Converters;
 
 namespace DataContract
 {
+    /// <summary>
+    /// CObj des
+    /// </summary>
     public class CObj
     {
+        /// <summary>
+        /// NameEnum Name
+        /// </summary>
         [Example(NameEnum.Mary)]
         public NameEnum Name { get; set; }
+
+        ///// <summary>
+        ///// Age des
+        ///// </summary>
+        //[Example("Example2 age")]
+        //public string Age { get; set; }
     }
 
     /// <summary>

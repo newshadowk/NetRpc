@@ -33,6 +33,16 @@
             test p2
             </summary>
         </member>
+        <member name="T:DataContract.CObj">
+            <summary>
+            CObj des
+            </summary>
+        </member>
+        <member name="P:DataContract.CObj.Name">
+            <summary>
+            NameEnum Name
+            </summary>
+        </member>
         <member name="T:DataContract.CustomObj">
             <summary>
             a CustomObj
