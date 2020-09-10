@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -35,7 +34,7 @@ namespace NetRpc
             var tmpP = Regex.Escape(PathWithoutQuery);
 
             var keys = new List<string>();
-            var mc = Regex.Matches(tmpP, @"\\{\w+}");
+            var mc = Regex.Matches(tmpP, @"\\{[^/]+}");
             if (mc.Count == 0)
                 return new Dictionary<string, string>();
 
@@ -43,11 +42,11 @@ namespace NetRpc
                 keys.Add(o!.Value.Substring(2, o.Value.Length - 3));
 
             //S/Get/C/\{p1}/D/\{p2} =>
-            //S/Get/C/(\w+)/D/(\w+)
-            tmpP = Regex.Replace(tmpP, @"\\{\w+}", @"(\w+)");
+            //S/Get/C/([^/]+)/D/([^/]+)
+            tmpP = Regex.Replace(tmpP, @"\\{[^/]+}", @"([^/]+)");
 
             //S/Get/C/v1/D/v2 matches
-            //S/Get/C/(\w+)/D/(\w+)
+            //S/Get/C/([^/]+)/D/([^/]+)
             var dic = new Dictionary<string, string>();
             mc = Regex.Matches(rawPath, tmpP);
             var gc = mc[0].Groups;
@@ -82,7 +81,7 @@ namespace NetRpc
         public MergeArgType MergeArgType { get; }
 
         /// <summary>
-        /// S/Get/C/{p1}/sss => S/Get/C/\w+/sss$
+        /// S/Get/C/{p1}/sss => S/Get/C/[^/]+/sss$
         /// </summary>
         private static string ReplacePathStr(string path)
         {
@@ -90,8 +89,8 @@ namespace NetRpc
             //S/Get/C/\{p1}/sss
             var temps = Regex.Escape(path);
 
-            //S/Get/C/\w+/sss
-            var ret = Regex.Replace(temps, @"\\{\w+}", @"\w+");
+            //S/Get/C/[^/]+/sss
+            var ret = Regex.Replace(temps, @"\\{[^/]+}", @"[^/]+");
             return ret + "$";
         }
 
@@ -126,7 +125,7 @@ namespace NetRpc
             _regPatternPathWithoutQuery = ReplacePathStr(PathWithoutQuery);
             
             var ps = new List<string>();
-            var c = Regex.Matches(path, @"(?<={)\w+(?=})");
+            var c = Regex.Matches(path, @"(?<={)[^/]+(?=})");
             foreach (Match? o in c)
                 ps.Add(o!.Value.ToLower());
 

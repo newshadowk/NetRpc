@@ -21,11 +21,11 @@ namespace DataContract
         [Example(NameEnum.Mary)]
         public NameEnum Name { get; set; }
 
-        ///// <summary>
-        ///// Age des
-        ///// </summary>
-        //[Example("Example2 age")]
-        //public string Age { get; set; }
+        /// <summary>
+        /// Age des
+        /// </summary>
+        [Example("Example2 age")]
+        public string Age { get; set; }
     }
 
     /// <summary>

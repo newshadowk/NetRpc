@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
 using DataContract;
@@ -51,7 +52,7 @@ namespace Service
                         });
                     });
                     services.AddNHttpService();
-                    services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+                    services.AddNServiceContract<IService2Async, Service2Async>();
                 })
                 .Configure(app =>
                 {

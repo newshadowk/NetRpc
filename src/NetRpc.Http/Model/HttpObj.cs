@@ -102,6 +102,13 @@ namespace NetRpc.Http
             if (tgtProperty.PropertyType.IsEnum) 
                 propertyValue = Enum.ToObject(tgtProperty.PropertyType, propertyValue!);
 
+            if (tgtProperty.PropertyType == typeof(Guid) && propertyValue is string propertyValueStr)
+            {
+                type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance,
+                    new[] { (object)Guid.Parse(propertyValueStr) });
+                return;
+            }
+
             if (propertyValue == DBNull.Value || propertyValue == null)
                 type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance, new object[] {null!});
             else

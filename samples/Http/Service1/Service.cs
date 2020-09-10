@@ -89,6 +89,11 @@ namespace Service
             return stream.Length.ToString();
         }
 
+        public async Task Call0Async(Guid taskId)
+        {
+            Console.WriteLine(taskId);
+        }
+
         public Task<string> CallNone2(CObj obj)
         {
             throw new NotImplementedException();

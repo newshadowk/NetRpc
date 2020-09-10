@@ -33,6 +33,8 @@ namespace NetRpc.Http
                                 break;
                             }
 
+                            var ss = OpenApiAnyFactory.CreateFor(property.Value, attribute.Value);
+
                             property.Value.Example = OpenApiAnyFactory.CreateFor(property.Value, attribute.Value);
 
                             //property.Value.Example = OpenApiAnyFactory.TryCreateFor(property.Value, attribute.Value, out IOpenApiAny openApiAny)

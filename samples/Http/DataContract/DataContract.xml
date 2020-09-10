@@ -43,6 +43,11 @@
             NameEnum Name
             </summary>
         </member>
+        <member name="P:DataContract.CObj.Age">
+            <summary>
+            Age des
+            </summary>
+        </member>
         <member name="T:DataContract.CustomObj">
             <summary>
             a CustomObj
