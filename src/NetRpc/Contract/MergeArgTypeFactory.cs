@@ -17,6 +17,7 @@ namespace NetRpc
 
         private static string GetName(string name)
         {
+            name += "_";
             if (TypeDic.TryGetValue(name, out var i))
             {
                 i++;
