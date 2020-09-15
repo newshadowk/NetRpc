@@ -1,16 +1,24 @@
 ﻿using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace NetRpc
 {
     internal class ClientContractInfoCache
     {
-        private static readonly ConcurrentDictionary<Type, ContractInfo> _dic = new ConcurrentDictionary<Type, ContractInfo>();
+        private static readonly Dictionary<Type, ContractInfo> Dic = new Dictionary<Type, ContractInfo>();
+        private static readonly object LockObj = new object();
 
         public static ContractInfo GetOrAdd<T>()
         {
             var type = typeof(T);
-            return _dic.GetOrAdd(type, t => new ContractInfo(t));
+            lock (LockObj)
+            {
+                if (Dic.TryGetValue(type, out var value))
+                    return value;
+                var newInfo = new ContractInfo(type);
+                Dic.Add(type, newInfo);
+                return newInfo;
+            }
         }
     }
 }
