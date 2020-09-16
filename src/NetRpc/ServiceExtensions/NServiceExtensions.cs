@@ -144,6 +144,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddNClientContract<TService>(this IServiceCollection services,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
         {
+            ClientContractInfoCache.GetOrAdd<TService>();
+
             switch (serviceLifetime)
             {
                 case ServiceLifetime.Singleton:
@@ -168,6 +170,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddNClientContract<TService>(this IServiceCollection services, string optionsName,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
         {
+            ClientContractInfoCache.GetOrAdd<TService>();
+
             switch (serviceLifetime)
             {
                 case ServiceLifetime.Singleton:
