@@ -95,21 +95,6 @@ namespace NetRpc
 
         public ReadOnlyCollection<SecurityApiKeyAttribute> SecurityApiKeyAttributes { get; }
 
-        public bool IsParamsSupportPathQuery()
-        {
-            return IsParamsSupportPathQuery(InnerSystemTypeParameters);
-        }
-
-        private static bool IsParamsSupportPathQuery(IList<PPInfo> ps)
-        {
-            if (ps.Count == 0)
-                return false;
-
-            if (ps.Any(i => !i.Type.IsSystemTypeOrEnum()))
-                return false;
-            return true;
-        }
-
         public object? CreateMergeArgTypeObj(string? callId, string? connectionId, long streamLength, object?[] args)
         {
             if (Route.DefaultRout.MergeArgType.Type == null)

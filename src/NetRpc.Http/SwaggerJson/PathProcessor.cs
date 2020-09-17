@@ -24,9 +24,6 @@ namespace NetRpc.Http
             
             //is Support?
             var isSupportBody = IsSupportBody(method.ToOperationType());
-            var isParamsSupportPathQuery = contractMethod.IsParamsSupportPathQuery();
-            if (!isSupportBody && !isParamsSupportPathQuery)
-                return null;
 
             //Operation
             var operation = new OpenApiOperation

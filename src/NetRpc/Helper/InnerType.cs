@@ -116,7 +116,7 @@ namespace NetRpc
                     continue;
                 }
 
-                if (p.Type.IsSystemType())
+                if (p.Type.IsSystemTypeOrEnum())
                     ret.Add(p);
             }
 

@@ -62,6 +62,16 @@ namespace Service
             return s;
         }
 
+        public Task<string> Call3Async(CallObj obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> Call3Async(CallObj obj, string s1, Func<double, Task> cb, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<string> Call4Async(CallObj obj, Func<double, Task> cb, CancellationToken token)
         {
             string s = $"[Call4Async]...{obj.P1}, {obj.P2}";
@@ -95,6 +105,11 @@ namespace Service
         }
 
         public Task<string> CallNone2(CObj obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> CallNone3()
         {
             throw new NotImplementedException();
         }
