@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -6,23 +7,31 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
-using NetRpc.Http.Abstract;
 
 namespace NetRpc.Http
 {
     public class SwaggerUiIndexMiddleware
     {
         private readonly Microsoft.AspNetCore.Http.RequestDelegate _next;
+        private readonly IEnumerable<IInjectSwaggerHtml> _injectSwaggerHtmlList;
         private volatile string? _json;
         private volatile string? _html;
 
-        public SwaggerUiIndexMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next)
+        public SwaggerUiIndexMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, IEnumerable<IInjectSwaggerHtml> injectSwaggerHtmlList)
         {
             _next = next;
+            _injectSwaggerHtmlList = injectSwaggerHtmlList;
         }
 
-        public async Task Invoke(HttpContext context, INSwaggerProvider nSwaggerProvider,
-            IOptions<HttpServiceOptions> httpServiceOptions, IOptions<ContractOptions> contractOptions, IInjectSwaggerHtml injectSwaggerHtml)
+        private string InjectHtml(string html)
+        {
+            foreach (var injectSwaggerHtml in _injectSwaggerHtmlList) 
+                html = injectSwaggerHtml.InjectHtml(html);
+            return html;
+        }
+
+        public async Task Invoke(HttpContext context, INSwaggerProvider nSwaggerProvider, IOptions<HttpServiceOptions> httpServiceOptions, 
+            IOptions<ContractOptions> contractOptions)
         {
             var apiRootApi = httpServiceOptions.Value.ApiRootPath;
             var swaggerRootPath = httpServiceOptions.Value.ApiRootPath + "/swagger";
@@ -44,8 +53,7 @@ namespace NetRpc.Http
                 {
                     _html = await ReadStringAsync(".index.html");
                     _html = _html.Replace("{url}", swaggerFilePath);
-
-                    _html = injectSwaggerHtml.InjectHtml(_html);
+                    _html = InjectHtml(_html);
 
                     string? key = null;
                     if (context.Request.Query.TryGetValue("k", out var kValue)) 

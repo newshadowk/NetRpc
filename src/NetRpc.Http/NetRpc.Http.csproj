@@ -9,6 +9,13 @@
     <PackageReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="SwaggerUi3\dialog\dialog.css" />
+    <None Remove="SwaggerUi3\swagger-ui-es-bundle-core.js" />
+    <None Remove="SwaggerUi3\swagger-ui-es-bundle-core.js.map" />
+    <None Remove="SwaggerUi3\swagger-ui-es-bundle.js" />
+    <None Remove="SwaggerUi3\swagger-ui-es-bundle.js.map" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.OpenApi" Version="1.2.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="5.5.1" />
@@ -25,6 +32,10 @@
     <EmbeddedResource Include="SwaggerUi3\oauth2-redirect.html" />
     <EmbeddedResource Include="SwaggerUi3\swagger-ui-bundle.js" />
     <EmbeddedResource Include="SwaggerUi3\swagger-ui-bundle.js.map" />
+    <EmbeddedResource Include="SwaggerUi3\swagger-ui-es-bundle-core.js" />
+    <EmbeddedResource Include="SwaggerUi3\swagger-ui-es-bundle-core.js.map" />
+    <EmbeddedResource Include="SwaggerUi3\swagger-ui-es-bundle.js" />
+    <EmbeddedResource Include="SwaggerUi3\swagger-ui-es-bundle.js.map" />
     <EmbeddedResource Include="SwaggerUi3\swagger-ui-standalone-preset.js" />
     <EmbeddedResource Include="SwaggerUi3\swagger-ui-standalone-preset.js.map" />
     <EmbeddedResource Include="SwaggerUi3\swagger-ui.css" />

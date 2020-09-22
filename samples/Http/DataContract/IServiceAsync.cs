@@ -66,6 +66,8 @@ namespace DataContract
         //Task<string> CallNone2(CObj obj);
 
         //[HttpGet("CallNone3")]
+
+        /// <response code="200">return the pain text.</response>
         [HttpGet]
         Task<string> CallNone3();
 
@@ -107,10 +109,10 @@ namespace DataContract
         ///// <returns></returns>
         //Task<string> Call3Async(CallObj obj, string s1, Func<double, Task> cb, CancellationToken token);
 
-        [HttpGet]
-        Task<string> Call4Async(CallObj obj, Func<double, Task> cb, CancellationToken token);
+        //[HttpGet]
+        //Task<string> Call4Async(CallObj obj, Func<double, Task> cb, CancellationToken token);
 
-        Task<string> Call5Async(string p1, int p2, Func<double, Task> cb, CancellationToken token);
+        //Task<string> Call5Async(string p1, int p2, Func<double, Task> cb, CancellationToken token);
     }
 
     /// <summary>

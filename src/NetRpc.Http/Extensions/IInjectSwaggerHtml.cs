@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace NetRpc.Http.Abstract
+﻿
+namespace NetRpc.Http
 {
     public interface IInjectSwaggerHtml
     {

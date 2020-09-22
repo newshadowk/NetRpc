@@ -8,7 +8,6 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using NetRpc;
 using NetRpc.Http;
-using NetRpc.Http.Abstract;
 using NetRpc.Http.Client;
 using Helper = NetRpc.Http.Helper;
 
@@ -44,6 +43,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddTransient<INSwaggerProvider, NSwaggerProvider>();
             services.TryAddSingleton<SwaggerKeyRoles>();
             services.TryAddSingleton<IInjectSwaggerHtml, NullInjectSwaggerHtml>();
+
             return services;
         }
 

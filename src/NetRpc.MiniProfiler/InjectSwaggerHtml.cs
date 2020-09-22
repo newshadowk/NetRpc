@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using NetRpc.Http.Abstract;
+﻿using NetRpc.Http;
 
 namespace NetRpc.MiniProfiler
 {
-    public class InjectSwaggerHtml: IInjectSwaggerHtml
+    public class InjectSwaggerHtml : IInjectSwaggerHtml
     {
         public string InjectHtml(string html)
         {

@@ -1,10 +1,10 @@
-﻿<!-- HTML for static distribution bundle build -->
+<!-- HTML for static distribution bundle build -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <title>Swagger UI</title>
-    <link rel="stylesheet" type="text/css" href="./swagger-ui.css">
+    <link rel="stylesheet" type="text/css" href="./swagger-ui.css" >
     <link rel="icon" type="image/png" href="./favicon-32x32.png" sizes="32x32" />
     <link rel="icon" type="image/png" href="./favicon-16x16.png" sizes="16x16" />
     <!-- viewDialog -->
@@ -12,24 +12,27 @@
     <script src="./dialog/signalr.js"></script>
     <!-- viewDialog end-->
     <style>
-        html {
-            box-sizing: border-box;
-            overflow: -moz-scrollbars-vertical;
-            overflow-y: scroll;
-        }
+      html
+      {
+        box-sizing: border-box;
+        overflow: -moz-scrollbars-vertical;
+        overflow-y: scroll;
+      }
 
-        *,
-        *:before,
-        *:after {
-            box-sizing: inherit;
-        }
+      *,
+      *:before,
+      *:after
+      {
+        box-sizing: inherit;
+      }
 
-        body {
-            margin: 0;
-            background: #fafafa;
-        }
+      body
+      {
+        margin:0;
+        background: #fafafa;
+      }
     </style>
-</head>
+  </head>
 
   <body>
       <!-- viewDialog -->
@@ -46,28 +49,28 @@
 
       <div id="swagger-ui"></div>
 
-      <script src="./swagger-ui-bundle.js"></script>
-      <script src="./swagger-ui-standalone-preset.js"></script>
-      <script>
-          window.onload = function () {
-              // Begin Swagger UI call region
-              const ui = SwaggerUIBundle({
-                  url: "{url}",
-                  dom_id: '#swagger-ui',
-                  deepLinking: true,
-                  presets: [
-                      SwaggerUIBundle.presets.apis,
-                      SwaggerUIStandalonePreset
-                  ],
-                  plugins: [
-                      SwaggerUIBundle.plugins.DownloadUrl
-                  ],
-                  layout: "StandaloneLayout"
-              })
-              // End Swagger UI call region
+    <script src="./swagger-ui-bundle.js" charset="UTF-8"> </script>
+    <script src="./swagger-ui-standalone-preset.js" charset="UTF-8"> </script>
+    <script>
+    window.onload = function() {
+      // Begin Swagger UI call region
+      const ui = SwaggerUIBundle({
+        url: "{url}",
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        plugins: [
+          SwaggerUIBundle.plugins.DownloadUrl
+        ],
+        layout: "StandaloneLayout"
+      })
+      // End Swagger UI call region
 
-              window.ui = ui;
-          }
-      </script>
+      window.ui = ui
+    }
+  </script>
   </body>
 </html>

@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace NetRpc.Http.Abstract
+﻿namespace NetRpc.Http
 {
-    public class NullInjectSwaggerHtml: IInjectSwaggerHtml
+    public class NullInjectSwaggerHtml : IInjectSwaggerHtml
     {
         public string InjectHtml(string html)
         {

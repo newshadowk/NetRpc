@@ -1,23 +1,19 @@
 ﻿using System;
 using Microsoft.AspNetCore.Builder;
-using NetRpc.Http.Abstract;
+using NetRpc.Http;
 using NetRpc.MiniProfiler;
 using StackExchange.Profiling;
-using StackExchange.Profiling.Storage;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class MiniProfilerExtensions
     {
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="services"></param>
         /// <param name="configureOptions">https://miniprofiler.com/dotnet/AspDotNetCore</param>
-        /// <returns></returns>
         public static IServiceCollection AddNMiniProfiler(this IServiceCollection services, Action<MiniProfilerOptions>? configureOptions = null)
         {
             services.AddSingleton<IInjectSwaggerHtml, InjectSwaggerHtml>();
+
             configureOptions ??= options =>
             {
                 // All of this is optional. You can simply call .AddMiniProfiler() for all defaults
@@ -60,7 +56,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 // (Optional) Use something other than the "light" color scheme.
                 // (defaults to "light")
-                options.ColorScheme = StackExchange.Profiling.ColorScheme.Auto;
+                options.ColorScheme = ColorScheme.Auto;
 
                 // The below are newer options, available in .NET Core 3.0 and above:
 

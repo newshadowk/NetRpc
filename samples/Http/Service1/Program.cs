@@ -51,6 +51,7 @@ namespace Service
                             Role = "RAll"
                         });
                     });
+                    services.AddNMiniProfiler();
                     services.AddNHttpService();
                     services.AddNServiceContract<IService2Async, Service2Async>();
                 })
@@ -76,6 +77,7 @@ namespace Service
                         endpoints.MapHub<CallbackHub>("/callback");
                     });
                     app.UseNSwagger();
+                    app.UseNMiniProfiler();
                     app.UseNHttp();
                 })
                 .Build();
