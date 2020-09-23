@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DataContract;
+using NetRpc.Contract;
 using NetRpc.Grpc;
 
 namespace Client
@@ -15,7 +16,20 @@ namespace Client
                 Port = 50001
             });
 
-            await p.Proxy.Call("hello world.");
+            try
+            {
+                await p.Proxy.Call("hello world.");
+            }
+            catch (FaultException e)
+            {
+                Console.WriteLine(e.Detail.StackTrace);
+                throw;
+            }
+            catch (Exception e)
+            {
+
+            }
+            
 
             Console.Read();
         }

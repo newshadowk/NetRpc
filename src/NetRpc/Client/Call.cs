@@ -19,6 +19,7 @@ namespace NetRpc
         private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
         private volatile int _timeoutInterval;
         private readonly bool _forwardHeader;
+        private static readonly AsyncLocal<Dictionary<string, object?>> AsyncLocalHeader = new AsyncLocal<Dictionary<string, object?>>();
 
         public Call(Guid clientProxyId,
             ContractInfo contractInfo,
@@ -43,11 +44,22 @@ namespace NetRpc
 
         public Dictionary<string, object?> AdditionHeader { get; set; } = new Dictionary<string, object?>();
 
+        public static Dictionary<string, object?> AdditionContextHeader
+        {
+            get
+            {
+                if (AsyncLocalHeader.Value == null)
+                    AsyncLocalHeader.Value = new Dictionary<string, object?>();
+                return AsyncLocalHeader.Value;
+            }
+            set => AsyncLocalHeader.Value = value;
+        }
+
         public async Task<object?> CallAsync(MethodInfo methodInfo, Func<object?, Task>? callback, CancellationToken token, Stream? stream,
             params object?[] pureArgs)
         {
             //merge header
-            var mergeHeader = MergeHeader(AdditionHeader, _actionExecutingContextAccessor.Context?.Header);
+            var mergeHeader = MergeHeader();
 
             //start
             var call = await _factory.CreateAsync(_timeoutInterval);
@@ -85,20 +97,24 @@ namespace NetRpc
             return readStream;
         }
 
-        private Dictionary<string, object?> MergeHeader(Dictionary<string, object?> additionHeader, Dictionary<string, object?>? contextHeader)
+        //private Dictionary<string, object?> MergeHeader(Dictionary<string, object?> additionHeader, Dictionary<string, object?>? contextHeader)
+        private Dictionary<string, object?> MergeHeader()
         {
+            //_actionExecutingContextAccessor.Context?.Header is immutable here, should only change via middleware.
+            var contextH = _actionExecutingContextAccessor.Context?.Header;
             var dic = new Dictionary<string, object?>();
-
             if (_forwardHeader)
             {
-                if (contextHeader != null && contextHeader.Count > 0)
-                    foreach (var key in contextHeader.Keys)
-                        dic.Add(key, contextHeader[key]);
+                if (contextH != null)
+                    foreach (var key in contextH.Keys)
+                        dic.Add(key, contextH[key]);
             }
 
-            if (additionHeader.Count > 0)
-                foreach (var key in additionHeader.Keys)
-                    dic[key] = additionHeader[key];
+            foreach (var key in AdditionHeader.Keys)
+                dic[key] = AdditionHeader[key];
+
+            foreach (var key in AdditionContextHeader.Keys)
+                dic[key] = AdditionContextHeader[key];
 
             return dic;
         }

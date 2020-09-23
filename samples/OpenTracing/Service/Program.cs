@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetRpc;
+using NetRpc.Contract;
 using NetRpc.Grpc;
 using NetRpc.Http;
 using NetRpc.Jaeger;
@@ -25,7 +26,7 @@ namespace Service
         {
             var h = WebHost.CreateDefaultBuilder(null)
                 //.UseDefaultServiceProvider(i =>i.ValidateScopes = false)
-                .ConfigureKestrel(options => { options.ListenAnyIP(5001); })
+                .ConfigureKestrel(options => { options.ListenAnyIP(5101); })
                 .ConfigureServices(services =>
                 {
                     services.AddCors();
@@ -48,9 +49,9 @@ namespace Service
                     });
                     services.AddNGrpcClient(null, null, ServiceLifetime.Scoped);
 
-                    services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5001/swagger");
-                    services.Configure<ClientSwaggerOptions>("grpc1", i => i.HostPath = "http://localhost:5002/swagger");
-                    services.Configure<ClientSwaggerOptions>("grpc2", i => i.HostPath = "http://localhost:5003/swagger");
+                    services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5101/swagger");
+                    services.Configure<ClientSwaggerOptions>("grpc1", i => i.HostPath = "http://localhost:5102/swagger");
+                    services.Configure<ClientSwaggerOptions>("grpc2", i => i.HostPath = "http://localhost:5103/swagger");
                     
                     services.AddNJaeger(i =>
                     {
@@ -150,9 +151,24 @@ namespace Service
             //    }
             //});
 
-            await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1(obj, 101, true,
-                async i => { _logger.LogInformation($"tid:{GlobalTracer.Instance?.ActiveSpan.Context.TraceId}, callback:{i}"); }, default);
+            try
+            {
+                await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1(obj, 101, true,
+                    async i => { _logger.LogInformation($"tid:{GlobalTracer.Instance?.ActiveSpan.Context.TraceId}, callback:{i}"); }, default);
+            }
+            catch (FaultException e)
+            {
+                var aa = e.Detail.StackTrace;
+                Console.WriteLine(e.Detail.StackTrace);
+                throw;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
 
+       
             //await _factory.CreateProxy<IService_2>("grpc2").Proxy.Call_2(false);
 
             return new Result();

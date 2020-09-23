@@ -50,6 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
         {
             services.AddNRabbitMQClient(mQClientConfigureOptions, clientConfigureOptions, serviceLifetime);
+            services.Configure<NClientOption>(i => i.ForwardHeader = true);
             services.AddNClientContract<TService>(serviceLifetime);
             services.AddNServiceContract(typeof(TService),
                 p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))).Proxy,

@@ -18,11 +18,17 @@ namespace NetRpc
         public event AsyncEventHandler? HeartbeatAsync;
         private readonly object _lockObj = new object();
         private readonly IOnceCallFactory _factory;
+        private readonly Call _call;
         private readonly ILogger _logger;
         private bool _isConnected;
         private readonly Timer _tHearbeat;
-        private readonly Call _call;
         public Guid Id { get; } = Guid.NewGuid();
+
+        public Dictionary<string, object?> AdditionContextHeader
+        {
+            get => Call.AdditionContextHeader;
+            set => Call.AdditionContextHeader = value;
+        }
 
         public Dictionary<string, object?> AdditionHeader
         {

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using DataContract;
 using Microsoft.Extensions.Hosting;
@@ -21,6 +23,7 @@ namespace Service
     {
         public async Task Call(string s)
         {
+            throw new Exception("sdf");
             Console.WriteLine($"Receive: {s}");
         }
     }

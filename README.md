@@ -404,7 +404,7 @@ try
 }
 catch (FaultException<NotImplementedException> e)
 {
-    //e.Deta.StackTrace will get the orginal info.
+    //e.Detail.StackTrace will get the orginal info. (http channel do not support)
 }
 catch (FaultException e2)
 {

@@ -19,7 +19,7 @@ namespace Service
         static async Task Main(string[] args)
         {
             var h = WebHost.CreateDefaultBuilder(null)
-                .ConfigureKestrel(options => { options.ListenAnyIP(5004); })
+                .ConfigureKestrel(options => { options.ListenAnyIP(5104); })
                 .ConfigureServices(services =>
                 {
                     services.AddCors();
@@ -30,7 +30,7 @@ namespace Service
                     services.AddNGrpcService(i => { i.AddPort("0.0.0.0", 50004); });
                     services.AddNServiceContract<IService_1_1, Service>();
 
-                    services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5004/swagger");
+                    services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5104/swagger");
                     services.AddNJaeger(i =>
                     {
                         i.Host = "m.k8s.yx.com";

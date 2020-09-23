@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using NetRpc;
+using NetRpc.Contract;
 using NetRpc.Grpc;
 using NetRpc.Http;
 using NetRpc.Http.Client;
@@ -21,7 +22,7 @@ namespace Service_1
         static async Task Main(string[] args)
         {
             var h = WebHost.CreateDefaultBuilder(null)
-                .ConfigureKestrel(options => { options.ListenAnyIP(5002); })
+                .ConfigureKestrel(options => { options.ListenAnyIP(5102); })
                 .ConfigureServices(services =>
                 {
                     services.AddCors();
@@ -42,15 +43,15 @@ namespace Service_1
                     services.Configure<HttpClientOptions>("http",
                         i =>
                         {
-                            i.ApiUrl = "http://localhost:5004";
-                            i.SignalRHubUrl = "http://localhost:5004/callback";
+                            i.ApiUrl = "http://localhost:5104";
+                            i.SignalRHubUrl = "http://localhost:5104/callback";
                         });
 
                     services.AddNGrpcClient();
                     services.AddNHttpClient();
 
-                    services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5002/swagger");
-                    services.Configure<ClientSwaggerOptions>(i => i.HostPath = "http://localhost:5004/swagger");
+                    services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5102/swagger");
+                    services.Configure<ClientSwaggerOptions>(i => i.HostPath = "http://localhost:5104/swagger");
                     services.AddNJaeger(i =>
                     {
                         i.Host = "m.k8s.yx.com";
@@ -83,7 +84,7 @@ namespace Service_1
 
         public Service(IClientProxyFactory factory)
         {
-            _proxy = factory.CreateProxy<IService_1_1>("http");
+            _proxy = factory.CreateProxy<IService_1_1>("grpc");
         }
 
         public async Task<Result> Call_1(SendObj s, int i1, bool b1, Func<int, Task> cb, CancellationToken token)
@@ -101,7 +102,18 @@ namespace Service_1
                 Console.WriteLine("tid:" + GlobalTracer.Instance.ActiveSpan.Context.TraceId);
                 await cb(i);
             };
-            await _proxy.Proxy.Call_1_1(201, newCb, token);
+
+            try
+            {
+                await _proxy.Proxy.Call_1_1(201, newCb, token);
+            }
+            catch (FaultException e)
+            {
+                var aa = e.Detail.StackTrace;
+                Console.WriteLine(e);
+                throw;
+            }
+
             return new Result();
         }
 
