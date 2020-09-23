@@ -10,12 +10,12 @@ namespace NetRpc.Http
         private long _currSize;
         private readonly object _lockObj = new object();
         private readonly long _totalSize;
-        private int _speed;
+        private long _speed;
         private TimeSpan _leftTimeSpan;
         private readonly Queue<long> _qOldSize = new Queue<long>();
         private const int GapSecs = 2;
 
-        public int Speed
+        public long Speed
         {
             get
             {
@@ -74,14 +74,20 @@ namespace NetRpc.Http
             throw new ArgumentOutOfRangeException("", $"ProgessCounter.GetDataFromQueue() failed. q.Count is greater than {GapSecs} ");
         }
 
-        private static (int speed, TimeSpan leftTimeSpan) Count(long currSize, long totalSize, long oldSize, int spanSecs)
+        private static (long speed, TimeSpan leftTimeSpan) Count(long currSize, long totalSize, long oldSize, int spanSecs)
         {
-            var speed = (int)(currSize - oldSize) / spanSecs;
+            var speed = (currSize - oldSize) / spanSecs;
+
             long leftSec;
-            if (speed == 0)
-                leftSec = (long)TimeSpan.MaxValue.TotalSeconds;
+            if (speed == 0 || totalSize == 0)
+                leftSec = 0;
             else
+            {
                 leftSec = (totalSize - currSize) / speed;
+                if (leftSec >= TimeSpan.MaxValue.TotalSeconds) 
+                    leftSec = 0;
+            }
+
             var leftTimeSpan = TimeSpan.FromSeconds(leftSec);
 
             return (speed, leftTimeSpan);

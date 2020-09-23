@@ -8,16 +8,16 @@
 
         public double Percent { get; set; }
 
-        public int LeftSeconds { get; set; }
+        public long LeftSeconds { get; set; }
 
         /// <summary>
         /// byte/s
         /// </summary>
-        public int Speed { get; set; }
+        public long Speed { get; set; }
 
         public string SpeedStr { get; set; }
 
-        public ProgressEventArgs(long currSize, long totalSize, double percent, int leftSeconds, int speed, string speedStr)
+        public ProgressEventArgs(long currSize, long totalSize, double percent, long leftSeconds, long speed, string speedStr)
         {
             CurrSize = currSize;
             TotalSize = totalSize;

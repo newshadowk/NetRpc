@@ -92,12 +92,20 @@ namespace Service
             return s;
         }
 
-        public async Task<string> CallNone(CObj obj, Stream stream)
+        public async Task<string> CallNone(CObj obj, Func<double, Task> cb, Stream stream)
         {
+            var ss = stream as ProxyStream;
+            //ss.ProgressAsync += async (s, e) =>
+            //{
+            //    Console.WriteLine(e.Value);
+            //    await cb(e.Value);
+            //};
             MemoryStream ms = new MemoryStream();
             await stream.CopyToAsync(ms);
             return stream.Length.ToString();
         }
+
+     
 
         public async Task Call0Async(Guid taskId)
         {

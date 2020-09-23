@@ -61,41 +61,41 @@ namespace DataContract
     //[Tag("RoutTag1")]
     public interface IService2Async
     {
-        //Task<string> CallNone(CObj obj, Stream stream);
+        Task<string> CallNone(CObj obj, Func<double, Task> cb, Stream stream);
 
         //Task<string> CallNone2(CObj obj);
 
         //[HttpGet("CallNone3")]
 
         /// <response code="200">return the pain text.</response>
-        [HttpGet]
-        Task<string> CallNone3();
+        //[HttpGet]
+        //Task<string> CallNone3();
 
-        [Tag("CallTag1")]
-        [HttpPost]
-        [HttpRoute("Call1/{p1}")]
-        [HttpGet("/Root/Call/{p1}")]
-        [HttpTrimAsync]
-        Task<string> Call1Async(string p1, int p2);
+        //[Tag("CallTag1")]
+        //[HttpPost]
+        //[HttpRoute("Call1/{p1}")]
+        //[HttpGet("/Root/Call/{p1}")]
+        //[HttpTrimAsync]
+        //Task<string> Call1Async(string p1, int p2);
 
-        [HttpGet]
-        [HttpDelete]
-        [HttpHead]
-        [HttpPut]
-        [HttpPatch]
-        [HttpOptions]
-        [HttpGet("Call2/{P1}/{P2}/Get")]
-        [HttpPost("Call2/{P1}/Post")]
-        Task<string> Call2Async(CallObj obj);
+        //[HttpGet]
+        //[HttpDelete]
+        //[HttpHead]
+        //[HttpPut]
+        //[HttpPatch]
+        //[HttpOptions]
+        //[HttpGet("Call2/{P1}/{P2}/Get")]
+        //[HttpPost("Call2/{P1}/Post")]
+        //Task<string> Call2Async(CallObj obj);
 
-        /// <summary>
-        /// Call3Async des
-        /// </summary>
-        /// <param name="obj">obj des</param>
-        /// <param name="s1">s1 des</param>
-        /// <returns></returns>
-        [HttpPost("Call3/{s1}")]
-        Task<string> Call3Async(CallObj obj, string s1);
+        ///// <summary>
+        ///// Call3Async des
+        ///// </summary>
+        ///// <param name="obj">obj des</param>
+        ///// <param name="s1">s1 des</param>
+        ///// <returns></returns>
+        //[HttpPost("Call3/{s1}")]
+        //Task<string> Call3Async(CallObj obj, string s1);
 
         //Task<string> Call3Async(CallObj obj);
 

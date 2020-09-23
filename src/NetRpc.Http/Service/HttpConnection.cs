@@ -43,11 +43,7 @@ namespace NetRpc.Http
 
                 value.ProgressAsync += (s, e) =>
                 {
-                    ProgressEventArgs args;
-                    if (value.Length == 0)
-                        args = _progressEvent.DownLoaderProgress(e.Value, long.MaxValue);
-                    else
-                        args = _progressEvent.DownLoaderProgress(e.Value, value.Length);
+                    var args = _progressEvent.DownLoaderProgress(e.Value, value.Length);
 
                     _ra.Post(() =>
                     {
