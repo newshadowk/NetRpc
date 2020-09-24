@@ -1,13 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net5.0</TargetFrameworks>
     <SignAssembly>true</SignAssembly>
     <Description>Provide http channel implementation for NetRpc.</Description>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' OR '$(TargetFramework)' == 'netcoreapp2.2'">
-    <PackageReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
   <ItemGroup>
     <None Remove="SwaggerUi3\dialog\dialog.css" />
     <None Remove="SwaggerUi3\swagger-ui-es-bundle-core.js" />

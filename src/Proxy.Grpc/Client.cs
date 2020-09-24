@@ -1,9 +1,5 @@
 ﻿using System;
-#if NETCOREAPP3_1
 using Channel = Grpc.Net.Client.GrpcChannel;
-#else
-using Channel = Grpc.Core.Channel;
-#endif
 
 namespace Proxy.Grpc
 {
@@ -38,11 +34,7 @@ namespace Proxy.Grpc
             if (_disposed)
                 return;
 
-#if NETCOREAPP3_1
             _channel.Dispose();
-#else
-            await _channel.ShutdownAsync();
-#endif
             _disposed = true;
         }
     }

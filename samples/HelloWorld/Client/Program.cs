@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Text;
 using System.Threading.Tasks;
 using DataContract;
-using NetRpc.Contract;
+using Google.Protobuf;
+using Grpc.Net.Client;
 using NetRpc.Grpc;
+using Proxy.Grpc;
 
 namespace Client
 {
@@ -10,27 +13,20 @@ namespace Client
     {
         static async Task Main(string[] args)
         {
-            var p = NManager.CreateClientProxy<IService>(new GrpcClientOptions
-            {
-                Host = "localhost",
-                Port = 50001
-            });
+            AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
 
-            try
-            {
-                await p.Proxy.Call("hello world.");
-            }
-            catch (FaultException e)
-            {
-                Console.WriteLine(e.Detail.StackTrace);
-                throw;
-            }
-            catch (Exception e)
-            {
+            var channel = GrpcChannel.ForAddress("http://localhost:50001");
 
-            }
-            
+            var client = new MessageCall.MessageCallClient(channel);
+            var api = client.DuplexStreamingServerMethod();
 
+            await api.RequestStream.WriteAsync(new StreamBuffer() {Body = ByteString.CopyFrom("dsdf", Encoding.UTF8)});
+            //var p = NManager.CreateClientProxy<IService>(new GrpcClientOptions
+            //{
+            //    Url = "http://localhost:50001"
+            //});
+
+            //await p.Proxy.Call("hello world.");
             Console.Read();
         }
     }

@@ -28,7 +28,6 @@ namespace NetRpc
             await CacheStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
-#if NETSTANDARD2_1 || NETCOREAPP3_1
         protected ValueTask WriteCacheAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
         {
             if (CacheStream == null)
@@ -40,7 +39,6 @@ namespace NetRpc
         {
             CacheStream?.Write(buffer);
         }
-#endif
 
         protected async Task InvokeFinishAsync(SizeEventArgs e)
         {

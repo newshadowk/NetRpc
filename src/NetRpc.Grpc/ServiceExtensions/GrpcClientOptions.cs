@@ -1,6 +1,4 @@
-﻿#if NETCOREAPP3_1
-using Grpc.Net.Client;
-#endif
+﻿using Grpc.Net.Client;
 namespace NetRpc.Grpc
 {
     /// <summary>
@@ -8,7 +6,6 @@ namespace NetRpc.Grpc
     /// </summary>
     public class GrpcClientOptions
     {
-#if NETCOREAPP3_1
         public GrpcChannelOptions? ChannelOptions { get; set; } = new GrpcChannelOptions();
 
         public string? Url { get; set; }
@@ -17,16 +14,5 @@ namespace NetRpc.Grpc
         {
             return Url ?? "";
         }
-#else
-        public string? Host { get; set; }
-        public int Port { get; set; }
-        public string? PublicKey { get; set; }
-        public string? SslTargetName { get; set; }
-
-        public override string ToString()
-        {
-            return $"{Host}:{Port}, {SslTargetName}";
-        }
-#endif
     }
 }

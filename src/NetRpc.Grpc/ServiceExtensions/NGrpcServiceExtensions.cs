@@ -2,28 +2,13 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetRpc;
 using NetRpc.Grpc;
-
-#if NETCOREAPP3_1
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-#endif
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class NGrpcServiceExtensions
     {
-#if !NETCOREAPP3_1
-        public static IServiceCollection AddNGrpcService(this IServiceCollection services, Action<NGrpcServiceOptions>? configureOptions = null)
-        {
-            if (configureOptions != null)
-                services.Configure(configureOptions);
-
-            services.AddNService();
-            services.AddHostedService<GrpcHostedService>();
-            services.AddSingleton(typeof(MessageCallImpl));
-            return services;
-        }
-#else
         public static IServiceCollection AddNGrpcService(this IServiceCollection services, Action<Grpc.AspNetCore.Server.GrpcServiceOptions>? configureOptions = null)
         {
             if (configureOptions != null)
@@ -34,9 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddNService();
             return services;
         }
-#endif
 
-#if NETCOREAPP3_1
         public static IApplicationBuilder UseNGrpc(this IApplicationBuilder app)
         {
             app.UseRouting();
@@ -50,7 +33,6 @@ namespace Microsoft.Extensions.DependencyInjection
             });
             return app;
         }
-#endif
 
         public static IServiceCollection AddNGrpcGateway<TService>(this IServiceCollection services,
             Action<GrpcClientOptions>? grpcClientConfigureOptions = null,

@@ -393,20 +393,7 @@ namespace NetRpc
                     }
                 }
 
-#if NETCOREAPP3_1
                 return _constructor.Invoke(BindingFlags.DoNotWrapExceptions, binder: null, parameters: _parameterValues, culture: null);
-#else
-                try
-                {
-                    return _constructor.Invoke(_parameterValues);
-                }
-                catch (TargetInvocationException ex) when (ex.InnerException != null)
-                {
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                    // The above line will always throw, but the compiler requires we throw explicitly.
-                    throw;
-                }
-#endif
             }
         }
 

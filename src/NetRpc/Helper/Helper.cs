@@ -389,17 +389,10 @@ namespace NetRpc
                 null, classInstance, new object[] { });
         }
 
-#if NETSTANDARD2_1 || NETCOREAPP3_1
         public static ValueTask ComWriteAsync(this Stream stream, ReadOnlyMemory<byte> buffer)
         {
             return stream.WriteAsync(buffer);
         }
-#else
-        public static Task ComWriteAsync(this Stream stream, ReadOnlyMemory<byte> buffer)
-        {
-            return stream.WriteAsync(buffer.ToArray(), 0, buffer.Length);
-        }
-#endif
 
         private static async Task<int> GreedReadAsync(this Stream stream, byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {

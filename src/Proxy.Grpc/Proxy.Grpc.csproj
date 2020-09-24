@@ -1,21 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;netcoreapp2.1;netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net5.0</TargetFrameworks>
     <SignAssembly>true</SignAssembly>
     <Description>Provide api proxy for Grpc, NetRpc.</Description>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- net461 better use 3.11.2, do not upgarde, have not test yet. -->
-    <PackageReference Include="Google.Protobuf" Version="3.11.2" />
-    <!-- net461 mustbe 2.25.0 because 2.26.0 can not work. -->
-    <PackageReference Include="Grpc" Version="[2.25.0]" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.1" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+    <PackageReference Include="Google.Protobuf" Version="3.13.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.31.0" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageReference Include="Grpc.Net.Client" Version="2.29.0" />
+
+  <ItemGroup>
+    <Folder Include="Message\" />
   </ItemGroup>
 </Project>

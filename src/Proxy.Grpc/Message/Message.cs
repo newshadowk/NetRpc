@@ -30,8 +30,8 @@ namespace Proxy.Grpc {
             "eHkuR3JwYy5TdHJlYW1CdWZmZXIiACgBMAFiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proxy.Grpc.StreamBuffer), global::Proxy.Grpc.StreamBuffer.Parser, new[]{ "Body" }, null, null, null)
+          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proxy.Grpc.StreamBuffer), global::Proxy.Grpc.StreamBuffer.Parser, new[]{ "Body" }, null, null, null, null)
           }));
     }
     #endregion

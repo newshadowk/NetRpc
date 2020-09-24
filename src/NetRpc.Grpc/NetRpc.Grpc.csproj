@@ -1,34 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;netcoreapp2.1;netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net5.0</TargetFrameworks>
     <SignAssembly>true</SignAssembly>
     <Description>Provide grpc channel implementation for NetRpc.</Description>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'netcoreapp2.2'">
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="[2.2.0, 3.0.0)" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[2.2.0, 3.0.0)" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, 3.0.0)" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="[2.1.0, 2.2.0)" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[2.1.0, 2.2.0)" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="[2.1.0, 2.2.0)" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="[3.1.0, 3.2.0)" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[3.1.0, 3.2.0)" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="[3.1.0, 3.2.0)" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageReference Include="Grpc.AspNetCore" Version="2.29.0" />
-    <PackageReference Include="Grpc.Net.Client" Version="2.29.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="[3.1.0, 3.2.0)" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[3.1.0, 3.2.0)" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="[3.1.0, 3.2.0)" />
+  <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.31.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NetRpc\NetRpc.csproj" />

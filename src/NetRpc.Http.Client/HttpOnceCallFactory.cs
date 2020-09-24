@@ -40,18 +40,7 @@ namespace NetRpc.Http.Client
                     }
                 }
             }
-#if NETCOREAPP2_1
-            try
-            {
-                await _connection.StartAsync();
-                _connId = await _connection.InvokeAsync<string>("GetConnId");
-                return _connId;
-            }
-            catch (Exception e)
-            {
-                _logger.LogWarning(e, "_connection.StartAsync() failed.");
-            }
-#else
+
             // ReSharper disable once PossibleNullReferenceException
             if (_connection!.State == HubConnectionState.Disconnected)
             {
@@ -72,7 +61,6 @@ namespace NetRpc.Http.Client
                     }
                 }
             }
-#endif
             return _connId!;
         }
 

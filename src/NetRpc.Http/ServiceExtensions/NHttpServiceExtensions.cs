@@ -26,19 +26,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddSwaggerGen(i =>
             {
-#if !NETCOREAPP3_1
-#pragma warning disable 618
-                i.DescribeAllEnumsAsStrings();
-#pragma warning restore 618
-#endif
                 paths.ForEach(path => { i.IncludeXmlComments(path); });
                 i.SchemaFilter<ExampleSchemaFilter>();
             });
 
-#if NETCOREAPP3_1
             services.AddControllers().AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-#endif
 
             services.TryAddTransient<INSwaggerProvider, NSwaggerProvider>();
             services.TryAddSingleton<SwaggerKeyRoles>();

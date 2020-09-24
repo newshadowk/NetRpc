@@ -1,6 +1,4 @@
-﻿#if NETSTANDARD2_1 || NETCOREAPP3_1
-using System;
-#endif
+﻿using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,8 +31,6 @@ namespace NetRpc
             _length = length;
             _manualPosition = manualPosition;
         }
-
-#if NETSTANDARD2_1 || NETCOREAPP3_1
 
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = new CancellationToken())
         {
@@ -92,8 +88,6 @@ namespace NetRpc
         {
             _stream.Write(buffer);
         }
-
-#endif
 
         public override void Flush()
         {

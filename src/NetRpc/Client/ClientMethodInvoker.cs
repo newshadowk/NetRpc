@@ -69,7 +69,7 @@ namespace NetRpc
             }
 
             //token
-            CancellationToken retToken;
+            CancellationToken retToken = CancellationToken.None;
             found = objs.FirstOrDefault(i => i is CancellationToken);
             if (found != null)
             {

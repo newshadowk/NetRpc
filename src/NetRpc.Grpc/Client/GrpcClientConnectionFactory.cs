@@ -1,14 +1,8 @@
 ﻿using Proxy.Grpc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
-#if NETCOREAPP3_1
 using System;
 using Grpc.Net.Client;
-#else
-using Grpc.Core;
-using System.Collections.Generic;
-#endif
 
 namespace NetRpc.Grpc
 {
@@ -26,28 +20,9 @@ namespace NetRpc.Grpc
 
         private void Reset(GrpcClientOptions opt)
         {
-#if NETCOREAPP3_1
             var host = new Uri(opt.Url!).Host;
             var port = new Uri(opt.Url!).Port;
             _client = new Client(GrpcChannel.ForAddress(opt.Url!, opt.ChannelOptions!), host, port, opt.ToString());
-#else
-            if (string.IsNullOrEmpty(opt.PublicKey))
-                _client = new Client(new Channel(opt.Host, opt.Port, ChannelCredentials.Insecure), opt.Host!, opt.Port, opt.ToString());
-            else
-            {
-                Channel channel;
-                var ssl = new SslCredentials(opt.PublicKey);
-                if (string.IsNullOrEmpty(opt.SslTargetName))
-                    channel = new Channel(opt.Host, opt.Port, ssl);
-                else
-                {
-                    var options = new List<ChannelOption>();
-                    options.Add(new ChannelOption(ChannelOptions.SslTargetNameOverride, opt.SslTargetName));
-                    channel = new Channel(opt.Host, opt.Port, ssl, options);
-                }
-                _client = new Client(channel, opt.Host!, opt.Port, opt.ToString());
-            }
-#endif
             _client.Connect();
         }
     

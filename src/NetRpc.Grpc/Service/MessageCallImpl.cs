@@ -6,7 +6,7 @@ using Proxy.Grpc;
 
 namespace NetRpc.Grpc
 {
-    internal sealed class MessageCallImpl : MessageCall.MessageCallBase
+    public sealed class MessageCallImpl : MessageCall.MessageCallBase
     {
         private readonly BusyFlag _busyFlag;
         private readonly RequestHandler _requestHandler;

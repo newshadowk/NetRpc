@@ -139,11 +139,7 @@ namespace NetRpc
             {
                 try
                 {
-#if NETSTANDARD2_1 || NETCOREAPP3_1
-                    await
-#endif
-
-                    using (retStream)
+                    await using (retStream)
                     {
                         await Helper.SendStreamAsync(
                             i => _convert.SendBufferAsync(i), 
