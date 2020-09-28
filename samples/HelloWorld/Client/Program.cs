@@ -15,11 +15,9 @@ namespace Client
         {
             AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
 
-            var channel = GrpcChannel.ForAddress("http://localhost:50001");
-
+            var channel = GrpcChannel.ForAddress("https://localhost:50001");
             var client = new MessageCall.MessageCallClient(channel);
             var api = client.DuplexStreamingServerMethod();
-
             await api.RequestStream.WriteAsync(new StreamBuffer() {Body = ByteString.CopyFrom("dsdf", Encoding.UTF8)});
             //var p = NManager.CreateClientProxy<IService>(new GrpcClientOptions
             //{

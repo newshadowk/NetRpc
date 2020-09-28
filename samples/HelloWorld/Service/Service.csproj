@@ -10,4 +10,10 @@
     <ProjectReference Include="..\DataContract\DataContract.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="server.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -39,7 +39,11 @@ namespace Service
                 {
                     webBuilder.ConfigureKestrel((context, options) =>
                         {
-                            options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+                            options.ListenAnyIP(50001, listenOptions =>
+                            {
+                                listenOptions.Protocols = HttpProtocols.Http2;
+                                listenOptions.UseHttps("server.pfx", "");
+                            });
                         })
                         .ConfigureServices((context, services) => { services.AddGrpc(); }).Configure(app =>
                         {
