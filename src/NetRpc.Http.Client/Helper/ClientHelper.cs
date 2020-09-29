@@ -1,19 +1,24 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace NetRpc.Http.Client
 {
     public static class ClientHelper
     {
-        private static readonly JsonSerializerSettings Js = new JsonSerializerSettings{ContractResolver = DtoContractResolver.Instance};
+        private static readonly JsonSerializerOptions JsOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
 
         public static object? ToDtoObject(this string str, Type t)
         {
             if (string.IsNullOrEmpty(str))
                 return default;
 
-            return JsonConvert.DeserializeObject(str, t, Js);
+            return JsonSerializer.Deserialize(str, t, JsOptions);
         }
 
         public static bool HasStream(this Type? t)
@@ -28,11 +33,12 @@ namespace NetRpc.Http.Client
             return propertyInfos.Any(i => i.PropertyType.IsStream());
         }
 
+        [return: NotNullIfNotNull("obj")]
         public static string? ToDtoJson<T>(this T obj)
         {
             if (obj == null)
                 return null;
-            return JsonConvert.SerializeObject(obj, Js);
+            return JsonSerializer.Serialize(obj, JsOptions);
         }
     }
 }

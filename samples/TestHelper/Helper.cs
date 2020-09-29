@@ -11,13 +11,6 @@ namespace TestHelper
 {
     public static class Helper
     {
-        public static NGrpcServiceOptions GetGrpcServiceOptions()
-        {
-            var opt = new NGrpcServiceOptions();
-            opt.AddPort("0.0.0.0", 50001);
-            return opt;
-        }
-
         public static MQOptions GetMQOptions()
         {
             //config your RabbitMQ parameters before run

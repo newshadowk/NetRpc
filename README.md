@@ -2,7 +2,7 @@
 [![NuGet Badge](https://buildstats.info/nuget/NetRpc)](https://www.nuget.org/packages/NetRpc/)
 [![GitHub license](https://img.shields.io/badge/license-Mit-blue)](https://github.com/newshadowk/NetRpc/blob/master/LICENSE.md)
 
-NetRpc is a light weight rpc engine base on **RabbitMQ**, **Grpc**, **Http** targeting .NET Standard 2.0/2.1.  It use the simple interface to call each other, 
+NetRpc is a light weight rpc engine base on **RabbitMQ**, **Grpc**, **Http** targeting .NET 5.0.  It use the simple interface to call each other, 
 provide callback/cancel during invoking, so especially suitable for handle **long running call**.
 
 ## NuGet
@@ -175,14 +175,16 @@ public class CustomObj
 }
 ```
 **[Important]** When returned Custom object contains a **Stream**:  
-RabbitMQ, Grpc channel make sure it mask as **[field: NonSerialized]**.  
+RabbitMQ, Grpc channel **Stream** mask as **[field: NonSerialized]**.  
+Http channel **Stream** mask as **[JsonIgnore]**.  
 ```c#
 Task<ComplexStream> GetComplexStreamAsync();
 
 [Serializable]
 public class ComplexStream
 {
-    [field: NonSerialized]
+    [field: NonSerialized]       //add for RabbitMQ, Grpc channel
+    [JsonIgnore]                 //add for http channel
     public Stream Stream { get; set; }
 
     public string OtherInfo { get; set; }

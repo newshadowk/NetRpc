@@ -22,7 +22,7 @@ namespace Service
             mqHost.RunAsync();
 
             //grpc
-            var grpcHost = NetRpc.Grpc.NManager.CreateHost(Helper.GetGrpcServiceOptions(),
+            var grpcHost = NetRpc.Grpc.NManager.CreateHost(50001,
                 null, new ContractParam<IService, Service>(), new ContractParam<IServiceAsync, ServiceAsync>());
             grpcHost.RunAsync();
             Console.Read();

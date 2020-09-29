@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json;
 using OpenTracing;
 using OpenTracing.Tag;
 
@@ -10,7 +10,11 @@ namespace NetRpc.OpenTracing
 {
     public static class Helper
     {
-        private static readonly JsonSerializerSettings Js = new JsonSerializerSettings {ContractResolver = DtoContractResolver.Instance};
+        private static readonly JsonSerializerOptions JsOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
 
         public static ISpan SetTagMethodObj(this ISpan span, IActionExecutingContext context, int maxLength, bool isForce = false)
         {
@@ -53,7 +57,7 @@ namespace NetRpc.OpenTracing
             if (obj is Stream)
                 return "Stream";
 
-            var s = JsonConvert.SerializeObject(obj, Js);
+            var s = JsonSerializer.Serialize(obj, JsOptions);
             if (maxLength > 0 && s.Length > maxLength)
                 return s.Substring(0, maxLength) + "...";
             return s;

@@ -70,8 +70,6 @@ namespace NetRpc
             }
             catch (Exception e)
             {
-                _logger.LogWarning(e, "HandleRequestAsync");
-
                 //if Post, do not need send back to client.
                 if (context != null && context.ContractMethod.IsMQPost)
                     return;
