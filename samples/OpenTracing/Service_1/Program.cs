@@ -37,8 +37,7 @@ namespace Service_1
                     services.Configure<GrpcClientOptions>("grpc",
                         i =>
                         {
-                            i.Host = "localhost";
-                            i.Port = 50004;
+                            i.Url = "http://localhost:50004";
                         });
                     services.Configure<HttpClientOptions>("http",
                         i =>
@@ -68,7 +67,11 @@ namespace Service_1
                             .AllowAnyMethod()
                             .AllowCredentials();
                     });
-                    app.UseSignalR(routes => { routes.MapHub<CallbackHub>("/callback"); });
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapHub<CallbackHub>("/callback");
+                    });
                     app.UseNSwagger();
                     app.UseNHttp();
                 })

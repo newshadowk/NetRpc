@@ -47,7 +47,11 @@ namespace Service
                             .AllowAnyMethod()
                             .AllowCredentials();
                     });
-                    app.UseSignalR(routes => { routes.MapHub<CallbackHub>("/callback"); });
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapHub<CallbackHub>("/callback");
+                    });
                     app.UseNSwagger();
                     app.UseNHttp();
                 })

@@ -30,7 +30,7 @@ namespace Client
             await TestAsync();
 
             Console.WriteLine("---- Grpc test ----");
-            GrpcClientOptions grpcOpt = new GrpcClientOptions { Host = "localhost", Port = 50000 };
+            GrpcClientOptions grpcOpt = new GrpcClientOptions { Url = "http://localhost:50000"};
             _c1 = NetRpc.Grpc.NManager.CreateClientProxy<IService>(grpcOpt);
             _c2 = NetRpc.Grpc.NManager.CreateClientProxy<IService2>(grpcOpt);
             await TestAsync();

@@ -2,7 +2,7 @@
 
 namespace DataContract
 {
-    public interface IService
+    public interface IServiceAsync
     {
         Task CallAsync(string s);
     }

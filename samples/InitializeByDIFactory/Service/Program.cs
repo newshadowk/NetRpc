@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NetRpc;
 using Helper = TestHelper.Helper;
 
 namespace Service
@@ -17,15 +18,26 @@ namespace Service
 
         static async Task RunAsync()
         {
-            var h = new HostBuilder()
-                .ConfigureServices((context, services) =>
+            var host = Host.CreateDefaultBuilder()
+                .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    services.AddNRabbitMQService(i => { i.CopyFrom(Helper.GetMQOptions()); });
-                    services.AddNGrpcService(i => i.AddPort("0.0.0.0", 50001));
-                    services.AddNServiceContract<IService, Service>();
+                    webBuilder.ConfigureKestrel((context, options) =>
+                        {
+                            options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+                        })
+                        .ConfigureServices((context, services) =>
+                        {
+                            services.AddNGrpcService();
+                            services.AddNRabbitMQService(i => { i.CopyFrom(Helper.GetMQOptions()); });
+                            services.AddNServiceContract<IService, Service>();
+                        }).Configure(app =>
+                        {
+                            app.UseNGrpc();
+                        });
                 })
                 .Build();
-            await h.RunAsync();
+
+            await host.RunAsync();
         }
     }
 

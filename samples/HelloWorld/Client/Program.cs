@@ -1,24 +1,19 @@
 ﻿using System;
-using System.Text;
 using System.Threading.Tasks;
 using DataContract;
-// ReSharper disable once RedundantUsingDirective
-using Google.Protobuf;
-using Grpc.Net.Client;
 using NetRpc.Grpc;
-using Proxy.Grpc;
 
 namespace Client
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
-            var p = NManager.CreateClientProxy<IService>(new GrpcClientOptions
+            var p = NManager.CreateClientProxy<IServiceAsync>(new GrpcClientOptions
             {
                 Url = "http://localhost:50001"
             });
-            await p.Proxy.Call("hello world.");
+            await p.Proxy.CallAsync("hello world.");
             Console.Read();
         }
     }

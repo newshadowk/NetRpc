@@ -14,15 +14,9 @@ namespace Service
     {
         static async Task Main(string[] args)
         {
-            var host = new HostBuilder()
-                .ConfigureServices((context, services) =>
-                {
-                    services.AddNGrpcService(i => { i.AddPort("0.0.0.0", 50001); });
-
-                    services.AddNServiceContract<IService, Service>();
-                    services.AddNServiceContract<IService2, Service2>();
-                })
-                .Build();
+            var host = NetRpc.Grpc.NManager.CreateHost(50001, null,
+                new ContractParam(typeof(IService), typeof(Service)),
+                new ContractParam(typeof(IService2), typeof(Service2)));
             await host.RunAsync();
         }
     }

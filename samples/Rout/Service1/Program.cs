@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 using DataContract1;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NetRpc;
 using NetRpc.Grpc;
-using TestHelper;
+using Helper = TestHelper.Helper;
 
 namespace Service
 {
@@ -19,14 +20,7 @@ namespace Service
 
         static async Task RunGrpcAsync()
         {
-            var host = new HostBuilder()
-                .ConfigureServices((context, services) =>
-                {
-                    services.AddNGrpcService(i => { i.AddPort("0.0.0.0", 50002); });
-                    services.AddNServiceContract<IService1, Service1>();
-                })
-                .Build();
-
+            var host = NManager.CreateHost(50002, null, new ContractParam(typeof(IService1), typeof(Service1)));
             await host.RunAsync();
         }
     }

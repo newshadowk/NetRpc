@@ -50,16 +50,14 @@ class Program
 {
     static void Main(string[] args)
     {
-        var o = new GrpcServiceOptions();
-        o.AddPort("0.0.0.0", 50001);
-        var host = NetRpc.Grpc.NManager.CreateHost(o, null, new Contract<IService, Service>());
+        var host = NManager.CreateHost(50001, null, new ContractParam<IServiceAsync, ServiceAsync>());
         await host.RunAsync();
     }
 }
 
-internal class Service : IService
+public class ServiceAsync : IServiceAsync
 {
-    public void Call(string s)
+    public async Task CallAsync(string s)
     {
         Console.WriteLine($"Receive: {s}");
     }
@@ -71,9 +69,11 @@ class Program
 {
     static void Main(string[] args)
     {
-        var proxy = NetRpc.Grpc.NManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure));
-        p.Proxy.Call("hello world.");
-        Console.Read();
+        var p = NManager.CreateClientProxy<IServiceAsync>(new GrpcClientOptions
+        {
+            Url = "http://localhost:50001"
+        });
+        await p.Proxy.CallAsync("hello world.");
     }
 }
 ```
@@ -108,36 +108,39 @@ There is message channel for RabbitMQ and Grpc, Http pls see topic blow.
 There has two ways to initialize service and client, See DI sample below:
 ```c#
 //service side
-var host = new HostBuilder()
-    .ConfigureServices((context, services) =>
+var host = Host.CreateDefaultBuilder()
+    .ConfigureWebHostDefaults(webBuilder =>
     {
-        services.AddNGrpcService(i => i.AddPort("0.0.0.0", 50001));
-        services.AddNRpcContractSingleton<IService, Service>();
-    })
-    .Build();
+        webBuilder.ConfigureKestrel((context, options) =>
+            {
+                options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+            })
+            .ConfigureServices((context, services) =>
+            {
+                services.AddNGrpcService();
+                services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+            }).Configure(app =>
+            {
+                app.UseNGrpc();
+            });
+    }).Build();
 ```
 ```c#
 //client side
-var host = new HostBuilder()
-    .ConfigureServices((context, services) =>
-    {
-        services.AddHostedService<GrpcHostedService>();
-        services.AddNGrpcClient(i =>
-            i.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
-        services.AddNRpcClientContract<IService>();
-    })
-    .Build();
+//register
+ServiceCollection services = new ServiceCollection();
+services.AddNGrpcClient(options => options.Url = "http://localhost:50001");
+services.AddNClientContract<IServiceAsync>();
+services.AddLogging();
+var buildServiceProvider = services.BuildServiceProvider();
 
-...
-public class GrpcHostedService : IHostedService
-{
-    private readonly ClientProxy<IService> _client;
+//get service
+var service = buildServiceProvider.GetService<IServiceAsync>();
+var clientProxy = buildServiceProvider.GetService<IClientProxy<IServiceAsync>>();
 
-    public GrpcHostedService(ClientProxy<IService> client, IService service) //DI client here.
-    {
-        _client = client;
-    }
-...
+//call remote
+await service.CallAsync("hello world.");
+await clientProxy.Proxy.CallAsync("hello world.");
 ```
 If want to inject multiple **ClientProxies**, should use **IClientProxyFactory**.
 ```c#
@@ -146,7 +149,6 @@ services.Configure<RabbitMQClientOptions>("mq1", context.Configuration.GetSectio
 services.Configure<RabbitMQClientOptions>("mq2", context.Configuration.GetSection("Mq2"));
 services.AddNRabbitMQClient();
 services.AddNRpcClientContract<IService>();
-
 ```
 
 ```c#
@@ -272,41 +274,41 @@ services.AddNRpcContract<IService, Service>(ServiceLifetime.Scoped);
 ## Context
 On service side, **Midderware** or **Filter** can access **ActionExecutingContext**, it is
 
-| Property         | Type | Description |
-| :-----           | :--- | :---------- |
-| Header           | Dictionary\<string object> | Header sent from client. |
-| Target           | object                     | Service instance of invoked action.|
-| ChannelType      | ChannelType                | Enum value: Undefined, Grpc, RabbitMQ, Http.|
-| InstanceMethodInfo | MethodInfo               | Current invoked method.  |
-| ContractMethodInfo | MethodInfo               | Current invoked contract method.  |
-| ActionInfo       | ActionInfo                 | Warpped info of current invoked method.  |
-| Args             | object[]                   | Args of invoked action.  |
-| PureArgs        | object[]                   | Args of invoked action without stream and action.  |
-| Callback         | Func\<object, Task>            | Callback of invoked action.  |
-| Token            | CancellationToken          | CancellationToken of invoked action.  |
-| Stream           | Stream                     | Stream of invoked action.  |
-| ServiceProvider  | IServiceProvider           | ServiceProvider of invoked action.  |
-| Contract         | Contract                   | Contract.|
-| MethodObj        | MethodObj                  | MethodObj.|
-| Result           | object                     | Result of invoked action.|
-| Properties       | Dictionary\<object, object>| A central location for sharing state between components during the invoking process.  |
+| Property           | Type | Description |
+| :-----             | :--- | :---------- |
+| Header             | Dictionary\<string object>  | Header sent from client. |
+| Target             | object                      | Service instance of invoked action.|
+| ChannelType        | ChannelType                 | Enum value: Undefined, Grpc, RabbitMQ, Http.|
+| InstanceMethodInfo | MethodInfo                  | Current invoked method.  |
+| ContractMethodInfo | MethodInfo                  | Current invoked contract method.  |
+| ActionInfo         | ActionInfo                  | Warpped info of current invoked method.  |
+| Args               | object[]                    | Args of invoked action.  |
+| PureArgs           | object[]                    | Args of invoked action without stream and action.  |
+| Callback           | Func\<object, Task>         | Callback of invoked action.  |
+| Token              | CancellationToken           | CancellationToken of invoked action.  |
+| Stream             | Stream                      | Stream of invoked action.  |
+| ServiceProvider    | IServiceProvider            | ServiceProvider of invoked action.  |
+| Contract           | Contract                    | Contract.|
+| MethodObj          | MethodObj                   | MethodObj.|
+| Result             | object                      | Result of invoked action.|
+| Properties         | Dictionary\<object, object> | A central location for sharing state between components during the invoking process.  |
 
 On client side, **Midderware** can access **ClientActionExecutingContext**, it is
 
 | Property         | Type | Description |
 | :-----           | :--- | :---------- |
-| ServiceProvider  | IServiceProvider           | ServiceProvider of invoked action.  |
-| Result           | object                     | Result of invoked action.|
-| Header           | Dictionary\<string object> | Header sent from client. |
-| OptionsName      | string                     | Config options name by DI. |
-| MethodInfo       | MethodInfo                 | Current invoked method.  |
-| Callback         | Func\<object, Task>            | Callback of invoked action.  |
-| Token            | CancellationToken          | CancellationToken of invoked action.  |
-| ContractInfo     | ContractInfo               | ContractInfo.|
-| MethodObj        | MethodObj                  | MethodObj.|
-| Stream           | Stream                     | Stream of invoked action.  |
-| PureArgs        | object[]                   | Args of invoked action without stream and action.  |
-| Properties       | Dictionary\<object, object>| A central location for sharing state between components during the invoking process.  |
+| ServiceProvider  | IServiceProvider            | ServiceProvider of invoked action.  |
+| Result           | object                      | Result of invoked action.|
+| Header           | Dictionary\<string object>  | Header sent from client. |
+| OptionsName      | string                      | Config options name by DI. |
+| MethodInfo       | MethodInfo                  | Current invoked method.  |
+| Callback         | Func\<object, Task>         | Callback of invoked action.  |
+| Token            | CancellationToken           | CancellationToken of invoked action.  |
+| ContractInfo     | ContractInfo                | ContractInfo.|
+| MethodObj        | MethodObj                   | MethodObj.|
+| Stream           | Stream                      | Stream of invoked action.  |
+| PureArgs         | object[]                    | Args of invoked action without stream and action.  |
+| Properties       | Dictionary\<object, object> | A central location for sharing state between components during the invoking process.  |
 
 ## Filter
 Filter is common function like MVC. 

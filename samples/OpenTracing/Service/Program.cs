@@ -39,13 +39,11 @@ namespace Service
 
                     services.Configure<GrpcClientOptions>("grpc1", i =>
                     {
-                        i.Host = "localhost";
-                        i.Port = 50002;
+                        i.Url = "http://localhost:50002";
                     });
                     services.Configure<GrpcClientOptions>("grpc2", i =>
                     {
-                        i.Host = "localhost";
-                        i.Port = 50003;
+                        i.Url = "http://localhost:50003";
                     });
                     services.AddNGrpcClient(null, null, ServiceLifetime.Scoped);
 
@@ -72,7 +70,11 @@ namespace Service
                             .AllowAnyMethod()
                             .AllowCredentials();
                     });
-                    app.UseSignalR(routes => { routes.MapHub<CallbackHub>("/callback"); });
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapHub<CallbackHub>("/callback");
+                    });
                     app.UseNSwagger();
                     app.UseNHttp();
                 })

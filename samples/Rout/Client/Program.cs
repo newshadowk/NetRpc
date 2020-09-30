@@ -21,16 +21,12 @@ namespace Client
                 {
                     services.Configure<GrpcClientOptions>("grpc", i =>
                     {
-                        i.Host = "localhost";
-                        i.Port = 50001;
+                        i.Url = "http://localhost:50001";
                     });
                     services.AddNGrpcClient();
                     services.AddNClientContract<IService>("grpc");
-
                     services.Configure<RabbitMQClientOptions>("mq", i => { i.CopyFrom(Helper.GetMQOptions()); });
-
                     services.AddNRabbitMQClient();
-
                     services.AddHostedService<H>();
                 })
                 .Build();
@@ -54,11 +50,8 @@ namespace Client
         {
             try
             {
-                var ret = await _s1.Call(
-                    new InParam {P1 = "123"}, 100,
-                    File.OpenRead(Helper.GetTestFilePath()),
-                    async i => Console.WriteLine(i),
-                    CancellationToken.None);
+                var ret = await _s1.Call(new InParam {P1 = "123"}, 100, File.OpenRead(Helper.GetTestFilePath()),
+                    async i => Console.WriteLine(i), CancellationToken.None);
                 Console.WriteLine($"ret:{ret.P1}, {Helper.ReadStr(ret.Stream)}");
 
                 using (var fs = File.OpenWrite(@"d:\1.rar"))

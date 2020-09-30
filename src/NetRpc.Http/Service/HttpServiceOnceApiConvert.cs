@@ -27,9 +27,9 @@ namespace NetRpc.Http
             bool ignoreWhenNotMatched,
             IHubContext<CallbackHub, ICallback> hub,
             HttpObjProcessorManager httpObjProcessorManager,
-            IServiceProvider serviceProvider)
+            ILoggerFactory loggerFactory)
         {
-            var logger = ((ILoggerFactory) serviceProvider.GetService(typeof(ILoggerFactory))).CreateLogger("NetRpc");
+            var logger = loggerFactory.CreateLogger("NetRpc");
             _contracts = contracts;
             _context = context;
             _connection = new HttpConnection(context, hub, logger);

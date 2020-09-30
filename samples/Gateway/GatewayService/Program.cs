@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DataContract;
-using Grpc.Core;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetRpc.Http;
@@ -34,8 +34,7 @@ namespace Service
                     services.AddNHttpService();
                     services.AddNGrpcGateway<IService>(o =>
                     {
-                        o.Host = "localhost";
-                        o.Port = 50001;
+                        o.Url = "http://localhost:50000";
                     });
                     services.AddNGrpcGateway<IService2>();
                 })
@@ -48,7 +47,13 @@ namespace Service
                             i.AllowCredentials();
                         }
                     );
-                    app.UseSignalR(routes => { routes.MapHub<CallbackHub>("/callback"); });
+
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapHub<CallbackHub>("/callback");
+                    });
+
                     app.UseNSwagger();
                     app.UseNHttp();
                 })
@@ -63,11 +68,9 @@ namespace Service
                 {
                     //set single target by DI.
                     services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
-
                     services.AddNGrpcGateway<IService>(o =>
                     {
-                        o.Host = "localhost";
-                        o.Port = 50001;
+                        o.Url = "http://localhost:50001";
                     });
                     services.AddNGrpcGateway<IService2>();
 
@@ -84,19 +87,24 @@ namespace Service
 
         private static async Task RunGrpcAsync()
         {
-            var host = new HostBuilder()
-                .ConfigureServices((context, services) =>
+            var host = Host.CreateDefaultBuilder()
+                .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    services.AddNGrpcService(i => i.AddPort("0.0.0.0", 50000));
-                    services.AddNGrpcGateway<IService>(o =>
-                    {
-                        o.Host = "localhost";
-                        o.Port = 50001;
-                    });
-                    services.AddNGrpcGateway<IService2>();
+                    webBuilder.ConfigureKestrel((context, options) =>
+                        {
+                            options.ListenAnyIP(50000, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+                        })
+                        .ConfigureServices((context, services) =>
+                        {
+                            services.AddNGrpcService();
+                            services.AddNGrpcGateway<IService>(options => options.Url = "http://localhost:50001");
+                            services.AddNGrpcGateway<IService2>();
+                        }).Configure(app =>
+                        {
+                            app.UseNGrpc();
+                        });
                 })
                 .Build();
-
             await host.RunAsync();
         }
     }

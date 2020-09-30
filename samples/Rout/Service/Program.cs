@@ -4,7 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
 using DataContract1;
-using Grpc.Core;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetRpc;
@@ -22,17 +23,27 @@ namespace Service
 
         static async Task RunGrpcAsync()
         {
-            var host = new HostBuilder()
-                .ConfigureServices((context, services) =>
+
+            var host = Host.CreateDefaultBuilder()
+                .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    services.AddNGrpcService(i => { i.AddPort("0.0.0.0", 50001); });
-                    services.AddNServiceContract<IService, Service>();
-                    services.AddNGrpcClient(i =>
-                    {
-                        i.Host = "localhost";
-                        i.Port = 50002;
-                    });
-                    services.AddNClientContract<IService1>();
+                    webBuilder.ConfigureKestrel((context, options) =>
+                        {
+                            options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+                        })
+                        .ConfigureServices((context, services) =>
+                        {
+                            services.AddNGrpcService();
+                            services.AddNServiceContract<IService, Service>();
+                            services.AddNGrpcClient(i =>
+                            {
+                                i.Url = "http://localhost:50002";
+                            });
+                            services.AddNClientContract<IService1>();
+                        }).Configure(app =>
+                        {
+                            app.UseNGrpc();
+                        });
                 })
                 .Build();
 

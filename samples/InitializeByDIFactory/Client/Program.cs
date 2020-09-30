@@ -37,13 +37,11 @@ namespace Client
                     services.AddNGrpcClient();
                     services.Configure<GrpcClientOptions>("grpc1", i =>
                     {
-                        i.Host = "localhost";
-                        i.Port = 50001;
+                        i.Url = "http://localhost:50001";
                     });
                     services.Configure<GrpcClientOptions>("grpc2", i =>
                     {
-                        i.Host = "localhost";
-                        i.Port = 50001;
+                        i.Url = "http://localhost:50001";
                     });
                 })
                 .Build();

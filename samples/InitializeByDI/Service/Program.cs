@@ -1,33 +1,41 @@
 ﻿using System;
-using System.IO;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NetRpc;
-using NetRpc.Grpc;
 
 namespace Service
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
-            var host = new HostBuilder()
-                .ConfigureServices((context, services) =>
+            var host = Host.CreateDefaultBuilder()
+                .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    services.AddNGrpcService(i => i.AddPort("0.0.0.0", 50001));
-                    services.AddNServiceContract<IService, Service>();
-                })
-                .Build();
+                    webBuilder.ConfigureKestrel((context, options) =>
+                        {
+                            options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+                        })
+                        .ConfigureServices((context, services) =>
+                        {
+                            services.AddNGrpcService();
+                            services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+                        }).Configure(app =>
+                        {
+                            app.UseNGrpc();
+                        });
+                }).Build();
 
             await host.RunAsync();
         }
     }
 
-    internal class Service : IService
+    internal class ServiceAsync : IServiceAsync
     {
-        public async Task Call(string s)
+        public async Task CallAsync(string s)
         {
             Console.WriteLine($"Receive: {s}");
         }

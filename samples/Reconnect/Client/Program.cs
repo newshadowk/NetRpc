@@ -25,8 +25,7 @@ namespace Client
                     services.Configure<RabbitMQClientOptions>("mq", i => i.CopyFrom(Helper.GetMQOptions()));
                     services.Configure<GrpcClientOptions>("grpc", i =>
                     {
-                        i.Host = "localhost";
-                        i.Port = 50001;
+                        i.Url = "http://localhost:50001";
                     });
                     services.AddNRabbitMQClient();
                     services.AddNGrpcClient();

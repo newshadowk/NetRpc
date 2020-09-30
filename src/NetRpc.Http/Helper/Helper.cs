@@ -54,7 +54,7 @@ namespace NetRpc.Http
             return dataObj;
         }
 
-        public static string FormatPath(string path)
+        public static string FormatPath(string? path)
         {
             path = path.Replace('\\', '/');
             path = path.Replace("//", "/");

@@ -331,7 +331,7 @@ namespace NetRpc
         public static object CreateAndCopy(this object srcObj, Type tgtObjType)
         {
             var tgtObj = Activator.CreateInstance(tgtObjType)!;
-            srcObj.CopyPropertiesFrom(tgtObj);
+            tgtObj.CopyPropertiesFrom(srcObj);
             return tgtObj;
         }
 
