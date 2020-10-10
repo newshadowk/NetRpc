@@ -2,13 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
-using Grpc.Core;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NetRpc.Grpc;
 using NetRpc.Http;
 using NetRpc.Jaeger;
 
@@ -18,44 +16,51 @@ namespace Service
     {
         static async Task Main(string[] args)
         {
-            var h = WebHost.CreateDefaultBuilder(null)
-                .ConfigureKestrel(options => { options.ListenAnyIP(5104); })
-                .ConfigureServices(services =>
+            var h = Host.CreateDefaultBuilder(null)
+                .ConfigureWebHostDefaults(builder =>
                 {
-                    services.AddCors();
-                    services.AddSignalR();
-                    services.AddNSwagger();
-                    services.AddNHttpService();
+                    builder.ConfigureKestrel((context, options) =>
+                        {
+                            options.ListenAnyIP(5104);
+                            options.ListenAnyIP(50004, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+                        })
+                        .ConfigureServices(services =>
+                        {
+                            services.AddCors();
+                            services.AddSignalR();
+                            services.AddNSwagger();
+                            services.AddNHttpService();
 
-                    services.AddNGrpcService(i => { i.AddPort("0.0.0.0", 50004); });
-                    services.AddNServiceContract<IService_1_1, Service>();
+                            services.AddNGrpcService();
+                            services.AddNServiceContract<IService_1_1, Service>();
 
-                    services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5104/swagger");
-                    services.AddNJaeger(i =>
-                    {
-                        i.Host = "m.k8s.yx.com";
-                        i.Port = 36831;
-                        i.ServiceName = "Service_1_1";
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.UseCors(set =>
-                    {
-                        set.SetIsOriginAllowed(origin => true)
-                            .AllowAnyHeader()
-                            .AllowAnyMethod()
-                            .AllowCredentials();
-                    });
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints =>
-                    {
-                        endpoints.MapHub<CallbackHub>("/callback");
-                    });
-                    app.UseNSwagger();
-                    app.UseNHttp();
-                })
-                .Build();
+                            services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5104/swagger");
+                            services.AddNJaeger(i =>
+                            {
+                                i.Host = "m.k8s.yx.com";
+                                i.Port = 36831;
+                                i.ServiceName = "Service_1_1";
+                            });
+                        })
+                        .Configure(app =>
+                        {
+                            app.UseCors(set =>
+                            {
+                                set.SetIsOriginAllowed(origin => true)
+                                    .AllowAnyHeader()
+                                    .AllowAnyMethod()
+                                    .AllowCredentials();
+                            });
+                            app.UseRouting();
+                            app.UseEndpoints(endpoints =>
+                            {
+                                endpoints.MapHub<CallbackHub>("/callback");
+                            });
+                            app.UseNSwagger();
+                            app.UseNHttp();
+                            app.UseNGrpc();
+                        });
+                }).Build();
 
             await h.RunAsync();
         }

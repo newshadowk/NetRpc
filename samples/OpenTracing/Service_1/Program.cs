@@ -3,10 +3,12 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NetRpc;
 using NetRpc.Contract;
 using NetRpc.Grpc;
@@ -17,65 +19,64 @@ using OpenTracing.Util;
 
 namespace Service_1
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
-            var h = WebHost.CreateDefaultBuilder(null)
-                .ConfigureKestrel(options => { options.ListenAnyIP(5102); })
-                .ConfigureServices(services =>
+            var h = Host.CreateDefaultBuilder(null)
+                .ConfigureWebHostDefaults(builder =>
                 {
-                    services.AddCors();
-
-                    services.AddSignalR();
-                    services.AddNSwagger();
-                    services.AddNHttpService();
-
-                    services.AddNGrpcService(i => { i.AddPort("0.0.0.0", 50002); });
-                    services.AddNServiceContract<IService_1, Service>();
-
-                    services.Configure<GrpcClientOptions>("grpc",
-                        i =>
+                    builder.ConfigureKestrel((context, options) =>
                         {
-                            i.Url = "http://localhost:50004";
-                        });
-                    services.Configure<HttpClientOptions>("http",
-                        i =>
+                            options.ListenAnyIP(5102);
+                            options.ListenAnyIP(50002, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+                        })
+                        .ConfigureServices(services =>
                         {
-                            i.ApiUrl = "http://localhost:5104";
-                            i.SignalRHubUrl = "http://localhost:5104/callback";
-                        });
+                            services.AddCors();
 
-                    services.AddNGrpcClient();
-                    services.AddNHttpClient();
+                            services.AddSignalR();
+                            services.AddNSwagger();
+                            services.AddNHttpService();
+                            services.AddNGrpcService();
+                            services.AddNServiceContract<IService_1, Service>();
 
-                    services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5102/swagger");
-                    services.Configure<ClientSwaggerOptions>(i => i.HostPath = "http://localhost:5104/swagger");
-                    services.AddNJaeger(i =>
-                    {
-                        i.Host = "m.k8s.yx.com";
-                        i.Port = 36831;
-                        i.ServiceName = "Service_1";
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.UseCors(set =>
-                    {
-                        set.SetIsOriginAllowed(origin => true)
-                            .AllowAnyHeader()
-                            .AllowAnyMethod()
-                            .AllowCredentials();
-                    });
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints =>
-                    {
-                        endpoints.MapHub<CallbackHub>("/callback");
-                    });
-                    app.UseNSwagger();
-                    app.UseNHttp();
-                })
-                .Build();
+                            services.Configure<GrpcClientOptions>("grpc", i => { i.Url = "http://localhost:50004"; });
+                            services.Configure<HttpClientOptions>("http", i =>
+                            {
+                                i.ApiUrl = "http://localhost:5104";
+                                i.SignalRHubUrl = "http://localhost:5104/callback";
+                            });
+
+                            services.AddNGrpcClient();
+                            services.AddNHttpClient();
+
+                            services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5102/swagger");
+                            services.Configure<ClientSwaggerOptions>(i => i.HostPath = "http://localhost:5104/swagger");
+                            services.AddNJaeger(i =>
+                            {
+                                i.Host = "m.k8s.yx.com";
+                                i.Port = 36831;
+                                i.ServiceName = "Service_1";
+                            });
+                        })
+                        .Configure(app =>
+                        {
+                            app.UseCors(set =>
+                            {
+                                set.SetIsOriginAllowed(origin => true)
+                                    .AllowAnyHeader()
+                                    .AllowAnyMethod()
+                                    .AllowCredentials();
+                            });
+                            app.UseRouting();
+                            app.UseEndpoints(endpoints => { endpoints.MapHub<CallbackHub>("/callback"); });
+                            app.UseNSwagger();
+                            app.UseNHttp();
+                            app.UseNGrpc();
+                        })
+                        .ConfigureLogging(logging => { logging.AddConsole(); });
+                }).Build();
 
             await h.RunAsync();
         }
@@ -122,7 +123,7 @@ namespace Service_1
 
         public async Task<Stream> Echo_1(Stream stream)
         {
-            MemoryStream ms = new MemoryStream();
+            var ms = new MemoryStream();
             using (stream)
                 await stream.CopyToAsync(ms);
             ms.Seek(0, SeekOrigin.Begin);

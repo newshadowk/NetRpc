@@ -1,5 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>
 </Project>

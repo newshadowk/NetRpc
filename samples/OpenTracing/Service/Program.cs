@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using DataContract;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NetRpc;
 using NetRpc.Contract;
@@ -20,69 +21,64 @@ using Helper = TestHelper.Helper;
 
 namespace Service
 {
-    class Program
+    [Serializable]
+    public class A1
     {
-        static async Task Main(string[] args)
+        public string P1 { get; set; }
+    }
+    internal class Program
+    {
+        private static async Task Main(string[] args)
         {
-            var h = WebHost.CreateDefaultBuilder(null)
-                //.UseDefaultServiceProvider(i =>i.ValidateScopes = false)
-                .ConfigureKestrel(options => { options.ListenAnyIP(5101); })
-                .ConfigureServices(services =>
+            var h = Host.CreateDefaultBuilder(null)
+                .ConfigureWebHostDefaults(builder =>
                 {
-                    services.AddCors();
-                    services.AddSignalR();
-                    services.AddNSwagger();
-                    services.AddNHttpService();
+                    builder.ConfigureKestrel((context, options) =>
+                        {
+                            options.ListenAnyIP(5101);
+                            options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+                        })
+                        .ConfigureServices(services =>
+                        {
+                            services.AddCors();
+                            services.AddSignalR();
+                            services.AddNSwagger();
+                            services.AddNHttpService();
 
-                    services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
-                    services.AddNServiceContract<IService, Service>(ServiceLifetime.Scoped);
+                            services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
+                            services.AddNServiceContract<IService, Service>(ServiceLifetime.Scoped);
 
-                    services.Configure<GrpcClientOptions>("grpc1", i =>
-                    {
-                        i.Url = "http://localhost:50002";
-                    });
-                    services.Configure<GrpcClientOptions>("grpc2", i =>
-                    {
-                        i.Url = "http://localhost:50003";
-                    });
-                    services.AddNGrpcClient(null, null, ServiceLifetime.Scoped);
+                            services.Configure<GrpcClientOptions>("grpc1", i => { i.Url = "http://localhost:50002"; });
+                            services.Configure<GrpcClientOptions>("grpc2", i => { i.Url = "http://localhost:50003"; });
+                            services.AddNGrpcClient(null, null, ServiceLifetime.Scoped);
 
-                    services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5101/swagger");
-                    services.Configure<ClientSwaggerOptions>("grpc1", i => i.HostPath = "http://localhost:5102/swagger");
-                    services.Configure<ClientSwaggerOptions>("grpc2", i => i.HostPath = "http://localhost:5103/swagger");
-                    
-                    services.AddNJaeger(i =>
-                    {
-                        i.Host = "m.k8s.yx.com";
-                        i.Port = 36831;
-                        i.ServiceName = "Service";
-                    }, i =>
-                    {
-                        i.LogActionInfoMaxLength = 1000;
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.UseCors(set =>
-                    {
-                        set.SetIsOriginAllowed(origin => true)
-                            .AllowAnyHeader()
-                            .AllowAnyMethod()
-                            .AllowCredentials();
-                    });
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints =>
-                    {
-                        endpoints.MapHub<CallbackHub>("/callback");
-                    });
-                    app.UseNSwagger();
-                    app.UseNHttp();
-                })
-                .ConfigureLogging(logging =>
-                {
-                    logging.AddConsole();
-                })
-                .Build();
+                            services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5101/swagger");
+                            services.Configure<ClientSwaggerOptions>("grpc1", i => i.HostPath = "http://localhost:5102/swagger");
+                            services.Configure<ClientSwaggerOptions>("grpc2", i => i.HostPath = "http://localhost:5103/swagger");
+
+                            services.AddNJaeger(i =>
+                            {
+                                i.Host = "m.k8s.yx.com";
+                                i.Port = 36831;
+                                i.ServiceName = "Service";
+                            }, i => { i.LogActionInfoMaxLength = 1000; });
+                        })
+                        .Configure(app =>
+                        {
+                            app.UseCors(set =>
+                            {
+                                set.SetIsOriginAllowed(origin => true)
+                                    .AllowAnyHeader()
+                                    .AllowAnyMethod()
+                                    .AllowCredentials();
+                            });
+                            app.UseRouting();
+                            app.UseEndpoints(endpoints => { endpoints.MapHub<CallbackHub>("/callback"); });
+                            app.UseNSwagger();
+                            app.UseNHttp();
+                        })
+                        .ConfigureLogging(logging => { logging.AddConsole(); });
+                }).Build();
 
             await h.RunAsync();
         }
@@ -170,7 +166,7 @@ namespace Service
                 throw;
             }
 
-       
+
             //await _factory.CreateProxy<IService_2>("grpc2").Proxy.Call_2(false);
 
             return new Result();
@@ -178,7 +174,7 @@ namespace Service
 
         public async Task<Stream> Echo(Stream stream)
         {
-            MemoryStream ms = new MemoryStream();
+            var ms = new MemoryStream();
             using (stream)
                 await stream.CopyToAsync(ms);
             ms.Seek(0, SeekOrigin.Begin);

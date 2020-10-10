@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using DataContract;
 using Grpc.Core;
+using NetRpc.Grpc;
 
 namespace Client
 {
@@ -10,17 +11,11 @@ namespace Client
     {
         static async Task Main(string[] args)
         {
-            var p = NetRpc.RabbitMQ.NManager.CreateClientProxy<IService>(TestHelper.Helper.GetMQOptions());
-            //var p = NManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure));
-            await p.Proxy.Call("msg");
+            //var p = NetRpc.RabbitMQ.NManager.CreateClientProxy<IService>(TestHelper.Helper.GetMQOptions());
             //await p.Proxy.Call("msg");
 
-            //using (var s = File.OpenRead(@"D:\TestFile\130MB.exe"))
-            //{
-            //    var stream = await p.Proxy.Echo(s);
-            //    MemoryStream ms = new MemoryStream();
-            //    stream.CopyTo(ms);
-            //}
+            var pp = NetRpc.Grpc.NManager.CreateClientProxy<IService_1>(new GrpcClientOptions {Url = "http://localhost:50002"});
+            var ret =  await pp.Proxy.Call_1(new SendObj(), 1, false, null, default);
 
             Console.WriteLine("--- end ---");
             Console.Read();
