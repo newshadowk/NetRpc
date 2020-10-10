@@ -1,57 +1,86 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using DataContract;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using NetRpc;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using NetRpc.Http;
+using NetRpc.Http.Client;
 
 namespace Service
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
-            var webHost = NManager.CreateHost(
-                5000,
-                "/callback",
-                true,
-                new HttpServiceOptions { ApiRootPath = "/api" },
-                null,
-                new ContractParam<IServiceAsync, ServiceAsync>());
+            var webHost = Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(builder =>
+                {
+                    builder.ConfigureKestrel((context, options) =>
+                        {
+                            options.Limits.MaxRequestBodySize = 10737418240; //10G
+                            options.ListenAnyIP(5000);
+                        })
+                        .ConfigureServices(services =>
+                        {
+                            services.AddCors();
+                            services.AddSignalR();
+                            services.AddNSwagger(i =>
+                            {
+                                i.Items.Add(new KeyRole
+                                {
+                                    Key = "k1",
+                                    Role = "R1"
+                                });
+                                i.Items.Add(new KeyRole
+                                {
+                                    Key = "k2",
+                                    Role = "R1,R2"
+                                });
+                                i.Items.Add(new KeyRole
+                                {
+                                    Key = "k3",
+                                    Role = "R3"
+                                });
+                                i.Items.Add(new KeyRole
+                                {
+                                    Key = "kall",
+                                    Role = "RAll"
+                                });
+                            });
+                            services.AddNMiniProfiler();
+                            services.AddNHttpService();
+                            services.AddNServiceContract<IService2Async, Service2Async>();
+                            services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+                        })
+                        .Configure(app =>
+                        {
+                            app.UseStaticFiles(new StaticFileOptions
+                            {
+                                FileProvider = new PhysicalFileProvider(@"d:\"),
+                                RequestPath = "/doc"
+                            });
+
+                            app.UseCors(set =>
+                            {
+                                set.SetIsOriginAllowed(origin => true)
+                                    .AllowAnyHeader()
+                                    .AllowAnyMethod()
+                                    .AllowCredentials();
+                            });
+
+                            app.UseRouting();
+                            app.UseEndpoints(endpoints => { endpoints.MapHub<CallbackHub>("/callback"); });
+                            app.UseNSwagger();
+                            app.UseNMiniProfiler();
+                            app.UseNHttp();
+                        });
+                }).Build();
+
+
             await webHost.RunAsync();
-
-            //const string origins = "_myAllowSpecificOrigins";
-            //var h = WebHost.CreateDefaultBuilder(null)
-            //    .ConfigureServices(services =>
-            //    {
-            //        services.AddCors(op =>
-            //        {
-            //            op.AddPolicy(origins, set =>
-            //            {
-            //                set.SetIsOriginAllowed(origin => true)
-            //                    .AllowAnyHeader()
-            //                    .AllowAnyMethod()
-            //                    .AllowCredentials();
-            //            });
-            //        });
-
-            //        services.AddSignalR();
-            //        services.AddNetRpcSwagger();
-            //        services.AddNHttpService(i => i.ApiRootPath = "/api");
-            //        services.AddNetRpcContractSingleton<IServiceAsync, ServiceAsync>();
-            //    })
-            //    .Configure(app =>
-            //    {
-            //        app.UseCors(origins);
-            //        app.UseSignalR(routes => { routes.MapHub<CallbackHub>("/callback"); });
-            //        app.UseNetRpcSwagger();
-            //        app.UseNHttp();
-            //    })
-            //    .Build();
-
-            //await h.RunAsync();
         }
     }
 }

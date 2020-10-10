@@ -11,9 +11,9 @@ namespace NetRpc.Grpc
         public static IHost CreateHost(int port, MiddlewareOptions? middlewareOptions, params ContractParam[] contracts)
         {
             return Host.CreateDefaultBuilder()
-                .ConfigureWebHostDefaults(webBuilder =>
+                .ConfigureWebHostDefaults(builder =>
                 {
-                    webBuilder.ConfigureKestrel((context, options) =>
+                    builder.ConfigureKestrel((context, options) =>
                         {
                             options.ListenAnyIP(port, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
                         })

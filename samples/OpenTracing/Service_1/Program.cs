@@ -101,6 +101,7 @@ namespace Service_1
             //}
 
             Console.WriteLine($"Receive: {s}");
+
             Func<int, Task> newCb = async i =>
             {
                 Console.WriteLine("tid:" + GlobalTracer.Instance.ActiveSpan.Context.TraceId);

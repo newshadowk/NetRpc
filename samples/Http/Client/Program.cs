@@ -33,7 +33,7 @@ namespace Client
             await Test_CallByDefaultExceptionAsync();
             await Test_CallByResponseTextExceptionAsync();
             await Test_ComplexCallAsync();
-            //await Test_UploadAsync();
+            await Test_UploadAsync();
             Console.WriteLine("test end");
             Console.Read();
         }
@@ -117,6 +117,7 @@ namespace Client
                     stream,
                     async i => Console.Write(", " + i.Progress),
                     default);
+
                 using (var stream2 = complexStream.Stream)
                     Console.Write($", receive length:{stream.Length}, {Helper.ReadStr(stream2)}");
                 Console.WriteLine($", innerObj:{complexStream.InnerObj}");

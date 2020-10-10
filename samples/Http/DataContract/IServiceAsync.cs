@@ -61,7 +61,7 @@ namespace DataContract
     //[Tag("RoutTag1")]
     public interface IService2Async
     {
-        Task<string> CallNone(CObj obj, Func<double, Task> cb, Stream stream);
+        Task<CObj> CallNone(CObj obj, Func<double, Task> cb, Stream stream);
 
         //Task<string> CallNone2(CObj obj);
 

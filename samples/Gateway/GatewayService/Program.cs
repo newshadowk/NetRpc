@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DataContract;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetRpc.Http;
-using Helper = TestHelper.Helper;
+using TestHelper;
 
 namespace Service
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             RunHttpAsync();
             RunRabbitMQAsync();
@@ -24,40 +23,39 @@ namespace Service
 
         private static async Task RunHttpAsync()
         {
-            var host = WebHost.CreateDefaultBuilder(null)
-                .ConfigureKestrel(options => { options.ListenAnyIP(5000); })
-                .ConfigureServices(services =>
+            var host = Host.CreateDefaultBuilder(null)
+                .ConfigureWebHostDefaults(builder =>
                 {
-                    services.AddCors();
-                    services.AddSignalR();
-                    services.AddNSwagger();
-                    services.AddNHttpService();
-                    services.AddNGrpcGateway<IService>(o =>
-                    {
-                        o.Url = "http://localhost:50000";
-                    });
-                    services.AddNGrpcGateway<IService2>();
-                })
-                .Configure(app =>
-                {
-                    app.UseCors(i =>
+                    builder.ConfigureKestrel((context, options) =>
                         {
-                            i.AllowAnyHeader();
-                            i.AllowAnyMethod();
-                            i.AllowCredentials();
-                        }
-                    );
+                            options.ListenAnyIP(5000);
+                        }).ConfigureServices(services =>
+                        {
+                            services.AddCors();
+                            services.AddSignalR();
+                            services.AddNSwagger();
+                            services.AddNHttpService();
+                            services.AddNGrpcGateway<IService>(o => { o.Url = "http://localhost:50001"; });
+                            services.AddNGrpcGateway<IService2>();
+                        })
+                        .Configure(app =>
+                        {
+                            app.UseCors(i =>
+                                {
+                                    i.AllowAnyHeader();
+                                    i.AllowAnyMethod();
+                                    i.AllowCredentials();
+                                }
+                            );
 
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints =>
-                    {
-                        endpoints.MapHub<CallbackHub>("/callback");
-                    });
+                            app.UseRouting();
+                            app.UseEndpoints(endpoints => { endpoints.MapHub<CallbackHub>("/callback"); });
 
-                    app.UseNSwagger();
-                    app.UseNHttp();
-                })
-                .Build();
+                            app.UseNSwagger();
+                            app.UseNHttp();
+                        });
+                }).Build();
+
             await host.RunAsync();
         }
 
@@ -68,10 +66,7 @@ namespace Service
                 {
                     //set single target by DI.
                     services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
-                    services.AddNGrpcGateway<IService>(o =>
-                    {
-                        o.Url = "http://localhost:50001";
-                    });
+                    services.AddNGrpcGateway<IService>(o => { o.Url = "http://localhost:50001"; });
                     services.AddNGrpcGateway<IService2>();
 
                     //set different target point.
@@ -99,10 +94,7 @@ namespace Service
                             services.AddNGrpcService();
                             services.AddNGrpcGateway<IService>(options => options.Url = "http://localhost:50001");
                             services.AddNGrpcGateway<IService2>();
-                        }).Configure(app =>
-                        {
-                            app.UseNGrpc();
-                        });
+                        }).Configure(app => { app.UseNGrpc(); });
                 })
                 .Build();
             await host.RunAsync();

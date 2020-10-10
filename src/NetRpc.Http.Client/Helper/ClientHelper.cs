@@ -2,16 +2,24 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace NetRpc.Http.Client
 {
     public static class ClientHelper
     {
-        private static readonly JsonSerializerOptions JsOptions = new JsonSerializerOptions
+        static ClientHelper()
         {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
+            JsOptions = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            };
+
+            JsOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+        }
+
+        private static readonly JsonSerializerOptions JsOptions;
 
         public static object? ToDtoObject(this string str, Type t)
         {

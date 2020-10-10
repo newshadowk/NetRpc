@@ -1,12 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
-using System.Net.NetworkInformation;
 using System.Runtime.Serialization;
-using NetRpc;
+using System.Text.Json.Serialization;
 using NetRpc.Contract;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace DataContract
 {
@@ -91,6 +88,7 @@ namespace DataContract
 
     public class ComplexStream
     {
+        [JsonIgnore]
         public Stream Stream { get; set; }
 
         public string StreamName { get; set; } //the property will map to file name.

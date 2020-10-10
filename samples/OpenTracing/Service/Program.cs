@@ -106,6 +106,7 @@ namespace Service
         {
             GlobalTracer.Instance.ActiveSpan.SetTag(new StringTag("file"), "123.txt");
             _logger.LogInformation($"Receive: {s}");
+
             var obj = new SendObj
             {
                 InnerObj = new InnerObj
@@ -129,14 +130,14 @@ namespace Service
                 await Task.Delay(500);
             }
 
-            try
-            {
-                throw new Exception("123");
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "error msg");
-            }
+            //try
+            //{
+            //    throw new Exception("123");
+            //}
+            //catch (Exception e)
+            //{
+            //    _logger.LogError(e, "error msg");
+            //}
 
             //Task.Run(async () =>
             //{
