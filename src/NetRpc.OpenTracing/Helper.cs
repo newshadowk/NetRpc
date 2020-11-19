@@ -13,7 +13,9 @@ namespace NetRpc.OpenTracing
         private static readonly JsonSerializerOptions JsOptions = new JsonSerializerOptions
         {
             WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            IgnoreReadOnlyProperties = true,
+            Converters = { new StreamConverter() }
         };
 
         public static ISpan SetTagMethodObj(this ISpan span, IActionExecutingContext context, int maxLength, bool isForce = false)

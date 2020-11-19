@@ -8,18 +8,12 @@ namespace NetRpc.Http.Client
 {
     public static class ClientHelper
     {
-        static ClientHelper()
+        private static readonly JsonSerializerOptions JsOptions = new JsonSerializerOptions
         {
-            JsOptions = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            };
-
-            JsOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
-        }
-
-        private static readonly JsonSerializerOptions JsOptions;
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            Converters = {new JsonStringEnumConverter(JsonNamingPolicy.CamelCase), new StreamConverter()}
+        };
 
         public static object? ToDtoObject(this string str, Type t)
         {
