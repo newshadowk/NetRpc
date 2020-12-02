@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class NJaegerExtensions
     {
-        public static IServiceCollection AddNJaeger(this IServiceCollection services, 
+        public static IServiceCollection AddNJaeger(this IServiceCollection services,
             Action<JaegerOptions>? configureJaegerOptions = null, Action<OpenTracingOptions>? configureOpenTracingOptions = null)
         {
             if (configureJaegerOptions != null)

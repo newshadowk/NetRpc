@@ -20,7 +20,7 @@
             RpcQueue = rpcQueue;
             PrefetchCount = prefetchCount;
         }
-       
+
         public MQOptions()
         {
         }

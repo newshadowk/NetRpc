@@ -26,10 +26,7 @@ namespace Service
             var host = Host.CreateDefaultBuilder(null)
                 .ConfigureWebHostDefaults(builder =>
                 {
-                    builder.ConfigureKestrel((context, options) =>
-                        {
-                            options.ListenAnyIP(5000);
-                        }).ConfigureServices(services =>
+                    builder.ConfigureKestrel((context, options) => { options.ListenAnyIP(5000); }).ConfigureServices(services =>
                         {
                             services.AddCors();
                             services.AddSignalR();

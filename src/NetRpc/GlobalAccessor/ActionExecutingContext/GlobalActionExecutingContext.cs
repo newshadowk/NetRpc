@@ -9,7 +9,7 @@ namespace NetRpc
 
     public static class GlobalActionExecutingContext
     {
-        private static readonly AsyncLocal<ActionExecutingContext> Local = new AsyncLocal<ActionExecutingContext>();
+        private static readonly AsyncLocal<ActionExecutingContext> Local = new();
 
         public static ActionExecutingContext? Context
         {
@@ -26,6 +26,6 @@ namespace NetRpc
             set => GlobalActionExecutingContext.Context = value;
         }
 
-        public static readonly ActionExecutingContextAccessor Default = new ActionExecutingContextAccessor();
+        public static readonly ActionExecutingContextAccessor Default = new();
     }
 }

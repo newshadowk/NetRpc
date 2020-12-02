@@ -1,15 +1,16 @@
 ﻿using System;
+using Grpc.AspNetCore.Server;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetRpc;
 using NetRpc.Grpc;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class NGrpcServiceExtensions
     {
-        public static IServiceCollection AddNGrpcService(this IServiceCollection services, Action<Grpc.AspNetCore.Server.GrpcServiceOptions>? configureOptions = null)
+        public static IServiceCollection AddNGrpcService(this IServiceCollection services, Action<GrpcServiceOptions>? configureOptions = null)
         {
             if (configureOptions != null)
                 services.AddGrpc(configureOptions);
@@ -26,10 +27,12 @@ namespace Microsoft.Extensions.DependencyInjection
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGrpcService<MessageCallImpl>();
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
-                });
+                endpoints.MapGet("/",
+                    async context =>
+                    {
+                        await context.Response.WriteAsync(
+                            "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+                    });
             });
             return app;
         }

@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
-using Grpc.Core;
 using Microsoft.Extensions.Logging.Abstractions;
 using NetRpc;
 using NetRpc.Contract;
@@ -14,13 +13,13 @@ using NManager = NetRpc.RabbitMQ.NManager;
 
 namespace Client
 {
-    class Program
+    internal class Program
     {
         private static ClientProxy<IService> _clientProxy;
         private static IService _proxy;
         private static IServiceAsync _proxyAsync;
 
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             //RabbitMQ
             Console.WriteLine("--- Client RabbitMQ  ---");
@@ -34,7 +33,7 @@ namespace Client
             _clientProxy.HeartbeatAsync += (s, e) =>
             {
                 Console.WriteLine("[event] Heartbeat");
-                ((IService)((IClientProxy)s).Proxy).Hearbeat();
+                ((IService) ((IClientProxy) s).Proxy).Hearbeat();
                 return Task.CompletedTask;
             };
             //clientProxy.StartHeartbeat(true);
@@ -47,7 +46,7 @@ namespace Client
             //Grpc
             Console.WriteLine("\r\n--- Client Grpc  ---");
             var grpcF = new GrpcClientConnectionFactoryOptions(
-                new GrpcClientOptions { Url = "http://localhost:50001" });
+                new GrpcClientOptions {Url = "http://localhost:50001"});
             _clientProxy = NetRpc.Grpc.NManager.CreateClientProxy<IService>(grpcF);
             _proxy = _clientProxy.Proxy;
             _proxyAsync = NetRpc.Grpc.NManager.CreateClientProxy<IServiceAsync>(grpcF).Proxy;

@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
-using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -13,9 +12,9 @@ using Helper = TestHelper.Helper;
 
 namespace Client
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             var h = new HostBuilder()
                 .ConfigureServices((context, services) =>
@@ -23,10 +22,7 @@ namespace Client
                     services.AddOptions();
                     services.AddHostedService<MyHost>();
                     services.Configure<RabbitMQClientOptions>("mq", i => i.CopyFrom(Helper.GetMQOptions()));
-                    services.Configure<GrpcClientOptions>("grpc", i =>
-                    {
-                        i.Url = "http://localhost:50001";
-                    });
+                    services.Configure<GrpcClientOptions>("grpc", i => { i.Url = "http://localhost:50001"; });
                     services.AddNRabbitMQClient();
                     services.AddNGrpcClient();
                 })
@@ -59,7 +55,7 @@ namespace Client
             Console.WriteLine("start");
 
 #pragma warning disable 4014
-            Task.Run(async() =>
+            Task.Run(async () =>
 #pragma warning restore 4014
             {
                 while (true)
@@ -78,8 +74,6 @@ namespace Client
                     await Task.Delay(1000);
                 }
             });
-
-
         }
 
         private void ClientProxy_ExceptionInvoked(object sender, EventArgsT<Exception> e)

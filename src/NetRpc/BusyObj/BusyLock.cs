@@ -2,7 +2,7 @@
 {
     internal sealed class BusyLock
     {
-        private readonly object _lockObj = new object();
+        private readonly object _lockObj = new();
 
         private volatile bool _isLocked;
 

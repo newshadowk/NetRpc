@@ -5,7 +5,7 @@ namespace NetRpc
 {
     public class ClientMiddlewareOptions
     {
-        public List<(Type Type, object[] args)> Items { get; set; } = new List<(Type Type, object[] args)>();
+        public List<(Type Type, object[] args)> Items { get; set; } = new();
 
         public void UseMiddleware<TMiddleware>(params object[] args)
         {

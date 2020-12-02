@@ -26,6 +26,7 @@ namespace Service
     {
         public string P1 { get; set; }
     }
+
     internal class Program
     {
         private static async Task Main(string[] args)
@@ -119,8 +120,8 @@ namespace Service
                 B1 = true,
                 BigList = new List<InnerObj>
                 {
-                    new InnerObj {IP1 = "1"},
-                    new InnerObj {IP1 = "2"}
+                    new() {IP1 = "1"},
+                    new() {IP1 = "2"}
                 }
             };
 

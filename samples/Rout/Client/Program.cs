@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
-using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetRpc.Grpc;
@@ -12,17 +11,14 @@ using Helper = TestHelper.Helper;
 
 namespace Client
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             var host = new HostBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.Configure<GrpcClientOptions>("grpc", i =>
-                    {
-                        i.Url = "http://localhost:50001";
-                    });
+                    services.Configure<GrpcClientOptions>("grpc", i => { i.Url = "http://localhost:50001"; });
                     services.AddNGrpcClient();
                     services.AddNClientContract<IService>("grpc");
                     services.Configure<RabbitMQClientOptions>("mq", i => { i.CopyFrom(Helper.GetMQOptions()); });

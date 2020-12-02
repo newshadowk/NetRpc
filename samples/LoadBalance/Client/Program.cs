@@ -6,9 +6,9 @@ using Helper = TestHelper.Helper;
 
 namespace Client
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             var proxy = NManager.CreateClientProxy<IServiceAsync>(Helper.GetMQOptions()).Proxy;
 

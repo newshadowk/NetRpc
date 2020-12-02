@@ -6,7 +6,7 @@ namespace NetRpc.Http.Client
 {
     public static class MimeTypeMap
     {
-        private static readonly Lazy<IDictionary<string, string>> _mappings = new Lazy<IDictionary<string, string>>(BuildMappings);
+        private static readonly Lazy<IDictionary<string, string>> _mappings = new(BuildMappings);
 
         private static IDictionary<string, string> BuildMappings()
         {

@@ -38,7 +38,6 @@ namespace NetRpc.Http
                 Type = t
             };
         }
-
         public static object ToObjectForHttp(string json, Type t)
         {
             object? dataObj;

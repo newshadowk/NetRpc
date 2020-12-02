@@ -1,23 +1,19 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using DataContract;
-using NetRpc;
 using NetRpc.Contract;
 using NetRpc.Http.Client;
-using RestSharp.Extensions;
-using Helper = TestHelper.Helper;
+using TestHelper;
 
 namespace Client
 {
-    class Program
+    internal class Program
     {
         private static IServiceAsync _proxyAsync;
 
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             _proxyAsync = NManager.CreateClientProxy<IServiceAsync>(new HttpClientOptions
             {
@@ -129,7 +125,7 @@ namespace Client
             using (var stream = File.Open(@"d:\testfile\400MB.exe", FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 Console.WriteLine("[Test_UploadAsync]...Send file...");
-                CancellationTokenSource cts = new CancellationTokenSource();
+                var cts = new CancellationTokenSource();
                 var ret = await _proxyAsync.UploadAsync(stream, "file.txt", "123", async i => Console.WriteLine(i), cts.Token);
                 Console.WriteLine($"ret:{ret}");
             }

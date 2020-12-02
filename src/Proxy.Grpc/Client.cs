@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Channel = Grpc.Net.Client.GrpcChannel;
 
 namespace Proxy.Grpc
@@ -29,7 +30,7 @@ namespace Proxy.Grpc
             CallClient = new MessageCall.MessageCallClient(_channel);
         }
 
-        public async System.Threading.Tasks.ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
             if (_disposed)
                 return;

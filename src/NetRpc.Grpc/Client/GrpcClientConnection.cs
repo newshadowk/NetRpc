@@ -3,20 +3,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Google.Protobuf;
-using Proxy.Grpc;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using NetRpc.Contract;
+using Proxy.Grpc;
 
 namespace NetRpc.Grpc
 {
     internal sealed class GrpcClientConnection : IClientConnection
     {
-        private readonly AsyncLock _sendLock = new AsyncLock();
+        private readonly AsyncLock _sendLock = new();
         private readonly Client _client;
         private readonly ILogger _logger;
         private AsyncDuplexStreamingCall<StreamBuffer, StreamBuffer> _api = null!;
-        private readonly WriteOnceBlock<int> _end = new WriteOnceBlock<int>(i => i);
+        private readonly WriteOnceBlock<int> _end = new(i => i);
 
         public GrpcClientConnection(Client client, ILogger logger)
         {
@@ -29,8 +29,8 @@ namespace NetRpc.Grpc
         public event EventHandler<EventArgsT<Exception>>? ReceiveDisconnected;
 
         private bool _isDispose;
-        
-        private static readonly AsyncLock LockDispose = new AsyncLock();
+
+        private static readonly AsyncLock LockDispose = new();
 
         public async ValueTask DisposeAsync()
         {
@@ -60,12 +60,12 @@ namespace NetRpc.Grpc
                 _end.ReceiveAsync());
         }
 
-        public ConnectionInfo ConnectionInfo => new ConnectionInfo
+        public ConnectionInfo ConnectionInfo => new()
         {
             Port = _client.Port,
             Description = _client.ConnectionDescription,
-            Host = _client.Host, 
-            ChannelType =  ChannelType.Grpc
+            Host = _client.Host,
+            ChannelType = ChannelType.Grpc
         };
 
         public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false)
@@ -73,7 +73,7 @@ namespace NetRpc.Grpc
             //add a lock here will not slowdown send speed.
             using (await _sendLock.LockAsync())
             {
-                var sb = new StreamBuffer { Body = ByteString.CopyFrom(buffer.ToArray()) };
+                var sb = new StreamBuffer {Body = ByteString.CopyFrom(buffer.ToArray())};
                 await _api.RequestStream.WriteAsync(sb);
             }
 

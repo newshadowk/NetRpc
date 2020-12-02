@@ -1,8 +1,8 @@
-﻿using Proxy.Grpc;
+﻿using System;
+using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
-using Grpc.Net.Client;
+using Proxy.Grpc;
 
 namespace NetRpc.Grpc
 {
@@ -10,7 +10,7 @@ namespace NetRpc.Grpc
     {
         private readonly ILogger _logger;
         private Client? _client;
-        private GrpcClientConnection? _connection; 
+        private GrpcClientConnection? _connection;
 
         public GrpcClientConnectionFactory(IOptions<GrpcClientOptions> options, ILoggerFactory loggerFactory)
         {
@@ -25,7 +25,7 @@ namespace NetRpc.Grpc
             _client = new Client(GrpcChannel.ForAddress(opt.Url!, opt.ChannelOptions!), host, port, opt.ToString());
             _client.Connect();
         }
-    
+
         public IClientConnection Create()
         {
             _connection = new GrpcClientConnection(_client!, _logger);

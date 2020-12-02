@@ -9,10 +9,6 @@ namespace Service
 {
     internal class Service : IService
     {
-        public Service()
-        {
-        }
-
         public void Hearbeat()
         {
             Console.WriteLine("[Hearbeat]");

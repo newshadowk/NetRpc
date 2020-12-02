@@ -1,17 +1,16 @@
 ﻿using System;
-using System.IO;
 using System.Threading.Tasks;
 using DataContract;
-using Grpc.Core;
-using NetRpc.Grpc;
+using NetRpc.RabbitMQ;
+using Helper = TestHelper.Helper;
 
 namespace Client
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
-            var p = NetRpc.RabbitMQ.NManager.CreateClientProxy<IService>(TestHelper.Helper.GetMQOptions());
+            var p = NManager.CreateClientProxy<IService>(Helper.GetMQOptions());
             await p.Proxy.Call("msg");
 
             //var pp = NetRpc.Grpc.NManager.CreateClientProxy<IService_1>(new GrpcClientOptions {Url = "http://localhost:50002"});

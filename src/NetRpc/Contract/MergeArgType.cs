@@ -23,7 +23,8 @@ namespace NetRpc
 
         public ParameterInfo? SingleValue { get; }
 
-        public MergeArgType(Type? type, Type? typeWithoutPathQueryStream, string? streamPropName, TypeName? callbackAction, TypeName? cancelToken, bool hasCustomType, bool isSingleValue, ParameterInfo? singleValue, MethodInfo methodInfo)
+        public MergeArgType(Type? type, Type? typeWithoutPathQueryStream, string? streamPropName, TypeName? callbackAction, TypeName? cancelToken,
+            bool hasCustomType, bool isSingleValue, ParameterInfo? singleValue, MethodInfo methodInfo)
         {
             Type = type;
             StreamPropName = streamPropName;

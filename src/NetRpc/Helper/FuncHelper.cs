@@ -11,7 +11,7 @@ namespace NetRpc
         {
             if (func == null)
                 return null;
-            var f = (Delegate)func;
+            var f = (Delegate) func;
             return o => (Task) f.DynamicInvoke(o)!;
         }
 

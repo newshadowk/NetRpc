@@ -5,18 +5,18 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Helper = TestHelper.Helper;
+using TestHelper;
 
 namespace Service
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             await RunAsync();
         }
 
-        static async Task RunAsync()
+        private static async Task RunAsync()
         {
             var host = Host.CreateDefaultBuilder()
                 .ConfigureWebHostDefaults(webBuilder =>
@@ -30,10 +30,7 @@ namespace Service
                             services.AddNGrpcService();
                             services.AddNRabbitMQService(i => { i.CopyFrom(Helper.GetMQOptions()); });
                             services.AddNServiceContract<IService, Service>();
-                        }).Configure(app =>
-                        {
-                            app.UseNGrpc();
-                        });
+                        }).Configure(app => { app.UseNGrpc(); });
                 })
                 .Build();
 

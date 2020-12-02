@@ -23,10 +23,7 @@ namespace Service
                         {
                             services.AddNGrpcService();
                             services.AddNServiceContract<IServiceAsync, ServiceAsync>();
-                        }).Configure(app =>
-                        {
-                            app.UseNGrpc();
-                        });
+                        }).Configure(app => { app.UseNGrpc(); });
                 }).Build();
 
             await host.RunAsync();

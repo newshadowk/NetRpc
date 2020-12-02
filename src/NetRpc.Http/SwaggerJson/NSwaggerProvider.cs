@@ -15,7 +15,7 @@ namespace NetRpc.Http
         private readonly DocXmlOptions _docXmlOptions;
         private readonly OpenApiDocument _doc;
 
-        public NSwaggerProvider(PathProcessor pathProcessor, SwaggerKeyRoles keyRoles, 
+        public NSwaggerProvider(PathProcessor pathProcessor, SwaggerKeyRoles keyRoles,
             IOptions<SchemaGeneratorOptions> swaggerOptions, IOptions<DocXmlOptions> docXmlOptions)
         {
             _pathProcessor = pathProcessor;
@@ -52,7 +52,7 @@ namespace NetRpc.Http
             contracts.ForEach(i => tags.AddRange(i.Tags));
             var distTags = tags.Distinct();
             foreach (var distTag in distTags)
-                _doc.Tags.Add(new OpenApiTag { Name = distTag });
+                _doc.Tags.Add(new OpenApiTag {Name = distTag});
         }
 
         private void ProcessComponents(List<ContractInfo> contracts)

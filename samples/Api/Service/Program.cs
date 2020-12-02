@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
 using Microsoft.Extensions.Hosting;
@@ -10,9 +8,9 @@ using Helper = TestHelper.Helper;
 
 namespace Service
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             //rabbitMQ
             var mOpt = new MiddlewareOptions();

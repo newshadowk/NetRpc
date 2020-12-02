@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
 using NetRpc;
-using NetRpc.Http;
 using NetRpc.Http.Client;
 using Helper = TestHelper.Helper;
 
@@ -42,22 +41,22 @@ namespace Service
     {
         public async Task<string> Call1Async(string p1, int p2)
         {
-            string s = $"[Call1Async]...{p1}, {p2}";
+            var s = $"[Call1Async]...{p1}, {p2}";
             Console.WriteLine(s);
             return s;
         }
 
         public async Task<string> Call2Async(CallObj obj)
         {
-            string s = $"[Call2Async]...{obj.P1}, {obj.P2}";
+            var s = $"[Call2Async]...{obj.P1}, {obj.P2}";
             Console.WriteLine(s);
             return s;
         }
 
         public async Task<string> Call3Async(CallObj obj, string s1)
-        //public async Task<string> Call3Async(CallObj obj)
+            //public async Task<string> Call3Async(CallObj obj)
         {
-            string s = $"[Call3Async]...{obj.P1}, {obj.P2}";
+            var s = $"[Call3Async]...{obj.P1}, {obj.P2}";
             Console.WriteLine(s);
             return s;
         }
@@ -74,20 +73,21 @@ namespace Service
 
         public async Task<string> Call4Async(CallObj obj, Func<double, Task> cb, CancellationToken token)
         {
-            string s = $"[Call4Async]...{obj.P1}, {obj.P2}";
+            var s = $"[Call4Async]...{obj.P1}, {obj.P2}";
 
-            for (int i = 0; i < 50; i++)
+            for (var i = 0; i < 50; i++)
             {
                 await cb(i);
                 await Task.Delay(100, token);
             }
+
             Console.WriteLine(s);
             return s;
         }
 
         public async Task<string> Call5Async(string p1, int p2, Func<double, Task> cb, CancellationToken token)
         {
-            string s = $"[Call5Async]...{p1}, {p2}";
+            var s = $"[Call5Async]...{p1}, {p2}";
             Console.WriteLine(s);
             return s;
         }
@@ -100,7 +100,7 @@ namespace Service
             //    Console.WriteLine(e.Value);
             //    await cb(e.Value);
             //};
-            MemoryStream ms = new MemoryStream();
+            var ms = new MemoryStream();
             await stream.CopyToAsync(ms);
             return new CObj();
         }
@@ -130,7 +130,7 @@ namespace Service
 
         public async Task<CustomObj> CallAsync(string p1, int p2)
         {
-            var retObj = new CustomObj { Date = DateTime.Now, Name = NameEnum.John };
+            var retObj = new CustomObj {Date = DateTime.Now, Name = NameEnum.John};
             var h = GlobalActionExecutingContext.Context.Header;
             //Console.WriteLine($"[Call]...receive:{p1}, {p2}, h1:{h["h1"]}, h2:{h["h2"]} return:{retObj}");
             Console.WriteLine($"[Call]...receive:{p1}, {p2}, return:{retObj}");
@@ -181,7 +181,7 @@ namespace Service
             for (var i = 1; i <= 3; i++)
             {
                 Console.Write($"{i}, ");
-                await cb(new CustomCallbackObj { Progress = i });
+                await cb(new CustomCallbackObj {Progress = i});
                 await Task.Delay(1000, token);
             }
 
@@ -191,7 +191,7 @@ namespace Service
                 StreamName = "TestFile.txt",
                 InnerObj = new InnerObj
                 {
-                    CustomObj = new CustomObj()
+                    CustomObj = new CustomObj
                     {
                         Name = NameEnum.John
                     },
@@ -205,15 +205,15 @@ namespace Service
         public async Task<int> UploadAsync(Stream stream, string streamName, string p1, Func<int, Task> cb, CancellationToken token)
         {
             Console.WriteLine($"UploadAsync, {p1}");
-            string path = @"d:\testfile\tgt.rar";
+            var path = @"d:\testfile\tgt.rar";
             File.Delete(path);
-            MemoryStream ms = new MemoryStream();
+            var ms = new MemoryStream();
             ((ProxyStream) stream).CacheStream = ms;
 
             using (var fs = File.OpenWrite(path))
             {
                 const int ReadBuffSize = 81920;
-                byte[] buffer = new byte[ReadBuffSize];
+                var buffer = new byte[ReadBuffSize];
                 var readCount = await stream.ReadAsync(buffer, 0, ReadBuffSize, token);
                 while (readCount > 0)
                 {
@@ -232,14 +232,15 @@ namespace Service
 
         public async Task<string> ComplexCall2Async(Action<CustomCallbackObj> cb, CancellationToken token)
         {
-            Console.WriteLine($"[ComplexCallAsync]...");
+            Console.WriteLine("[ComplexCallAsync]...");
             for (var i = 1; i <= 3; i++)
             {
                 Console.Write($"{i}, ");
-                cb(new CustomCallbackObj { Progress = i });
+                cb(new CustomCallbackObj {Progress = i});
                 await Task.Delay(1000, token);
             }
-            Console.WriteLine($"[ComplexCallAsync]...end");
+
+            Console.WriteLine("[ComplexCallAsync]...end");
             return "ret0";
         }
     }

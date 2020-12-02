@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using NetRpc.Contract;
 
 namespace NetRpc
@@ -12,9 +11,9 @@ namespace NetRpc
         /// <summary>
         /// key:name value:nameIndex
         /// </summary>
-        private static readonly Dictionary<string, int> TypeDic = new Dictionary<string, int>();
+        private static readonly Dictionary<string, int> TypeDic = new();
 
-        public static readonly List<InnerTypeMapItem> InnerTypeMap = new List<InnerTypeMapItem>();
+        public static readonly List<InnerTypeMapItem> InnerTypeMap = new();
 
         private static string GetName(string name)
         {
@@ -113,7 +112,7 @@ namespace NetRpc
             var t2 = BuildTypeWithoutPathQueryStream(typeNameWithoutStreamName, cis, pathQueryParams);
 
             if (cis.Count == 0)
-                return new MergeArgType(null, null, null, null, null, 
+                return new MergeArgType(null, null, null, null, null,
                     false, false, null, method);
 
             //SetInnerTypeMap
@@ -124,7 +123,7 @@ namespace NetRpc
 
         private static CustomAttributeData? FindCustomAttributeData(List<CustomAttributeData> methodsAd, PPInfo p)
         {
-            var found = methodsAd.Find(i => (string)i.ConstructorArguments[0].Value! == p.Name);
+            var found = methodsAd.Find(i => (string) i.ConstructorArguments[0].Value! == p.Name);
             if (found != null)
                 return found;
 
@@ -159,11 +158,11 @@ namespace NetRpc
         private static Type BuildTypeWithoutPathQueryStream(string typeName, List<CustomsPropertyInfo> cis, List<string> pathQueryParams)
         {
             var list = cis.ToList();
-            list.RemoveAll(i => 
-                i.PropertyName.IsStreamName() && i.Type == typeof(string) // stream
-                ||
-                !i.Type.IsFuncT() && !i.Type.IsCancellationToken() && pathQueryParams.Any(j => j == i.PropertyName.ToLower()) // pathQueryParams
-                );
+            list.RemoveAll(i =>
+                    i.PropertyName.IsStreamName() && i.Type == typeof(string) // stream
+                    ||
+                    !i.Type.IsFuncT() && !i.Type.IsCancellationToken() && pathQueryParams.Any(j => j == i.PropertyName.ToLower()) // pathQueryParams
+            );
 
             return TypeFactory.BuildType(typeName, list);
         }

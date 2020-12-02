@@ -73,7 +73,7 @@ namespace NetRpc
 
             if (isSingleValue)
                 l = l[0].Type.GetProperties().ToList().ConvertAll(i => new PPInfo(i));
-            
+
             ret.AddRange(l);
             if (func != null)
                 ret.Add(func);
@@ -99,7 +99,7 @@ namespace NetRpc
             var ret = new List<PPInfo>();
             typeInfos = GetInnerTypeNames(typeInfos);
 
-            bool idAdded = false;
+            var idAdded = false;
             foreach (var p in typeInfos)
             {
                 if (p.Type.IsStream())
@@ -113,6 +113,7 @@ namespace NetRpc
                         ret.Add(new PPInfo(CallConst.CallIdName, typeof(string)));
                         ret.Add(new PPInfo(CallConst.ConnIdName, typeof(string)));
                     }
+
                     continue;
                 }
 
@@ -128,11 +129,11 @@ namespace NetRpc
             //class CusObj {P1, P2}
             //in:CusObj -> P1, P2  (need convert)
             //in:CusObj, P1 -> CusObj, P1 (no change)
-            List<object?> retArgs = new List<object?>();
+            List<object?> retArgs = new();
             if (hri.MergeArgType.IsSingleValue)
             {
                 var inst = pureArgs[0];
-                foreach (var p in hri.MergeArgType.SingleValue!.ParameterType.GetProperties()) 
+                foreach (var p in hri.MergeArgType.SingleValue!.ParameterType.GetProperties())
                     retArgs.Add(Helper.GetPropertyValue(inst, p));
                 return retArgs.ToArray();
             }

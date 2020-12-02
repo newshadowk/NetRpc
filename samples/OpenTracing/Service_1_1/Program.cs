@@ -12,9 +12,9 @@ using NetRpc.Jaeger;
 
 namespace Service
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             var h = Host.CreateDefaultBuilder(null)
                 .ConfigureWebHostDefaults(builder =>
@@ -52,10 +52,7 @@ namespace Service
                                     .AllowCredentials();
                             });
                             app.UseRouting();
-                            app.UseEndpoints(endpoints =>
-                            {
-                                endpoints.MapHub<CallbackHub>("/callback");
-                            });
+                            app.UseEndpoints(endpoints => { endpoints.MapHub<CallbackHub>("/callback"); });
                             app.UseNSwagger();
                             app.UseNHttp();
                             app.UseNGrpc();

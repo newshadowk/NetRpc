@@ -12,7 +12,7 @@ namespace NetRpc
 
         public object Target { get; }
 
-        public List<InstanceMethod> Methods { get; } = new List<InstanceMethod>();
+        public List<InstanceMethod> Methods { get; } = new();
 
         public ContractInfo Contract { get; }
 
@@ -21,7 +21,7 @@ namespace NetRpc
             Contract = contract;
             Target = target;
             Type = target.GetType();
-            foreach (var m in Type.GetMethods()) 
+            foreach (var m in Type.GetMethods())
                 Methods.Add(new InstanceMethod(m, target));
         }
     }
@@ -30,13 +30,13 @@ namespace NetRpc
     {
         public MethodInfo MethodInfo { get; }
 
-        public List<ActionFilterAttribute> ActionFilters { get; } = new List<ActionFilterAttribute>();
+        public List<ActionFilterAttribute> ActionFilters { get; } = new();
 
         public InstanceMethod(MethodInfo methodInfo, object? target = null)
         {
             MethodInfo = methodInfo;
 
-            if (target is ActionFilterAttribute targetF) 
+            if (target is ActionFilterAttribute targetF)
                 ActionFilters.Add(targetF);
 
             // ReSharper disable once AssignNullToNotNullAttribute
@@ -55,9 +55,9 @@ namespace NetRpc
     internal static class InstanceCache
     {
         public static readonly ConcurrentDictionary<Type, List<ActionFilterAttribute>> InstanceTypeActionFilters =
-            new ConcurrentDictionary<Type, List<ActionFilterAttribute>>();
+            new();
 
         public static readonly ConcurrentDictionary<MethodInfo, List<ActionFilterAttribute>> MethodActionFilters =
-            new ConcurrentDictionary<MethodInfo, List<ActionFilterAttribute>>();
+            new();
     }
 }

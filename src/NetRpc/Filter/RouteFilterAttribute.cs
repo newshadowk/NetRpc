@@ -26,7 +26,7 @@ namespace NetRpc
             var f = context.ServiceProvider.GetService(typeof(IClientProxyFactory));
             // ReSharper disable once PossibleNullReferenceException
             var mi = f.GetType().GetMethod(nameof(IClientProxyFactory.CreateProxy))!.MakeGenericMethod(_contactType);
-            var clientProxy = (IClientProxy)mi.Invoke(f, new object?[] { _optionsName })!;
+            var clientProxy = (IClientProxy) mi.Invoke(f, new object?[] {_optionsName})!;
             var proxyMethodInfos = clientProxy.Proxy.GetType().GetMethods();
             var methodName = _methodName ?? context.InstanceMethod.MethodInfo.Name;
 
@@ -35,7 +35,7 @@ namespace NetRpc
                 throw new InvalidOperationException($"Method {methodName} not found in ClientProxy");
 
             var tgtPi = proxyM.GetParameters();
-            var newArgs = CreateArgs(context.Args, tgtPi); 
+            var newArgs = CreateArgs(context.Args, tgtPi);
             var tgtRet = await proxyM.InvokeAsync(clientProxy.Proxy, newArgs);
             context.Result = ConvertParam(tgtRet, context.InstanceMethod.MethodInfo.ReturnType.GetTypeFromReturnTypeDefinition());
         }
@@ -46,7 +46,7 @@ namespace NetRpc
                 throw new InvalidOperationException("RoutTo need match the args count.");
 
             var ret = new List<object?>();
-            for (int i = 0; i < srcObjs.Length; i++) 
+            for (var i = 0; i < srcObjs.Length; i++)
                 ret.Add(ConvertParam(srcObjs[i], tgtPi[i].ParameterType));
 
             return ret.ToArray();
@@ -57,7 +57,7 @@ namespace NetRpc
             if (srcObj == null)
                 return null;
 
-            if (srcObj is Stream || 
+            if (srcObj is Stream ||
                 srcObj is Action ||
                 srcObj.GetType().IsSystemTypeOrEnum())
                 return srcObj;

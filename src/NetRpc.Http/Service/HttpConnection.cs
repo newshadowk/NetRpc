@@ -20,8 +20,8 @@ namespace NetRpc.Http
         private readonly HttpContext _context;
         private readonly IHubContext<CallbackHub, ICallback> _hub;
         private readonly ILogger _logger;
-        private readonly RateAction _ra = new RateAction(1000);
-        private readonly ProgressEvent _progressEvent = new ProgressEvent();
+        private readonly RateAction _ra = new(1000);
+        private readonly ProgressEvent _progressEvent = new();
 
         public HttpConnection(HttpContext context, IHubContext<CallbackHub, ICallback> hub, ILogger logger)
         {

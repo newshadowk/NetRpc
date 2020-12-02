@@ -10,7 +10,7 @@ namespace NetRpc
         DateTimeOffset StartTime { get; }
 
         IServiceProvider ServiceProvider { get; }
-        
+
         /// <summary>
         /// Result of invoked action.
         /// </summary>

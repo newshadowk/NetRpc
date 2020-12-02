@@ -41,7 +41,7 @@ namespace NetRpc
 
         public static ActionInfo ToActionInfo(this MethodInfo method)
         {
-            return new ActionInfo
+            return new()
             {
                 GenericArguments = method.GetGenericArguments().ToList().ConvertAll(GetTypeName).ToArray(),
                 FullName = method.ToFullMethodName()
@@ -90,7 +90,7 @@ namespace NetRpc
             var found = ps.FirstOrDefault(i => i.PropertyType.IsStream());
             if (found == null)
                 return false;
-            stream = (Stream)found.GetValue(obj)!;
+            stream = (Stream) found.GetValue(obj)!;
 
             //streamName
             found = ps.FirstOrDefault(i => i.Name.IsStreamName());

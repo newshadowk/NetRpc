@@ -15,9 +15,9 @@ namespace NetRpc
         private readonly IServiceConnection _connection;
         private readonly ILogger _logger;
         private CancellationTokenSource _cts = null!;
-        private readonly DuplexPipe _streamPipe = new DuplexPipe(new PipeOptions(pauseWriterThreshold: Helper.StreamBufferCacheCount, resumeWriterThreshold:1));
+        private readonly DuplexPipe _streamPipe = new(new PipeOptions(pauseWriterThreshold: Helper.StreamBufferCacheCount, resumeWriterThreshold: 1));
 
-        private readonly WriteOnceBlock<byte[]> _cmdReq = new WriteOnceBlock<byte[]>(null);
+        private readonly WriteOnceBlock<byte[]> _cmdReq = new(null);
 
         public BufferServiceOnceApiConvert(IServiceConnection connection, ILogger logger)
         {
@@ -91,7 +91,6 @@ namespace NetRpc
             }
             catch (Exception e)
             {
-
                 await SendFaultAsync(e, context);
                 return true;
             }

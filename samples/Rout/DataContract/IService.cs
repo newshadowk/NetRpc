@@ -21,7 +21,7 @@ namespace DataContract
     {
         public string P1 { get; set; }
 
-        [field:NonSerialized]
+        [field: NonSerialized]
         public Stream Stream { get; set; }
     }
 }

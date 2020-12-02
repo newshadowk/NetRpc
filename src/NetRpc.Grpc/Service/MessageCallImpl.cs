@@ -32,7 +32,7 @@ namespace NetRpc.Grpc
             }
             finally
             {
-                if (connection != null) 
+                if (connection != null)
                     await connection.DisposeFinishAsync();
                 _busyFlag.Decrement();
             }

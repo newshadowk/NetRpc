@@ -32,7 +32,7 @@ namespace NetRpc
             _manualPosition = manualPosition;
         }
 
-        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = new CancellationToken())
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = new())
         {
             int readCount;
             try
@@ -79,7 +79,7 @@ namespace NetRpc
             return readCount;
         }
 
-        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = new CancellationToken())
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = new())
         {
             return _stream.WriteAsync(buffer, cancellationToken);
         }
@@ -176,7 +176,7 @@ namespace NetRpc
             get
             {
                 if (_manualPosition)
-                    return _p; 
+                    return _p;
                 return _stream.Position;
             }
             set

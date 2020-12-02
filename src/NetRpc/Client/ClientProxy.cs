@@ -11,12 +11,12 @@ namespace NetRpc
     public class ClientProxy<TService> : IClientProxy<TService> where TService : class
     {
         private bool _disposed;
-        private readonly object _lockDispose = new object();
+        private readonly object _lockDispose = new();
         public event EventHandler? Connected;
         public event EventHandler? DisConnected;
         public event EventHandler<EventArgsT<Exception>>? ExceptionInvoked;
         public event AsyncEventHandler? HeartbeatAsync;
-        private readonly object _lockObj = new object();
+        private readonly object _lockObj = new();
         private readonly IOnceCallFactory _factory;
         private readonly Call _call;
         private readonly ILogger _logger;

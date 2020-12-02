@@ -11,7 +11,7 @@ namespace NetRpc
 {
     internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
     {
-        private readonly DuplexPipe _streamPipe = new DuplexPipe(new PipeOptions(pauseWriterThreshold: Helper.StreamBufferCacheCount, resumeWriterThreshold: 1));
+        private readonly DuplexPipe _streamPipe = new(new PipeOptions(pauseWriterThreshold: Helper.StreamBufferCacheCount, resumeWriterThreshold: 1));
         private readonly IClientConnection _connection;
         private readonly ILogger _logger;
 
@@ -134,6 +134,7 @@ namespace NetRpc
                     }
                     else
                         await OnFaultSerializationExceptionAsync();
+
                     break;
                 }
                 case ReplyType.Buffer:

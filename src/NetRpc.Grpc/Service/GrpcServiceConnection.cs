@@ -3,19 +3,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Google.Protobuf;
-using Proxy.Grpc;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using Proxy.Grpc;
 
 namespace NetRpc.Grpc
 {
     internal sealed class GrpcServiceConnection : IServiceConnection
     {
-        private readonly AsyncLock _sendLock = new AsyncLock();
+        private readonly AsyncLock _sendLock = new();
         private readonly IAsyncStreamReader<StreamBuffer> _requestStream;
         private readonly IServerStreamWriter<StreamBuffer> _responseStream;
         private readonly ILogger _logger;
-        private readonly WriteOnceBlock<int> _end = new WriteOnceBlock<int>(i => i);
+        private readonly WriteOnceBlock<int> _end = new(i => i);
 
         public GrpcServiceConnection(IAsyncStreamReader<StreamBuffer> requestStream, IServerStreamWriter<StreamBuffer> responseStream, ILogger logger)
         {
@@ -26,14 +26,14 @@ namespace NetRpc.Grpc
 
         public ValueTask DisposeAsync()
         {
-            return new ValueTask();
+            return new();
         }
 
         public async Task DisposeFinishAsync()
         {
             //before dispose requestStream need to
             //wait 60 second to receive 'completed' from client side.
-            await Task.WhenAny(Task.Delay(1000*60),
+            await Task.WhenAny(Task.Delay(1000 * 60),
                 _end.ReceiveAsync());
         }
 
@@ -43,7 +43,7 @@ namespace NetRpc.Grpc
         {
             //add a lock here will not slowdown send speed.
             using (await _sendLock.LockAsync())
-                await _responseStream.WriteAsync(new StreamBuffer { Body = ByteString.CopyFrom(buffer.Span) });
+                await _responseStream.WriteAsync(new StreamBuffer {Body = ByteString.CopyFrom(buffer.Span)});
         }
 
         public Task StartAsync()
@@ -70,7 +70,7 @@ namespace NetRpc.Grpc
         }
 
         private Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>> e)
-        { 
+        {
             return ReceivedAsync.InvokeAsync(this, e);
         }
     }

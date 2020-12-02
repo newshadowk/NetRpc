@@ -9,9 +9,9 @@ using Helper = TestHelper.Helper;
 
 namespace Service
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             var host = NManager.CreateHost(Helper.GetMQOptions(),
                 null,

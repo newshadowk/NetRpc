@@ -19,7 +19,7 @@ namespace NetRpc
         private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
         private volatile int _timeoutInterval;
         private readonly bool _forwardHeader;
-        private static readonly AsyncLocal<Dictionary<string, object?>> AsyncLocalHeader = new AsyncLocal<Dictionary<string, object?>>();
+        private static readonly AsyncLocal<Dictionary<string, object?>> AsyncLocalHeader = new();
 
         public Call(Guid clientProxyId,
             ContractInfo contractInfo,
@@ -42,7 +42,7 @@ namespace NetRpc
             _middlewareBuilder = new ClientMiddlewareBuilder(middlewareOptions, serviceProvider);
         }
 
-        public Dictionary<string, object?> AdditionHeader { get; set; } = new Dictionary<string, object?>();
+        public Dictionary<string, object?> AdditionHeader { get; set; } = new();
 
         public static Dictionary<string, object?> AdditionContextHeader
         {

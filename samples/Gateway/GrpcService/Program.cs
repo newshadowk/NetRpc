@@ -3,18 +3,18 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetRpc;
+using NetRpc.Grpc;
 using Helper = TestHelper.Helper;
 
 namespace Service
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
-            var host = NetRpc.Grpc.NManager.CreateHost(50001, null,
+            var host = NManager.CreateHost(50001, null,
                 new ContractParam(typeof(IService), typeof(Service)),
                 new ContractParam(typeof(IService2), typeof(Service2)));
             await host.RunAsync();

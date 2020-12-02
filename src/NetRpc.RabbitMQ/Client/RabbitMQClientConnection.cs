@@ -33,7 +33,7 @@ namespace NetRpc.RabbitMQ
             return new ValueTask();
         }
 
-        public ConnectionInfo ConnectionInfo => new ConnectionInfo
+        public ConnectionInfo ConnectionInfo => new()
         {
             Host = _opt.Host,
             Port = _opt.Port,

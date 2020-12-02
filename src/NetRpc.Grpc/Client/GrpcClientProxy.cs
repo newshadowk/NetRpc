@@ -12,7 +12,7 @@ namespace NetRpc.Grpc
             IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
             IActionExecutingContextAccessor actionExecutingContextAccessor,
             IServiceProvider serviceProvider,
-            ILoggerFactory loggerFactory, 
+            ILoggerFactory loggerFactory,
             string? optionsName = null)
             : base(factory,
                 nClientOptions,

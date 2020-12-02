@@ -31,11 +31,11 @@ namespace NetRpc.RabbitMQ
         public static ClientProxy<TService> CreateClientProxy<TService>(RabbitMQClientConnectionFactoryOptions options, int timeoutInterval = 1200000,
             int hearbeatInterval = 10000) where TService : class
         {
-            return new ClientProxy<TService>(options.Factory, new SimpleOptions<NClientOption>(new NClientOption
+            return new(options.Factory, new SimpleOptions<NClientOption>(new NClientOption
             {
                 HearbeatInterval = hearbeatInterval,
                 TimeoutInterval = timeoutInterval
-            }), new NullOptions<ClientMiddlewareOptions>(), ActionExecutingContextAccessor.Default,  null!, NullLoggerFactory.Instance);
+            }), new NullOptions<ClientMiddlewareOptions>(), ActionExecutingContextAccessor.Default, null!, NullLoggerFactory.Instance);
         }
 
         public static ClientProxy<TService> CreateClientProxy<TService>(MQOptions options, int timeoutInterval = 1200000, int hearbeatInterval = 10000)

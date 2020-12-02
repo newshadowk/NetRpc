@@ -47,7 +47,7 @@ namespace DataContract
         [Example(null)]
         public int? I1 { get; set; }
 
-        public InnerObj InnerObj { get; set; } = new InnerObj();
+        public InnerObj InnerObj { get; set; } = new();
 
         public override string ToString()
         {

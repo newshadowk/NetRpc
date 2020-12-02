@@ -8,7 +8,7 @@ namespace NetRpc.Http.Client
 {
     public static class ClientHelper
     {
-        private static readonly JsonSerializerOptions JsOptions = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions JsOptions = new()
         {
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

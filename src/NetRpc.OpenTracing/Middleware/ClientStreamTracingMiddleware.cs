@@ -33,7 +33,8 @@ namespace NetRpc.OpenTracing
                 return;
 
             var spanBuilder = GlobalTracer.Instance.BuildSpan(
-                $"{ConstValue.ClientStream} {NetRpc.Helper.SizeSuffix(context.Stream.Length)} {ConstValue.SendStr}").AsChildOf(GlobalTracer.Instance.ActiveSpan);
+                    $"{ConstValue.ClientStream} {NetRpc.Helper.SizeSuffix(context.Stream.Length)} {ConstValue.SendStr}")
+                .AsChildOf(GlobalTracer.Instance.ActiveSpan);
             ISpan? span = null;
             context.OnceCall.SendRequestStreamStarted += (s, e) => span = spanBuilder.Start();
             context.OnceCall.SendRequestStreamFinished += (s, e) => span?.Finish();
@@ -46,9 +47,10 @@ namespace NetRpc.OpenTracing
 
             if (context.Result.TryGetStream(out var outStream, out _))
             {
-                var readStream = (ReadStream)outStream!;
+                var readStream = (ReadStream) outStream!;
                 var spanBuilder = GlobalTracer.Instance.BuildSpan(
-                    $"{ConstValue.ClientStream} {NetRpc.Helper.SizeSuffix(readStream.Length)} {ConstValue.ReceiveStr}").AsChildOf(GlobalTracer.Instance.ActiveSpan);
+                        $"{ConstValue.ClientStream} {NetRpc.Helper.SizeSuffix(readStream.Length)} {ConstValue.ReceiveStr}")
+                    .AsChildOf(GlobalTracer.Instance.ActiveSpan);
                 ISpan? span = null;
 
 #pragma warning disable 1998

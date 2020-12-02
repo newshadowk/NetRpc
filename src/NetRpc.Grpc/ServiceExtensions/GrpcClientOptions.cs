@@ -1,4 +1,5 @@
 ﻿using Grpc.Net.Client;
+
 namespace NetRpc.Grpc
 {
     /// <summary>
@@ -6,7 +7,7 @@ namespace NetRpc.Grpc
     /// </summary>
     public class GrpcClientOptions
     {
-        public GrpcChannelOptions? ChannelOptions { get; set; } = new GrpcChannelOptions();
+        public GrpcChannelOptions? ChannelOptions { get; set; } = new();
 
         public string? Url { get; set; }
 

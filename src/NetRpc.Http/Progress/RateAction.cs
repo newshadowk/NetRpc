@@ -12,7 +12,7 @@ namespace NetRpc.Http
         private DateTime _lastTime;
 
         private bool _isEnd;
-        private readonly object _lockObj = new object();
+        private readonly object _lockObj = new();
 
         public RateAction(int intervalMs)
         {

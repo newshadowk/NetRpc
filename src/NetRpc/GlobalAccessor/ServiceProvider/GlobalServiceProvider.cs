@@ -5,8 +5,8 @@ namespace NetRpc
 {
     public static class GlobalServiceProvider
     {
-        private static readonly AsyncLocal<IServiceProvider> Local = new AsyncLocal<IServiceProvider>();
-        private static readonly AsyncLocal<IServiceProvider> LocalScope = new AsyncLocal<IServiceProvider>();
+        private static readonly AsyncLocal<IServiceProvider> Local = new();
+        private static readonly AsyncLocal<IServiceProvider> LocalScope = new();
 
         public static IServiceProvider? Provider
         {

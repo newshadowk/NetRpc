@@ -74,7 +74,7 @@ namespace NetRpc
             if (list == null)
                 return null;
 
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             var toList = list as IList<T> ?? list.ToList();
 
             if (displayCount)
@@ -426,6 +426,5 @@ namespace NetRpc
             ret += "\r\n";
             return ret;
         }
-
     }
 }

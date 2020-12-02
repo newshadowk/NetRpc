@@ -20,7 +20,7 @@ namespace NetRpc
             {
                 var parametersNames = parameters.Select(p => p.ParameterType.IsGenericParameter
                     ? $"`{p.ParameterType.GenericParameterPosition}"
-                    : QualifiedNameFor(p.ParameterType, expandGenericArgs: true));
+                    : QualifiedNameFor(p.ParameterType, true));
                 builder.Append($"({string.Join(",", parametersNames)})");
             }
 

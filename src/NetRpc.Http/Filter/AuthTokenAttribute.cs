@@ -8,7 +8,7 @@ namespace NetRpc.Http
     {
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            var accessor = (IHttpContextAccessor)context.ServiceProvider.GetService(typeof(IHttpContextAccessor));
+            var accessor = (IHttpContextAccessor) context.ServiceProvider.GetService(typeof(IHttpContextAccessor));
             if (accessor == null)
                 throw new AuthenticationException("IHttpContextAccessor is null.");
 

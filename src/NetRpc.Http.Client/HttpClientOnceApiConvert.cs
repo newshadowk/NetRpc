@@ -102,7 +102,7 @@ namespace NetRpc.Http.Client
             {
                 req.AddParameter("data", postObj.ToDtoJson()!, ParameterType.RequestBody);
                 // ReSharper disable once PossibleNullReferenceException
-                req.AddFile(methodContext.ContractMethod.Route.DefaultRout.MergeArgType.StreamPropName!, stream!.CopyTo, 
+                req.AddFile(methodContext.ContractMethod.Route.DefaultRout.MergeArgType.StreamPropName!, stream!.CopyTo,
                     methodContext.ContractMethod.Route.DefaultRout.MergeArgType.StreamPropName!,
                     stream!.Length);
             }

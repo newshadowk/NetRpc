@@ -9,7 +9,7 @@ namespace NetRpc
         public ActionInfo Action { get; set; }
 
         public object?[] PureArgs { get; set; }
-        
+
         public bool HasStream { get; set; }
 
         public long StreamLength { get; set; }

@@ -7,7 +7,7 @@ using NetRpc.Grpc;
 
 namespace Service
 {
-    class Program
+    internal class Program
     {
         private static async Task Main(string[] args)
         {

@@ -27,10 +27,7 @@ namespace NetRpc.Grpc
                             });
                             foreach (var contract in contracts)
                                 services.AddNServiceContract(contract.ContractType, contract.InstanceType!);
-                        }).Configure(app =>
-                        {
-                            app.UseNGrpc();
-                        });
+                        }).Configure(app => { app.UseNGrpc(); });
                 })
                 .Build();
         }

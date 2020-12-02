@@ -4,9 +4,9 @@ namespace RabbitMQ.Base
 {
     public class CheckWriteOnceBlock<T>
     {
-        public WriteOnceBlock<T> WriteOnceBlock { get; } = new WriteOnceBlock<T>(null);
+        public WriteOnceBlock<T> WriteOnceBlock { get; } = new(null);
 
-        public object SyncRoot { get; } = new object();
+        public object SyncRoot { get; } = new();
 
         public bool IsPosted { get; set; }
     }

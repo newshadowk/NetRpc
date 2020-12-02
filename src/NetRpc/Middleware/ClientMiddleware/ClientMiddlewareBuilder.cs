@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -19,7 +18,7 @@ namespace NetRpc
             typeof(ClientMiddlewareBuilder).GetMethod(nameof(GetService), BindingFlags.NonPublic | BindingFlags.Static)!;
 
         private ClientRequestDelegate? _requestDelegate;
-        private readonly object _lockRequestDelegate = new object();
+        private readonly object _lockRequestDelegate = new();
         private readonly IList<Func<ClientRequestDelegate, ClientRequestDelegate>> _components = new List<Func<ClientRequestDelegate, ClientRequestDelegate>>();
 
         public ClientMiddlewareBuilder(ClientMiddlewareOptions options, IServiceProvider serviceProvider)
@@ -80,7 +79,7 @@ namespace NetRpc
                 var instance = ActivatorUtilities.CreateInstance(serviceProvider, middleware, ctorArgs);
 
                 if (parameters.Length == 1)
-                    return (ClientRequestDelegate)methodInfo.CreateDelegate(typeof(ClientRequestDelegate), instance);
+                    return (ClientRequestDelegate) methodInfo.CreateDelegate(typeof(ClientRequestDelegate), instance);
 
                 var factory = Compile<object>(methodInfo, parameters);
                 return context => factory(instance, context, context.ServiceProvider);

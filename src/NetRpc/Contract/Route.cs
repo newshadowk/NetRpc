@@ -123,7 +123,7 @@ namespace NetRpc
             QueryParams = GetQueryParams(pathQuery);
 
             _regPatternPathWithoutQuery = ReplacePathStr(PathWithoutQuery);
-            
+
             var ps = new List<string>();
             var c = Regex.Matches(path, @"(?<={)[^/]+(?=})");
             foreach (Match? o in c)
@@ -148,7 +148,7 @@ namespace NetRpc
 
         private static List<string> GetPathQueryParams(IList<string> pathParams, Dictionary<string, string> queryParams)
         {
-            List<string> ret = new List<string>();
+            List<string> ret = new();
             ret.AddRange(pathParams);
             ret.AddRange(queryParams.Values.ToList());
             return ret;
@@ -208,7 +208,7 @@ namespace NetRpc
 
             Routs = new ReadOnlyCollection<HttpRoutInfo>(list);
             DefaultRout = GetDefaultRout(list);
-          
+
             SwaggerRouts = new ReadOnlyCollection<HttpRoutInfo>(GetSwaggerRouts(list));
         }
 
@@ -230,6 +230,7 @@ namespace NetRpc
                 ri.HttpMethods.Add("POST");
                 ris.Add(ri);
             }
+
             return ris;
         }
 
@@ -322,6 +323,7 @@ namespace NetRpc
                     if (info.Method != null)
                         r.HttpMethods.Add(info.Method);
                 }
+
                 ret.Add(r);
             }
 
@@ -352,7 +354,7 @@ namespace NetRpc
             public string? Method { get; }
             public string Path { get; }
 
-            public TempInfo(Type contractType, MethodInfo methodInfo, string? contractTemplate, string? methodTemplate, string? method, bool contractTrimAsync, 
+            public TempInfo(Type contractType, MethodInfo methodInfo, string? contractTemplate, string? methodTemplate, string? method, bool contractTrimAsync,
                 bool methodTrimAsync)
             {
                 Method = method;
@@ -392,7 +394,8 @@ namespace NetRpc
 
         public override string ToString()
         {
-            return $"{nameof(DefaultRout)}:{DefaultRout}\r\n{nameof(Routs)}:\r\n{Routs.ListToString("\r\n")}\r\n{nameof(SwaggerRouts)}:\r\n{SwaggerRouts.ListToString("\r\n")}";
+            return
+                $"{nameof(DefaultRout)}:{DefaultRout}\r\n{nameof(Routs)}:\r\n{Routs.ListToString("\r\n")}\r\n{nameof(SwaggerRouts)}:\r\n{SwaggerRouts.ListToString("\r\n")}";
         }
     }
 }

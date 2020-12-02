@@ -13,7 +13,7 @@ namespace NetRpc.Http.Client
         private HubConnection? _connection;
         private HubCallBackNotifier? _notifier;
         private volatile string? _connId;
-        private readonly AsyncLock _lockInit = new AsyncLock();
+        private readonly AsyncLock _lockInit = new();
 
         public HttpOnceCallFactory(IOptions<HttpClientOptions> options, ILoggerFactory factory)
         {
@@ -61,6 +61,7 @@ namespace NetRpc.Http.Client
                     }
                 }
             }
+
             return _connId!;
         }
 

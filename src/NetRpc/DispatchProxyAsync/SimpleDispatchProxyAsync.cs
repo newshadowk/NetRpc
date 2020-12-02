@@ -24,7 +24,7 @@ namespace System.Reflection
         public static object Create(Type baseType, IMethodInvoker invoker)
         {
             object proxy = Create(baseType, typeof(SimpleDispatchProxyAsync));
-            ((SimpleDispatchProxyAsync)proxy).SetParams(invoker);
+            ((SimpleDispatchProxyAsync) proxy).SetParams(invoker);
             return proxy;
         }
 

@@ -10,7 +10,7 @@ namespace NetRpc.RabbitMQ
         private readonly ILogger _logger;
         private readonly IConnection _connection;
         private readonly MQOptions _options;
-        private readonly object _lockObj = new object();
+        private readonly object _lockObj = new();
         private volatile bool _disposed;
 
         public RabbitMQClientConnectionFactory(IOptions<RabbitMQClientOptions> options, ILoggerFactory factory)

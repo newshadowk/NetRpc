@@ -18,7 +18,7 @@ namespace NetRpc
             typeof(MiddlewareBuilder).GetMethod(nameof(GetService), BindingFlags.NonPublic | BindingFlags.Static)!;
 
         private RequestDelegate? _requestDelegate;
-        private readonly object _lockRequestDelegate = new object();
+        private readonly object _lockRequestDelegate = new();
         private readonly IList<Func<RequestDelegate, RequestDelegate>> _components = new List<Func<RequestDelegate, RequestDelegate>>();
 
         public MiddlewareBuilder(MiddlewareOptions options, IServiceProvider serviceProvider)
@@ -80,7 +80,7 @@ namespace NetRpc
                 var instance = ActivatorUtilities.CreateInstance(serviceProvider, middleware, ctorArgs);
 
                 if (parameters.Length == 1)
-                    return (RequestDelegate)methodInfo.CreateDelegate(typeof(RequestDelegate), instance);
+                    return (RequestDelegate) methodInfo.CreateDelegate(typeof(RequestDelegate), instance);
 
                 var factory = Compile<object>(methodInfo, parameters);
                 return context => factory(instance, context, context.ServiceProvider);

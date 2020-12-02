@@ -10,12 +10,12 @@ namespace NetRpc.OpenTracing
 {
     public static class Helper
     {
-        private static readonly JsonSerializerOptions JsOptions = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions JsOptions = new()
         {
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             IgnoreReadOnlyProperties = true,
-            Converters = { new StreamConverter() }
+            Converters = {new StreamConverter()}
         };
 
         public static ISpan SetTagMethodObj(this ISpan span, IActionExecutingContext context, int maxLength, bool isForce = false)

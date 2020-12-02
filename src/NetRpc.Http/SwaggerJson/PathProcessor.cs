@@ -14,14 +14,14 @@ namespace NetRpc.Http
     internal class PathProcessor
     {
         private readonly ISchemaGenerator _schemaGenerator;
-        public readonly SchemaRepository SchemaRepository = new SchemaRepository();
+        public readonly SchemaRepository SchemaRepository = new();
         private readonly SwaggerGeneratorOptions _options;
 
         public OpenApiOperation? Process(ContractMethod contractMethod, HttpRoutInfo routInfo, string method)
         {
             if (contractMethod.IsHttpIgnore)
                 return null;
-            
+
             //is Support?
             var isSupportBody = IsSupportBody(method.ToOperationType());
 
@@ -173,7 +173,7 @@ namespace NetRpc.Http
         private static List<OpenApiTag> GenerateTags(ContractMethod method)
         {
             var tags = new List<OpenApiTag>();
-            method.Tags.ToList().ForEach(i => tags.Add(new OpenApiTag { Name = i }));
+            method.Tags.ToList().ForEach(i => tags.Add(new OpenApiTag {Name = i}));
             return tags;
         }
 
@@ -230,7 +230,7 @@ namespace NetRpc.Http
 
             //600 cancel
             if (hasCancel)
-                ret.Add(ClientConstValue.CancelStatusCode.ToString(), new OpenApiResponse { Description = "A task was canceled." });
+                ret.Add(ClientConstValue.CancelStatusCode.ToString(), new OpenApiResponse {Description = "A task was canceled."});
 
             //exception
             GenerateException(ret, method);
@@ -276,7 +276,7 @@ namespace NetRpc.Http
                 Schema = openApiSchema,
                 Encoding = openApiSchema.Properties.ToDictionary(
                     entry => entry.Key,
-                    entry => new OpenApiEncoding { Style = ParameterStyle.Form }
+                    entry => new OpenApiEncoding {Style = ParameterStyle.Form}
                 )
             });
         }

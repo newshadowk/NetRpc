@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace NetRpc
 {
-    public interface IClientProxy<out TService> : IClientProxy where TService: class
+    public interface IClientProxy<out TService> : IClientProxy where TService : class
     {
         new TService Proxy { get; }
     }

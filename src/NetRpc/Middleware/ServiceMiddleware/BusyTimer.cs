@@ -6,7 +6,7 @@ namespace NetRpc
 {
     public sealed class BusyTimer : IDisposable
     {
-        private readonly Timer T = new Timer();
+        private readonly Timer T = new();
         private DateTime _lastTime;
         public double Interval => T.Interval;
 

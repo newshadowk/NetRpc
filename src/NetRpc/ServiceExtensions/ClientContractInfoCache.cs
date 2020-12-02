@@ -5,8 +5,8 @@ namespace NetRpc
 {
     internal class ClientContractInfoCache
     {
-        private static readonly Dictionary<Type, ContractInfo> Dic = new Dictionary<Type, ContractInfo>();
-        private static readonly object LockObj = new object();
+        private static readonly Dictionary<Type, ContractInfo> Dic = new();
+        private static readonly object LockObj = new();
 
         public static ContractInfo GetOrAdd<T>()
         {

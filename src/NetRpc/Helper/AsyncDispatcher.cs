@@ -11,7 +11,7 @@ namespace NetRpc
         public Func<object?> Func { get; }
 
         public WriteOnceBlock<(ExceptionDispatchInfo? exceptionDispatchInfo, object? result)> InvokedFlag { get; } =
-            new WriteOnceBlock<(ExceptionDispatchInfo? exceptionDispatchInfo, object? result)>(null);
+            new(null);
 
         public InvokeFunc(Func<object?> func)
         {
@@ -21,9 +21,9 @@ namespace NetRpc
 
     public class AsyncDispatcher : IDisposable
     {
-        private readonly BufferBlock<InvokeFunc> _funcQ = new BufferBlock<InvokeFunc>();
+        private readonly BufferBlock<InvokeFunc> _funcQ = new();
 
-        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cts = new();
 
         public AsyncDispatcher()
         {
@@ -83,7 +83,7 @@ namespace NetRpc
             _funcQ.Post(invokeFunc);
             var (exceptionDispatchInfo, result) = await invokeFunc.InvokedFlag.ReceiveAsync();
             exceptionDispatchInfo?.Throw();
-            return (TResult)result!;
+            return (TResult) result!;
         }
 
         public Task BeginInvoke(Action action)

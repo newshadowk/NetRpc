@@ -10,8 +10,10 @@ namespace NetRpc
         public override Stream Read(
             ref Utf8JsonReader reader,
             Type typeToConvert,
-            JsonSerializerOptions options) =>
-            null;
+            JsonSerializerOptions options)
+        {
+            return null;
+        }
 
         public override void Write(
             Utf8JsonWriter writer,

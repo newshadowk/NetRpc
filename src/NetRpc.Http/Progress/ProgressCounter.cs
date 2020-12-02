@@ -6,13 +6,13 @@ namespace NetRpc.Http
 {
     internal sealed class ProgressCounter : IDisposable
     {
-        private readonly Timer _tSpeed = new Timer(1000);
+        private readonly Timer _tSpeed = new(1000);
         private long _currSize;
-        private readonly object _lockObj = new object();
+        private readonly object _lockObj = new();
         private readonly long _totalSize;
         private long _speed;
         private TimeSpan _leftTimeSpan;
-        private readonly Queue<long> _qOldSize = new Queue<long>();
+        private readonly Queue<long> _qOldSize = new();
         private const int GapSecs = 2;
 
         public long Speed
@@ -84,7 +84,7 @@ namespace NetRpc.Http
             else
             {
                 leftSec = (totalSize - currSize) / speed;
-                if (leftSec >= TimeSpan.MaxValue.TotalSeconds) 
+                if (leftSec >= TimeSpan.MaxValue.TotalSeconds)
                     leftSec = 0;
             }
 

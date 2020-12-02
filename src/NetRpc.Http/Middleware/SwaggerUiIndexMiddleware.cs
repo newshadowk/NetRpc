@@ -25,12 +25,12 @@ namespace NetRpc.Http
 
         private string InjectHtml(string html)
         {
-            foreach (var injectSwaggerHtml in _injectSwaggerHtmlList) 
+            foreach (var injectSwaggerHtml in _injectSwaggerHtmlList)
                 html = injectSwaggerHtml.InjectHtml(html);
             return html;
         }
 
-        public async Task Invoke(HttpContext context, INSwaggerProvider nSwaggerProvider, IOptions<HttpServiceOptions> httpServiceOptions, 
+        public async Task Invoke(HttpContext context, INSwaggerProvider nSwaggerProvider, IOptions<HttpServiceOptions> httpServiceOptions,
             IOptions<ContractOptions> contractOptions)
         {
             var apiRootApi = httpServiceOptions.Value.ApiRootPath;
@@ -56,7 +56,7 @@ namespace NetRpc.Http
                     _html = InjectHtml(_html);
 
                     string? key = null;
-                    if (context.Request.Query.TryGetValue("k", out var kValue)) 
+                    if (context.Request.Query.TryGetValue("k", out var kValue))
                         key = kValue.ToString();
 
                     var doc = nSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.Contracts, key);

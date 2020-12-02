@@ -18,7 +18,7 @@ namespace NetRpc.Http
 
         public static Result FromPainText(string? ret, int statusCode)
         {
-            return new Result
+            return new()
             {
                 Ret = ret,
                 IsPainText = true,
@@ -28,7 +28,7 @@ namespace NetRpc.Http
 
         public static Result FromFaultException(FaultExceptionJsonObj obj, int statusCode)
         {
-            return new Result
+            return new()
             {
                 Ret = obj,
                 StatusCode = statusCode,

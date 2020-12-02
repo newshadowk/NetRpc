@@ -5,7 +5,7 @@ namespace NetRpc
 {
     public class MiddlewareOptions
     {
-        private readonly List<(Type Type, object[] args)> _items = new List<(Type Type, object[] args)>();
+        private readonly List<(Type Type, object[] args)> _items = new();
 
         public List<(Type Type, object[] args)> GetItems()
         {
@@ -40,7 +40,7 @@ namespace NetRpc
         {
             if (progressCount <= 0)
                 return;
-            _items.Add((typeof(StreamCallBackMiddleware), new object[] { progressCount }));
+            _items.Add((typeof(StreamCallBackMiddleware), new object[] {progressCount}));
         }
     }
 }

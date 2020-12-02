@@ -70,7 +70,7 @@ namespace NetRpc.Http
             var (actionInfo, hri, rawPath) = GetActionInfo();
             var header = GetHeader();
             var httpObj = await GetHttpDataObjAndStream(hri, rawPath);
-            
+
             _connection.CallId = httpObj.HttpDataObj.CallId;
             _connection.ConnId = httpObj.HttpDataObj.ConnId;
             _connection.Stream = httpObj.ProxyStream;
@@ -166,7 +166,7 @@ namespace NetRpc.Http
             foreach (var contract in _contracts)
             foreach (var contractMethod in contract.Methods)
             {
-                HttpRoutInfo? hri = contractMethod.Route.MatchPath(rawPath, _context.Request.Method);
+                var hri = contractMethod.Route.MatchPath(rawPath, _context.Request.Method);
                 if (hri != null)
                     return (contractMethod.MethodInfo.ToActionInfo(), hri, rawPath);
             }

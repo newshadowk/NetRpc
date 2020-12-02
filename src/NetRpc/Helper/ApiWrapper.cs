@@ -18,8 +18,8 @@ namespace NetRpc
 
             //Func<>
             var found = psList.FirstOrDefault(i => i.ParameterType.IsFuncT());
-                if (found != null)
-                    dic.Add(psList.IndexOf(found), FuncHelper.ConvertFunc(callback, found.ParameterType.GetGenericArguments()[0]));
+            if (found != null)
+                dic.Add(psList.IndexOf(found), FuncHelper.ConvertFunc(callback, found.ParameterType.GetGenericArguments()[0]));
 
             //CancellationToken
             found = psList.FirstOrDefault(i => i.ParameterType.IsCancellationToken());
@@ -70,7 +70,8 @@ namespace NetRpc
         }
 
         /// <exception cref="TypeLoadException"></exception>
-        public static (MethodInfo instanceMethodInfo, ContractMethod contractMethod, Instance instance) GetMethodInfo(ActionInfo action, List<Instance> instances)
+        public static (MethodInfo instanceMethodInfo, ContractMethod contractMethod, Instance instance) GetMethodInfo(ActionInfo action,
+            List<Instance> instances)
         {
             foreach (var i in instances)
             {
@@ -90,6 +91,7 @@ namespace NetRpc
                 if (found != null)
                     return found;
             }
+
             throw new ArgumentException($"{action} is not found.");
         }
 

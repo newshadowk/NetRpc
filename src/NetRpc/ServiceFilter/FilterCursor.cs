@@ -26,6 +26,7 @@ namespace NetRpc
                 _index += 1;
                 return filterAsync;
             }
+
             return default;
         }
     }

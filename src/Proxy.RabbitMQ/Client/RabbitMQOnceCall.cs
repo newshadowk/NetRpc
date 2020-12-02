@@ -11,7 +11,7 @@ namespace RabbitMQ.Base
 {
     public sealed class RabbitMQOnceCall : IDisposable
     {
-        private readonly CheckWriteOnceBlock<string> _clientToServiceQueueOnceBlock = new CheckWriteOnceBlock<string>();
+        private readonly CheckWriteOnceBlock<string> _clientToServiceQueueOnceBlock = new();
         private readonly IConnection _connect;
         private readonly ILogger _logger;
         private readonly string _rpcQueue;
@@ -97,6 +97,7 @@ namespace RabbitMQ.Base
             }
             else
                 _model.BasicPublish("", _clientToServiceQueue, null, buffer);
+
             //bug: after invoke 'BasicPublish' need an other thread to publish for real send? (sometimes happened.)
             //blocking thread in OnceCall row 96:Task.Delay(_timeoutInterval, _timeOutCts.Token).ContinueWith(i =>
         }

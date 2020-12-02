@@ -17,7 +17,7 @@ namespace NetRpc
 
         public async Task InvokeAsync(ActionExecutingContext context)
         {
-            await using ThrottlingFunc ra = new ThrottlingFunc(_callbackThrottlingInterval);
+            await using ThrottlingFunc ra = new(_callbackThrottlingInterval);
             var rawAction = context.Callback;
             context.Callback = async o =>
             {
@@ -34,6 +34,7 @@ namespace NetRpc
                     Console.WriteLine(e);
                     throw;
                 }
+
                 // ReSharper disable once AccessToDisposedClosure
             };
             await _next(context);
@@ -42,7 +43,7 @@ namespace NetRpc
 
     internal sealed class ThrottlingFunc : IAsyncDisposable
     {
-        private readonly AsyncLock _lock = new AsyncLock();
+        private readonly AsyncLock _lock = new();
         private readonly BusyTimer _t;
         private Func<Task>? _func;
         private Func<Task>? _lastFunc;

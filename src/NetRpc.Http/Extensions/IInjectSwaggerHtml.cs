@@ -1,5 +1,4 @@
-﻿
-namespace NetRpc.Http
+﻿namespace NetRpc.Http
 {
     public interface IInjectSwaggerHtml
     {

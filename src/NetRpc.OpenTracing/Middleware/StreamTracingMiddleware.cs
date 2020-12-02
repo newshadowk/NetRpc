@@ -33,7 +33,8 @@ namespace NetRpc.OpenTracing
                 return;
 
             var spanBuilder = GlobalTracer.Instance.BuildSpan(
-                $"{ConstValue.ServiceStream} {NetRpc.Helper.SizeSuffix(context.Stream.Length)} {ConstValue.ReceiveStr}").AsChildOf(GlobalTracer.Instance.ActiveSpan);
+                    $"{ConstValue.ServiceStream} {NetRpc.Helper.SizeSuffix(context.Stream.Length)} {ConstValue.ReceiveStr}")
+                .AsChildOf(GlobalTracer.Instance.ActiveSpan);
             ISpan? span = null;
 #pragma warning disable 1998
             context.Stream.StartedAsync += async (s, e) => span = spanBuilder.Start();
@@ -48,7 +49,8 @@ namespace NetRpc.OpenTracing
 
             if (context.Result.TryGetStream(out var outStream, out _))
             {
-                var spanBuilder = GlobalTracer.Instance.BuildSpan($"{ConstValue.ServiceStream} {NetRpc.Helper.SizeSuffix(outStream!.Length)} {ConstValue.SendStr}")
+                var spanBuilder = GlobalTracer.Instance
+                    .BuildSpan($"{ConstValue.ServiceStream} {NetRpc.Helper.SizeSuffix(outStream!.Length)} {ConstValue.SendStr}")
                     .AsChildOf(GlobalTracer.Instance.ActiveSpan);
                 ISpan? span = null;
                 context.SendResultStreamStarted += (s, e) => span = spanBuilder.Start();

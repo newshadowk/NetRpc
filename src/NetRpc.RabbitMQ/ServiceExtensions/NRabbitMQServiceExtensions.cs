@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.Configure<NClientOption>(i => i.ForwardHeader = true);
             services.AddNClientContract<TService>(serviceLifetime);
             services.AddNServiceContract(typeof(TService),
-                p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))).Proxy,
+                p => ((ClientProxy<TService>) p.GetService(typeof(ClientProxy<TService>))).Proxy,
                 serviceLifetime);
             return services;
         }

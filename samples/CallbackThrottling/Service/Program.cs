@@ -7,9 +7,9 @@ using NetRpc.Grpc;
 
 namespace Service
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             var options = new MiddlewareOptions();
             options.UseCallbackThrottling(1000);

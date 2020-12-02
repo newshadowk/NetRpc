@@ -7,7 +7,7 @@ namespace NetRpc
     internal class AsyncSemaphore
     {
         private static readonly Task SCompleted = Task.FromResult(true);
-        private readonly Queue<TaskCompletionSource<bool>> _waiters = new Queue<TaskCompletionSource<bool>>();
+        private readonly Queue<TaskCompletionSource<bool>> _waiters = new();
         private int _currentCount;
 
         public AsyncSemaphore(int initialCount)

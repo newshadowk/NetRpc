@@ -13,7 +13,7 @@ namespace NetRpc.RabbitMQ
             _callSession = callSession;
             _callSession.ReceivedAsync += (s, e) => OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Value));
         }
-    
+
         public ValueTask DisposeAsync()
         {
             _callSession.Dispose();

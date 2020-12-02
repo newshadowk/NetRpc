@@ -14,16 +14,15 @@ using Ret = DataContract.Ret;
 
 namespace Service
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             await RunGrpcAsync();
         }
 
-        static async Task RunGrpcAsync()
+        private static async Task RunGrpcAsync()
         {
-
             var host = Host.CreateDefaultBuilder()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
@@ -35,15 +34,9 @@ namespace Service
                         {
                             services.AddNGrpcService();
                             services.AddNServiceContract<IService, Service>();
-                            services.AddNGrpcClient(i =>
-                            {
-                                i.Url = "http://localhost:50002";
-                            });
+                            services.AddNGrpcClient(i => { i.Url = "http://localhost:50002"; });
                             services.AddNClientContract<IService1>();
-                        }).Configure(app =>
-                        {
-                            app.UseNGrpc();
-                        });
+                        }).Configure(app => { app.UseNGrpc(); });
                 })
                 .Build();
 

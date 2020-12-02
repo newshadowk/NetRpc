@@ -25,7 +25,7 @@ namespace NetRpc.Http
     /// </summary>
     internal sealed class FormDataHttpObjProcessor : IHttpObjProcessor
     {
-        private readonly FormOptions _defaultFormOptions = new FormOptions();
+        private readonly FormOptions _defaultFormOptions = new();
 
         public bool MatchContentType(string? contentType)
         {
@@ -173,7 +173,7 @@ namespace NetRpc.Http
         private static Dictionary<string, string> GetValuesFromQuery(HttpRequest request, Dictionary<string, string> queryParams, bool hasStream)
         {
             var ret = new Dictionary<string, string>();
-            List<KeyValuePair<string, StringValues>> pairs = new List<KeyValuePair<string, StringValues>>();
+            List<KeyValuePair<string, StringValues>> pairs = new();
             if (request.Query != null)
                 pairs.AddRange(request.Query);
 
@@ -181,7 +181,7 @@ namespace NetRpc.Http
             if (!hasStream && request.HasFormContentType)
                 pairs.AddRange(request.Form);
 
-            foreach (KeyValuePair<string, StringValues> p in pairs)
+            foreach (var p in pairs)
             {
                 string pName;
                 if (queryParams.TryGetValue(p.Key.ToLower(), out var outName))

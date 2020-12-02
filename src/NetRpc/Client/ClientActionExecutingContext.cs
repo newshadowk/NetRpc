@@ -25,7 +25,7 @@ namespace NetRpc
         /// <summary>
         /// A central location for sharing state between components during the invoking process.
         /// </summary>
-        public Dictionary<object, object?> Properties { get; set; } = new Dictionary<object, object?>();
+        public Dictionary<object, object?> Properties { get; set; } = new();
 
         public ContractMethod ContractMethod { get; }
 
@@ -47,7 +47,7 @@ namespace NetRpc
         public string? OptionsName { get; }
 
         public ClientActionExecutingContext(Guid clientProxyId,
-            IServiceProvider serviceProvider, 
+            IServiceProvider serviceProvider,
             string? optionsName,
             IOnceCall onceCall,
             InstanceMethod instanceMethod,

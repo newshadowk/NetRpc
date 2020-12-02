@@ -8,7 +8,7 @@ namespace NetRpc
 {
     public static class TypeFactory
     {
-        private static volatile CacheTypeBuilder _builder = new CacheTypeBuilder();
+        private static volatile CacheTypeBuilder _builder = new();
 
         public static TypeInfo BuildType(string typeName, List<CustomsPropertyInfo> ps)
         {
@@ -47,7 +47,7 @@ namespace NetRpc
     public class CacheTypeBuilder
     {
         private readonly ModuleBuilder _moduleBuilder;
-        private readonly ConcurrentDictionary<string, TypeInfo> _dicType = new ConcurrentDictionary<string, TypeInfo>();
+        private readonly ConcurrentDictionary<string, TypeInfo> _dicType = new();
 
         public CacheTypeBuilder()
         {

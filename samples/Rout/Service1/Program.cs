@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract1;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetRpc;
 using NetRpc.Grpc;
@@ -11,14 +10,14 @@ using Helper = TestHelper.Helper;
 
 namespace Service
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             await RunGrpcAsync();
         }
 
-        static async Task RunGrpcAsync()
+        private static async Task RunGrpcAsync()
         {
             var host = NManager.CreateHost(50002, null, new ContractParam(typeof(IService1), typeof(Service1)));
             await host.RunAsync();
@@ -31,7 +30,7 @@ namespace Service
         {
             Console.WriteLine($"{p}, {i}, {Helper.ReadStr(stream)}");
 
-            for (int i1 = 0; i1 < 3; i1++)
+            for (var i1 = 0; i1 < 3; i1++)
             {
                 await progs(i1);
                 await Task.Delay(100, token);

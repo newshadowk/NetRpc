@@ -29,7 +29,8 @@
 
         public override string ToString()
         {
-            return $"{nameof(CurrSize)}: {CurrSize}, {nameof(TotalSize)}: {TotalSize}, {nameof(Percent)}: {Percent}, {nameof(LeftSeconds)}: {LeftSeconds}, {nameof(Speed)}: {Speed}, {nameof(SpeedStr)}: {SpeedStr}";
+            return
+                $"{nameof(CurrSize)}: {CurrSize}, {nameof(TotalSize)}: {TotalSize}, {nameof(Percent)}: {Percent}, {nameof(LeftSeconds)}: {LeftSeconds}, {nameof(Speed)}: {Speed}, {nameof(SpeedStr)}: {SpeedStr}";
         }
     }
 }

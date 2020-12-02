@@ -7,7 +7,7 @@ namespace NetRpc.RabbitMQ
     {
         public static ConnectionFactory CreateConnectionFactory(this MQOptions options)
         {
-            return new ConnectionFactory
+            return new()
             {
                 UserName = options.User,
                 Password = options.Password,

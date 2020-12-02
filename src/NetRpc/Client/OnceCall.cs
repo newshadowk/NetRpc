@@ -4,7 +4,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using NetRpc.Contract;
 
 namespace NetRpc
 {
@@ -12,7 +11,7 @@ namespace NetRpc
     {
         private readonly int _timeoutInterval;
         private readonly ILogger _logger;
-        private readonly CancellationTokenSource _timeOutCts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _timeOutCts = new();
         private AsyncDispatcher? _callbackDispatcher;
         private CancellationTokenRegistration? _reg;
         private readonly IClientOnceApiConvert _convert;
@@ -34,7 +33,8 @@ namespace NetRpc
 
         public ConnectionInfo ConnectionInfo => _convert.ConnectionInfo;
 
-        public async Task<object?> CallAsync(Dictionary<string, object?> header, MethodContext methodContext, Func<object?, Task>? callback, CancellationToken token,
+        public async Task<object?> CallAsync(Dictionary<string, object?> header, MethodContext methodContext, Func<object?, Task>? callback,
+            CancellationToken token,
             Stream? stream, params object?[] pureArgs)
         {
             if (callback != null)
@@ -156,7 +156,7 @@ namespace NetRpc
             await _convert.DisposeAsync();
             tcs.TrySetResult(result);
         }
-    
+
         private void OnSendRequestStreamStarted()
         {
             SendRequestStreamStarted?.Invoke(this, EventArgs.Empty);

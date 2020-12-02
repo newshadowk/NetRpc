@@ -71,9 +71,9 @@ namespace System.Reflection
         // which would ultimately be a more expensive leak.
         // Proxy instances are not cached.  Their lifetime is entirely owned by the caller of DispatchProxy.Create.
         private static readonly Dictionary<Type, Dictionary<Type, Type>> s_baseTypeAndInterfaceToGeneratedProxyType =
-            new Dictionary<Type, Dictionary<Type, Type>>();
+            new();
 
-        private static readonly ProxyAssembly s_proxyAssembly = new ProxyAssembly();
+        private static readonly ProxyAssembly s_proxyAssembly = new();
         private static readonly MethodInfo s_dispatchProxyInvokeMethod = typeof(DispatchProxyAsync).GetTypeInfo().GetDeclaredMethod("Invoke");
         private static readonly MethodInfo s_dispatchProxyInvokeAsyncMethod = typeof(DispatchProxyAsync).GetTypeInfo().GetDeclaredMethod("InvokeAsync");
         private static readonly MethodInfo s_dispatchProxyInvokeAsyncTMethod = typeof(DispatchProxyAsync).GetTypeInfo().GetDeclaredMethod("InvokeAsyncT");
@@ -259,35 +259,20 @@ namespace System.Reflection
                 _args = args;
             }
 
-            internal DispatchProxyAsync DispatchProxy
-            {
-                get { return (DispatchProxyAsync) _args[DispatchProxyPosition]; }
-            }
+            internal DispatchProxyAsync DispatchProxy => (DispatchProxyAsync) _args[DispatchProxyPosition];
 
-            internal Type DeclaringType
-            {
-                get { return (Type) _args[DeclaringTypePosition]; }
-            }
+            internal Type DeclaringType => (Type) _args[DeclaringTypePosition];
 
-            internal int MethodToken
-            {
-                get { return (int) _args[MethodTokenPosition]; }
-            }
+            internal int MethodToken => (int) _args[MethodTokenPosition];
 
-            internal object[] Args
-            {
-                get { return (object[]) _args[ArgsPosition]; }
-            }
+            internal object[] Args => (object[]) _args[ArgsPosition];
 
-            internal Type[] GenericTypes
-            {
-                get { return (Type[]) _args[GenericTypesPosition]; }
-            }
+            internal Type[] GenericTypes => (Type[]) _args[GenericTypesPosition];
 
             internal object ReturnValue
             {
                 /*get { return args[ReturnValuePosition]; }*/
-                set { _args[ReturnValuePosition] = value; }
+                set => _args[ReturnValuePosition] = value;
             }
         }
 
@@ -299,9 +284,9 @@ namespace System.Reflection
 
             // Maintain a MethodBase-->int, int-->MethodBase mapping to permit generated code
             // to pass methods by token
-            private readonly Dictionary<MethodBase, int> _methodToToken = new Dictionary<MethodBase, int>();
-            private readonly List<MethodBase> _methodsByToken = new List<MethodBase>();
-            private readonly HashSet<string> _ignoresAccessAssemblyNames = new HashSet<string>();
+            private readonly Dictionary<MethodBase, int> _methodToToken = new();
+            private readonly List<MethodBase> _methodsByToken = new();
+            private readonly HashSet<string> _ignoresAccessAssemblyNames = new();
             private ConstructorInfo _ignoresAccessChecksToAttributeConstructor;
 
             public ProxyAssembly()
@@ -379,15 +364,15 @@ namespace System.Reflection
                     "AssemblyName",
                     PropertyAttributes.None,
                     CallingConventions.HasThis,
-                    returnType: typeof(string),
-                    parameterTypes: null);
+                    typeof(string),
+                    null);
 
                 var getterMethodBuilder = attributeTypeBuilder.DefineMethod(
                     "get_AssemblyName",
                     MethodAttributes.Public,
                     CallingConventions.HasThis,
-                    returnType: typeof(string),
-                    parameterTypes: null);
+                    typeof(string),
+                    null);
 
                 // Generate body:
                 // return this.assemblyName;
@@ -1077,7 +1062,7 @@ namespace System.Reflection
 
             private sealed class MethodInfoEqualityComparer : EqualityComparer<MethodInfo>
             {
-                public static readonly MethodInfoEqualityComparer Instance = new MethodInfoEqualityComparer();
+                public static readonly MethodInfoEqualityComparer Instance = new();
 
                 private MethodInfoEqualityComparer()
                 {

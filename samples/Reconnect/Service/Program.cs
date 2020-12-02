@@ -4,19 +4,18 @@ using DataContract;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using NetRpc;
-using Helper = TestHelper.Helper;
+using TestHelper;
 
 namespace Service
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             await RunMQAsync();
         }
 
-        static async Task RunMQAsync()
+        private static async Task RunMQAsync()
         {
             var h = new HostBuilder()
                 .ConfigureServices((context, services) =>

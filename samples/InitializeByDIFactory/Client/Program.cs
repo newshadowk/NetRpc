@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
-using Grpc.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,16 +12,16 @@ using NetRpc.RabbitMQ;
 
 namespace Client
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             var h = new HostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .ConfigureAppConfiguration((hostContext, configApp) =>
                 {
                     configApp.SetBasePath(AppContext.BaseDirectory);
-                    configApp.AddJsonFile("appsettings.json", optional: false);
+                    configApp.AddJsonFile("appsettings.json", false);
                 })
                 .ConfigureServices((context, services) =>
                 {
@@ -35,14 +34,8 @@ namespace Client
                     services.AddNClientContract<IService>("mq1");
 
                     services.AddNGrpcClient();
-                    services.Configure<GrpcClientOptions>("grpc1", i =>
-                    {
-                        i.Url = "http://localhost:50001";
-                    });
-                    services.Configure<GrpcClientOptions>("grpc2", i =>
-                    {
-                        i.Url = "http://localhost:50001";
-                    });
+                    services.Configure<GrpcClientOptions>("grpc1", i => { i.Url = "http://localhost:50001"; });
+                    services.Configure<GrpcClientOptions>("grpc2", i => { i.Url = "http://localhost:50001"; });
                 })
                 .Build();
 

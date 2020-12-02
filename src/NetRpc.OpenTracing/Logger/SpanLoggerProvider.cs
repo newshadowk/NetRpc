@@ -4,7 +4,7 @@ namespace NetRpc.OpenTracing
 {
     public class SpanLoggerProvider : ILoggerProvider
     {
-        private readonly SpanLogger _logger = new SpanLogger();
+        private readonly SpanLogger _logger = new();
 
         public void Dispose()
         {

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using NetRpc.Contract;
@@ -17,7 +16,7 @@ namespace NetRpc
         /// </summary>
         public ReadOnlyCollection<PPInfo> InnerSystemTypeParameters { get; }
 
-        public ContractMethod(Type contractType, Type? instanceType, bool hasSwaggerRole, string contractTypeTag, MethodInfo methodInfo, 
+        public ContractMethod(Type contractType, Type? instanceType, bool hasSwaggerRole, string contractTypeTag, MethodInfo methodInfo,
             List<FaultExceptionAttribute> faultExceptionAttributes, List<HttpHeaderAttribute> httpHeaderAttributes,
             List<ResponseTextAttribute> responseTextAttributes, List<SecurityApiKeyAttribute> securityApiKeyAttributes)
         {
@@ -27,7 +26,7 @@ namespace NetRpc
             HttpHeaderAttributes = new ReadOnlyCollection<HttpHeaderAttribute>(httpHeaderAttributes);
             ResponseTextAttributes = new ReadOnlyCollection<ResponseTextAttribute>(responseTextAttributes);
             SecurityApiKeyAttributes = new ReadOnlyCollection<SecurityApiKeyAttribute>(securityApiKeyAttributes);
-          
+
             //IgnoreAttribute
             IsGrpcIgnore = GetCustomAttribute<GrpcIgnoreAttribute>(contractType, methodInfo) != null;
             IsRabbitMQIgnore = GetCustomAttribute<RabbitMQIgnoreAttribute>(contractType, methodInfo) != null;
@@ -169,8 +168,8 @@ namespace NetRpc
 
         private static (List<string> roles, List<string> notRoles) Parse(string? s)
         {
-            List<string> roles = new List<string>();
-            List<string> notRoles = new List<string>();
+            List<string> roles = new();
+            List<string> notRoles = new();
 
             if (s == null)
                 return (roles, notRoles);
@@ -221,7 +220,7 @@ namespace NetRpc
             var responseTextDic = GetAttributes<ResponseTextAttribute>(Type, methodInfos);
             var tag = GetTag(Type);
             var hasSwaggerRole = HasSwaggerRole(instanceType, methodInfos);
-            
+
             var methods = new List<ContractMethod>();
             foreach (var f in faultDic)
                 methods.Add(new ContractMethod(
@@ -249,7 +248,7 @@ namespace NetRpc
 
         public ReadOnlyCollection<ContractMethod> GetMethods(IList<string> roles)
         {
-            List<ContractMethod> ret = new List<ContractMethod>();
+            List<ContractMethod> ret = new();
             foreach (var m in Methods)
                 if (m.InRoles(roles))
                     ret.Add(m);

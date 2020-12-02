@@ -7,9 +7,9 @@
         {
         }
 
-        public RabbitMQServiceOptions(MQOptions options) : base(options.Host, options.VirtualHost, options.RpcQueue, options.Port, options.User, options.Password, options.PrefetchCount)
+        public RabbitMQServiceOptions(MQOptions options) : base(options.Host, options.VirtualHost, options.RpcQueue, options.Port, options.User,
+            options.Password, options.PrefetchCount)
         {
-
         }
 
         public void CopyFrom(MQOptions options)

@@ -17,7 +17,7 @@ namespace NetRpc
         private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
         private readonly ChannelType _channelType;
         private readonly ILogger _logger;
-        private readonly CancellationTokenSource _serviceCts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _serviceCts = new();
 
         public ServiceOnceTransfer(List<Instance> instances, IServiceProvider serviceProvider, IServiceOnceApiConvert convert,
             MiddlewareBuilder middlewareBuilder, IActionExecutingContextAccessor actionExecutingContextAccessor,
@@ -70,7 +70,6 @@ namespace NetRpc
             }
             catch (Exception e)
             {
-
                 //if Post, do not need send back to client.
                 if (context != null && context.ContractMethod.IsMQPost)
                     return;
@@ -141,10 +140,10 @@ namespace NetRpc
                     await using (retStream)
                     {
                         await Helper.SendStreamAsync(
-                            i => _convert.SendBufferAsync(i), 
-                            () => _convert.SendBufferEndAsync(), 
-                            retStream!, 
-                            context.CancellationToken, 
+                            i => _convert.SendBufferAsync(i),
+                            () => _convert.SendBufferEndAsync(),
+                            retStream!,
+                            context.CancellationToken,
                             context.OnSendResultStreamStarted);
                     }
                 }

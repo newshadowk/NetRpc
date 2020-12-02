@@ -7,7 +7,6 @@ using NetRpc.Contract;
 
 namespace DataContract
 {
-
     [Serializable]
     public class SendObj
     {
@@ -16,7 +15,7 @@ namespace DataContract
         public int I1 { get; set; }
 
         public bool B1 { get; set; }
-        
+
         public DateTime D1 { get; set; }
 
         public InnerObj InnerObj { get; set; }

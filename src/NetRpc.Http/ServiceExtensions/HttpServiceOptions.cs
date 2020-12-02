@@ -27,7 +27,7 @@ namespace NetRpc.Http
 
     public sealed class SwaggerOptions
     {
-        public List<KeyRole> Items { get; set; } = new List<KeyRole>();
+        public List<KeyRole> Items { get; set; } = new();
     }
 
     public class SwaggerKeyRoles
@@ -35,7 +35,7 @@ namespace NetRpc.Http
         public SwaggerKeyRoles(IOptions<SwaggerOptions> options)
         {
             var dic = new Dictionary<string, ReadOnlyCollection<string>>();
-            foreach (var i in options.Value.Items) 
+            foreach (var i in options.Value.Items)
                 dic.Add(i.Key.ToLower(), new ReadOnlyCollection<string>(SplitRole(i.Role)));
             _map = new ReadOnlyDictionary<string, ReadOnlyCollection<string>>(dic);
         }
@@ -67,6 +67,6 @@ namespace NetRpc.Http
 
     public class DocXmlOptions
     {
-        public List<string> Paths { get; set; } = new List<string>();
+        public List<string> Paths { get; set; } = new();
     }
 }

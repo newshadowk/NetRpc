@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace NetRpc
@@ -393,7 +392,7 @@ namespace NetRpc
                     }
                 }
 
-                return _constructor.Invoke(BindingFlags.DoNotWrapExceptions, binder: null, parameters: _parameterValues, culture: null);
+                return _constructor.Invoke(BindingFlags.DoNotWrapExceptions, null, _parameterValues, null);
             }
         }
 

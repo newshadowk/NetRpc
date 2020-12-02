@@ -7,7 +7,7 @@ namespace NetRpc.Http
 {
     internal sealed class HttpObj
     {
-        public HttpDataObj HttpDataObj { get; set; } = new HttpDataObj();
+        public HttpDataObj HttpDataObj { get; set; } = new();
 
         public ProxyStream? ProxyStream { get; set; }
     }
@@ -55,7 +55,7 @@ namespace NetRpc.Http
             if (keyValues.Count == 0)
                 return;
 
-            if (keyValues.TryGetValue(CallConst.CallIdName, out var v1)) 
+            if (keyValues.TryGetValue(CallConst.CallIdName, out var v1))
                 CallId = v1;
 
             if (keyValues.TryGetValue(CallConst.ConnIdName, out var v2))
@@ -99,13 +99,13 @@ namespace NetRpc.Http
         {
             var type = classInstance.GetType();
 
-            if (tgtProperty.PropertyType.IsEnum) 
+            if (tgtProperty.PropertyType.IsEnum)
                 propertyValue = Enum.ToObject(tgtProperty.PropertyType, propertyValue!);
 
             if (tgtProperty.PropertyType == typeof(Guid) && propertyValue is string propertyValueStr)
             {
                 type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance,
-                    new[] { (object)Guid.Parse(propertyValueStr) });
+                    new[] {(object) Guid.Parse(propertyValueStr)});
                 return;
             }
 

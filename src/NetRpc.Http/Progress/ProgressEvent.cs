@@ -4,7 +4,7 @@ namespace NetRpc.Http
 {
     internal sealed class ProgressEvent : IDisposable
     {
-        private readonly object _lockObj = new object();
+        private readonly object _lockObj = new();
 
         private ProgressCounter? _speedCounter;
 
@@ -22,9 +22,9 @@ namespace NetRpc.Http
                 else if (totalSize == 0 && currSize == 0)
                     percent = 100;
                 else
-                    percent = (int)((double)currSize / totalSize * 100);
+                    percent = (int) ((double) currSize / totalSize * 100);
 
-                return new ProgressEventArgs(currSize, totalSize, percent, (long)_speedCounter.LeftTime.TotalSeconds, _speedCounter.Speed,
+                return new ProgressEventArgs(currSize, totalSize, percent, (long) _speedCounter.LeftTime.TotalSeconds, _speedCounter.Speed,
                     NetRpc.Helper.SizeSuffix(_speedCounter.Speed));
             }
         }

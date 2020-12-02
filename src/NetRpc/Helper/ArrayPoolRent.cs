@@ -4,11 +4,11 @@
     {
         public static ArrayOwner<T> RentOwner<T>(this ArrayPool<T> arrayPool, int minimumLength)
         {
-            return new ArrayOwner<T>(arrayPool.Rent(minimumLength));
+            return new(arrayPool.Rent(minimumLength));
         }
     }
 
-    public class ArrayOwner<T> :IDisposable
+    public class ArrayOwner<T> : IDisposable
     {
         public ArrayOwner(T[] array)
         {
