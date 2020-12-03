@@ -777,6 +777,19 @@ public class CallObj
     public int P2 { get; set; }
 }
 ```
+## [Http] Obsolete Attribute
+```c#
+[Obsolete]
+[HttpRoute("IRout1", obsolete: true)]
+[HttpRoute("IRout2")]
+public interface IService4Async
+{
+    //[Obsolete]
+    [HttpGet(obsolete: true)]
+    [HttpGet("Call/{id}")]
+    Task Call(string id);
+}
+```
 ## [Http] Swagger Role Attribute
 Add a param **key** 'k' to url:  
 http://localhost:5000/swagger/index.html?k=k1  
@@ -829,6 +842,26 @@ public class Service3Async : IService3Async
         Console.WriteLine("Call4Async");
     }
 }
+```
+
+Defalut role don't have to set the key:  
+http://localhost:5000/swagger/index.html would use the default role.
+
+```c#
+//[SwaggerRole("default")] this line can be omitted.
+public class Service4Async : IService4Async
+{
+    [SwaggerRole("!default")]    //hide in swagger, but still avaliable to call
+    public Task Call(string id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task Call2(string id)
+    {
+        throw new NotImplementedException();
+    }
+} 
 ```
 
 ## [Http] HttpHeaderAttribute

@@ -97,7 +97,6 @@ namespace NetRpc
             return readStream;
         }
 
-        //private Dictionary<string, object?> MergeHeader(Dictionary<string, object?> additionHeader, Dictionary<string, object?>? contextHeader)
         private Dictionary<string, object?> MergeHeader()
         {
             //_actionExecutingContextAccessor.Context?.Header is immutable here, should only change via middleware.

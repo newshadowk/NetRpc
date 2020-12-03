@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using NetRpc.Contract;
 using NetRpc.Http.Client;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -17,7 +18,7 @@ namespace NetRpc.Http
         public readonly SchemaRepository SchemaRepository = new();
         private readonly SwaggerGeneratorOptions _options;
 
-        public OpenApiOperation? Process(ContractMethod contractMethod, HttpRoutInfo routInfo, string method)
+        public OpenApiOperation? Process(ContractMethod contractMethod, HttpRoutInfo routInfo, HttpMethodAttribute method)
         {
             if (contractMethod.IsHttpIgnore)
                 return null;
@@ -32,6 +33,10 @@ namespace NetRpc.Http
                 Responses = GenerateResponses(contractMethod, routInfo.MergeArgType.CancelToken != null),
                 Parameters = new List<OpenApiParameter>()
             };
+
+            //Obsolete
+            if (method.Obsolete)
+                operation.Deprecated = true;
 
             //Header
             AddHeader(contractMethod, operation);
@@ -112,6 +117,7 @@ namespace NetRpc.Http
             //validate
             foreach (var p in rout.PathParams)
             {
+                // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Local
                 if (contractMethod.InnerSystemTypeParameters.All(i => i.Name.ToLower() != p))
                     throw new InvalidOperationException(
                         $"{rout.Path}, '{p}' is not found in method params:{contractMethod.InnerSystemTypeParameters.Select(i => i.Name).ListToString(", ")}");
@@ -276,7 +282,7 @@ namespace NetRpc.Http
                 Schema = openApiSchema,
                 Encoding = openApiSchema.Properties.ToDictionary(
                     entry => entry.Key,
-                    entry => new OpenApiEncoding {Style = ParameterStyle.Form}
+                    _ => new OpenApiEncoding {Style = ParameterStyle.Form}
                 )
             });
         }

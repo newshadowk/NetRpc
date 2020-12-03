@@ -14,7 +14,7 @@ namespace NetRpc.Contract
             var msgContent = new StringBuilder("\r\n");
             msgContent.Append(GetMsgContent(e));
 
-            var lastE = new List<Exception>();
+            var lastE = new List<Exception?>();
             var currE = e.InnerException;
             lastE.Add(e);
             lastE.Add(currE);
@@ -35,9 +35,6 @@ namespace NetRpc.Contract
                 return null;
 
             template = template.Replace('\\', '/');
-
-            if (template.StartsWith("/"))
-                template = template.Substring(1);
 
             if (template.EndsWith("\\"))
                 template = template.Substring(0, template.Length - 1);

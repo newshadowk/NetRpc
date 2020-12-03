@@ -56,9 +56,9 @@ namespace DataContract
         Task<int> UploadAsync(Stream stream, string streamName, string p1, Func<int, Task> cb, CancellationToken token);
     }
 
-    //[HttpTrimAsync]
-    //[HttpRoute("IRout1")]
-    //[Tag("RoutTag1")]
+    [HttpTrimAsync]
+    [HttpRoute("IRout1")]
+    [Tag("RoutTag1")]
     public interface IService2Async
     {
         Task<CObj> CallNone(CObj obj, Func<double, Task> cb, Stream stream);
@@ -71,12 +71,12 @@ namespace DataContract
         //[HttpGet]
         //Task<string> CallNone3();
 
-        //[Tag("CallTag1")]
-        //[HttpPost]
-        //[HttpRoute("Call1/{p1}")]
-        //[HttpGet("/Root/Call/{p1}")]
-        //[HttpTrimAsync]
-        //Task<string> Call1Async(string p1, int p2);
+        [Tag("CallTag1")]
+        [HttpPost]
+        [HttpRoute("Call1/{p1}")]
+        [HttpGet("/Root/Call/{p1}")]
+        [HttpTrimAsync]
+        Task<string> Call1Async(string p1, int p2);
 
         //[HttpGet]
         //[HttpDelete]
@@ -113,6 +113,18 @@ namespace DataContract
         //Task<string> Call4Async(CallObj obj, Func<double, Task> cb, CancellationToken token);
 
         //Task<string> Call5Async(string p1, int p2, Func<double, Task> cb, CancellationToken token);
+    }
+
+    //[Obsolete]
+    //[HttpRoute("IRout1", true)]
+    //[HttpRoute("IRout2")]
+    public interface IService4Async
+    {
+        //[Obsolete]
+        //[HttpGet(true)]
+        //[HttpGet("Call/{id}")]
+        Task Call(string id);
+        Task Call2(string id);
     }
 
     /// <summary>

@@ -244,4 +244,19 @@ namespace Service
             return "ret0";
         }
     }
+
+    //[SwaggerRole("default")]
+    public class Service4Async : IService4Async
+    {
+        [SwaggerRole("!default")]
+        public Task Call(string id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task Call2(string id)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

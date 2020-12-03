@@ -9,8 +9,18 @@
         {
         }
 
+        public HttpGetAttribute(bool obsolete)
+            : base(_supportedMethod, obsolete)
+        {
+        }
+
         public HttpGetAttribute(string template)
             : base(_supportedMethod, template)
+        {
+        }
+
+        public HttpGetAttribute(string template, bool obsolete)
+            : base(_supportedMethod, template, obsolete)
         {
         }
     }
@@ -23,8 +33,18 @@
         {
         }
 
+        public HttpHeadAttribute(bool obsolete)
+            : base(_supportedMethod, obsolete)
+        {
+        }
+
         public HttpHeadAttribute(string template)
             : base(_supportedMethod, template)
+        {
+        }
+
+        public HttpHeadAttribute(string template, bool obsolete)
+            : base(_supportedMethod, template, obsolete)
         {
         }
     }
@@ -38,8 +58,18 @@
         {
         }
 
+        public HttpDeleteAttribute(bool obsolete)
+            : base(_supportedMethod, obsolete)
+        {
+        }
+
         public HttpDeleteAttribute(string template)
             : base(_supportedMethod, template)
+        {
+        }
+
+        public HttpDeleteAttribute(string template, bool obsolete)
+            : base(_supportedMethod, template, obsolete)
         {
         }
     }
@@ -53,8 +83,18 @@
         {
         }
 
+        public HttpPostAttribute(bool obsolete)
+            : base(_supportedMethod, obsolete)
+        {
+        }
+
         public HttpPostAttribute(string template)
             : base(_supportedMethod, template)
+        {
+        }
+
+        public HttpPostAttribute(string template, bool obsolete)
+            : base(_supportedMethod, template, obsolete)
         {
         }
     }
@@ -68,8 +108,18 @@
         {
         }
 
+        public HttpPatchAttribute(bool obsolete)
+            : base(_supportedMethod, obsolete)
+        {
+        }
+
         public HttpPatchAttribute(string template)
             : base(_supportedMethod, template)
+        {
+        }
+
+        public HttpPatchAttribute(string template, bool obsolete)
+            : base(_supportedMethod, template, obsolete)
         {
         }
     }
@@ -83,8 +133,18 @@
         {
         }
 
+        public HttpPutAttribute(bool obsolete)
+            : base(_supportedMethod, obsolete)
+        {
+        }
+
         public HttpPutAttribute(string template)
             : base(_supportedMethod, template)
+        {
+        }
+
+        public HttpPutAttribute(string template, bool obsolete)
+            : base(_supportedMethod, template, obsolete)
         {
         }
     }
@@ -98,8 +158,18 @@
         {
         }
 
+        public HttpOptionsAttribute(bool obsolete)
+            : base(_supportedMethod, obsolete)
+        {
+        }
+
         public HttpOptionsAttribute(string template)
             : base(_supportedMethod, template)
+        {
+        }
+
+        public HttpOptionsAttribute(string template, bool obsolete)
+            : base(_supportedMethod, template, obsolete)
         {
         }
     }

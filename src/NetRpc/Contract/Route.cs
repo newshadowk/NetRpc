@@ -59,7 +59,7 @@ namespace NetRpc
         /// <summary>
         /// if null, match all.
         /// </summary>
-        public IList<string> HttpMethods { get; set; } = new List<string>();
+        public IList<HttpMethodAttribute> HttpMethods { get; set; } = new List<HttpMethodAttribute>();
 
         public string ContractTag { get; }
 
@@ -99,7 +99,7 @@ namespace NetRpc
             if (HttpMethods.Count == 0)
                 return Regex.IsMatch(path, _regPatternPathWithoutQuery);
 
-            return HttpMethods.Any(i => i == method) && Regex.IsMatch(path, _regPatternPathWithoutQuery);
+            return HttpMethods.Any(i => i.HttpMethod == method) && Regex.IsMatch(path, _regPatternPathWithoutQuery);
         }
 
         public HttpRoutInfo(string contractTag, string path, MethodInfo method)
@@ -214,7 +214,7 @@ namespace NetRpc
 
         private static HttpRoutInfo GetDefaultRout(IList<HttpRoutInfo> list)
         {
-            var post = list.FirstOrDefault(i => i.HttpMethods.Any(j => j == "POST"));
+            var post = list.FirstOrDefault(i => i.HttpMethods.Any(j => j.HttpMethod == "POST"));
             if (post != null)
                 return post;
             return list[0];
@@ -226,8 +226,8 @@ namespace NetRpc
             if (ris.Count == 0)
             {
                 var ri = new HttpRoutInfo(list[0]);
-                ri.HttpMethods = new List<string>();
-                ri.HttpMethods.Add("POST");
+                ri.HttpMethods = new List<HttpMethodAttribute>();
+                ri.HttpMethods.Add(new HttpPostAttribute());
                 ris.Add(ri);
             }
 
@@ -252,6 +252,7 @@ namespace NetRpc
             var tag = contractType.GetCustomAttribute<TagAttribute>(true);
             var methodHttpMethods = methodInfo.GetCustomAttributes<HttpMethodAttribute>(true).ToList();
             var methodRoutes = methodInfo.GetCustomAttributes<HttpRouteAttribute>(true).ToList();
+            var obsolete = contractType.IsDefined(typeof(ObsoleteAttribute)) | methodInfo.IsDefined(typeof(ObsoleteAttribute));
             string contractTag = GetTag(tag, contractType, contractTrimAsync);
 
             //tempInfos
@@ -267,7 +268,8 @@ namespace NetRpc
                         m.Template,
                         m.HttpMethod,
                         contractTrimAsync,
-                        methodTrimAsync
+                        methodTrimAsync,
+                        m.Obsolete | obsolete | r.Obsolete
                     ));
                 }
 
@@ -280,7 +282,8 @@ namespace NetRpc
                         mr.Template,
                         null,
                         contractTrimAsync,
-                        methodTrimAsync
+                        methodTrimAsync,
+                        obsolete | mr.Obsolete | r.Obsolete
                     ));
                 }
 
@@ -294,7 +297,8 @@ namespace NetRpc
                         null,
                         null,
                         contractTrimAsync,
-                        methodTrimAsync
+                        methodTrimAsync,
+                        obsolete | r.Obsolete
                     ));
                 }
             }
@@ -309,7 +313,8 @@ namespace NetRpc
                     null,
                     null,
                     contractTrimAsync,
-                    methodTrimAsync
+                    methodTrimAsync,
+                    obsolete
                 ));
             }
 
@@ -321,7 +326,7 @@ namespace NetRpc
                 foreach (TempInfo info in group)
                 {
                     if (info.Method != null)
-                        r.HttpMethods.Add(info.Method);
+                        r.HttpMethods.Add(HttpMethodAttributeFactory.Create(info.Method, info.Obsolete));
                 }
 
                 ret.Add(r);
@@ -353,11 +358,13 @@ namespace NetRpc
         {
             public string? Method { get; }
             public string Path { get; }
+            public bool Obsolete { get; }
 
             public TempInfo(Type contractType, MethodInfo methodInfo, string? contractTemplate, string? methodTemplate, string? method, bool contractTrimAsync,
-                bool methodTrimAsync)
+                bool methodTrimAsync, bool obsolete)
             {
                 Method = method;
+                Obsolete = obsolete;
 
                 string contractPath;
                 if (contractTemplate == null)

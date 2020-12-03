@@ -45,7 +45,8 @@ namespace NetRpc.Http
         public ReadOnlyCollection<string> GetRoles(string? key)
         {
             if (key == null)
-                return new ReadOnlyCollection<string>(new List<string>());
+                return new ReadOnlyCollection<string>(new List<string> {"default"});
+
             if (_map.TryGetValue(key.ToLower(), out var values))
                 return values;
             return new ReadOnlyCollection<string>(new List<string>());

@@ -16,7 +16,7 @@ namespace NetRpc
         /// </summary>
         public ReadOnlyCollection<PPInfo> InnerSystemTypeParameters { get; }
 
-        public ContractMethod(Type contractType, Type? instanceType, bool hasSwaggerRole, string contractTypeTag, MethodInfo methodInfo,
+        public ContractMethod(Type contractType, Type? instanceType, List<SwaggerRoleAttribute> instanceTypeSwaggerRoles, string contractTypeTag, MethodInfo methodInfo,
             List<FaultExceptionAttribute> faultExceptionAttributes, List<HttpHeaderAttribute> httpHeaderAttributes,
             List<ResponseTextAttribute> responseTextAttributes, List<SecurityApiKeyAttribute> securityApiKeyAttributes)
         {
@@ -40,11 +40,12 @@ namespace NetRpc
             Tags = new ReadOnlyCollection<string>(GetTags(contractTypeTag, methodInfo));
 
             //SwaggerRole
-            if (hasSwaggerRole)
+            if (instanceType == null)
+                Roles = new ReadOnlyCollection<string>(instanceTypeSwaggerRoles.ConvertAll(i => i.Role));
+            else
             {
-                var contractRoleAttributes = instanceType!.GetCustomAttributes<SwaggerRoleAttribute>(true).ToList();
                 var instanceMethod = instanceType!.GetMethod(methodInfo.Name)!;
-                var roles = GetRoles(contractRoleAttributes, instanceMethod);
+                var roles = GetRoles(instanceTypeSwaggerRoles, instanceMethod);
                 Roles = new ReadOnlyCollection<string>(roles);
             }
         }
@@ -139,14 +140,15 @@ namespace NetRpc
             return ret;
         }
 
-        private static List<string> GetRoles(List<SwaggerRoleAttribute> contractRoleAttributes, MethodInfo methodInfo)
+        private static List<string> GetRoles(List<SwaggerRoleAttribute> instanceRoleAttributes, MethodInfo methodInfo)
         {
             var roles = new List<string>();
             var notRoles = new List<string>();
 
-            contractRoleAttributes.AddRange(methodInfo.GetCustomAttributes<SwaggerRoleAttribute>(true));
+            var instanceRoleAttributes2 = instanceRoleAttributes.ToList();
+            instanceRoleAttributes2.AddRange(methodInfo.GetCustomAttributes<SwaggerRoleAttribute>(true));
 
-            foreach (var attr in contractRoleAttributes)
+            foreach (var attr in instanceRoleAttributes2)
             {
                 var r = Parse(attr.Role);
                 roles.AddRange(r.roles);
@@ -219,14 +221,15 @@ namespace NetRpc
             var httpHeaderDic = GetAttributes<HttpHeaderAttribute>(Type, methodInfos);
             var responseTextDic = GetAttributes<ResponseTextAttribute>(Type, methodInfos);
             var tag = GetTag(Type);
-            var hasSwaggerRole = HasSwaggerRole(instanceType, methodInfos);
+
+            var instanceTypeSwaggerRoles = GetSwaggerRoleAttributes(instanceType);
 
             var methods = new List<ContractMethod>();
             foreach (var f in faultDic)
                 methods.Add(new ContractMethod(
                     Type,
                     instanceType,
-                    hasSwaggerRole,
+                    instanceTypeSwaggerRoles,
                     tag,
                     f.Key,
                     f.Value,
@@ -313,21 +316,16 @@ namespace NetRpc
             return ret.Distinct().ToList();
         }
 
-        private static bool HasSwaggerRole(Type? contractType, IEnumerable<MethodInfo> methodInfos)
+        private static List<SwaggerRoleAttribute> GetSwaggerRoleAttributes(Type? instanceType)
         {
-            if (contractType == null)
-                return false;
-
-            if (contractType.GetCustomAttributes<SwaggerRoleAttribute>(true).Any())
-                return true;
-
-            foreach (var m in methodInfos)
-            {
-                if (m.GetCustomAttributes<SwaggerRoleAttribute>().Any())
-                    return true;
-            }
-
-            return false;
+            List<SwaggerRoleAttribute> ret;
+            if (instanceType == null)
+                ret = new List<SwaggerRoleAttribute>();
+            else
+                ret = instanceType.GetCustomAttributes<SwaggerRoleAttribute>(true).ToList();
+            if (!ret.Exists(i => i.Role == "default")) 
+                ret.Add(new SwaggerRoleAttribute("default"));
+            return ret;
         }
     }
 }

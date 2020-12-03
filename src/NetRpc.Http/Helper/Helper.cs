@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.OpenApi.Models;
 using NetRpc.Http.Client;
+using HttpMethodAttribute = NetRpc.Contract.HttpMethodAttribute;
 
 namespace NetRpc.Http
 {
     internal static class Helper
     {
-        public static OperationType ToOperationType(this string httpMethod)
+        public static OperationType ToOperationType(this HttpMethodAttribute httpMethod)
         {
-            return httpMethod switch
+            return httpMethod.HttpMethod switch
             {
                 "POST" => OperationType.Post,
                 "GET" => OperationType.Get,
@@ -38,6 +39,7 @@ namespace NetRpc.Http
                 Type = t
             };
         }
+
         public static object ToObjectForHttp(string json, Type t)
         {
             object? dataObj;
