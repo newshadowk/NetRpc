@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
 using NetRpc;
+using NetRpc.Contract;
 using NetRpc.Http.Client;
 using Helper = TestHelper.Helper;
 
@@ -151,7 +152,8 @@ namespace Service
         {
             Console.WriteLine("[CallByCustomExceptionAsync]...");
             //throw new CustomException {P1 = "123", P2 = "abc"};
-            throw new CustomException2();
+            //throw new CustomException2();
+            throw new FaultException<CustomException2>(new CustomException2());
         }
 
         public async Task CallByDefaultExceptionAsync()

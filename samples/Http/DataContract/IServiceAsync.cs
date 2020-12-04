@@ -9,7 +9,7 @@ namespace DataContract
     [HttpTrimAsync]
     [HttpRoute("Service")]
     [FaultExceptionDefine(typeof(CustomException), 400, 1, "errorCode1 error description")]
-    [FaultExceptionDefine(typeof(CustomException2), 400, 2, "errorCode2 error description")]
+    [FaultExceptionDefine(typeof(CustomException2), 400, 2, "errorCode2 error description", true)]
     [HttpHeader("h1", "h1 des.")]
     [SecurityApiKeyDefine("tokenKey", "t1", "t1 des")]
     [SecurityApiKeyDefine("tokenKey2", "t2", "t2 des")]
@@ -37,7 +37,7 @@ namespace DataContract
         /// summary of Call
         /// </summary>
         [FaultException(typeof(CustomException))]
-        [FaultException(typeof(CustomException2))]
+        [FaultException(typeof(CustomException2), 400, 2, null)]
         [Tag("A1")]
         [Tag("A2")]
         Task CallByCustomExceptionAsync();

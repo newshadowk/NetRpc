@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using NetRpc.Contract;
 using NetRpc.Http.Client;
 
 namespace NetRpc.Http
@@ -98,8 +99,11 @@ namespace NetRpc.Http
                     return Task.CompletedTask;
             }
 
+            // UnWarp FaultException
+            body = NetRpc.Helper.UnWarpException(body);
+
             // Cancel
-            if (body.GetType().IsEqualsOrSubclassOf(typeof(OperationCanceledException)))
+            if (body is OperationCanceledException)
                 return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(), ClientConstValue.CancelStatusCode));
 
             // ResponseTextException
@@ -112,7 +116,8 @@ namespace NetRpc.Http
             {
                 var t = context.ContractMethod.FaultExceptionAttributes.FirstOrDefault(i => body.GetType() == i.DetailType);
                 if (t != null)
-                    return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(t.ErrorCode, body.Message), t.StatusCode));
+                    return _connection.SendAsync(Result.FromFaultException(
+                        new FaultExceptionJsonObj(t.ErrorCode, t.ClearHttpMessage ? null : body.Message), t.StatusCode));
             }
 
             // default Exception

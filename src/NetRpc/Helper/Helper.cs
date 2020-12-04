@@ -239,6 +239,17 @@ namespace NetRpc
             return ex;
         }
 
+        public static Exception UnWarpException(Exception ex)
+        {
+            if (ex is FaultException fe)
+            {
+                if (fe.Detail != null)
+                    return fe.Detail;
+            }
+
+            return ex;
+        }
+
         public static void ConvertStreamProgress(ActionExecutingContext context, int progressCount)
         {
             if (context.Callback == null)

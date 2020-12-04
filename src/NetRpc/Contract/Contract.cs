@@ -258,7 +258,9 @@ namespace NetRpc
             return new ReadOnlyCollection<ContractMethod>(ret);
         }
 
-        private static Dictionary<MethodInfo, List<T>> GetItemsFromDefines<T, TDefine>(Type contractType, IEnumerable<MethodInfo> methodInfos,
+        private static Dictionary<MethodInfo, List<T>> GetItemsFromDefines<T, TDefine>(
+            Type contractType, 
+            IEnumerable<MethodInfo> methodInfos, 
             Func<T, TDefine, bool> match)
             where T : Attribute
             where TDefine : Attribute

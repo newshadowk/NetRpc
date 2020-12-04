@@ -6,7 +6,7 @@
 
         public string? Message { get; set; }
 
-        public FaultExceptionJsonObj(int errorCode, string message)
+        public FaultExceptionJsonObj(int errorCode, string? message)
         {
             ErrorCode = errorCode;
             Message = message;

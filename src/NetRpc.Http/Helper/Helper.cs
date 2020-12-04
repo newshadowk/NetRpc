@@ -63,11 +63,6 @@ namespace NetRpc.Http
             return path;
         }
 
-        public static bool IsEqualsOrSubclassOf(this Type t, Type c)
-        {
-            return t == c || t.IsSubclassOf(c);
-        }
-
         public static List<string> GetCommentsXmlPaths()
         {
             var ret = new List<string>();
