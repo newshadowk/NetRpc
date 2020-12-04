@@ -52,7 +52,7 @@ namespace Service
                             services.AddNHttpService();
                             services.AddNServiceContract<IService4Async, Service4Async>();
                             //services.AddNServiceContract<IService2Async, Service2Async>();
-                            services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+                            //services.AddNServiceContract<IServiceAsync, ServiceAsync>();
                         })
                         .Configure(app =>
                         {

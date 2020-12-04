@@ -45,6 +45,9 @@ namespace NetRpc.Http
 
             //Components
             ProcessComponents(contracts);
+
+            //clearTags
+            ClearTags();
         }
 
         private void ProcessTags(List<ContractInfo> contracts)
@@ -106,6 +109,26 @@ namespace NetRpc.Http
                     }
                 }
             }
+        }
+
+        private void ClearTags()
+        {
+            List<OpenApiTag> toRemove = new();
+            List<OpenApiTag> existed = new();
+
+            foreach (var i in _doc.Paths.Values)
+            {
+                foreach (var j in i.Operations.Values) 
+                    existed.AddRange(j.Tags);
+            }
+
+            foreach (var tag in _doc.Tags)
+            {
+                if (!existed.Exists(i => i.Name == tag.Name)) 
+                    toRemove.Add(tag);
+            }
+
+            toRemove.ForEach(i => _doc.Tags.Remove(i));
         }
 
         private void AddPath(string key, OpenApiPathItem pathItem)

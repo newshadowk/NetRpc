@@ -249,11 +249,13 @@ namespace Service
 
     public class Service4Async : IService4Async
     {
+        //[SwaggerRole("!default")]
         public async Task<string> Call(string id)
         {
             return "call";
         }
 
+        [SwaggerRole("!default")]
         public async Task<string> Call2(string id)
         {
             return "call2";
