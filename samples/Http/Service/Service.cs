@@ -247,18 +247,16 @@ namespace Service
         }
     }
 
-    //[SwaggerRole("default")]
     public class Service4Async : IService4Async
     {
-        [SwaggerRole("!default")]
-        public Task Call(string id)
+        public async Task<string> Call(string id)
         {
-            throw new NotImplementedException();
+            return "call";
         }
 
-        public Task Call2(string id)
+        public async Task<string> Call2(string id)
         {
-            throw new NotImplementedException();
+            return "call2";
         }
     }
 }

@@ -115,16 +115,13 @@ namespace DataContract
         //Task<string> Call5Async(string p1, int p2, Func<double, Task> cb, CancellationToken token);
     }
 
-    //[Obsolete]
-    //[HttpRoute("IRout1", true)]
-    //[HttpRoute("IRout2")]
     public interface IService4Async
     {
-        //[Obsolete]
-        //[HttpGet(true)]
-        //[HttpGet("Call/{id}")]
-        Task Call(string id);
-        Task Call2(string id);
+        [HttpGet("Call")]
+        Task<string> Call(string id);
+
+        [HttpPost("Call")]
+        Task<string> Call2(string id);
     }
 
     /// <summary>

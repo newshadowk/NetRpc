@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -100,10 +101,22 @@ namespace NetRpc.Http
                         }
 
                         //add a path
-                        _doc.Paths.Add($"{apiRootPath}/{route.Path}", pathItem);
+                        //_doc.Paths.Add($"{apiRootPath}/{route.Path}", pathItem);
+                        AddPath($"{apiRootPath}/{route.Path}", pathItem);
                     }
                 }
             }
+        }
+
+        private void AddPath(string key, OpenApiPathItem pathItem)
+        {
+            if (_doc.Paths.TryGetValue(key, out var v))
+            {
+                foreach (var (operationType, operation) in pathItem.Operations) 
+                    v.AddOperation(operationType, operation);
+            }
+            else
+                _doc.Paths.Add(key, pathItem);
         }
     }
 }
