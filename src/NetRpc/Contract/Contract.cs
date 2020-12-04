@@ -225,17 +225,17 @@ namespace NetRpc
             var instanceTypeSwaggerRoles = GetSwaggerRoleAttributes(instanceType);
 
             var methods = new List<ContractMethod>();
-            foreach (var f in faultDic)
+            foreach (var (key, value) in faultDic)
                 methods.Add(new ContractMethod(
                     Type,
                     instanceType,
                     instanceTypeSwaggerRoles,
                     tag,
-                    f.Key,
-                    f.Value,
-                    httpHeaderDic[f.Key],
-                    responseTextDic[f.Key],
-                    apiKeysDic[f.Key]));
+                    key,
+                    value,
+                    httpHeaderDic[key],
+                    responseTextDic[key],
+                    apiKeysDic[key]));
 
             Methods = new ReadOnlyCollection<ContractMethod>(methods);
             Tags = new ReadOnlyCollection<string>(GetTags(methods));
