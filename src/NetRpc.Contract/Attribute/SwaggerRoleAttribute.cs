@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace NetRpc
+namespace NetRpc.Contract
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
     public class SwaggerRoleAttribute : Attribute
     {
         public string Role { get; }

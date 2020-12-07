@@ -234,12 +234,16 @@ namespace NetRpc.Http
 
             ret.Add("200", res200);
 
-            //600 cancel
-            if (hasCancel)
-                ret.Add(ClientConstValue.CancelStatusCode.ToString(), new OpenApiResponse {Description = "A task was canceled."});
+            if (!method.IsHideFaultExceptionDescription)
+            {
+                //600 cancel
+                if (hasCancel)
+                    ret.Add(ClientConstValue.CancelStatusCode.ToString(), new OpenApiResponse { Description = "A task was canceled." });
 
-            //exception
-            GenerateException(ret, method);
+                //exception
+                GenerateException(ret, method);
+            }
+         
             return ret;
         }
 

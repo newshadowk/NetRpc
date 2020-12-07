@@ -1,7 +1,29 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace NetRpc.Contract
 {
+    public interface IFaultExceptionGroup
+    {
+        List<FaultExceptionDefineAttribute> FaultExceptionDefineAttributes { get; }
+    }
+
+    /// <summary>
+    /// Pass define FaultException to methods.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Interface, AllowMultiple = true)]
+    public sealed class InheritedFaultExceptionDefineAttribute : Attribute
+    {
+    }
+
+    /// <summary>
+    /// Show FaultException description in swagger.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface, AllowMultiple = true, Inherited = false)]
+    public sealed class HideFaultExceptionDescriptionAttribute : Attribute
+    {
+    }
+
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface, AllowMultiple = true, Inherited = false)]
     public sealed class FaultExceptionAttribute : Attribute
     {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,6 +7,16 @@ using NetRpc.Contract;
 
 namespace DataContract
 {
+    public sealed class FaultExceptionDefineGroupAttribute : Attribute, IFaultExceptionGroup
+    {
+        public List<FaultExceptionDefineAttribute> FaultExceptionDefineAttributes =>
+            new()
+            {
+                new(typeof(CustomException), 400, 1, "errorCode1 error description"),
+                new(typeof(CustomException2), 400, 2, "errorCode2 error description", true)
+            };
+    }
+
     [HttpTrimAsync]
     [HttpRoute("Service")]
     [FaultExceptionDefine(typeof(CustomException), 400, 1, "errorCode1 error description")]
@@ -13,10 +24,13 @@ namespace DataContract
     [HttpHeader("h1", "h1 des.")]
     [SecurityApiKeyDefine("tokenKey", "t1", "t1 des")]
     [SecurityApiKeyDefine("tokenKey2", "t2", "t2 des")]
+    [Role("RAll")]
     public interface IServiceAsync
     {
         [Example("s1", "s1value")]
         [Example("s2", "s2value")]
+        [Role("R1")]
+        [Role("R3")]
         Task<CustomObj> Call2Async(CObj obj, string s1, string s2);
 
         /// <summary>
@@ -26,8 +40,10 @@ namespace DataContract
         [HttpRoute("Service1/Call2")]
         [HttpHeader("h2", "h2 des.")]
         [SecurityApiKey("tokenKey")]
+        [Role("R1,!RAll")]
         Task<CustomObj> CallAsync(string p1, int p2);
 
+        [Role("R2,R3")]
         Task Call3Async(SimObj obj);
 
         //[HttpRoute("Service1/{p1}/Call4")]
@@ -115,11 +131,16 @@ namespace DataContract
         //Task<string> Call5Async(string p1, int p2, Func<double, Task> cb, CancellationToken token);
     }
 
+    [FaultExceptionDefineGroup]
+    [InheritedFaultExceptionDefine]
+    [HideFaultExceptionDescription]
     public interface IService4Async
     {
+        //[HideFaultExceptionDecription]
         [HttpGet("Call")]
         Task<string> Call(string id);
 
+        [SwaggerRole("!default")]
         [HttpPost("Call")]
         Task<string> Call2(string id);
     }

@@ -790,7 +790,7 @@ public interface IService4Async
     Task Call(string id);
 }
 ```
-## [Http] Swagger Role Attribute
+## [Http] Role Attribute
 Add a param **key** 'k' to url:  
 http://localhost:5000/swagger/index.html?k=k1  
 will filter the interface in Swagger UI, how to config is blow:
@@ -815,32 +815,20 @@ services.AddNSwagger(i =>
                         });
                     });
 
-[SwaggerRole("RAll")]
-public class Service3Async : IService3Async
+[Role("RAll")]
+public interface IService3Async
 {
-    [SwaggerRole("R1,!RAll")]    //!RALL mean exclude RALL
-    public async Task CallAsync()
-    {
-        Console.WriteLine("CallAsync");
-    }
+    [Role("R1,!RAll")]    //!RALL mean exclude RALL
+    Task CallAsync();
 
-    [SwaggerRole("R1")]
-    [SwaggerRole("R3")]
-    public async Task Call2Async()
-    {
-        Console.WriteLine("Call2Async");
-    }
+    [Role("R1")]
+    [Role("R3")]
+    Task Call2Async();
 
-    [SwaggerRole("R2,R3")]
-    public async Task Call3Async()
-    {
-        Console.WriteLine("Call3Async");
-    }
+    [Role("R2,R3")]
+    Task Call3Async();
 
-    public async Task Call4Async()
-    {
-        Console.WriteLine("Call4Async");
-    }
+    Task Call4Async();
 }
 ```
 
@@ -848,20 +836,39 @@ Defalut role don't have to set the key:
 http://localhost:5000/swagger/index.html would use the default role.
 
 ```c#
-//[SwaggerRole("default")] this line can be omitted.
-public class Service4Async : IService4Async
+//[Role("default")] this line can be omitted.
+public interface IService4Async
 {
-    [SwaggerRole("!default")]    //hide in swagger, but still avaliable to call
-    public Task Call(string id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task Call2(string id)
-    {
-        throw new NotImplementedException();
-    }
+    [Role("!default")]    //hide in swagger, but still avaliable to call
+    Task Call(string id);
 } 
+```
+
+## [Http] FaultExceptionDefineGroup InheritedFaultExceptionDefine HideFaultExceptionDescription Attribute
+Add a header field to swagger.
+```c#
+public sealed class FaultExceptionDefineGroupAttribute : Attribute, IFaultExceptionGroup
+{
+    public List<FaultExceptionDefineAttribute> FaultExceptionDefineAttributes =>
+        new()
+        {
+            new(typeof(CustomException), 400, 1, "errorCode1 error description"),
+            new(typeof(CustomException2), 400, 2, "errorCode2 error description", true)
+        };
+}
+
+[FaultExceptionDefineGroup]     //declear a group
+[InheritedFaultExceptionDefine] //pass fault define to methods 
+[HideFaultExceptionDescription] //is Hide fault decription in swagger?
+public interface IService4Async
+{
+    //[HideFaultExceptionDecription]
+    [HttpGet("Call")]
+    Task<string> Call(string id);
+
+    [HttpPost("Call")]
+    Task<string> Call2(string id);
+}
 ```
 
 ## [Http] HttpHeaderAttribute
