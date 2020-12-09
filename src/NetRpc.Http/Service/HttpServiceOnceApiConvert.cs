@@ -121,7 +121,7 @@ namespace NetRpc.Http
             }
 
             // default Exception
-            return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(0, body.Message), ClientConstValue.DefaultExceptionStatusCode));
+            return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(null, body.Message), ClientConstValue.DefaultExceptionStatusCode));
         }
 
         public Task SendCallbackAsync(object? callbackObj)

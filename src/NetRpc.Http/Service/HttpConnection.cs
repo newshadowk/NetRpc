@@ -113,7 +113,7 @@ namespace NetRpc.Http
             if (result.IsPainText)
                 s = result.Ret?.ToString();
             else
-                s = result.Ret.ToDtoJson();
+                s = result.Ret.ToResultJson();
             await _context.Response.WriteAsync(s ?? "");
         }
 

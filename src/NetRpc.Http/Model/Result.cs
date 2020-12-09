@@ -8,7 +8,7 @@ namespace NetRpc.Http
 
         public object? Ret { get; set; }
 
-        public int ErrorCode { get; set; }
+        public string? ErrorCode { get; set; }
 
         public bool IsPainText { get; set; }
 

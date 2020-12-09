@@ -1,10 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
 using NetRpc;
 using NetRpc.Contract;
+using NetRpc.Http;
 using NetRpc.Http.Client;
 using Helper = TestHelper.Helper;
 
@@ -16,7 +18,6 @@ namespace Service
         {
             Console.WriteLine("CallAsync");
         }
-
 
         public async Task Call2Async()
         {
@@ -245,14 +246,15 @@ namespace Service
 
     public class Service4Async : IService4Async
     {
-        public async Task<string> Call(string id)
+        public async Task<Obj4> Call(Obj4 id)
         {
-            return "call";
+            //throw new CustomException("123", "p1", "p2");
+            return id;
         }
 
-        public async Task<string> Call2(string id)
+        public async Task Call2(string testRed1, string testRed2)
         {
-            return "call2";
+            Console.WriteLine($"{testRed1}, {testRed2}");
         }
     }
 }

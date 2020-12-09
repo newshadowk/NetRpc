@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using NetRpc.Contract;
@@ -12,15 +13,15 @@ namespace DataContract
         public List<FaultExceptionDefineAttribute> FaultExceptionDefineAttributes =>
             new()
             {
-                new(typeof(CustomException), 400, 1, "errorCode1 error description"),
-                new(typeof(CustomException2), 400, 2, "errorCode2 error description", true)
+                new(typeof(CustomException), 400, "1", "errorCode1 error description", true),
+                new(typeof(CustomException2), 400, "2", "errorCode2 error description", true)
             };
     }
 
     [HttpTrimAsync]
     [HttpRoute("Service")]
-    [FaultExceptionDefine(typeof(CustomException), 400, 1, "errorCode1 error description")]
-    [FaultExceptionDefine(typeof(CustomException2), 400, 2, "errorCode2 error description", true)]
+    [FaultExceptionDefine(typeof(CustomException), 400, "1", "errorCode1 error description")]
+    [FaultExceptionDefine(typeof(CustomException2), 400, "2", "errorCode2 error description", true)]
     [HttpHeader("h1", "h1 des.")]
     [SecurityApiKeyDefine("tokenKey", "t1", "t1 des")]
     [SecurityApiKeyDefine("tokenKey2", "t2", "t2 des")]
@@ -53,7 +54,7 @@ namespace DataContract
         /// summary of Call
         /// </summary>
         [FaultException(typeof(CustomException))]
-        [FaultException(typeof(CustomException2), 400, 2, null)]
+        [FaultException(typeof(CustomException2), 400, "2")]
         [Tag("A1")]
         [Tag("A2")]
         Task CallByCustomExceptionAsync();
@@ -136,13 +137,28 @@ namespace DataContract
     [HideFaultExceptionDescription]
     public interface IService4Async
     {
-        //[HideFaultExceptionDecription]
-        [HttpGet("Call")]
-        Task<string> Call(string id);
+        [HttpPost]
+        Task<Obj4> Call(Obj4 id);
+    }
 
-        [SwaggerRole("!default")]
-        [HttpPost("Call")]
-        Task<string> Call2(string id);
+    [Serializable]
+    public class Obj4
+    {
+        [JsonPropertyName("test-red")]
+        public string TestRed { get; set; }
+        
+        [JsonPropertyName("p1")]
+        public string P1 { get; set; }
+        
+        [JsonPropertyName("obj-41")]
+        public Obj41 Obj41 { get; set; }
+    }
+
+    [Serializable]
+    public class Obj41
+    {
+        [JsonPropertyName("p2")]
+        public string P2 { get; set; }
     }
 
     /// <summary>

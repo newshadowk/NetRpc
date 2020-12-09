@@ -790,6 +790,46 @@ public interface IService4Async
     Task Call(string id);
 }
 ```
+## [Http] Auth
+```c#
+services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(opt =>
+    {
+        opt.Audience = xxx;
+        opt.Authority = xxx;
+        opt.RequireHttpsMetadata = false;
+        opt.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+        };
+
+        opt.IncludeErrorDetails = true;
+    });
+```
+
+```c#
+[SecurityApiKeyDefine("auth", "Authorization", "auth2.0 token, e.g: Bearer xxxx...")]
+public interface IService4Async
+{
+    [SecurityApiKey("auth")]
+    Task<string> Call(string id);
+}
+
+public class Service4Async : IService4Async
+{
+    [AuthToken]
+    public async Task<string> Call(string id)
+    {
+        return "call";
+    }
+}
+
+```
 ## [Http] Role Attribute
 Add a param **key** 'k' to url:  
 http://localhost:5000/swagger/index.html?k=k1  

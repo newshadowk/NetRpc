@@ -1,12 +1,16 @@
-﻿namespace NetRpc.Http.Client
+﻿using System.Text.Json.Serialization;
+
+namespace NetRpc.Http.Client
 {
     public sealed class FaultExceptionJsonObj
     {
-        public int ErrorCode { get; set; }
+        [JsonPropertyName("error_code")]
+        public string? ErrorCode { get; set; }
 
+        [JsonPropertyName("message")]
         public string? Message { get; set; }
 
-        public FaultExceptionJsonObj(int errorCode, string? message)
+        public FaultExceptionJsonObj(string? errorCode, string? message)
         {
             ErrorCode = errorCode;
             Message = message;

@@ -36,11 +36,23 @@ namespace NetRpc.Http.Client
         }
 
         [return: NotNullIfNotNull("obj")]
-        public static string? ToDtoJson<T>(this T obj)
+        public static string? ToDtoJson<T>(this T obj, bool isRestful = false)
         {
             if (obj == null)
                 return null;
             return JsonSerializer.Serialize(obj, JsOptions);
+        }
+
+        [return: NotNullIfNotNull("obj")]
+        public static string? ToResultJson<T>(this T obj)
+        {
+            if (obj == null)
+                return null;
+            return JsonSerializer.Serialize(obj, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                IgnoreNullValues = true
+            });
         }
     }
 }
