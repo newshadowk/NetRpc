@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
@@ -12,13 +13,28 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using NetRpc;
 using NetRpc.Http;
+using NetRpc.Http.Client;
 
 namespace Service
 {
+ 
+    
     internal class Program
     {
         private static async Task Main(string[] args)
         {
+            //ICollection<string> cc = new List<string>();
+            //cc.Add("111");
+            //cc.Add("222");
+            //var dtoJson = cc.ToDtoJson();
+
+            //var dd = JsonSerializer.Deserialize(dtoJson, typeof(ICollection<int>), new JsonSerializerOptions()
+            //{
+            //    Converters = { new AutoStringToNumberConverter() }
+            //});
+
+            //Console.Read();
+
             var webHost = Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(builder =>
                 {

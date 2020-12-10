@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.Primitives;
+using NetRpc.Http.Client;
 
 namespace NetRpc.Http
 {
@@ -52,6 +55,14 @@ namespace NetRpc.Http
 
         public void SetValues(Dictionary<string, string> keyValues)
         {
+            Dictionary<string, StringValues> keyValues2 = new();
+            foreach (var (key, value) in keyValues) 
+                keyValues2[key] = new StringValues(value);
+            SetValues(keyValues2);
+        }
+
+        public void SetValues(Dictionary<string, StringValues> keyValues)
+        {
             if (keyValues.Count == 0)
                 return;
 
@@ -68,13 +79,13 @@ namespace NetRpc.Http
             //set values
             foreach (var p in keyValues)
             {
-                var f = ps.FirstOrDefault(i => string.Equals(i.Name, p.Key, StringComparison.CurrentCultureIgnoreCase));
+                var f = ps.FirstOrDefault(i => string.Equals(i.GetJsonNameOrPropName(), p.Key, StringComparison.Ordinal));
                 if (f != null)
                 {
                     try
                     {
                         //may be need type convert
-                        SetPropertyValue(Value!, f, p.Value);
+                        SetPropertyValue(Value!, f, ConvertValues(f.PropertyType, p.Value));
                     }
                     catch (Exception ex)
                     {
@@ -83,7 +94,7 @@ namespace NetRpc.Http
                 }
             }
         }
-
+     
         private void CheckValue()
         {
             //if null, create default.
@@ -111,9 +122,24 @@ namespace NetRpc.Http
 
             if (propertyValue == DBNull.Value || propertyValue == null)
                 type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance, new object[] {null!});
-            else
+            else if (typeof(IConvertible).IsAssignableFrom(tgtProperty.PropertyType))
+            {
                 type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance,
-                    new[] {Convert.ChangeType(propertyValue, tgtProperty.PropertyType)});
+                    new[] { Convert.ChangeType(propertyValue, tgtProperty.PropertyType) });
+            }
+            else
+                tgtProperty.SetValue(classInstance, propertyValue);
+        }
+
+        private static object ConvertValues(Type t, StringValues sv)
+        {
+            if (typeof(IEnumerable).IsAssignableFrom(t) && t != typeof(string))
+            {
+                var json = sv.ToArray().ToDtoJson();
+                return json.ToDtoObjectByNumber(t)!;
+            }
+
+            return sv[0];
         }
     }
 }

@@ -246,9 +246,9 @@ namespace Service
 
     public class Service4Async : IService4Async
     {
-        public async Task<Obj4> Call(Obj4 id, string testRed)
+        public async Task<Obj4> Call(Obj4 id)
         {
-            Console.WriteLine($"{testRed}");
+            //Console.WriteLine($"{testRed}");
             return id;
         }
 

@@ -23,6 +23,24 @@ namespace NetRpc.Http.Client
             return JsonSerializer.Deserialize(str, t, JsOptions);
         }
 
+        public static object? ToDtoObjectByNumber(this string str, Type t)
+        {
+            if (string.IsNullOrEmpty(str))
+                return default;
+
+            return JsonSerializer.Deserialize(str, t, new JsonSerializerOptions()
+            {
+                Converters =
+                {
+                    new StringToIntJsonConverter(),
+                    new StringToUIntJsonConverter(),
+                    new StringToLongJsonConverter(),
+                    new StringToULongJsonConverter(),
+                    new StringToDoubleJsonConverter()
+                }
+            });
+        }
+
         public static bool HasStream(this Type? t)
         {
             if (t == null)

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
+using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
 using NetRpc.Http.Client;
 using HttpMethodAttribute = NetRpc.Contract.HttpMethodAttribute;
@@ -88,6 +90,19 @@ namespace NetRpc.Http
                 dir = "";
             var name = Path.GetFileNameWithoutExtension(s);
             return Path.Combine(dir, name);
+        }
+        
+        public static string GetJsonNameOrPropName(this PropertyInfo pi)
+        {
+            var a = pi.GetCustomAttribute<JsonPropertyNameAttribute>();
+            if (a != null)
+                return a.Name;
+            return pi.Name;
+        }
+
+        public static bool IsEqualsOrSubclassOf(this Type t, Type c)
+        {
+            return t == c || t.IsSubclassOf(c);
         }
 
         private static (string? connectionId, string? callId, long streamLength) GetAdditionData(object? dataObj)

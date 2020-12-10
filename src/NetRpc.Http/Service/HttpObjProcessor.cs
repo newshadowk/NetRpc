@@ -170,18 +170,18 @@ namespace NetRpc.Http
             throw new HttpFailedException($"ContentType:'{item.HttpRequest.ContentType}' is not supported.");
         }
 
-        private static Dictionary<string, string> GetValuesFromQuery(HttpRequest request, Dictionary<string, string> queryParams, bool hasStream)
+        private static Dictionary<string, StringValues> GetValuesFromQuery(HttpRequest request, Dictionary<string, string> queryParams, bool hasStream)
         {
-            var ret = new Dictionary<string, string>();
+            var ret = new Dictionary<string, StringValues>();
             List<KeyValuePair<string, StringValues>> pairs = new();
-            if (request.Query != null)
-                pairs.AddRange(request.Query);
+            
+            pairs.AddRange(request.Query);
 
             //Form may be read by stream before.
             if (!hasStream && request.HasFormContentType)
                 pairs.AddRange(request.Form);
 
-            foreach (var p in pairs)
+            foreach (KeyValuePair<string, StringValues> p in pairs)
             {
                 string pName;
                 if (queryParams.TryGetValue(p.Key.ToLower(), out var outName))
@@ -189,7 +189,7 @@ namespace NetRpc.Http
                 else
                     pName = p.Key;
 
-                ret.Add(pName, p.Value[0]);
+                ret.Add(pName, p.Value);
             }
 
             return ret;
