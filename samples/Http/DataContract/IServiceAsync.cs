@@ -132,24 +132,34 @@ namespace DataContract
         //Task<string> Call5Async(string p1, int p2, Func<double, Task> cb, CancellationToken token);
     }
 
-    [FaultExceptionDefineGroup]
-    [InheritedFaultExceptionDefine]
-    [HideFaultExceptionDescription]
+    //[FaultExceptionDefineGroup]
+    //[InheritedFaultExceptionDefine]
+    //[HideFaultExceptionDescription]
     public interface IService4Async
     {
-        [HttpPost]
-        Task<Obj4> Call(Obj4 id);
+        /// <summary>
+        /// Call des
+        /// </summary>
+        /// <param name="id">id des</param>
+        /// <param name="testRed">testRed des</param>
+        /// <returns>call return des.</returns>
+        [HttpPost("Call")]
+        Task<Obj4> Call([JsonParamName("i-d")] Obj4 id, [JsonParamName("test-red")] string testRed);
+        //Task Call2([JsonParamName("test-red1")] string testRed1, [JsonParamName("test-red2")] string testRed2);
     }
 
     [Serializable]
     public class Obj4
     {
-        [JsonPropertyName("test-red")]
-        public string TestRed { get; set; }
-        
-        [JsonPropertyName("p1")]
+        /// <summary>
+        /// P1 des
+        /// </summary>
+        [JsonPropertyName("p-1")]
         public string P1 { get; set; }
-        
+
+        /// <summary>
+        /// Obj41 des
+        /// </summary>
         [JsonPropertyName("obj-41")]
         public Obj41 Obj41 { get; set; }
     }
@@ -157,7 +167,7 @@ namespace DataContract
     [Serializable]
     public class Obj41
     {
-        [JsonPropertyName("p2")]
+        [JsonPropertyName("p-2")]
         public string P2 { get; set; }
     }
 

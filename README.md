@@ -777,6 +777,15 @@ public class CallObj
     public int P2 { get; set; }
 }
 ```
+
+## [Http] JsonParamName Attribute
+```c#
+public interface IService4Async
+{
+    [HttpPost("Call")]
+    Task<Obj4> Call([JsonParamName("i-d")] Obj4 id, [JsonParamName("test-red")] string testRed);
+}
+```
 ## [Http] Obsolete Attribute
 ```c#
 [Obsolete]

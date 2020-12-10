@@ -66,13 +66,13 @@ namespace NetRpc.Http
 
             foreach (var p in contractMethod.InnerSystemTypeParameters)
             {
-                if (routInfo.IsPath(p.Name))
+                if (routInfo.IsPath(p.DefineName))
                 {
                     var schema = _schemaGenerator.GenerateSchema(p.Type, SchemaRepository, p.PropertyInfo!, p.ParameterInfo!);
                     operation.Parameters.Add(new OpenApiParameter
                     {
                         In = ParameterLocation.Path,
-                        Name = p.Name,
+                        Name = p.DefineName,
                         Schema = schema,
                         Description = schema.Description,
                         Required = true
@@ -88,12 +88,12 @@ namespace NetRpc.Http
             foreach (var p in contractMethod.InnerSystemTypeParameters)
             {
                 var schema = _schemaGenerator.GenerateSchema(p.Type, SchemaRepository, p.PropertyInfo!, p.ParameterInfo!);
-                if (routInfo.IsPath(p.Name))
+                if (routInfo.IsPath(p.DefineName))
                 {
                     operation.Parameters.Add(new OpenApiParameter
                     {
                         In = ParameterLocation.Path,
-                        Name = p.Name,
+                        Name = p.DefineName,
                         Schema = schema,
                         Description = schema.Description,
                         Required = true
@@ -104,7 +104,7 @@ namespace NetRpc.Http
                     operation.Parameters.Add(new OpenApiParameter
                     {
                         In = ParameterLocation.Query,
-                        Name = p.Name,
+                        Name = p.DefineName,
                         Schema = schema,
                         Description = schema.Description
                     });
@@ -118,9 +118,9 @@ namespace NetRpc.Http
             foreach (var p in rout.PathParams)
             {
                 // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Local
-                if (contractMethod.InnerSystemTypeParameters.All(i => i.Name.ToLower() != p))
+                if (contractMethod.InnerSystemTypeParameters.All(i => i.DefineName.ToLower() != p))
                     throw new InvalidOperationException(
-                        $"{rout.Path}, '{p}' is not found in method params:{contractMethod.InnerSystemTypeParameters.Select(i => i.Name).ListToString(", ")}");
+                        $"{rout.Path}, '{p}' is not found in method params:{contractMethod.InnerSystemTypeParameters.Select(i => i.DefineName).ListToString(", ")}");
             }
         }
 

@@ -21,6 +21,24 @@
         <member name="M:DataContract.IService2Async.Call1Async(System.String,System.Int32)">
             <response code="200">return the pain text.</response>
         </member>
+        <member name="M:DataContract.IService4Async.Call(DataContract.Obj4,System.String)">
+            <summary>
+            Call des
+            </summary>
+            <param name="id">id des</param>
+            <param name="testRed">testRed des</param>
+            <returns>call return des.</returns>
+        </member>
+        <member name="P:DataContract.Obj4.P1">
+            <summary>
+            P1 des
+            </summary>
+        </member>
+        <member name="P:DataContract.Obj4.Obj41">
+            <summary>
+            Obj41 des
+            </summary>
+        </member>
         <member name="T:DataContract.CallObj">
             <summary>
             CallObj summary

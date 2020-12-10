@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using NetRpc.Contract;
 
 namespace NetRpc
 {
@@ -85,11 +86,11 @@ namespace NetRpc
             return ret;
         }
 
-        public static List<PPInfo> GetInnerSystemTypeParameters(MethodInfo methodInfo)
+        public static List<PPInfo> GetInnerSystemTypeParameters(MethodInfo method)
         {
             //get raw typeNames
             var typeInfos = new List<PPInfo>();
-            foreach (var p in methodInfo.GetParameters())
+            foreach (var p in method.GetParameters())
                 typeInfos.Add(new PPInfo(p));
 
             if (typeInfos.Count == 0)

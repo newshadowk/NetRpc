@@ -6,7 +6,7 @@ var connection = new signalR.HubConnectionBuilder().withUrl("{hubUrl}").build();
 connection.start().then(function() {
     addText("signalR connected!");
     connection.invoke("GetConnId").then((cid) => {
-        addText("GetConnId, _connId:" + cid);
+        addText("GetConnId, _conn_id:" + cid);
     });
 }).catch(function(err) {
     return console.error(err.toString());
@@ -15,13 +15,13 @@ connection.start().then(function() {
 //Callback
 connection.on("Callback",
     function(callId, data) {
-        addText("callback, callId:" + callId + ", " + data);
+        addText("callback, _call_id:" + callId + ", " + data);
     });
 
 //Progress
 connection.on("UploadProgress",
     function (callId, data) {
-        addText("progress, callId:" + callId + ", " + data);
+        addText("progress, _call_id:" + callId + ", " + data);
     });
 
 //Cancel

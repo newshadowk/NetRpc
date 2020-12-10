@@ -91,10 +91,7 @@ namespace NetRpc
                 //Custom Type
                 //ExampleAttribute
                 var found = FindCustomAttributeData(attributeData, p);
-                if (found != null)
-                    cis.Add(new CustomsPropertyInfo(p.Type, p.Name!, found));
-                else
-                    cis.Add(new CustomsPropertyInfo(p.Type, p.Name!));
+                cis.Add(new CustomsPropertyInfo(p.Type, p.Name!, found, p.JsonCustomAttributeBuilder));
             }
 
             //connectionId callId

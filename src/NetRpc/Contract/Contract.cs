@@ -13,7 +13,7 @@ namespace NetRpc
         public MethodInfo MethodInfo { get; }
 
         /// <summary>
-        /// Func/Cancel will map to _connId, _callId
+        /// Func/Cancel will map to _conn_id, _callId
         /// </summary>
         public ReadOnlyCollection<PPInfo> InnerSystemTypeParameters { get; }
 
@@ -102,7 +102,7 @@ namespace NetRpc
 
             var instance = Activator.CreateInstance(Route.DefaultRout.MergeArgType.Type);
             var newArgs = args.ToList();
-            //_connId _callId streamLength
+            //_conn_id _callId streamLength
             newArgs.Add(connectionId);
             newArgs.Add(callId);
             newArgs.Add(streamLength);

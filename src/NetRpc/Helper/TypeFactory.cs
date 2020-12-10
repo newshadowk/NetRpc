@@ -18,22 +18,21 @@ namespace NetRpc
 
     public class CustomsPropertyInfo
     {
-        public CustomsPropertyInfo(Type type, string propertyName, CustomAttributeData attribute)
+        public CustomsPropertyInfo(Type type, string propertyName, CustomAttributeData? cad = null, CustomAttributeBuilder? cab = null)
         {
             Type = type;
             PropertyName = propertyName;
-            Attributes = new List<CustomAttributeData> {attribute};
-        }
-
-        public CustomsPropertyInfo(Type type, string propertyName)
-        {
-            Type = type;
-            PropertyName = propertyName;
+            if (cad != null)
+                Attributes = new List<CustomAttributeData> {cad};
+            if (cab != null) 
+                AttributeBuilders = new List<CustomAttributeBuilder> {cab};
         }
 
         public Type Type { get; }
 
-        public IList<CustomAttributeData> Attributes { get; } = new List<CustomAttributeData>();
+        public List<CustomAttributeData> Attributes { get; } = new();
+
+        public List<CustomAttributeBuilder> AttributeBuilders { get; } = new();
 
         public string PropertyName { get; }
 
@@ -112,6 +111,8 @@ namespace NetRpc
 
                 var customAttributeBuilders = GetCustomAttributeBuilder(cpi.Attributes);
                 customAttributeBuilders.ForEach(i => propertyNameBuilder.SetCustomAttribute(i));
+
+                cpi.AttributeBuilders.ForEach(i => propertyNameBuilder.SetCustomAttribute(i));
             }
         }
 
@@ -126,6 +127,8 @@ namespace NetRpc
                 foreach (var arg in att.ConstructorArguments)
                     constructorArguments.Add(arg.Value!);
 
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                // att.NamedArguments maybe null, check the sources.
                 if (att.NamedArguments != null && att.NamedArguments.Count > 0)
                 {
                     FieldInfo[] possibleFields = att.GetType().GetFields();

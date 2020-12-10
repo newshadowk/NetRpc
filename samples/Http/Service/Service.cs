@@ -246,9 +246,9 @@ namespace Service
 
     public class Service4Async : IService4Async
     {
-        public async Task<Obj4> Call(Obj4 id)
+        public async Task<Obj4> Call(Obj4 id, string testRed)
         {
-            //throw new CustomException("123", "p1", "p2");
+            Console.WriteLine($"{testRed}");
             return id;
         }
 
