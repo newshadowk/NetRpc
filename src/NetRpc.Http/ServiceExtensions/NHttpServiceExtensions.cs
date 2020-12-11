@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -31,7 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             services.AddControllers().AddJsonOptions(options =>
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
 
             services.TryAddTransient<INSwaggerProvider, NSwaggerProvider>();
             services.TryAddSingleton<SwaggerKeyRoles>();
@@ -65,7 +66,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.Configure<NClientOption>(i => i.ForwardHeader = true);
             services.AddNClientContract<TService>(serviceLifetime);
             services.AddNServiceContract(typeof(TService),
-                p => ((ClientProxy<TService>) p.GetService(typeof(ClientProxy<TService>))).Proxy,
+                p => ((ClientProxy<TService>) p.GetService(typeof(ClientProxy<TService>))!).Proxy,
                 serviceLifetime);
             return services;
         }
@@ -79,7 +80,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IApplicationBuilder UseNSwagger(this IApplicationBuilder app)
         {
             var opt = app.ApplicationServices.GetService<IOptions<HttpServiceOptions>>();
-            var swaggerRootPath = opt.Value.ApiRootPath + "/swagger";
+            var swaggerRootPath = opt!.Value.ApiRootPath + "/swagger";
             app.UseMiddleware<SwaggerUiIndexMiddleware>();
             app.UseFileServer(new FileServerOptions
             {

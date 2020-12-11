@@ -144,12 +144,12 @@ namespace DataContract
         /// <param name="testRed">testRed des</param>
         /// <returns>call return des.</returns>
         [HttpPost("Call")]
-        Task<IList<Obj4>> Call(Obj4 id);
+        Task<Obj4> Call(Obj4 id);
         //Task<Obj4> Call([JsonParamName("i-d")] Obj4 id);
         //Task<Obj4> Call([JsonParamName("i-d")] Obj4 id, [JsonParamName("test-red")] string testRed);
         //Task Call2([JsonParamName("test-red1")] string testRed1, [JsonParamName("test-red2")] string testRed2);
     }
-
+    
     [Serializable]
     public class Obj4
     {
@@ -157,7 +157,7 @@ namespace DataContract
         /// P1 des
         /// </summary>
         //[JsonPropertyName("p-1")]
-        public string Name { get; set; }
+        public E1 Name { get; set; }
 
         ///// <summary>
         ///// Obj41 des
@@ -168,6 +168,12 @@ namespace DataContract
         //[JsonPropertyName("items-re")]
         //public List<int> Items { get; set; }
         //public ICollection<double> Items { get; set; }
+    }
+
+    public enum E1
+    {
+        Ev1,
+        Ev2
     }
 
     [Serializable]

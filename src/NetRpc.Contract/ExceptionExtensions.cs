@@ -18,7 +18,7 @@ namespace NetRpc.Contract
         {
             foreach (var p in e.GetType().GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance))
             {
-                var bytes = (byte[]) info.GetValue(p.Name, typeof(byte[]));
+                var bytes = (byte[]) info.GetValue(p.Name, typeof(byte[]))!;
                 var value = bytes.ToObject();
                 p.SetValue(e, value);
             }

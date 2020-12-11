@@ -218,11 +218,11 @@ namespace NetRpc.Http.Client
             Exception ex;
             try
             {
-                ex = (Exception) Activator.CreateInstance(exType, msg);
+                ex = (Exception) Activator.CreateInstance(exType, msg)!;
             }
             catch
             {
-                ex = (Exception) Activator.CreateInstance(exType);
+                ex = (Exception) Activator.CreateInstance(exType)!;
             }
 
             return Helper.WarpException(ex);

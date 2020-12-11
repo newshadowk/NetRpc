@@ -247,13 +247,10 @@ namespace Service
 
     public class Service4Async : IService4Async
     {
-        public async Task<IList<Obj4>> Call(Obj4 id)
+        public async Task<Obj4> Call(Obj4 id)
         {
-            //Console.WriteLine($"{testRed}");
-            return new List<Obj4>(){new Obj4()
-            {
-                Name = "pp1" 
-            }};
+            id.Name = (E1)5;
+            return id;
         }
 
         public async Task Call2(string testRed1, string testRed2)
