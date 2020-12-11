@@ -265,7 +265,7 @@ namespace NetRpc
             var rate = (double) progressCount / 100;
             var totalCount = context.Stream.Length;
 
-            context.Stream.ProgressAsync += async (s, e) =>
+            context.Stream.ProgressAsync += async (_, e) =>
             {
                 var p = (double) e.Value / totalCount;
                 if (p == 0)

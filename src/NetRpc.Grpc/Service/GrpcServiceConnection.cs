@@ -43,7 +43,17 @@ namespace NetRpc.Grpc
         {
             //add a lock here will not slowdown send speed.
             using (await _sendLock.LockAsync())
-                await _responseStream.WriteAsync(new StreamBuffer {Body = ByteString.CopyFrom(buffer.Span)});
+            {
+                try
+                {
+                    await _responseStream.WriteAsync(new StreamBuffer { Body = ByteString.CopyFrom(buffer.Span) });
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning(e, "Service WriteAsync error. ");
+                    throw;
+                }
+            }
         }
 
         public Task StartAsync()
@@ -58,7 +68,7 @@ namespace NetRpc.Grpc
                 }
                 catch (Exception e)
                 {
-                    _logger.LogWarning(e, "_requestStream.MoveNext");
+                    _logger.LogWarning(e, "Service MoveNext error. ");
                 }
                 finally
                 {

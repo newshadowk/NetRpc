@@ -74,7 +74,15 @@ namespace NetRpc.Grpc
             using (await _sendLock.LockAsync())
             {
                 var sb = new StreamBuffer {Body = ByteString.CopyFrom(buffer.ToArray())};
-                await _api.RequestStream.WriteAsync(sb);
+                try
+                {
+                    await _api.RequestStream.WriteAsync(sb);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning(e, $"Client WriteAsync error. {_client.ConnectionDescription}");
+                    throw;
+                }
             }
 
             if (isEnd)
@@ -113,7 +121,7 @@ namespace NetRpc.Grpc
                 }
                 catch (Exception e)
                 {
-                    _logger.LogWarning(e, "_api.ResponseStream.MoveNext error");
+                    _logger.LogWarning(e, $"Client MoveNext error. {_client.ConnectionDescription}");
                     OnReceiveDisconnected(new EventArgsT<Exception>(e));
                 }
                 finally
