@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,6 +31,7 @@ namespace Client
             await Test_CallByResponseTextExceptionAsync();
             await Test_ComplexCallAsync();
             await Test_UploadAsync();
+
             Console.WriteLine("test end");
             Console.Read();
         }

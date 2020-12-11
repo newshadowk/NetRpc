@@ -29,7 +29,7 @@
             <param name="testRed">testRed des</param>
             <returns>call return des.</returns>
         </member>
-        <member name="P:DataContract.Obj4.P1">
+        <member name="P:DataContract.Obj4.Name">
             <summary>
             P1 des
             </summary>

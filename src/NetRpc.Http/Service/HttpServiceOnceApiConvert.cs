@@ -117,7 +117,7 @@ namespace NetRpc.Http
                 var t = context.ContractMethod.FaultExceptionAttributes.FirstOrDefault(i => body.GetType() == i.DetailType);
                 if (t != null)
                     return _connection.SendAsync(Result.FromFaultException(
-                        new FaultExceptionJsonObj(t.ErrorCode, t.ClearHttpMessage ? null : body.Message), t.StatusCode));
+                        new FaultExceptionJsonObj(t.ErrorCode, t.Description ?? body.Message), t.StatusCode));
             }
 
             // default Exception

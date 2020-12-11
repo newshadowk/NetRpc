@@ -27,9 +27,8 @@ namespace NetRpc.Contract
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface, AllowMultiple = true, Inherited = false)]
     public sealed class FaultExceptionAttribute : Attribute
     {
-        public FaultExceptionAttribute(Type detailType, int statusCode = 400, string? errorCode = null, string? description = null, bool clearHttpMessage = false)
+        public FaultExceptionAttribute(Type detailType, int statusCode = 400, string? errorCode = null, string? description = null)
         {
-            ClearHttpMessage = clearHttpMessage;
             DetailType = detailType;
             StatusCode = statusCode;
             Description = description;
@@ -37,8 +36,6 @@ namespace NetRpc.Contract
         }
 
         public string? ErrorCode { get; set; }
-
-        public bool ClearHttpMessage { get; set; }
 
         public Type DetailType { get; set; }
 
@@ -51,9 +48,8 @@ namespace NetRpc.Contract
     [AttributeUsage(AttributeTargets.Interface, AllowMultiple = true)]
     public sealed class FaultExceptionDefineAttribute : Attribute
     {
-        public FaultExceptionDefineAttribute(Type detailType, int statusCode, string? errorCode = null, string? description = null, bool clearHttpMessage = false)
+        public FaultExceptionDefineAttribute(Type detailType, int statusCode, string? errorCode = null, string? description = null)
         {
-            ClearHttpMessage = clearHttpMessage;
             DetailType = detailType;
             StatusCode = statusCode;
             Description = description;
@@ -61,8 +57,6 @@ namespace NetRpc.Contract
         }
 
         public string? ErrorCode { get; }
-
-        public bool ClearHttpMessage { get; }
 
         public Type DetailType { get; }
 

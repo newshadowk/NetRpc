@@ -267,7 +267,7 @@ namespace NetRpc
                 Type,
                 methodInfos,
                 (i, define) => i.DetailType == define.DetailType,
-                i => new FaultExceptionAttribute(i.DetailType, i.StatusCode, i.ErrorCode, i.Description, i.ClearHttpMessage),
+                i => new FaultExceptionAttribute(i.DetailType, i.StatusCode, i.ErrorCode, i.Description),
                 existFaultExceptionDefines,
                 isInheritedFault);
             return faultDic;

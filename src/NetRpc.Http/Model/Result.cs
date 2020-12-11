@@ -1,4 +1,5 @@
-﻿using NetRpc.Http.Client;
+﻿using System.Text.Json;
+using NetRpc.Http.Client;
 
 namespace NetRpc.Http
 {
@@ -7,8 +8,6 @@ namespace NetRpc.Http
         public int StatusCode { get; set; }
 
         public object? Ret { get; set; }
-
-        public string? ErrorCode { get; set; }
 
         public bool IsPainText { get; set; }
 
@@ -32,7 +31,6 @@ namespace NetRpc.Http
             {
                 Ret = obj,
                 StatusCode = statusCode,
-                ErrorCode = obj.ErrorCode
             };
         }
 
@@ -40,6 +38,24 @@ namespace NetRpc.Http
         {
             StatusCode = 200;
             Ret = ret;
+        }
+
+        public string? ToJson()
+        {
+            if (Ret == null)
+                return null;
+            
+            if (IsPainText)
+                return Ret.ToString();
+
+            if (StatusCode == 200)
+                return Ret.ToDtoJson();
+
+            return JsonSerializer.Serialize(Ret, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                IgnoreNullValues = true
+            });
         }
     }
 }

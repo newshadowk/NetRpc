@@ -13,15 +13,15 @@ namespace DataContract
         public List<FaultExceptionDefineAttribute> FaultExceptionDefineAttributes =>
             new()
             {
-                new(typeof(CustomException), 400, "1", "errorCode1 error description", true),
-                new(typeof(CustomException2), 400, "2", "errorCode2 error description", true)
+                new(typeof(CustomException), 400, "1", "errorCode1 error description"),
+                new(typeof(CustomException2), 400, "2", "errorCode2 error description")
             };
     }
 
     [HttpTrimAsync]
     [HttpRoute("Service")]
     [FaultExceptionDefine(typeof(CustomException), 400, "1", "errorCode1 error description")]
-    [FaultExceptionDefine(typeof(CustomException2), 400, "2", "errorCode2 error description", true)]
+    [FaultExceptionDefine(typeof(CustomException2), 400, "2", "errorCode2 error description")]
     [HttpHeader("h1", "h1 des.")]
     [SecurityApiKeyDefine("tokenKey", "t1", "t1 des")]
     [SecurityApiKeyDefine("tokenKey2", "t2", "t2 des")]
@@ -143,8 +143,8 @@ namespace DataContract
         /// <param name="id">id des</param>
         /// <param name="testRed">testRed des</param>
         /// <returns>call return des.</returns>
-        [HttpGet("Call")]
-        Task<Obj4> Call(Obj4 id);
+        [HttpPost("Call")]
+        Task<IList<Obj4>> Call(Obj4 id);
         //Task<Obj4> Call([JsonParamName("i-d")] Obj4 id);
         //Task<Obj4> Call([JsonParamName("i-d")] Obj4 id, [JsonParamName("test-red")] string testRed);
         //Task Call2([JsonParamName("test-red1")] string testRed1, [JsonParamName("test-red2")] string testRed2);
@@ -157,7 +157,7 @@ namespace DataContract
         /// P1 des
         /// </summary>
         //[JsonPropertyName("p-1")]
-        public string P1 { get; set; }
+        public string Name { get; set; }
 
         ///// <summary>
         ///// Obj41 des
@@ -167,7 +167,7 @@ namespace DataContract
 
         //[JsonPropertyName("items-re")]
         //public List<int> Items { get; set; }
-        public ICollection<double> Items { get; set; }
+        //public ICollection<double> Items { get; set; }
     }
 
     [Serializable]

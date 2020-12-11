@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -246,10 +247,13 @@ namespace Service
 
     public class Service4Async : IService4Async
     {
-        public async Task<Obj4> Call(Obj4 id)
+        public async Task<IList<Obj4>> Call(Obj4 id)
         {
             //Console.WriteLine($"{testRed}");
-            return id;
+            return new List<Obj4>(){new Obj4()
+            {
+                Name = "pp1" 
+            }};
         }
 
         public async Task Call2(string testRed1, string testRed2)
