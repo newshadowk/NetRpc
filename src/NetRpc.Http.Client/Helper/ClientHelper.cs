@@ -32,6 +32,7 @@ namespace NetRpc.Http.Client
             {
                 Converters =
                 {
+                    new JsonStringEnumConverter(JsonNamingPolicy.CamelCase),
                     new StringToIntJsonConverter(),
                     new StringToUIntJsonConverter(),
                     new StringToLongJsonConverter(),
