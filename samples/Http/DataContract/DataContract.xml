@@ -29,11 +29,6 @@
             <param name="testRed">testRed des</param>
             <returns>call return des.</returns>
         </member>
-        <member name="P:DataContract.Obj4.Name">
-            <summary>
-            P1 des
-            </summary>
-        </member>
         <member name="T:DataContract.CallObj">
             <summary>
             CallObj summary

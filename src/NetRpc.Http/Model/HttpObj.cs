@@ -127,6 +127,8 @@ namespace NetRpc.Http
                 type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance,
                     new[] { Convert.ChangeType(propertyValue, tgtProperty.PropertyType) });
             }
+            else if (tgtProperty.PropertyType == typeof(DateTimeOffset))
+                tgtProperty.SetValue(classInstance, DateTimeOffset.Parse((string) propertyValue));
             else
                 tgtProperty.SetValue(classInstance, propertyValue);
         }

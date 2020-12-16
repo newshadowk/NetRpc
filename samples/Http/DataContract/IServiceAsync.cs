@@ -153,21 +153,19 @@ namespace DataContract
     [Serializable]
     public class Obj4
     {
-        /// <summary>
-        /// P1 des
-        /// </summary>
-        //[JsonPropertyName("p-1")]
-        public E1 Name { get; set; }
-
         ///// <summary>
         ///// Obj41 des
         ///// </summary>
         //[JsonPropertyName("obj-41")]
         //public Obj41 Obj41 { get; set; }
 
-        [JsonPropertyName("items-re")]
-        //public List<int> Items { get; set; }
-        public ICollection<E1> Items { get; set; }
+        //public DateTime dt { get; set; }
+
+
+        public DateTimeOffset dt2 { get; set; }
+
+        //[JsonPropertyName("items-re")]
+        //public ICollection<E1> Items { get; set; }
     }
 
     public enum E1
