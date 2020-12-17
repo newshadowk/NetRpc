@@ -56,7 +56,7 @@ namespace NetRpc.Http
         public void SetValues(Dictionary<string, string> keyValues)
         {
             Dictionary<string, StringValues> keyValues2 = new();
-            foreach (var (key, value) in keyValues) 
+            foreach (var (key, value) in keyValues)
                 keyValues2[key] = new StringValues(value);
             SetValues(keyValues2);
         }
@@ -94,7 +94,7 @@ namespace NetRpc.Http
                 }
             }
         }
-     
+
         private void CheckValue()
         {
             //if null, create default.
@@ -113,24 +113,59 @@ namespace NetRpc.Http
             if (tgtProperty.PropertyType.IsEnum)
                 propertyValue = Enum.ToObject(tgtProperty.PropertyType, propertyValue!);
 
-            if (tgtProperty.PropertyType == typeof(Guid) && propertyValue is string propertyValueStr)
-            {
-                type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance,
-                    new[] {(object) Guid.Parse(propertyValueStr)});
+            if (SetBaseValue(classInstance, tgtProperty, propertyValue, type))
                 return;
-            }
 
             if (propertyValue == DBNull.Value || propertyValue == null)
                 type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance, new object[] {null!});
             else if (typeof(IConvertible).IsAssignableFrom(tgtProperty.PropertyType))
             {
                 type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance,
-                    new[] { Convert.ChangeType(propertyValue, tgtProperty.PropertyType) });
+                    new[] {Convert.ChangeType(propertyValue, tgtProperty.PropertyType)});
             }
-            else if (tgtProperty.PropertyType == typeof(DateTimeOffset))
+            else if (tgtProperty.PropertyType == typeof(DateTimeOffset) ||
+                     tgtProperty.PropertyType == typeof(DateTimeOffset?))
                 tgtProperty.SetValue(classInstance, DateTimeOffset.Parse((string) propertyValue));
             else
                 tgtProperty.SetValue(classInstance, propertyValue);
+        }
+
+        private static bool SetBaseValue(object classInstance, PropertyInfo tgtProperty, object? propertyValue, Type type)
+        {
+            var propertyValueStr = propertyValue as string;
+
+            if (propertyValueStr == null)
+                return false;
+
+            if (tgtProperty.PropertyType == typeof(Guid))
+            {
+                type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance,
+                    new[] {(object) Guid.Parse(propertyValueStr)});
+                return true;
+            }
+
+            if (tgtProperty.PropertyType == typeof(bool?))
+                tgtProperty.SetValue(classInstance, bool.Parse(propertyValueStr));
+            else if (tgtProperty.PropertyType == typeof(int?))
+                tgtProperty.SetValue(classInstance, int.Parse(propertyValueStr));
+            else if (tgtProperty.PropertyType == typeof(uint?))
+                tgtProperty.SetValue(classInstance, uint.Parse(propertyValueStr));
+            else if (tgtProperty.PropertyType == typeof(long?))
+                tgtProperty.SetValue(classInstance, long.Parse(propertyValueStr));
+            else if (tgtProperty.PropertyType == typeof(ulong?))
+                tgtProperty.SetValue(classInstance, ulong.Parse(propertyValueStr));
+            else if (tgtProperty.PropertyType == typeof(short?))
+                tgtProperty.SetValue(classInstance, short.Parse(propertyValueStr));
+            else if (tgtProperty.PropertyType == typeof(ushort?))
+                tgtProperty.SetValue(classInstance, ushort.Parse(propertyValueStr));
+            else if (tgtProperty.PropertyType == typeof(float?))
+                tgtProperty.SetValue(classInstance, float.Parse(propertyValueStr));
+            else if (tgtProperty.PropertyType == typeof(double?))
+                tgtProperty.SetValue(classInstance, double.Parse(propertyValueStr));
+            else
+                return false;
+
+            return true;
         }
 
         private static object ConvertValues(Type t, StringValues sv)

@@ -247,11 +247,11 @@ namespace Service
 
     public class Service4Async : IService4Async
     {
-        public async Task<Obj4> Call(Obj4 id)
+        public async Task<Obj4> Call(Obj4 obj)
         {
-           // id.dt = DateTime.Now;
-            id.dt2 = DateTimeOffset.Now;
-            return id;
+           //id.dt = DateTime.Now;
+            //id.dt2 = DateTimeOffset.Now;
+            return new Obj4();
         }
 
         public async Task Call2(string testRed1, string testRed2)

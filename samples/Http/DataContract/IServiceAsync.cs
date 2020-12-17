@@ -144,7 +144,7 @@ namespace DataContract
         /// <param name="testRed">testRed des</param>
         /// <returns>call return des.</returns>
         [HttpGet("Call")]
-        Task<Obj4> Call(Obj4 id);
+        Task<Obj4> Call(Obj4 obj);
         //Task<Obj4> Call([JsonParamName("i-d")] Obj4 id);
         //Task<Obj4> Call([JsonParamName("i-d")] Obj4 id, [JsonParamName("test-red")] string testRed);
         //Task Call2([JsonParamName("test-red1")] string testRed1, [JsonParamName("test-red2")] string testRed2);
@@ -158,11 +158,10 @@ namespace DataContract
         ///// </summary>
         //[JsonPropertyName("obj-41")]
         //public Obj41 Obj41 { get; set; }
-
         //public DateTime dt { get; set; }
+        public int? MinOptCount { get; set; }
 
-
-        public DateTimeOffset dt2 { get; set; }
+        public DateTimeOffset? dt2 { get; set; }
 
         //[JsonPropertyName("items-re")]
         //public ICollection<E1> Items { get; set; }
