@@ -162,9 +162,14 @@ namespace NetRpc.Http
                 tgtProperty.SetValue(classInstance, float.Parse(propertyValueStr));
             else if (tgtProperty.PropertyType == typeof(double?))
                 tgtProperty.SetValue(classInstance, double.Parse(propertyValueStr));
+            else if (tgtProperty.PropertyType == typeof(DateTimeOffset?) ||
+                     tgtProperty.PropertyType == typeof(DateTimeOffset))
+                tgtProperty.SetValue(classInstance, DateTimeOffset.Parse(propertyValueStr));
+            else if (tgtProperty.PropertyType == typeof(DateTime?) ||
+                     tgtProperty.PropertyType == typeof(DateTime))
+                tgtProperty.SetValue(classInstance, DateTime.Parse(propertyValueStr));
             else
                 return false;
-
             return true;
         }
 
