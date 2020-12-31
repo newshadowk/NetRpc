@@ -377,6 +377,16 @@ public class ClientOpenTracingMiddleware
     {
 ...
 ```
+## Retry
+```c#
+[ClientRetry(1000, 2000, 3000)]  // retry in 1000ms, 2000ms, 3000ms
+public interface IServiceAsync
+{
+    //[ClientRetry(1000, 2000, 3000)]   or set here.
+    Task CallAsync(string s);
+}
+...
+```
 ## Load Balance
 Only for RabbitMQ.  
 When run multiple service instances, ther service will auto apply the load balance, this function is base on the RabbitMQ.  

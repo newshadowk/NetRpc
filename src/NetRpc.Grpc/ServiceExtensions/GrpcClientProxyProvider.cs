@@ -9,14 +9,14 @@ namespace Microsoft.Extensions.DependencyInjection
     public class GrpcClientProxyProvider : ClientProxyProviderBase
     {
         private readonly IOptionsMonitor<GrpcClientOptions> _grpcClientOptions;
-        private readonly IOptionsMonitor<NClientOption> _nClientOption;
+        private readonly IOptionsMonitor<NClientOptions> _nClientOption;
         private readonly IOptions<ClientMiddlewareOptions> _clientMiddlewareOptions;
         private readonly IServiceProvider _serviceProvider;
         private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
         private readonly ILoggerFactory _loggerFactory;
 
         public GrpcClientProxyProvider(IOptionsMonitor<GrpcClientOptions> grpcClientOptions,
-            IOptionsMonitor<NClientOption> nClientOption,
+            IOptionsMonitor<NClientOptions> nClientOption,
             IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
             IActionExecutingContextAccessor actionExecutingContextAccessor,
             IServiceProvider serviceProvider,
@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var f = new GrpcClientConnectionFactory(new SimpleOptions<GrpcClientOptions>(options), _loggerFactory);
             var clientProxy = new GrpcClientProxy<TService>(f,
-                new SimpleOptions<NClientOption>(_nClientOption.CurrentValue),
+                new SimpleOptions<NClientOptions>(_nClientOption.CurrentValue),
                 _clientMiddlewareOptions,
                 _actionExecutingContextAccessor,
                 _serviceProvider,
@@ -50,14 +50,14 @@ namespace Microsoft.Extensions.DependencyInjection
     public class OrphanNGrpcClientProxyProvider : IOrphanClientProxyProvider
     {
         private readonly IOptionsMonitor<GrpcClientOptions> _grpcClientOptions;
-        private readonly IOptionsMonitor<NClientOption> _nClientOption;
+        private readonly IOptionsMonitor<NClientOptions> _nClientOption;
         private readonly IOptions<ClientMiddlewareOptions> _clientMiddlewareOptions;
         private readonly IServiceProvider _serviceProvider;
         private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
         private readonly ILoggerFactory _loggerFactory;
 
         public OrphanNGrpcClientProxyProvider(IOptionsMonitor<GrpcClientOptions> grpcClientOptions,
-            IOptionsMonitor<NClientOption> nClientOption,
+            IOptionsMonitor<NClientOptions> nClientOption,
             IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
             IActionExecutingContextAccessor actionExecutingContextAccessor,
             IServiceProvider serviceProvider,
@@ -79,7 +79,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var f = new GrpcClientConnectionFactory(new SimpleOptions<GrpcClientOptions>(options), _loggerFactory);
             var clientProxy = new GrpcClientProxy<TService>(f,
-                new SimpleOptions<NClientOption>(_nClientOption.CurrentValue),
+                new SimpleOptions<NClientOptions>(_nClientOption.CurrentValue),
                 _clientMiddlewareOptions,
                 _actionExecutingContextAccessor,
                 _serviceProvider,

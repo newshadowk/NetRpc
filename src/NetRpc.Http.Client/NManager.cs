@@ -9,7 +9,7 @@ namespace NetRpc.Http.Client
         {
             return new(new HttpOnceCallFactory(
                     new SimpleOptions<HttpClientOptions>(options), NullLoggerFactory.Instance),
-                new SimpleOptions<NClientOption>(new NClientOption
+                new SimpleOptions<NClientOptions>(new NClientOptions
                     {
                         TimeoutInterval = timeoutInterval,
                         HearbeatInterval = hearbeatInterval

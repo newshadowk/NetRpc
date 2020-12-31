@@ -10,7 +10,11 @@ namespace NetRpc
 
         public static ContractInfo GetOrAdd<T>()
         {
-            var type = typeof(T);
+            return GetOrAdd(typeof(T));
+        }
+
+        public static ContractInfo GetOrAdd(Type type)
+        {
             lock (LockObj)
             {
                 if (Dic.TryGetValue(type, out var value))

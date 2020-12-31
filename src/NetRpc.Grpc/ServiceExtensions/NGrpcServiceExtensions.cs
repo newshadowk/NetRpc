@@ -39,11 +39,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddNGrpcGateway<TService>(this IServiceCollection services,
             Action<GrpcClientOptions>? grpcClientConfigureOptions = null,
-            Action<NClientOption>? clientConfigureOptions = null,
+            Action<NClientOptions>? clientConfigureOptions = null,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
         {
             services.AddNGrpcClient(grpcClientConfigureOptions, clientConfigureOptions, serviceLifetime);
-            services.Configure<NClientOption>(i => i.ForwardHeader = true);
+            services.Configure<NClientOptions>(i => i.ForwardHeader = true);
             services.AddNGrpcClientContract<TService>(serviceLifetime);
             services.AddNServiceContract(typeof(TService),
                 p => ((IClientProxy<TService>) p.GetService(typeof(IClientProxy<TService>))).Proxy, serviceLifetime);
@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddNGrpcClient(this IServiceCollection services,
             Action<GrpcClientOptions>? grpcClientConfigureOptions = null,
-            Action<NClientOption>? clientConfigureOptions = null,
+            Action<NClientOptions>? clientConfigureOptions = null,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
             if (grpcClientConfigureOptions != null)

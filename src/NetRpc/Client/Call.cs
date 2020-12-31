@@ -27,6 +27,7 @@ namespace NetRpc
             ClientMiddlewareOptions middlewareOptions,
             IActionExecutingContextAccessor actionExecutingContextAccessor,
             IOnceCallFactory factory,
+            Dictionary<string, object?> additionHeader,
             int timeoutInterval,
             bool forwardHeader,
             string? optionsName)
@@ -40,9 +41,10 @@ namespace NetRpc
             _forwardHeader = forwardHeader;
             _optionsName = optionsName;
             _middlewareBuilder = new ClientMiddlewareBuilder(middlewareOptions, serviceProvider);
+            AdditionHeader = additionHeader;
         }
 
-        public Dictionary<string, object?> AdditionHeader { get; set; } = new();
+        public Dictionary<string, object?> AdditionHeader { get; }
 
         public static Dictionary<string, object?> AdditionContextHeader
         {

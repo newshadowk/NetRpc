@@ -114,7 +114,7 @@ namespace Microsoft.Extensions.DependencyInjection
         #region Client
 
         // ReSharper disable once UnusedMethodReturnValue.Local
-        private static IServiceCollection AddNClient(this IServiceCollection services, Action<NClientOption>? configureOptions = null,
+        private static IServiceCollection AddNClient(this IServiceCollection services, Action<NClientOptions>? configureOptions = null,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
             if (configureOptions != null)
@@ -194,7 +194,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNClientByOnceCallFactory<TOnceCallFactoryImplementation>(this IServiceCollection services,
-            Action<NClientOption>? configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
+            Action<NClientOptions>? configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
             where TOnceCallFactoryImplementation : class, IOnceCallFactory
         {
             switch (serviceLifetime)
@@ -217,7 +217,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNClientByClientConnectionFactory<TClientConnectionFactoryImplementation>(this IServiceCollection services,
-            Action<NClientOption>? configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
+            Action<NClientOptions>? configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
             where TClientConnectionFactoryImplementation : class, IClientConnectionFactory
         {
             switch (serviceLifetime)

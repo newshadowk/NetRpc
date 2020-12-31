@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Timers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NetRpc.Contract;
 
 namespace NetRpc
 {
@@ -17,8 +19,7 @@ namespace NetRpc
         public event EventHandler<EventArgsT<Exception>>? ExceptionInvoked;
         public event AsyncEventHandler? HeartbeatAsync;
         private readonly object _lockObj = new();
-        private readonly IOnceCallFactory _factory;
-        private readonly Call _call;
+        private readonly IOnceCallFactory _onceCallFactory;
         private readonly ILogger _logger;
         private bool _isConnected;
         private readonly Timer _tHearbeat;
@@ -30,33 +31,30 @@ namespace NetRpc
             set => Call.AdditionContextHeader = value;
         }
 
-        public Dictionary<string, object?> AdditionHeader
-        {
-            get => _call.AdditionHeader;
-            set => _call.AdditionHeader = value;
-        }
+        public Dictionary<string, object?> AdditionHeader { get; } = new();
 
-        public ClientProxy(IOnceCallFactory factory,
-            IOptions<NClientOption> nClientOptions,
+        public ClientProxy(IOnceCallFactory onceCallFactory,
+            IOptions<NClientOptions> nClientOptions,
             IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
             IActionExecutingContextAccessor actionExecutingContextAccessor,
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
             string? optionsName = null)
         {
-            _factory = factory;
+            _onceCallFactory = onceCallFactory;
             _logger = loggerFactory.CreateLogger("NetRpc");
 
-            _call = new Call(Id,
-                ClientContractInfoCache.GetOrAdd<TService>(),
-                serviceProvider,
-                clientMiddlewareOptions.Value,
+            var callFactory = new CallFactory(typeof(TService), 
+                Id, 
+                serviceProvider, 
+                clientMiddlewareOptions.Value, 
                 actionExecutingContextAccessor,
-                factory,
-                nClientOptions.Value.TimeoutInterval,
-                nClientOptions.Value.ForwardHeader, optionsName);
-
-            var invoker = new ClientMethodInvoker(_call);
+                onceCallFactory, 
+                nClientOptions.Value, 
+                AdditionHeader, 
+                optionsName);
+            
+            var invoker = new ClientMethodRetryInvoker(callFactory, GetServiceTypeSleepDurations(), _logger);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
             ((SimpleDispatchProxyAsync) (object) Proxy).ExceptionInvoked += ProxyExceptionInvoked;
             _tHearbeat = new Timer(nClientOptions.Value.HearbeatInterval);
@@ -64,7 +62,7 @@ namespace NetRpc
         }
 
         public ClientProxy(IClientConnectionFactory factory,
-            IOptions<NClientOption> nClientOptions,
+            IOptions<NClientOptions> nClientOptions,
             IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
             IActionExecutingContextAccessor actionExecutingContextAccessor,
             IServiceProvider serviceProvider,
@@ -78,6 +76,12 @@ namespace NetRpc
                 loggerFactory,
                 optionsName)
         {
+        }
+
+        private static TimeSpan[]? GetServiceTypeSleepDurations()
+        {
+            var retry = typeof(TService).GetCustomAttribute<ClientRetryAttribute>(true);
+            return retry?.SleepDurations.ToList().ConvertAll(i => TimeSpan.FromMilliseconds(i)).ToArray();
         }
 
         private void ProxyExceptionInvoked(object? sender, EventArgsT<Exception> e)
@@ -195,7 +199,7 @@ namespace NetRpc
         private void DisposeManaged()
         {
             _tHearbeat.Dispose();
-            _factory.Dispose();
+            _onceCallFactory.Dispose();
         }
 
         private void OnExceptionInvoked(EventArgsT<Exception> e)

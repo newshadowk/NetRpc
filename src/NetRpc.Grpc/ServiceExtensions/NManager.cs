@@ -43,7 +43,7 @@ namespace NetRpc.Grpc
             int hearbeatInterval = 10000) where TService : class
         {
             return new GrpcClientProxy<TService>(options.Factory,
-                new SimpleOptions<NClientOption>(new NClientOption
+                new SimpleOptions<NClientOptions>(new NClientOptions
                     {
                         TimeoutInterval = timeoutInterval,
                         HearbeatInterval = hearbeatInterval
