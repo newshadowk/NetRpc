@@ -21,9 +21,40 @@ namespace Client
             var service = buildServiceProvider.GetService<IServiceAsync>();
             var clientProxy = buildServiceProvider.GetService<IClientProxy<IServiceAsync>>();
 
+            ////call remote
+            //await service.CallAsync("hello world.");
+            //await clientProxy.Proxy.CallAsync("hello world.");
+
             //call remote
-            await service.CallAsync("hello world.");
-            await clientProxy.Proxy.CallAsync("hello world.");
+            for (int i = 0; i < 100; i++)
+            {
+                int j = 0;
+                Task.Run(async () =>
+                {
+                    j++;
+                    while (true)
+                    {
+                        try
+                        {
+                            j++;
+                            var r = await service.CallAsync(j.ToString());
+                            if (j != int.Parse(r))
+                            {
+                                Console.WriteLine($"{j} !!!!!!!!!!!!!!!!!");
+                                Console.Read();
+                                throw new Exception();
+                            }
+                            Console.WriteLine($"revi:{r}");
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw;
+                        }
+                        
+                    }
+                });
+            }
 
             Console.Read();
         }

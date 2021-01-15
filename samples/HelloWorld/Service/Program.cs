@@ -18,9 +18,10 @@ namespace Service
 
     public class ServiceAsync : IServiceAsync
     {
-        public async Task CallAsync(string s)
+        public async Task<string> CallAsync(string s)
         {
             Console.WriteLine($"Receive: {s}");
+            return s;
         }
     }
 }

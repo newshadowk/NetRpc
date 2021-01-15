@@ -28,6 +28,8 @@ namespace NetRpc.Grpc
 
         public event EventHandler<EventArgsT<Exception>>? ReceiveDisconnected;
 
+        public event EventHandler? Finished;
+
         private bool _isDispose;
 
         private static readonly AsyncLock LockDispose = new();
@@ -55,7 +57,7 @@ namespace NetRpc.Grpc
         public async Task DisposeFinishAsync()
         {
             //before dispose requestStream need to
-            //wait 60 second to receive 'completed' from client side.
+            //60 second to wait 'MessageCallImpl.DuplexStreamingServerMethod' execute finish from the service side.
             await Task.WhenAny(Task.Delay(1000 * 60),
                 _end.ReceiveAsync());
         }
@@ -127,6 +129,7 @@ namespace NetRpc.Grpc
                 finally
                 {
                     _end.Post(1);
+                    OnFinished();
                 }
             });
         }
@@ -139,6 +142,11 @@ namespace NetRpc.Grpc
         private void OnReceiveDisconnected(EventArgsT<Exception> e)
         {
             ReceiveDisconnected?.Invoke(this, e);
+        }
+
+        private void OnFinished()
+        {
+            Finished?.Invoke(this, EventArgs.Empty);
         }
     }
 }

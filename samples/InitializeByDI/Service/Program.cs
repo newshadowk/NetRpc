@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NetRpc;
 
 namespace Service
 {
@@ -32,9 +33,15 @@ namespace Service
 
     internal class ServiceAsync : IServiceAsync
     {
-        public async Task CallAsync(string s)
+        public static readonly Random _rd = new Random();
+
+        public async Task<string> CallAsync(string s)
         {
-            Console.WriteLine($"Receive: {s}");
+            Console.WriteLine($"CallAsync {s}");
+            await Task.Delay(_rd.Next(1, 500));
+            //await Task.Delay(10000);
+            Console.WriteLine($"CallAsync {s} end.");
+            return s;
         }
     }
 }

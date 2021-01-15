@@ -45,6 +45,7 @@ namespace Service
                             services.AddSignalR();
                             services.AddNSwagger();
                             services.AddNHttpService();
+                            services.AddNGrpcService();
 
                             services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
                             services.AddNServiceContract<IService, Service>(ServiceLifetime.Scoped);
@@ -77,6 +78,7 @@ namespace Service
                             app.UseEndpoints(endpoints => { endpoints.MapHub<CallbackHub>("/callback"); });
                             app.UseNSwagger();
                             app.UseNHttp();
+                            app.UseNGrpc();
                         })
                         .ConfigureLogging(logging => { logging.AddConsole(); });
                 }).Build();

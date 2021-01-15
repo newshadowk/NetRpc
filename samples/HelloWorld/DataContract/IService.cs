@@ -4,6 +4,6 @@ namespace DataContract
 {
     public interface IServiceAsync
     {
-        Task CallAsync(string s);
+        Task<string> CallAsync(string s);
     }
 }
