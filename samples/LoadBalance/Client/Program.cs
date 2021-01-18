@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DataContract;
-using NetRpc.RabbitMQ;
+using Microsoft.Extensions.DependencyInjection;
 using Helper = TestHelper.Helper;
 
 namespace Client
@@ -10,7 +10,12 @@ namespace Client
     {
         private static async Task Main(string[] args)
         {
-            var proxy = NManager.CreateClientProxy<IServiceAsync>(Helper.GetMQOptions()).Proxy;
+            ServiceProvider sp;
+            var services = new ServiceCollection();
+            services.AddNClientContract<IServiceAsync>();
+            services.AddNRabbitMQClient(o => o.CopyFrom(Helper.GetMQOptions()));
+            sp = services.BuildServiceProvider();
+            var proxy = sp.GetService<IServiceAsync>();
 
             for (var i = 0; i < 10; i++)
             {

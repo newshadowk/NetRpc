@@ -102,15 +102,26 @@ namespace NetRpc
 
             var instance = Activator.CreateInstance(Route.DefaultRout.MergeArgType.Type);
             var newArgs = args.ToList();
-            //_conn_id _callId streamLength
-            newArgs.Add(connectionId);
-            newArgs.Add(callId);
-            newArgs.Add(streamLength);
 
             var i = 0;
             foreach (var p in Route.DefaultRout.MergeArgType.Type.GetProperties())
             {
-                p.SetValue(instance, newArgs[i]);
+                switch (p.Name)
+                {
+                    case CallConst.ConnIdName:
+                        p.SetValue(instance, connectionId);
+                        break;
+                    case CallConst.CallIdName:
+                        p.SetValue(instance, callId);
+                        break;
+                    case CallConst.StreamLength:
+                        p.SetValue(instance, streamLength);
+                        break;
+                    default:
+                        p.SetValue(instance, newArgs[i]);
+                        break;
+                }
+
                 i++;
             }
 

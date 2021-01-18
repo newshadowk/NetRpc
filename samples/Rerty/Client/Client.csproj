@@ -7,7 +7,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NetRpc.Grpc\NetRpc.Grpc.csproj" />
+    <ProjectReference Include="..\..\TestHelper\TestHelper.csproj" />
     <ProjectReference Include="..\DataContract\DataContract.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TestFile.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

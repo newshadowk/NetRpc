@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using DataContract;
 using Microsoft.AspNetCore.Hosting;
@@ -46,6 +47,15 @@ namespace Service
         {
             _logger.LogInformation($"Receive: {s}");
             Console.WriteLine($"Receive: {s}");
+            throw new Exception();
+        }
+
+        public async Task Call2Async(Stream s)
+        {
+            MemoryStream ms = new MemoryStream();
+            await s.CopyToAsync(ms);
+            var array = ms.ToArray();
+
             throw new Exception();
         }
     }

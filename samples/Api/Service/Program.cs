@@ -56,6 +56,7 @@ namespace Service
                         {
                             services.AddCors();
                             services.AddSignalR();
+                            services.AddNHttpService();
                             services.AddNServiceContract<IServiceAsync, ServiceAsync>();
                             services.AddNServiceContract<IService, Service>();
                         })

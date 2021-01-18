@@ -18,6 +18,12 @@ namespace NetRpc.Http
         public readonly SchemaRepository SchemaRepository = new();
         private readonly SwaggerGeneratorOptions _options;
 
+        public PathProcessor(ISchemaGenerator schemaGenerator, IOptions<SwaggerGeneratorOptions> options)
+        {
+            _schemaGenerator = schemaGenerator;
+            _options = options.Value;
+        }
+
         public OpenApiOperation? Process(ContractMethod contractMethod, HttpRoutInfo routInfo, HttpMethodAttribute method)
         {
             if (contractMethod.IsHttpIgnore)
@@ -168,12 +174,6 @@ namespace NetRpc.Http
                 };
                 operation.Security.Add(r);
             }
-        }
-
-        public PathProcessor(ISchemaGenerator schemaGenerator, IOptions<SwaggerGeneratorOptions> options)
-        {
-            _schemaGenerator = schemaGenerator;
-            _options = options.Value;
         }
 
         private static List<OpenApiTag> GenerateTags(ContractMethod method)

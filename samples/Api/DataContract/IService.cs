@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using NetRpc.Contract;
 
 namespace DataContract
 {
@@ -8,17 +9,16 @@ namespace DataContract
     {
         void Hearbeat();
 
-        //[GrpcIgnore]
         void FilterAndHeader();
 
         CustomObj SetAndGetObj(CustomObj obj);
 
         void CallByCallBack(Func<CustomCallbackObj, Task> cb);
 
-        /// <exception cref="NotImplementedException"></exception>
+        [FaultException(typeof(NotImplementedException))] //defined only for http channel
         void CallBySystemException();
 
-        /// <exception cref="CustomException"></exception>>
+        [FaultException(typeof(CustomException))] //defined only for http channel
         void CallByCustomException();
 
         Stream GetStream();

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 using NetRpc.Contract;
 
 namespace DataContract
@@ -7,5 +8,7 @@ namespace DataContract
     public interface IServiceAsync
     {
         Task CallAsync(string s);
+
+        Task Call2Async(Stream s);
     }
 }

@@ -3,57 +3,79 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 using NetRpc;
 using NetRpc.Contract;
-using NetRpc.Grpc;
-using NetRpc.RabbitMQ;
 using Helper = TestHelper.Helper;
-using NManager = NetRpc.RabbitMQ.NManager;
 
 namespace Client
 {
     internal class Program
     {
-        private static ClientProxy<IService> _clientProxy;
+        private static IClientProxy<IService> _clientProxy;
         private static IService _proxy;
         private static IServiceAsync _proxyAsync;
 
         private static async Task Main(string[] args)
         {
+            ServiceCollection services;
+            ServiceProvider sp;
+
             //RabbitMQ
-            Console.WriteLine("--- Client RabbitMQ  ---");
-            var mqF = new RabbitMQClientConnectionFactoryOptions(Helper.GetMQOptions(), NullLoggerFactory.Instance);
-            _clientProxy = NManager.CreateClientProxy<IService>(mqF);
-            _clientProxy.Connected += (s, e) => Console.WriteLine("[event] Connected");
-            _clientProxy.DisConnected += (s, e) => Console.WriteLine("[event] DisConnected");
-            _clientProxy.ExceptionInvoked += (s, e) => Console.WriteLine("[event] ExceptionInvoked");
+            Console.WriteLine("\r\n--------------- Client RabbitMQ ---------------");
+            services = new ServiceCollection();
+            services.AddNClientContract<IServiceAsync>();
+            services.AddNClientContract<IService>();
+            services.AddNRabbitMQClient(o => o.CopyFrom(Helper.GetMQOptions()));
+            sp = services.BuildServiceProvider();
+            _clientProxy = sp.GetService<IClientProxy<IService>>();
+            _clientProxy.Connected += (_, _) => Console.WriteLine("[event] Connected");
+            _clientProxy.DisConnected += (_, _) => Console.WriteLine("[event] DisConnected");
+            _clientProxy.ExceptionInvoked += (_, _) => Console.WriteLine("[event] ExceptionInvoked");
 
             //Heartbeat
             _clientProxy.HeartbeatAsync += (s, e) =>
             {
                 Console.WriteLine("[event] Heartbeat");
-                ((IService) ((IClientProxy) s).Proxy).Hearbeat();
+                ((IService)((IClientProxy)s).Proxy).Hearbeat();
                 return Task.CompletedTask;
             };
             //clientProxy.StartHeartbeat(true);
 
             _proxy = _clientProxy.Proxy;
-            _proxyAsync = NManager.CreateClientProxy<IServiceAsync>(mqF).Proxy;
+            _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
             RunTest();
             await RunTestAsync();
 
             //Grpc
-            Console.WriteLine("\r\n--- Client Grpc  ---");
-            var grpcF = new GrpcClientConnectionFactoryOptions(
-                new GrpcClientOptions { Url = "http://localhost:50001" });
-            _clientProxy = NetRpc.Grpc.NManager.CreateClientProxy<IService>(grpcF);
+            Console.WriteLine("\r\n--------------- Client Grpc ---------------");
+            services = new ServiceCollection();
+            services.AddNClientContract<IServiceAsync>();
+            services.AddNClientContract<IService>();
+            services.AddNGrpcClient(o => o.Url = "http://localhost:50001");
+            sp = services.BuildServiceProvider();
+            _clientProxy = sp.GetService<IClientProxy<IService>>();
             _proxy = _clientProxy.Proxy;
-            _proxyAsync = NetRpc.Grpc.NManager.CreateClientProxy<IServiceAsync>(grpcF).Proxy;
+            _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
             RunTest();
             await RunTestAsync();
 
             //http
+            Console.WriteLine("\r\n--------------- Client Http ---------------");
+            services = new ServiceCollection();
+            services.AddNClientContract<IService>();
+            services.AddNClientContract<IServiceAsync>();
+            services.AddNHttpClient(o =>
+            {
+                o.SignalRHubUrl = "http://localhost:50002/callback";
+                o.ApiUrl = "http://localhost:50002/api";
+            });
+            sp = services.BuildServiceProvider();
+            _clientProxy = sp.GetService<IClientProxy<IService>>();
+            _proxy = _clientProxy.Proxy;
+            _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
+            RunTest();
+            await RunTestAsync();
 
             Console.WriteLine("Test end.");
             Console.Read();
@@ -84,7 +106,7 @@ namespace Client
 
         private static void Test_SetAndGetObj()
         {
-            var obj = new CustomObj {Date = DateTime.Now, Name = "test"};
+            var obj = new CustomObj { Date = DateTime.Now, Name = "test" };
             Console.Write($"[SetAndGetObj], send:{obj}, ");
             var ret = _proxy.SetAndGetObj(obj);
             Console.WriteLine($"receive:{ret}");
@@ -111,9 +133,6 @@ namespace Client
             catch (NotImplementedException)
             {
                 Console.WriteLine("catch NotImplementedException");
-            }
-            catch (Exception)
-            {
             }
         }
 
@@ -173,7 +192,7 @@ namespace Client
             {
                 Console.Write("[ComplexCall]...Send TestFile.txt...");
                 var complexStream = _proxy.ComplexCall(
-                    new CustomObj {Date = DateTime.Now, Name = "ComplexCall"},
+                    new CustomObj { Date = DateTime.Now, Name = "ComplexCall" },
                     stream,
                     async i => Console.Write(", " + i.Progress));
 
@@ -213,13 +232,12 @@ namespace Client
         {
             var cts = new CancellationTokenSource();
             cts.CancelAfter(500);
-            //cts.Cancel();
             try
             {
                 Console.Write("[CallWithCancelAsync], cancel after 500 ms, ");
                 await _proxyAsync.CallByCancelAsync(cts.Token);
             }
-            catch (TaskCanceledException)
+            catch (OperationCanceledException)
             {
                 Console.WriteLine("canceled.");
             }

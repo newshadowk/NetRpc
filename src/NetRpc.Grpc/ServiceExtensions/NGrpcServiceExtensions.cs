@@ -57,9 +57,8 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (grpcClientConfigureOptions != null)
                 services.Configure(grpcClientConfigureOptions);
-
+            services.AddLogging();
             services.AddNClientByClientConnectionFactory<GrpcClientConnectionFactory>(clientConfigureOptions, serviceLifetime);
-
             switch (serviceLifetime)
             {
                 case ServiceLifetime.Singleton:

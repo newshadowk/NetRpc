@@ -23,6 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (mQClientConfigureOptions != null)
                 services.Configure(mQClientConfigureOptions);
+            services.AddLogging();
             services.AddNClientByClientConnectionFactory<RabbitMQClientConnectionFactory>(clientConfigureOptions, serviceLifetime);
             switch (serviceLifetime)
             {

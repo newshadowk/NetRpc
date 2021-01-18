@@ -73,13 +73,29 @@ namespace NetRpc
             var p = Policy
                 .Handle<Exception>()
                 .WaitAndRetryAsync(sleepDurations,
-                    (exception, span, retryCount) => { _logger.LogWarning($"retry count:{retryCount}, span:{span.TotalMilliseconds}", exception); });
+                    (exception, span, context) =>
+                    {
+                        AddCount(context);
+                        _logger.LogWarning($"retry count:{context["count"]}, wait ms:{span.TotalMilliseconds}", exception);
+                    });
 
-            return await p.ExecuteAsync(async (c, t) =>
+            return await p.ExecuteAsync(async (_, t) =>
             {
                 var call = _callFactory.Create();
                 return await call.CallAsync(targetMethod, callback, t, stream, otherArgs);
             }, new Context("call"), token);
+        }
+
+        private static void AddCount(Context c)
+        {
+            if (!c.Contains("count"))
+            {
+                c["count"] = 1;
+            }
+            else
+            {
+                c["count"] = (int)c["count"] + 1;
+            }
         }
 
         private TimeSpan[]? GetSleepDurations(MethodInfo targetMethod)

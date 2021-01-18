@@ -1017,3 +1017,4 @@ CreateClientProxy<TService>(Channel channel, int timeoutInterval = 1200000)
 * [samples/CallbackThrottling](samples/CallbackThrottling) It useful when callback is progress.
 * [samples/Gateway](samples/Gateway) Gateway for NetRpc.
 * [samples/OpenTracing](samples/OpenTracing) OpenTracing for NetRpc.
+* [samples/Retry](samples/Retry) Retry for NetRpc.

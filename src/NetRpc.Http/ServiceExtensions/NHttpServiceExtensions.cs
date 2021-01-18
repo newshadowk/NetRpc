@@ -34,6 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddControllers().AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
 
+            services.TryAddTransient<PathProcessor>();
             services.TryAddTransient<INSwaggerProvider, NSwaggerProvider>();
             services.TryAddSingleton<SwaggerKeyRoles>();
             services.TryAddSingleton<IInjectSwaggerHtml, NullInjectSwaggerHtml>();
@@ -52,7 +53,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<IHttpObjProcessor, JsonHttpObjProcessor>();
             services.AddSingleton<IHttpObjProcessor, FormUrlEncodedObjProcessor>();
 
-            services.TryAddTransient<PathProcessor>();
             services.AddNService();
             return services;
         }
