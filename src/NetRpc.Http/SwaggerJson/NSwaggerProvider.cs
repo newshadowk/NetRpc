@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -118,13 +117,13 @@ namespace NetRpc.Http
 
             foreach (var i in _doc.Paths.Values)
             {
-                foreach (var j in i.Operations.Values) 
+                foreach (var j in i.Operations.Values)
                     existed.AddRange(j.Tags);
             }
 
             foreach (var tag in _doc.Tags)
             {
-                if (!existed.Exists(i => i.Name == tag.Name)) 
+                if (!existed.Exists(i => i.Name == tag.Name))
                     toRemove.Add(tag);
             }
 
@@ -135,7 +134,7 @@ namespace NetRpc.Http
         {
             if (_doc.Paths.TryGetValue(key, out var v))
             {
-                foreach (var (operationType, operation) in pathItem.Operations) 
+                foreach (var (operationType, operation) in pathItem.Operations)
                     v.AddOperation(operationType, operation);
             }
             else

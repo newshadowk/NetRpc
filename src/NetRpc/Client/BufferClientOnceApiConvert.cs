@@ -52,7 +52,6 @@ namespace NetRpc
 
         public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, CancellationToken token)
         {
-
             try
             {
                 await _connection.SendAsync(
@@ -65,7 +64,7 @@ namespace NetRpc
                 _logger.LogWarning($"Client SendCmdAsync error. {callParam}");
                 throw;
             }
-           
+
             return true;
         }
 

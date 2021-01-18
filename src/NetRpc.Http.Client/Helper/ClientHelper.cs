@@ -28,7 +28,7 @@ namespace NetRpc.Http.Client
             if (string.IsNullOrEmpty(str))
                 return default;
 
-            return JsonSerializer.Deserialize(str, t, new JsonSerializerOptions()
+            return JsonSerializer.Deserialize(str, t, new JsonSerializerOptions
             {
                 Converters =
                 {

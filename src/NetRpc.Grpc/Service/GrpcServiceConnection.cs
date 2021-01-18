@@ -46,7 +46,7 @@ namespace NetRpc.Grpc
             {
                 try
                 {
-                    await _responseStream.WriteAsync(new StreamBuffer { Body = ByteString.CopyFrom(buffer.Span) });
+                    await _responseStream.WriteAsync(new StreamBuffer {Body = ByteString.CopyFrom(buffer.Span)});
                 }
                 catch (Exception e)
                 {

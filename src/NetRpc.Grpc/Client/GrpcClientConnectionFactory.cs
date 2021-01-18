@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -30,15 +29,15 @@ namespace NetRpc.Grpc
             _connections.Add(connection);
             return connection;
         }
-      
+
 
         public async void Dispose()
         {
-           //connection dispose before client dispose.
-           foreach (var c in _connections.ToArray())
-               await c.DisposeFinishAsync();
+            //connection dispose before client dispose.
+            foreach (var c in _connections.ToArray())
+                await c.DisposeFinishAsync();
 
-           await _client.DisposeAsync();
+            await _client.DisposeAsync();
         }
     }
 }

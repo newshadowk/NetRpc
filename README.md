@@ -50,7 +50,20 @@ class Program
 {
     static void Main(string[] args)
     {
-        var host = NManager.CreateHost(50001, null, new ContractParam<IServiceAsync, ServiceAsync>());
+        var host = Host.CreateDefaultBuilder()
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.ConfigureKestrel((_, options) =>
+                    {
+                        options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+                    })
+                    .ConfigureServices((_, services) =>
+                    {
+                        services.AddNGrpcService();
+                        services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+                    }).Configure(app => { app.UseNGrpc(); });
+            }).Build();
+
         await host.RunAsync();
     }
 }
@@ -69,11 +82,18 @@ class Program
 {
     static void Main(string[] args)
     {
-        var p = NManager.CreateClientProxy<IServiceAsync>(new GrpcClientOptions
-        {
-            Url = "http://localhost:50001"
-        });
-        await p.Proxy.CallAsync("hello world.");
+        //register
+        var services = new ServiceCollection();
+        services.AddNGrpcClient(options => options.Url = "http://localhost:50001");
+        services.AddNClientContract<IServiceAsync>();
+        services.AddLogging();
+        var buildServiceProvider = services.BuildServiceProvider();
+
+        //get service
+        var service = buildServiceProvider.GetService<IServiceAsync>();
+        Console.WriteLine("call: hello world.");
+        var ret = await service.CallAsync("hello world.");
+        Console.WriteLine($"ret: {ret}");
     }
 }
 ```

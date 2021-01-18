@@ -16,7 +16,7 @@ namespace NetRpc.Contract
         }
 
         protected HttpMethodAttribute(string httpMethod, string? template)
-           : this(httpMethod, template, false)
+            : this(httpMethod, template, false)
         {
         }
 

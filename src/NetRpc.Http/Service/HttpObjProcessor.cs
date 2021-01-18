@@ -174,14 +174,14 @@ namespace NetRpc.Http
         {
             var ret = new Dictionary<string, StringValues>();
             List<KeyValuePair<string, StringValues>> pairs = new();
-            
+
             pairs.AddRange(request.Query);
 
             //Form may be read by stream before.
             if (!hasStream && request.HasFormContentType)
                 pairs.AddRange(request.Form);
 
-            foreach (KeyValuePair<string, StringValues> p in pairs)
+            foreach (var p in pairs)
             {
                 string pName;
                 if (queryParams.TryGetValue(p.Key.ToLower(), out var outName))

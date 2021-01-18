@@ -13,8 +13,8 @@ namespace DataContract
         public List<FaultExceptionDefineAttribute> FaultExceptionDefineAttributes =>
             new()
             {
-                new(typeof(CustomException), 400, "1", "errorCode1 error description"),
-                new(typeof(CustomException2), 400, "2", "errorCode2 error description")
+                new FaultExceptionDefineAttribute(typeof(CustomException), 400, "1", "errorCode1 error description"),
+                new FaultExceptionDefineAttribute(typeof(CustomException2), 400, "2", "errorCode2 error description")
             };
     }
 
@@ -87,7 +87,6 @@ namespace DataContract
         /// <response code="200">return the pain text.</response>
         //[HttpGet]
         //Task<string> CallNone3();
-
         [Tag("CallTag1")]
         [HttpPost]
         [HttpRoute("Call1/{p1}")]
@@ -145,11 +144,12 @@ namespace DataContract
         /// <returns>call return des.</returns>
         [HttpGet("Call")]
         Task<Obj4> Call(Obj4 obj);
+
         //Task<Obj4> Call([JsonParamName("i-d")] Obj4 id);
         //Task<Obj4> Call([JsonParamName("i-d")] Obj4 id, [JsonParamName("test-red")] string testRed);
         //Task Call2([JsonParamName("test-red1")] string testRed1, [JsonParamName("test-red2")] string testRed2);
     }
-    
+
     [Serializable]
     public class Obj4
     {

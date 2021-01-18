@@ -44,6 +44,7 @@ namespace NetRpc
                 JsonCustomAttributeBuilder = GetJsonBuilder(jpn.Name);
                 DefineName = jpn.Name;
             }
+
             DefineName ??= parameterInfo.Name!;
 
             Name = parameterInfo.Name!;

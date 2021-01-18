@@ -52,7 +52,7 @@ namespace NetRpc
             var ret = await CallAsync(targetMethod, args);
             if (ret == null)
                 return default!;
-            return (T)ret;
+            return (T) ret;
         }
 
         private async Task<object?> CallAsync(MethodInfo targetMethod, object?[] args)
@@ -72,10 +72,8 @@ namespace NetRpc
             //retry call
             var p = Policy
                 .Handle<Exception>()
-                .WaitAndRetryAsync(sleepDurations, (exception, span, retryCount) =>
-                {
-                    _logger.LogWarning($"retry count:{retryCount}, span:{span.TotalMilliseconds}", exception);
-                });
+                .WaitAndRetryAsync(sleepDurations,
+                    (exception, span, retryCount) => { _logger.LogWarning($"retry count:{retryCount}, span:{span.TotalMilliseconds}", exception); });
 
             return await p.ExecuteAsync(async (c, t) =>
             {
@@ -112,7 +110,7 @@ namespace NetRpc
             found = objs.FirstOrDefault(i => i is CancellationToken);
             if (found != null)
             {
-                retToken = (CancellationToken)found;
+                retToken = (CancellationToken) found;
                 objs.Remove(found);
             }
 
@@ -121,7 +119,7 @@ namespace NetRpc
             found = objs.FirstOrDefault(i => i is Stream);
             if (found != null)
             {
-                retStream = (Stream)found;
+                retStream = (Stream) found;
                 objs.Remove(found);
             }
 

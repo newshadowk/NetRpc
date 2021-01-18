@@ -4,8 +4,8 @@ using System.IO;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
+using NetRpc.Contract;
 using NetRpc.Http.Client;
-using HttpMethodAttribute = NetRpc.Contract.HttpMethodAttribute;
 
 namespace NetRpc.Http
 {
@@ -91,7 +91,7 @@ namespace NetRpc.Http
             var name = Path.GetFileNameWithoutExtension(s);
             return Path.Combine(dir, name);
         }
-        
+
         public static string GetJsonNameOrPropName(this PropertyInfo pi)
         {
             var a = pi.GetCustomAttribute<JsonPropertyNameAttribute>();

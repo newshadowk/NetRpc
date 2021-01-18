@@ -15,9 +15,9 @@ namespace NetRpc
         private readonly Dictionary<string, object?> _additionHeader;
         private readonly string? _optionsName;
 
-        public CallFactory(Type tService, Guid id, IServiceProvider serviceProvider, 
-            ClientMiddlewareOptions options, 
-            IActionExecutingContextAccessor accessor, 
+        public CallFactory(Type tService, Guid id, IServiceProvider serviceProvider,
+            ClientMiddlewareOptions options,
+            IActionExecutingContextAccessor accessor,
             IOnceCallFactory onceCallFactory,
             NClientOptions nClientOptions,
             Dictionary<string, object?> additionHeader,
@@ -44,7 +44,7 @@ namespace NetRpc
                 _onceCallFactory,
                 _additionHeader,
                 _nClientOptions.TimeoutInterval,
-                _nClientOptions.ForwardHeader, 
+                _nClientOptions.ForwardHeader,
                 _optionsName);
         }
     }

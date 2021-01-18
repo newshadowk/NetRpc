@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
-using NetRpc.Contract;
 using NetRpc.Http.Client;
 
 namespace NetRpc.Http

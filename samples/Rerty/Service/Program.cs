@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using DataContract;
 using Microsoft.AspNetCore.Hosting;
@@ -26,14 +25,8 @@ namespace Service
                             services.AddNGrpcService();
                             services.AddNServiceContract<IServiceAsync, ServiceAsync>();
                         })
-                        .Configure(app =>
-                        {
-                            app.UseNGrpc(); 
-                        })
-                        .ConfigureLogging(loggingBuilder =>
-                        {
-                            loggingBuilder.AddDebug();
-                        });
+                        .Configure(app => { app.UseNGrpc(); })
+                        .ConfigureLogging(loggingBuilder => { loggingBuilder.AddDebug(); });
                 })
                 .Build();
             await host.RunAsync();

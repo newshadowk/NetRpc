@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\NetRpc.Http\NetRpc.Http.csproj" />
     <ProjectReference Include="..\..\TestHelper\TestHelper.csproj" />
     <ProjectReference Include="..\DataContract\DataContract.csproj" />
   </ItemGroup>

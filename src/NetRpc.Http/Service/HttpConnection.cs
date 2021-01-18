@@ -109,7 +109,7 @@ namespace NetRpc.Http
         {
             _context.Response.ContentType = "application/json; charset=utf-8";
             _context.Response.StatusCode = result.StatusCode;
-            string? s = result.ToJson();
+            var s = result.ToJson();
             await _context.Response.WriteAsync(s ?? "");
         }
 

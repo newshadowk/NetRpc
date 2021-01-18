@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
 using NetRpc;
 using NetRpc.Contract;
-using NetRpc.Http;
 using NetRpc.Http.Client;
 using Helper = TestHelper.Helper;
 
@@ -249,9 +246,9 @@ namespace Service
     {
         public async Task<Obj4> Call(Obj4 obj)
         {
-           //id.dt = DateTime.Now;
+            //id.dt = DateTime.Now;
             //id.dt2 = DateTimeOffset.Now;
-            return new Obj4();
+            return new();
         }
 
         public async Task Call2(string testRed1, string testRed2)

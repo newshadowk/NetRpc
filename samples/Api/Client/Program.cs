@@ -46,13 +46,14 @@ namespace Client
             //Grpc
             Console.WriteLine("\r\n--- Client Grpc  ---");
             var grpcF = new GrpcClientConnectionFactoryOptions(
-                new GrpcClientOptions {Url = "http://localhost:50001"});
+                new GrpcClientOptions { Url = "http://localhost:50001" });
             _clientProxy = NetRpc.Grpc.NManager.CreateClientProxy<IService>(grpcF);
             _proxy = _clientProxy.Proxy;
             _proxyAsync = NetRpc.Grpc.NManager.CreateClientProxy<IServiceAsync>(grpcF).Proxy;
-
             RunTest();
             await RunTestAsync();
+
+            //http
 
             Console.WriteLine("Test end.");
             Console.Read();
