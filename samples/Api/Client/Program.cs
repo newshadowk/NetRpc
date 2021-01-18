@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using NetRpc;
 using NetRpc.Contract;
 using Helper = TestHelper.Helper;
+// ReSharper disable MethodHasAsyncOverload
+// ReSharper disable PossibleNullReferenceException
 
 namespace Client
 {
@@ -18,16 +20,23 @@ namespace Client
 
         private static async Task Main(string[] args)
         {
-            ServiceCollection services;
-            ServiceProvider sp;
+            await RabbitMQ();
+            await Grpc();
+            await Http();
 
+            Console.WriteLine("\r\n--------------- End ---------------");
+            Console.Read();
+        }
+
+        private static async Task RabbitMQ()
+        {
             //RabbitMQ
             Console.WriteLine("\r\n--------------- Client RabbitMQ ---------------");
-            services = new ServiceCollection();
+            var services = new ServiceCollection();
             services.AddNClientContract<IServiceAsync>();
             services.AddNClientContract<IService>();
             services.AddNRabbitMQClient(o => o.CopyFrom(Helper.GetMQOptions()));
-            sp = services.BuildServiceProvider();
+            var sp = services.BuildServiceProvider();
             _clientProxy = sp.GetService<IClientProxy<IService>>();
             _clientProxy.Connected += (_, _) => Console.WriteLine("[event] Connected");
             _clientProxy.DisConnected += (_, _) => Console.WriteLine("[event] DisConnected");
@@ -46,23 +55,27 @@ namespace Client
             _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
             RunTest();
             await RunTestAsync();
+        }
 
-            //Grpc
+        private static async Task Grpc()
+        {
             Console.WriteLine("\r\n--------------- Client Grpc ---------------");
-            services = new ServiceCollection();
+            var services = new ServiceCollection();
             services.AddNClientContract<IServiceAsync>();
             services.AddNClientContract<IService>();
             services.AddNGrpcClient(o => o.Url = "http://localhost:50001");
-            sp = services.BuildServiceProvider();
+            var sp = services.BuildServiceProvider();
             _clientProxy = sp.GetService<IClientProxy<IService>>();
             _proxy = _clientProxy.Proxy;
             _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
             RunTest();
             await RunTestAsync();
+        }
 
-            //http
+        private static async Task Http()
+        {
             Console.WriteLine("\r\n--------------- Client Http ---------------");
-            services = new ServiceCollection();
+            var services = new ServiceCollection();
             services.AddNClientContract<IService>();
             services.AddNClientContract<IServiceAsync>();
             services.AddNHttpClient(o =>
@@ -70,15 +83,12 @@ namespace Client
                 o.SignalRHubUrl = "http://localhost:50002/callback";
                 o.ApiUrl = "http://localhost:50002/api";
             });
-            sp = services.BuildServiceProvider();
+            var sp = services.BuildServiceProvider();
             _clientProxy = sp.GetService<IClientProxy<IService>>();
             _proxy = _clientProxy.Proxy;
             _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
             RunTest();
             await RunTestAsync();
-
-            Console.WriteLine("Test end.");
-            Console.Read();
         }
 
         #region Test

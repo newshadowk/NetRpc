@@ -11,14 +11,4 @@ namespace NetRpc
 
         public T Value { get; }
     }
-
-    public sealed class NullOptions<T> : IOptions<T> where T : class, new()
-    {
-        public NullOptions()
-        {
-            Value = new T();
-        }
-
-        public T Value { get; }
-    }
 }

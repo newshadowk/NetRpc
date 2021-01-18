@@ -3,9 +3,11 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetRpc;
-using NetRpc.Grpc;
 using Helper = TestHelper.Helper;
 
 namespace Service
@@ -14,14 +16,26 @@ namespace Service
     {
         private static async Task Main(string[] args)
         {
-            var host = NManager.CreateHost(50001, null,
-                new ContractParam(typeof(IService), typeof(Service)),
-                new ContractParam(typeof(IService2), typeof(Service2)));
+            var host = Host.CreateDefaultBuilder()
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.ConfigureKestrel((_, options) =>
+                        {
+                            options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+                        })
+                        .ConfigureServices((_, services) =>
+                        {
+                            services.AddNGrpcService();
+                            services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+                            services.AddNServiceContract<IService2Async, Service2Async>();
+                        }).Configure(app => { app.UseNGrpc(); });
+                }).Build();
+
             await host.RunAsync();
         }
     }
 
-    internal class Service2 : IService2
+    internal class Service2Async : IService2Async
     {
         public async Task Call2(string s)
         {
@@ -29,7 +43,7 @@ namespace Service
         }
     }
 
-    internal class Service : IService
+    internal class ServiceAsync : IServiceAsync
     {
         public async Task Call(string s)
         {

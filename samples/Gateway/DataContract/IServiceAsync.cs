@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 
 namespace DataContract
 {
-    public interface IService
+    public interface IServiceAsync
     {
         Task Call(string s);
 
         Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Func<CustomCallbackObj, Task> cb, CancellationToken token);
     }
 
-    public interface IService2
+    public interface IService2Async
     {
         Task Call2(string s);
     }

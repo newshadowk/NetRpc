@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 
 namespace DataContract
 {
-    public interface IService
+    public interface IServiceAsync
     {
-        Task Call(Func<int, Task> cb);
+        Task CallAsync(Func<int, Task> cb);
     }
 }

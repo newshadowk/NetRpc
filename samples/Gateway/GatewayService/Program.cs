@@ -32,8 +32,8 @@ namespace Service
                             services.AddSignalR();
                             services.AddNSwagger();
                             services.AddNHttpService();
-                            services.AddNGrpcGateway<IService>(o => { o.Url = "http://localhost:50001"; });
-                            services.AddNGrpcGateway<IService2>();
+                            services.AddNGrpcGateway<IServiceAsync>(o => { o.Url = "http://localhost:50001"; });
+                            services.AddNGrpcGateway<IService2Async>();
                         })
                         .Configure(app =>
                         {
@@ -63,8 +63,8 @@ namespace Service
                 {
                     //set single target by DI.
                     services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
-                    services.AddNGrpcGateway<IService>(o => { o.Url = "http://localhost:50001"; });
-                    services.AddNGrpcGateway<IService2>();
+                    services.AddNGrpcGateway<IServiceAsync>(o => { o.Url = "http://localhost:50001"; });
+                    services.AddNGrpcGateway<IService2Async>();
 
                     //set different target point.
                     //var p1 = NManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
@@ -89,8 +89,8 @@ namespace Service
                         .ConfigureServices((context, services) =>
                         {
                             services.AddNGrpcService();
-                            services.AddNGrpcGateway<IService>(options => options.Url = "http://localhost:50001");
-                            services.AddNGrpcGateway<IService2>();
+                            services.AddNGrpcGateway<IServiceAsync>(options => options.Url = "http://localhost:50001");
+                            services.AddNGrpcGateway<IService2Async>();
                         }).Configure(app => { app.UseNGrpc(); });
                 })
                 .Build();
