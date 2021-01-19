@@ -12,11 +12,11 @@ namespace NetRpc
 
         public long StreamLength { get; set; }
 
-        public ReadStream? Stream { get; set; }
+        public ProxyStream? Stream { get; set; }
 
         public Dictionary<string, object?> Header { get; set; }
 
-        public ServiceOnceCallParam(ActionInfo action, object?[] pureArgs, long streamLength, ReadStream? stream, Dictionary<string, object?> header)
+        public ServiceOnceCallParam(ActionInfo action, object?[] pureArgs, long streamLength, ProxyStream? stream, Dictionary<string, object?> header)
         {
             Action = action;
             PureArgs = pureArgs;

@@ -57,14 +57,14 @@ namespace NetRpc
             set => AsyncLocalHeader.Value = value;
         }
 
-        public async Task<object?> CallAsync(MethodInfo methodInfo, Func<object?, Task>? callback, CancellationToken token, Stream? stream,
+        public async Task<object?> CallAsync(MethodInfo methodInfo, bool isRetry, Func<object?, Task>? callback, CancellationToken token, Stream? stream,
             params object?[] pureArgs)
         {
             //merge header
             var mergeHeader = MergeHeader();
 
             //start
-            var call = await _factory.CreateAsync(_timeoutInterval);
+            var call = await _factory.CreateAsync(_timeoutInterval, isRetry);
             await call.StartAsync(GetAuthorizationToken(mergeHeader));
 
             //stream
@@ -80,23 +80,23 @@ namespace NetRpc
             return clientContext.Result!;
         }
 
-        private static ReadStream? GetReadStream(Stream? stream)
+        private static ProxyStream? GetReadStream(Stream? stream)
         {
-            ReadStream? readStream;
+            ProxyStream? proxyStream;
             switch (stream)
             {
                 case null:
-                    readStream = null;
+                    proxyStream = null;
                     break;
-                case ReadStream rs:
-                    readStream = rs;
+                case ProxyStream rs:
+                    proxyStream = rs;
                     break;
                 default:
-                    readStream = new ProxyStream(stream);
+                    proxyStream = new ProxyStream(stream);
                     break;
             }
 
-            return readStream;
+            return proxyStream;
         }
 
         private Dictionary<string, object?> MergeHeader()

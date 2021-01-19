@@ -4,6 +4,6 @@ namespace NetRpc
 {
     public interface IClientConnectionFactory : IDisposable
     {
-        IClientConnection Create();
+        IClientConnection Create(bool isRetry);
     }
 }

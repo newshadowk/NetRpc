@@ -63,11 +63,13 @@ namespace NetRpc
             var sleepDurations = GetSleepDurations(targetMethod);
 
             //single call
-            if (sleepDurations == null || !sleepDurations.Any())
+            if (!IsRetryCall(sleepDurations))
             {
                 var call = _callFactory.Create();
-                return await call.CallAsync(targetMethod, callback, token, stream, otherArgs);
+                return await call.CallAsync(targetMethod, false, callback, token, stream, otherArgs);
             }
+
+            var proxyStream = WrapProxyStream(stream);
 
             //retry call
             var p = Policy
@@ -75,27 +77,27 @@ namespace NetRpc
                 .WaitAndRetryAsync(sleepDurations,
                     (exception, span, context) =>
                     {
-                        AddCount(context);
                         _logger.LogWarning($"retry count:{context["count"]}, wait ms:{span.TotalMilliseconds}", exception);
                     });
 
-            return await p.ExecuteAsync(async (_, t) =>
+            return await p.ExecuteAsync(async (c, t) =>
             {
+                bool isRetry = AddCount(c);
+                if (isRetry) 
+                    proxyStream?.Reset();
                 var call = _callFactory.Create();
-                return await call.CallAsync(targetMethod, callback, t, stream, otherArgs);
+                return await call.CallAsync(targetMethod, isRetry, callback, t, proxyStream, otherArgs);
             }, new Context("call"), token);
         }
 
-        private static void AddCount(Context c)
+        private static bool AddCount(Context c)
         {
             if (!c.Contains("count"))
-            {
                 c["count"] = 1;
-            }
             else
-            {
-                c["count"] = (int)c["count"] + 1;
-            }
+                c["count"] = (int) c["count"] + 1;
+            
+            return (int)c["count"] > 1;
         }
 
         private TimeSpan[]? GetSleepDurations(MethodInfo targetMethod)
@@ -141,6 +143,27 @@ namespace NetRpc
 
             //otherArgs
             return (retCallback, retToken, retStream, objs.ToArray());
+        }
+
+        private static ProxyStream? WrapProxyStream(Stream? stream)
+        {
+            if (stream == null)
+                return null;
+
+            if (stream is ProxyStream ps)
+            {
+                ps.TryAttachCache();
+                return ps;
+            }
+
+            ProxyStream newPs = new (stream);
+            newPs.TryAttachCache();
+            return newPs;
+        }
+
+        private static bool IsRetryCall(TimeSpan[]? sleepDurations)
+        {
+            return sleepDurations != null && sleepDurations.Any();
         }
     }
 }

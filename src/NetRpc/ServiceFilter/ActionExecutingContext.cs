@@ -66,7 +66,7 @@ namespace NetRpc
 
         public CancellationToken CancellationToken { get; }
 
-        public ReadStream? Stream { get; }
+        public ProxyStream? Stream { get; }
 
         public object?[] Args { get; }
 
@@ -90,7 +90,7 @@ namespace NetRpc
             object?[] args,
             object?[] pureArgs,
             ActionInfo actionInfo,
-            ReadStream? stream,
+            ProxyStream? stream,
             ContractInfo contract,
             ChannelType channelType,
             Func<object?, Task>? callback,

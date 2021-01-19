@@ -62,7 +62,7 @@ namespace NetRpc
             var ocp = requestBody.ToObject<OnceCallParam>();
 
             //stream
-            ReadStream? rs;
+            ProxyStream? rs;
             if (ocp.HasStream)
             {
                 if (ocp.PostStream != null)
@@ -135,7 +135,7 @@ namespace NetRpc
         {
             return SendAsync(Reply.FromBufferFault());
         }
-
+        
         public Task SendCallbackAsync(object? callbackObj)
         {
             Reply reply;

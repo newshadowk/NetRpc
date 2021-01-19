@@ -106,6 +106,8 @@ public interface IService
 ```
 Code here: [samples/HelloWorld](samples/HelloWorld).
 
+Quick start: [QuickRef](QuickRef.md) 
+
 ## Overall
 NetRpc provide **RabbitMQ**/**Grpc**/**Http** Channels to connect, each one has different advantages.
 * **RabbitMQ** provide load balance, queue feature.

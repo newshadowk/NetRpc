@@ -8,11 +8,45 @@ namespace NetRpc.Grpc
 {
     public sealed class GrpcClientConnectionFactory : IClientConnectionFactory
     {
+        private readonly IOptions<GrpcClientOptions> _options;
+        private readonly ILoggerFactory _loggerFactory;
+        private GrpcClientConnectionScope _scope;
+        private readonly object _lockObj = new();
+
+        public GrpcClientConnectionFactory(IOptions<GrpcClientOptions> options, ILoggerFactory loggerFactory)
+        {
+            _options = options;
+            _loggerFactory = loggerFactory;
+            _scope = new GrpcClientConnectionScope(options, loggerFactory);
+        }
+
+        public IClientConnection Create(bool isRetry)
+        {
+            if (isRetry)
+            {
+                lock (_lockObj)
+                {
+                    _scope.Dispose();
+                    _scope = new GrpcClientConnectionScope(_options, _loggerFactory);
+                }
+            }
+
+            return _scope.Create();
+        }
+
+        public void Dispose()
+        {
+            _scope.Dispose();
+        }
+    }
+
+    public sealed class GrpcClientConnectionScope
+    {
         private readonly ILogger _logger;
         private readonly Client _client;
         private readonly SyncList<GrpcClientConnection> _connections = new();
 
-        public GrpcClientConnectionFactory(IOptions<GrpcClientOptions> options, ILoggerFactory loggerFactory)
+        public GrpcClientConnectionScope(IOptions<GrpcClientOptions> options, ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger("NetRpc");
             var opt = options.Value;
@@ -25,11 +59,10 @@ namespace NetRpc.Grpc
         public IClientConnection Create()
         {
             var connection = new GrpcClientConnection(_client!, _logger);
-            connection.Finished += (s, _) => _connections.Remove((GrpcClientConnection) s!);
+            connection.Finished += (s, _) => _connections.Remove((GrpcClientConnection)s!);
             _connections.Add(connection);
             return connection;
         }
-
 
         public async void Dispose()
         {
@@ -40,4 +73,5 @@ namespace NetRpc.Grpc
             await _client.DisposeAsync();
         }
     }
+
 }

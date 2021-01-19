@@ -34,8 +34,7 @@ namespace NetRpc
         public ConnectionInfo ConnectionInfo => _convert.ConnectionInfo;
 
         public async Task<object?> CallAsync(Dictionary<string, object?> header, MethodContext methodContext, Func<object?, Task>? callback,
-            CancellationToken token,
-            Stream? stream, params object?[] pureArgs)
+            CancellationToken token, Stream? stream, params object?[] pureArgs)
         {
             if (callback != null)
                 _callbackDispatcher = new AsyncDispatcher();

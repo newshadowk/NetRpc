@@ -205,7 +205,7 @@ namespace Service
             var path = @"d:\testfile\tgt.rar";
             File.Delete(path);
             var ms = new MemoryStream();
-            ((ProxyStream) stream).CacheStream = ms;
+            ((ProxyStream) stream).TryAttachCache(ms);
 
             using (var fs = File.OpenWrite(path))
             {

@@ -20,7 +20,7 @@ namespace NetRpc.RabbitMQ
             _connection = _options.CreateConnectionFactory().CreateConnection();
         }
 
-        public IClientConnection Create()
+        public IClientConnection Create(bool isRetry)
         {
             lock (_lockObj)
                 return new RabbitMQClientConnection(_connection, _options, _logger);
