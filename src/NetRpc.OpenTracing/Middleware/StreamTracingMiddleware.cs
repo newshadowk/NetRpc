@@ -14,7 +14,7 @@ namespace NetRpc.OpenTracing
             _next = next;
         }
 
-        public async Task InvokeAsync(ActionExecutingContext context, IOptions<OpenTracingOptions> options)
+        public async Task InvokeAsync(ActionExecutingContext context)
         {
             if (context.ContractMethod.IsTracerIgnore)
             {
@@ -37,8 +37,8 @@ namespace NetRpc.OpenTracing
                 .AsChildOf(GlobalTracer.Instance.ActiveSpan);
             ISpan? span = null;
 #pragma warning disable 1998
-            context.Stream.StartedAsync += async (s, e) => span = spanBuilder.Start();
-            context.Stream.FinishedAsync += async (s, e) => { span?.Finish(); };
+            context.Stream.StartedAsync += async (_, _) => span = spanBuilder.Start();
+            context.Stream.FinishedAsync += async (_, _) => { span?.Finish(); };
 #pragma warning restore 1998
         }
 
@@ -53,8 +53,8 @@ namespace NetRpc.OpenTracing
                     .BuildSpan($"{ConstValue.ServiceStream} {NetRpc.Helper.SizeSuffix(outStream!.Length)} {ConstValue.SendStr}")
                     .AsChildOf(GlobalTracer.Instance.ActiveSpan);
                 ISpan? span = null;
-                context.SendResultStreamStarted += (s, e) => span = spanBuilder.Start();
-                context.SendResultStreamFinished += (s, e) => span?.Finish();
+                context.SendResultStreamStarted += (_, _) => span = spanBuilder.Start();
+                context.SendResultStreamFinished += (_, _) => span?.Finish();
             }
         }
     }

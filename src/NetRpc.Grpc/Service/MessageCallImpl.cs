@@ -23,17 +23,15 @@ namespace NetRpc.Grpc
             ServerCallContext context)
         {
             _busyFlag.Increment();
-            GrpcServiceConnection? connection = null;
+
+            await using var connection = new GrpcServiceConnection(requestStream, responseStream, _logger);
 
             try
             {
-                connection = new GrpcServiceConnection(requestStream, responseStream, _logger);
                 await _requestHandler.HandleAsync(connection, ChannelType.Grpc);
             }
             finally
             {
-                if (connection != null)
-                    await connection.DisposeFinishAsync();
                 _busyFlag.Decrement();
             }
         }

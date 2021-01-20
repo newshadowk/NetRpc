@@ -159,7 +159,6 @@ namespace NetRpc
 
         public async ValueTask DisposeAsync()
         {
-            await _connection.DisposeAsync();
             await _streamPipe.DisposeAsync();
             _cts.Dispose();
         }

@@ -41,7 +41,7 @@ namespace NetRpc.Http
                 if (value == null)
                     return;
 
-                value.ProgressAsync += (s, e) =>
+                value.ProgressAsync += (_, e) =>
                 {
                     var args = _progressEvent.DownLoaderProgress(e.Value, value.Length);
 

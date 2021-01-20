@@ -16,8 +16,7 @@ namespace NetRpc
         /// </summary>
         public ReadOnlyCollection<PPInfo> InnerSystemTypeParameters { get; }
 
-        public ContractMethod(Type contractType, Type? instanceType, List<SwaggerRoleAttribute> contractTypeRoles, string contractTypeTag,
-            MethodInfo methodInfo,
+        public ContractMethod(Type contractType, List<SwaggerRoleAttribute> contractTypeRoles, string contractTypeTag, MethodInfo methodInfo,
             List<FaultExceptionAttribute> faultExceptionAttributes, List<HttpHeaderAttribute> httpHeaderAttributes,
             List<ResponseTextAttribute> responseTextAttributes, List<SecurityApiKeyAttribute> securityApiKeyAttributes)
         {
@@ -240,7 +239,6 @@ namespace NetRpc
             foreach (var (key, value) in faultDic)
                 methods.Add(new ContractMethod(
                     Type,
-                    instanceType,
                     contractTypeRoles,
                     tag,
                     key,

@@ -24,12 +24,7 @@ namespace NetRpc.Grpc
             _logger = logger;
         }
 
-        public ValueTask DisposeAsync()
-        {
-            return new();
-        }
-
-        public async Task DisposeFinishAsync()
+        public async ValueTask DisposeAsync()
         {
             //before dispose requestStream need to
             //wait 60 second to receive 'completed' from client side.

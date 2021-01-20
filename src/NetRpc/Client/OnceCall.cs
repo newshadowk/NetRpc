@@ -43,11 +43,11 @@ namespace NetRpc
             var tcs = new TaskCompletionSource<object?>();
             var t = Task.Run(async () =>
             {
-                _convert.ResultStream += (s, e) => { SetStreamResult(tcs, e.Value); };
-                _convert.ResultAsync += async (s, e) => await SetResultAsync(tcs, e.Value);
+                _convert.ResultStream += (_, e) => { SetStreamResult(tcs, e.Value); };
+                _convert.ResultAsync += async (_, e) => await SetResultAsync(tcs, e.Value);
 
                 if (callback != null)
-                    _convert.CallbackAsync += async (s, e) =>
+                    _convert.CallbackAsync += async (_, e) =>
                     {
                         try
                         {
@@ -60,7 +60,7 @@ namespace NetRpc
                         }
                     };
 
-                _convert.FaultAsync += async (s, e) => await SetFaultAsync(tcs, e.Value);
+                _convert.FaultAsync += async (_, e) => await SetFaultAsync(tcs, e.Value);
 
                 try
                 {
@@ -96,7 +96,7 @@ namespace NetRpc
 
                     //timeout
 #pragma warning disable 4014
-                    Task.Delay(_timeoutInterval, _timeOutCts.Token).ContinueWith(async i =>
+                    Task.Delay(_timeoutInterval, _timeOutCts.Token).ContinueWith(async _ =>
 #pragma warning restore 4014
                     {
                         await SetFaultAsync(tcs, new TimeoutException($"Service is not response over {_timeoutInterval} ms, time out."));

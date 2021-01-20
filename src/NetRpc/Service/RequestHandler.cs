@@ -22,7 +22,8 @@ namespace NetRpc
 
         public async Task HandleAsync(IServiceConnection connection, ChannelType channelType)
         {
-            await HandleAsync(new BufferServiceOnceApiConvert(connection, _logger), channelType);
+            await using var convert = new BufferServiceOnceApiConvert(connection, _logger);
+            await HandleAsync(convert, channelType);
         }
 
         public async Task HandleAsync(IServiceOnceApiConvert convert, ChannelType channelType)

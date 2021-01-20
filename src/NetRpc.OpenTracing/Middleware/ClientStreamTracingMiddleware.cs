@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 using OpenTracing;
 using OpenTracing.Util;
 
@@ -14,7 +13,7 @@ namespace NetRpc.OpenTracing
             _next = next;
         }
 
-        public async Task InvokeAsync(ClientActionExecutingContext context, IOptions<OpenTracingOptions> options)
+        public async Task InvokeAsync(ClientActionExecutingContext context)
         {
             if (context.ContractMethod.IsTracerIgnore)
             {
@@ -36,8 +35,8 @@ namespace NetRpc.OpenTracing
                     $"{ConstValue.ClientStream} {NetRpc.Helper.SizeSuffix(context.Stream.Length)} {ConstValue.SendStr}")
                 .AsChildOf(GlobalTracer.Instance.ActiveSpan);
             ISpan? span = null;
-            context.OnceCall.SendRequestStreamStarted += (s, e) => span = spanBuilder.Start();
-            context.OnceCall.SendRequestStreamFinished += (s, e) => span?.Finish();
+            context.OnceCall.SendRequestStreamStarted += (_, _) => span = spanBuilder.Start();
+            context.OnceCall.SendRequestStreamFinished += (_, _) => span?.Finish();
         }
 
         private static void SetTracingAfter(ClientActionExecutingContext context)
@@ -54,8 +53,8 @@ namespace NetRpc.OpenTracing
                 ISpan? span = null;
 
 #pragma warning disable 1998
-                readStream.StartedAsync += async (s, e) => span = spanBuilder.Start();
-                readStream.FinishedAsync += async (s, e) => span?.Finish();
+                readStream.StartedAsync += async (_, _) => span = spanBuilder.Start();
+                readStream.FinishedAsync += async (_, _) => span?.Finish();
 #pragma warning restore 1998
             }
         }

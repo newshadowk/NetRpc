@@ -44,7 +44,7 @@ namespace NetRpc
                 i => i.GetCustomAttributes<ActionFilterAttribute>(true).ToList()).ToList();
 
             ActionFilters.AddRange(InstanceCache.MethodActionFilters.GetOrAdd(methodInfo,
-                i =>
+                _ =>
                 {
                     cloneList.AddRange(methodInfo.GetCustomAttributes<ActionFilterAttribute>(true).ToList());
                     return cloneList;
