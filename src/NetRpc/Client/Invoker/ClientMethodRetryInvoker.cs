@@ -156,9 +156,9 @@ namespace NetRpc
                 return ps;
             }
 
-            ProxyStream newPs = new (stream);
-            newPs.TryAttachCache();
-            return newPs;
+            ProxyStream proxyStream = new (stream);
+            proxyStream.TryAttachCache();
+            return proxyStream;
         }
 
         private static bool IsRetryCall(TimeSpan[]? sleepDurations)

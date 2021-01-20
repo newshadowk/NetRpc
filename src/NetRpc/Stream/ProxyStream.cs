@@ -250,5 +250,13 @@ namespace NetRpc
         {
             _stream.SetLength(value);
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+                _stream.Dispose();
+
+            base.Dispose(disposing);
+        }
     }
 }

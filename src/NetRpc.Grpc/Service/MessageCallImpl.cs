@@ -25,7 +25,6 @@ namespace NetRpc.Grpc
             _busyFlag.Increment();
 
             await using var connection = new GrpcServiceConnection(requestStream, responseStream, _logger);
-
             try
             {
                 await _requestHandler.HandleAsync(connection, ChannelType.Grpc);
