@@ -65,9 +65,9 @@ namespace NetRpc
             return true;
         }
 
-        public async ValueTask DisposeAsync()
+        public ValueTask DisposeAsync()
         {
-            await _connection.DisposeAsync();
+            return new();
         }
 
         private Stream GetReplyStream(long length)

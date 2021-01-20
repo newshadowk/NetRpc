@@ -1,19 +1,18 @@
 ﻿using System;
-using System.Threading.Tasks;
-using Channel = Grpc.Net.Client.GrpcChannel;
+using Grpc.Net.Client;
 
 namespace Proxy.Grpc
 {
-    public class Client : IAsyncDisposable
+    public sealed class Client : IDisposable
     {
-        private readonly Channel _channel;
+        private readonly GrpcChannel _channel;
         private volatile bool _disposed;
 
         public MessageCall.MessageCallClient CallClient { get; private set; } = null!;
 
-        public Client(Channel channel, string host, int port, string connectionDescription)
+        public Client(GrpcChannelOptions options, string url, string host, int port, string connectionDescription)
         {
-            _channel = channel;
+            _channel = GrpcChannel.ForAddress(url!, options);
             Host = host;
             Port = port;
             ConnectionDescription = connectionDescription;
@@ -30,13 +29,13 @@ namespace Proxy.Grpc
             CallClient = new MessageCall.MessageCallClient(_channel);
         }
 
-        public async ValueTask DisposeAsync()
+        public void Dispose()
         {
             if (_disposed)
                 return;
+            _disposed = true;
 
             _channel.Dispose();
-            _disposed = true;
         }
     }
 }

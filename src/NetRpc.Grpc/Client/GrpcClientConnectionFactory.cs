@@ -52,7 +52,7 @@ namespace NetRpc.Grpc
             var opt = options.Value;
             var host = new Uri(opt.Url!).Host;
             var port = new Uri(opt.Url!).Port;
-            _client = new Client(GrpcChannel.ForAddress(opt.Url!, opt.ChannelOptions!), host, port, opt.ToString());
+            _client = new Client(opt.ChannelOptions, opt.Url!, host, port, opt.ToString());
             _client.Connect();
         }
 
@@ -70,8 +70,7 @@ namespace NetRpc.Grpc
             foreach (var c in _connections.ToArray())
                 await c.DisposeFinishAsync();
 
-            await _client.DisposeAsync();
+            _client.Dispose();
         }
     }
-
 }
