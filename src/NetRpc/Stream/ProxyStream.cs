@@ -72,7 +72,7 @@ namespace NetRpc
                 //read from Cache
                 if (_readFromCache)
                 {
-                    readCount = ReadCache(buffer, offset, count);
+                    readCount = base.Read(buffer, offset, count);
                     if (readCount == 0)
                         _readFromCache = false;
                 }
@@ -82,12 +82,12 @@ namespace NetRpc
                 {
                     readCount = _stream.Read(buffer);
                     if (readCount > 0)
-                        WriteCache(buffer, offset, count);
+                        base.Write(buffer, offset, count);
                 }
 
                 if (_isManualPosition)
                     _manualPosition += readCount;
-                WriteCache(buffer, offset, readCount);
+                base.Write(buffer, offset, readCount);
                 InvokeStartAsync().AsyncWait();
                 OnProgressAsync(new SizeEventArgs(Position)).AsyncWait();
             }
@@ -111,7 +111,7 @@ namespace NetRpc
                 //read from Cache
                 if (_readFromCache)
                 {
-                    readCount = ReadCache(buffer);
+                    readCount = base.Read(buffer);
                     if (readCount == 0)
                         _readFromCache = false;
                 }
@@ -121,7 +121,7 @@ namespace NetRpc
                 {
                     readCount = _stream.Read(buffer);
                     if (readCount > 0)
-                        WriteCache(buffer.Slice(0, readCount));
+                        base.Write(buffer.Slice(0, readCount));
                 }
 
                 if (_isManualPosition)
@@ -149,7 +149,7 @@ namespace NetRpc
                 //read from Cache
                 if (_readFromCache)
                 {
-                    readCount = await ReadCacheAsync(buffer, offset, count, cancellationToken);
+                    readCount = await base.ReadAsync(buffer, offset, count, cancellationToken);
                     if (readCount == 0)
                         _readFromCache = false;
                 }
@@ -159,7 +159,7 @@ namespace NetRpc
                 {
                     readCount = await _stream.ReadAsync(buffer, offset, count, cancellationToken);
                     if (readCount > 0)
-                        await WriteCacheAsync(buffer, offset, readCount, cancellationToken);
+                        await base.WriteAsync(buffer, offset, readCount, cancellationToken);
                 }
 
                 if (_isManualPosition)
@@ -179,7 +179,7 @@ namespace NetRpc
             return readCount;
         }
 
-        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = new())
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
             var readCount = 0;
             try
@@ -187,7 +187,7 @@ namespace NetRpc
                 //read from Cache
                 if (_readFromCache)
                 {
-                    readCount = await ReadCacheAsync(buffer, cancellationToken);
+                    readCount = await base.ReadAsync(buffer, cancellationToken);
                     if (readCount == 0)
                         _readFromCache = false;
                 }
@@ -197,7 +197,7 @@ namespace NetRpc
                 {
                     readCount = await _stream.ReadAsync(buffer, cancellationToken);
                     if (readCount > 0)
-                        await WriteCacheAsync(buffer.Slice(0, readCount), cancellationToken);
+                        await base.WriteAsync(buffer.Slice(0, readCount), cancellationToken);
                 }
 
                 if (_isManualPosition)
@@ -231,7 +231,7 @@ namespace NetRpc
             return _stream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
-        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = new())
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
             return _stream.WriteAsync(buffer, cancellationToken);
         }
@@ -249,14 +249,6 @@ namespace NetRpc
         public override void SetLength(long value)
         {
             _stream.SetLength(value);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-                _stream.Dispose();
-
-            base.Dispose(disposing);
         }
     }
 }

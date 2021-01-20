@@ -35,52 +35,52 @@ namespace NetRpc
             base.Reset();
         }
 
-        public int ReadCache(byte[] buffer, int offset, int count)
+        public override int Read(byte[] buffer, int offset, int count)
         {
             if (ReadCacheStream == null)
                 return 0;
             return ReadCacheStream.Read(buffer, offset, count);
         }
 
-        protected int ReadCache(Span<byte> buffer)
+        public override int Read(Span<byte> buffer)
         {
             if (ReadCacheStream == null)
                 return 0;
             return ReadCacheStream.Read(buffer);
         }
 
-        public async Task<int> ReadCacheAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             if (ReadCacheStream == null)
                 return 0;
             return await ReadCacheStream.ReadAsync(buffer, offset, count, cancellationToken);
         }
 
-        protected async Task<int> ReadCacheAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
             if (ReadCacheStream == null)
                 return 0;
             return await ReadCacheStream.ReadAsync(buffer, cancellationToken);
         }
 
-        protected void WriteCache(byte[] buffer, int offset, int count)
+        public override void Write(byte[] buffer, int offset, int count)
         {
             ReadCacheStream?.Write(buffer, offset, count);
         }
 
-        protected void WriteCache(ReadOnlySpan<byte> buffer)
+        public override void Write(ReadOnlySpan<byte> buffer)
         {
             ReadCacheStream?.Write(buffer);
         }
 
-        protected async Task WriteCacheAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             if (ReadCacheStream == null)
                 return;
             await ReadCacheStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
-        protected ValueTask WriteCacheAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
             if (ReadCacheStream == null)
                 return new ValueTask();
