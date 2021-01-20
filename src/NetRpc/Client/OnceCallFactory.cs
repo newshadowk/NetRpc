@@ -14,10 +14,9 @@ namespace NetRpc
             _logger = loggerFactory.CreateLogger("NetRpc");
         }
 
-        public async Task<IOnceCall> CreateAsync(int timeoutInterval, bool isRetry)
+        public Task<IOnceCall> CreateAsync(int timeoutInterval, bool isRetry)
         {
-            await using var convert = new BufferClientOnceApiConvert(_factory.Create(isRetry), _logger);
-            return new OnceCall(convert, timeoutInterval, _logger);
+            return Task.FromResult<IOnceCall>(new OnceCall(new BufferClientOnceApiConvert(_factory.Create(isRetry), _logger), timeoutInterval, _logger));
         }
 
         public void Dispose()

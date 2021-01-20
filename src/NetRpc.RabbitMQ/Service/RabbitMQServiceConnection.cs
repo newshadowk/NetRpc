@@ -16,6 +16,7 @@ namespace NetRpc.RabbitMQ
 
         public ValueTask DisposeAsync()
         {
+            _callSession.Dispose();
             return new ();
         }
 
