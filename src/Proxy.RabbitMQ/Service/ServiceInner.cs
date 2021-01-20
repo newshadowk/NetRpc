@@ -31,7 +31,7 @@ namespace RabbitMQ.Base
             var consumer = new AsyncEventingBasicConsumer(_mainModel);
             _mainModel.BasicQos(0, (ushort) _prefetchCount, true);
             _mainModel.BasicConsume(_rpcQueueName, false, consumer);
-            consumer.Received += (s, e) => OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_connect, _mainModel, e, _logger)));
+            consumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_connect, _mainModel, e, _logger)));
         }
 
         public void Dispose()

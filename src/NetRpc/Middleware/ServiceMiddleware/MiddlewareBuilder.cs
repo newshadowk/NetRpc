@@ -46,7 +46,7 @@ namespace NetRpc
 
         private RequestDelegate Build()
         {
-            RequestDelegate requestDelegate = context => Task.CompletedTask;
+            RequestDelegate requestDelegate = _ => Task.CompletedTask;
             foreach (var component in _components.Reverse())
                 requestDelegate = component(requestDelegate);
             return requestDelegate;
@@ -144,7 +144,7 @@ namespace NetRpc
             if (methodInfo.DeclaringType != typeof(T))
             {
                 // ReSharper disable once AssignNullToNotNullAttribute
-                middlewareInstanceArg = Expression.Convert(middlewareInstanceArg, methodInfo.DeclaringType);
+                middlewareInstanceArg = Expression.Convert(middlewareInstanceArg, methodInfo.DeclaringType!);
             }
 
             var body = Expression.Call(middlewareInstanceArg, methodInfo, methodArguments);

@@ -71,7 +71,7 @@ namespace NetRpc
             return sn == "System.Private.CoreLib.dll" || sn == "CommonLanguageRuntimeLibrary";
         }
 
-        public static bool TryGetStream(this object? obj, [NotNullWhen(true)] out Stream? stream, [NotNullWhen(true)] out string? streamName)
+        public static bool TryGetStream(this object? obj, [NotNullWhen(true)] out Stream? stream, out string? streamName)
         {
             stream = default;
             streamName = default;

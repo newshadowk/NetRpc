@@ -33,10 +33,10 @@ namespace RabbitMQ.Base
             _connection.ConnectionShutdown += ConnectionConnectionShutdown;
             Inner = new ServiceInner(_connection, _rpcQueue, _prefetchCount, _logger);
             Inner.CreateChannel();
-            Inner.ReceivedAsync += (s, e) => OnReceivedAsync(e);
+            Inner.ReceivedAsync += (_, e) => OnReceivedAsync(e);
         }
 
-        private void ConnectionConnectionShutdown(object sender, ShutdownEventArgs e)
+        private void ConnectionConnectionShutdown(object? sender, ShutdownEventArgs e)
         {
             OnConnectionShutdown(e);
         }

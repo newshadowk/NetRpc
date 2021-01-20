@@ -23,7 +23,7 @@ namespace NetRpc
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            var f = context.ServiceProvider.GetService(typeof(IClientProxyFactory));
+            var f = context.ServiceProvider.GetService(typeof(IClientProxyFactory))!;
             // ReSharper disable once PossibleNullReferenceException
             var mi = f.GetType().GetMethod(nameof(IClientProxyFactory.CreateProxy))!.MakeGenericMethod(_contactType);
             var clientProxy = (IClientProxy) mi.Invoke(f, new object?[] {_optionsName})!;

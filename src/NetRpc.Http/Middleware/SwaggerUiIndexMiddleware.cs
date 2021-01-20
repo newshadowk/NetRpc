@@ -14,8 +14,8 @@ namespace NetRpc.Http
     {
         private readonly Microsoft.AspNetCore.Http.RequestDelegate _next;
         private readonly IEnumerable<IInjectSwaggerHtml> _injectSwaggerHtmlList;
-        private volatile string? _json;
-        private volatile string? _html;
+        private volatile string _json = null!;
+        private volatile string _html = null!;
 
         public SwaggerUiIndexMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, IEnumerable<IInjectSwaggerHtml> injectSwaggerHtmlList)
         {
@@ -89,7 +89,7 @@ namespace NetRpc.Http
         private static bool IsUrl(PathString path, string url)
         {
             return path.HasValue &&
-                   string.Equals(path.Value.Trim('/'), url.Trim('/'), StringComparison.OrdinalIgnoreCase);
+                   string.Equals(path.Value!.Trim('/'), url.Trim('/'), StringComparison.OrdinalIgnoreCase);
         }
 
         private static async Task<string> ReadStringAsync(string resourcePath)

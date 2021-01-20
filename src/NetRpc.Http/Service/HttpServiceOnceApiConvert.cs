@@ -158,7 +158,7 @@ namespace NetRpc.Http
 
         private (ActionInfo ai, HttpRoutInfo hri, string rawPath) GetActionInfo()
         {
-            var rawPath = Helper.FormatPath(_context.Request.Path.Value);
+            var rawPath = Helper.FormatPath(_context.Request.Path.Value!);
             if (!string.IsNullOrEmpty(_rootPath))
             {
                 var startS = $"{_rootPath}/".TrimStart('/');

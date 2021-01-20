@@ -9,7 +9,7 @@ namespace NetRpc
     {
         #region Fields
 
-        private object _syncRoot;
+        private object? _syncRoot;
 
         #endregion Fields
 

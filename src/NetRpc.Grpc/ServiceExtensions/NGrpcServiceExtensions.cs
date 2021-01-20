@@ -46,7 +46,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.Configure<NClientOptions>(i => i.ForwardHeader = true);
             services.AddNGrpcClientContract<TService>(serviceLifetime);
             services.AddNServiceContract(typeof(TService),
-                p => ((IClientProxy<TService>) p.GetService(typeof(IClientProxy<TService>))).Proxy, serviceLifetime);
+                p => ((IClientProxy<TService>) p.GetService(typeof(IClientProxy<TService>))!).Proxy, serviceLifetime);
             return services;
         }
 
@@ -86,15 +86,15 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 case ServiceLifetime.Singleton:
                     services.TryAddSingleton<IClientProxy<TService>, GrpcClientProxy<TService>>();
-                    services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxy<TService>>().Proxy);
+                    services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxy<TService>>()!.Proxy);
                     break;
                 case ServiceLifetime.Scoped:
                     services.TryAddScoped<IClientProxy<TService>, GrpcClientProxy<TService>>();
-                    services.TryAddScoped(typeof(TService), p => p.GetService<IClientProxy<TService>>().Proxy);
+                    services.TryAddScoped(typeof(TService), p => p.GetService<IClientProxy<TService>>()!.Proxy);
                     break;
                 case ServiceLifetime.Transient:
                     services.TryAddTransient<IClientProxy<TService>, GrpcClientProxy<TService>>();
-                    services.TryAddTransient(typeof(TService), p => p.GetService<IClientProxy<TService>>().Proxy);
+                    services.TryAddTransient(typeof(TService), p => p.GetService<IClientProxy<TService>>()!.Proxy);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);

@@ -77,7 +77,7 @@ namespace RabbitMQ.Base
 
                 var cts = new CancellationTokenSource();
 
-                _model.BasicReturn += (sender, args) =>
+                _model.BasicReturn += (_, args) =>
                 {
                     if (args.BasicProperties.CorrelationId == cid)
                         cts.Cancel();

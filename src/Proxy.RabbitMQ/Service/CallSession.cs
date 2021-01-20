@@ -37,7 +37,7 @@ namespace RabbitMQ.Base
             {
                 _clientToServiceQueue = _clientToServiceModel.QueueDeclare().QueueName;
                 var clientToServiceConsumer = new AsyncEventingBasicConsumer(_clientToServiceModel);
-                clientToServiceConsumer.Received += (s, e) => OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Body));
+                clientToServiceConsumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Body));
                 _clientToServiceModel.BasicConsume(_clientToServiceQueue, true, clientToServiceConsumer);
                 Send(Encoding.UTF8.GetBytes(_clientToServiceQueue));
             }
