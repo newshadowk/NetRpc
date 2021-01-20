@@ -22,7 +22,7 @@ namespace Service
                         .ConfigureServices((_, services) =>
                         {
                             services.AddNGrpcService();
-                            services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+                            services.AddNServiceContract<IServiceAsync, ServiceAsync>(ServiceLifetime.Scoped);
                         }).Configure(app => { app.UseNGrpc(); });
                 }).Build();
 
