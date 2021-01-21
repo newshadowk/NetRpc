@@ -16,6 +16,7 @@ namespace NetRpc
         event EventHandler<EventArgsT<Exception>>? ExceptionInvoked;
         event AsyncEventHandler? HeartbeatAsync;
         Dictionary<string, object?> AdditionHeader { get; }
+        Dictionary<string, object?> AdditionContextHeader { get; }
         object Proxy { get; }
         bool IsConnected { get; }
         void StartHeartbeat(bool isImmediate = false);
