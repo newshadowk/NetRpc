@@ -75,14 +75,13 @@ namespace NetRpc
             var p = Policy
                 .Handle<Exception>()
                 .WaitAndRetryAsync(sleepDurations,
-                    (exception, span, context) =>
-                    {
-                        _logger.LogWarning($"retry count:{context["count"]}, wait ms:{span.TotalMilliseconds}", exception);
-                    });
+                    (exception, span, context) => 
+                        _logger.LogWarning($"{context["name"]}, retry count:{context["count"]}, wait ms:{span.TotalMilliseconds}", exception));
 
-            return await p.ExecuteAsync(async (c, t) =>
+            return await p.ExecuteAsync(async (context, t) =>
             {
-                bool isRetry = AddCount(c);
+                context["name"] = targetMethod.ToFullMethodName();
+                bool isRetry = AddCount(context);
                 if (isRetry) 
                     proxyStream?.Reset();
                 var call = _callFactory.Create();

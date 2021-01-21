@@ -15,7 +15,6 @@ namespace Client
             var services = new ServiceCollection();
             services.AddNGrpcClient(options => options.Url = "http://localhost:50001");
             services.AddNClientContract<IServiceAsync>();
-            services.AddLogging();
             var sp = services.BuildServiceProvider();
 
             //get service
