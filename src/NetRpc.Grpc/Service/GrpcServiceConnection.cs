@@ -15,7 +15,7 @@ namespace NetRpc.Grpc
         private readonly IAsyncStreamReader<StreamBuffer> _requestStream;
         private readonly IServerStreamWriter<StreamBuffer> _responseStream;
         private readonly ILogger _logger;
-        private readonly WriteOnceBlock<int> _end = new(i => i);
+        private readonly WriteOnceBlock<bool> _end = new(i => i);
 
         public GrpcServiceConnection(IAsyncStreamReader<StreamBuffer> requestStream, IServerStreamWriter<StreamBuffer> responseStream, ILogger logger)
         {
@@ -67,7 +67,7 @@ namespace NetRpc.Grpc
                 }
                 finally
                 {
-                    _end.Post(1);
+                    _end.Post(true);
                 }
             });
 
