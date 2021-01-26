@@ -76,7 +76,7 @@ namespace NetRpc
                 .Handle<Exception>()
                 .WaitAndRetryAsync(sleepDurations,
                     (exception, span, context) => 
-                        _logger.LogWarning($"{context["name"]}, retry count:{context["count"]}, wait ms:{span.TotalMilliseconds}", exception));
+                        _logger.LogWarning(exception, $"{context["name"]}, retry count:{context["count"]}, wait ms:{span.TotalMilliseconds}"));
 
             return await p.ExecuteAsync(async (context, t) =>
             {
