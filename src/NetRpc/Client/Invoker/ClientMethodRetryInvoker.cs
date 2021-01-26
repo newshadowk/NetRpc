@@ -14,13 +14,13 @@ namespace NetRpc
     internal sealed class ClientMethodRetryInvoker : IMethodInvoker
     {
         private readonly CallFactory _callFactory;
-        private readonly TimeSpan[]? _serviceTypeSleepDurations;
+        private readonly ClientRetryAttribute? _parentRetryAttribute;
         private readonly ILogger _logger;
 
-        public ClientMethodRetryInvoker(CallFactory callFactory, TimeSpan[]? serviceTypeSleepDurations, ILogger logger)
+        public ClientMethodRetryInvoker(CallFactory callFactory, ClientRetryAttribute? parentRetryAttribute, ILogger logger)
         {
             _callFactory = callFactory;
-            _serviceTypeSleepDurations = serviceTypeSleepDurations;
+            _parentRetryAttribute = parentRetryAttribute;
             _logger = logger;
         }
 
@@ -60,10 +60,10 @@ namespace NetRpc
             var (callback, token, stream, otherArgs) = GetArgs(args);
             token.ThrowIfCancellationRequested();
 
-            var sleepDurations = GetSleepDurations(targetMethod);
+            var retryInfo = GetRetryInfo(targetMethod);
 
             //single call
-            if (!IsRetryCall(sleepDurations))
+            if (retryInfo == null)
             {
                 var call = _callFactory.Create();
                 return await call.CallAsync(targetMethod, false, callback, token, stream, otherArgs);
@@ -73,8 +73,8 @@ namespace NetRpc
 
             //retry call
             var p = Policy
-                .Handle<Exception>()
-                .WaitAndRetryAsync(sleepDurations,
+                .Handle<Exception>(e => retryInfo.ExceptionTypes.Any(i => i.IsInstanceOfType(e)))
+                .WaitAndRetryAsync(retryInfo.Durations,
                     (exception, span, context) => 
                         _logger.LogWarning(exception, $"{context["name"]}, retry count:{context["count"]}, wait ms:{span.TotalMilliseconds}"));
 
@@ -99,12 +99,22 @@ namespace NetRpc
             return (int)c["count"] > 1;
         }
 
-        private TimeSpan[]? GetSleepDurations(MethodInfo targetMethod)
+        private RetryInfo? GetRetryInfo(MethodInfo targetMethod)
         {
             var retry = targetMethod.GetCustomAttribute<ClientRetryAttribute>();
             if (retry != null)
-                return retry.SleepDurations.ToList().ConvertAll(i => TimeSpan.FromMilliseconds(i)).ToArray();
-            return _serviceTypeSleepDurations;
+                return GetRetryInfo(retry);
+
+            if (_parentRetryAttribute != null)
+                return GetRetryInfo(_parentRetryAttribute);
+
+            return default;
+        }
+
+        private static RetryInfo GetRetryInfo(ClientRetryAttribute attribute)
+        {
+            var durations = attribute.SleepDurations.ToList().ConvertAll(i => TimeSpan.FromMilliseconds(i)).ToArray();
+            return new RetryInfo {ExceptionTypes = attribute.ExceptionTypes, Durations = durations};
         }
 
         private static (Func<object?, Task>? callback, CancellationToken token, Stream? stream, object?[] otherArgs) GetArgs(object?[] args)
@@ -160,9 +170,11 @@ namespace NetRpc
             return proxyStream;
         }
 
-        private static bool IsRetryCall(TimeSpan[]? sleepDurations)
+        private class RetryInfo
         {
-            return sleepDurations != null && sleepDurations.Any();
+            public TimeSpan[] Durations { get; init; } = null!;
+
+            public Type[] ExceptionTypes { get; init; } = null!;
         }
     }
 }

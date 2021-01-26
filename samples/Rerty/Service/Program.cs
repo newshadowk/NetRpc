@@ -47,7 +47,8 @@ namespace Service
         {
             _logger.LogInformation($"Receive: {s}");
             Console.WriteLine($"Receive: {s}");
-            throw new Exception();
+            //throw new ArgumentException();
+            throw new ArgumentNullException();
         }
 
         public async Task Call2Async(Stream s)

@@ -18,11 +18,12 @@ namespace Client
             var sp = services.BuildServiceProvider();
             var p = sp.GetService<IServiceAsync>();
 
-            //await p.CallAsync("hello world.");
-            await using (var fr = File.OpenRead(TestHelper.Helper.GetTestFilePath()))
-            {
-                await p.Call2Async(fr);
-            }
+            await p.CallAsync("hello world.");
+
+            //await using (var fr = File.OpenRead(TestHelper.Helper.GetTestFilePath()))
+            //{
+            //    await p.Call2Async(fr);
+            //}
 
             Console.Read();
         }

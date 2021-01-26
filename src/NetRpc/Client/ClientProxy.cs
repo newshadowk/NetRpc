@@ -78,10 +78,9 @@ namespace NetRpc
         {
         }
 
-        private static TimeSpan[]? GetServiceTypeSleepDurations()
+        private static ClientRetryAttribute? GetServiceTypeSleepDurations()
         {
-            var retry = typeof(TService).GetCustomAttribute<ClientRetryAttribute>(true);
-            return retry?.SleepDurations.ToList().ConvertAll(i => TimeSpan.FromMilliseconds(i)).ToArray();
+            return typeof(TService).GetCustomAttribute<ClientRetryAttribute>(true);
         }
 
         private void ProxyExceptionInvoked(object? sender, EventArgsT<Exception> e)
