@@ -22,7 +22,7 @@ namespace NetRpc.Contract
     {
         public string Key { get; }
 
-        public string? Name { get; set; }
+        public string? Name { get; }
 
         public SecurityApiKeyAttribute(string key)
         {

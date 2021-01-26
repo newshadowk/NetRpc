@@ -35,13 +35,13 @@ namespace NetRpc.Contract
             ErrorCode = errorCode;
         }
 
-        public string? ErrorCode { get; set; }
+        public string? ErrorCode { get; }
 
-        public Type DetailType { get; set; }
+        public Type DetailType { get; }
 
-        public string? Description { get; set; }
+        public string? Description { get; }
 
-        public int StatusCode { get; set; }
+        public int StatusCode { get; }
     }
 
 
