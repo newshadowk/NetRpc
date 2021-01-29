@@ -83,7 +83,7 @@ namespace NetRpc.Http
             }
         }
 
-        private void ProcessPath(string? apiRootPath, List<ContractInfo> contracts, string? key)
+        private void ProcessPath(string? apiRootPath, IEnumerable<ContractInfo> contracts, string? key)
         {
             _doc.Paths = new OpenApiPaths();
             foreach (var contract in contracts)

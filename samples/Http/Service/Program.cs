@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NetRpc.Http;
 
 namespace Service
@@ -50,9 +51,10 @@ namespace Service
                             });
                             services.AddNMiniProfiler();
                             services.AddNHttpService();
-                            //services.AddNServiceContract<IService4Async, Service4Async>();
+                            services.AddNServiceContract<IService4Async, Service4Async>();
+                            services.AddLogging(i => i.AddConsole());
                             //services.AddNServiceContract<IService2Async, Service2Async>();
-                            services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+                            //services.AddNServiceContract<IServiceAsync, ServiceAsync>();
                         })
                         .Configure(app =>
                         {

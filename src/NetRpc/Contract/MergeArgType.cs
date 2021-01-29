@@ -13,7 +13,7 @@ namespace NetRpc
 
         public string? StreamPropName { get; }
 
-        public bool HasCustomType { get; }
+        public bool IsEmptyTypeWithoutPathQueryStream { get; }
 
         public TypeName? CallbackAction { get; }
 
@@ -24,13 +24,13 @@ namespace NetRpc
         public ParameterInfo? SingleValue { get; }
 
         public MergeArgType(Type? type, Type? typeWithoutPathQueryStream, string? streamPropName, TypeName? callbackAction, TypeName? cancelToken,
-            bool hasCustomType, bool isSingleValue, ParameterInfo? singleValue, MethodInfo methodInfo)
+            bool isEmptyTypeWithoutPathQueryStream, bool isSingleValue, ParameterInfo? singleValue, MethodInfo methodInfo)
         {
             Type = type;
             StreamPropName = streamPropName;
             CallbackAction = callbackAction;
             CancelToken = cancelToken;
-            HasCustomType = hasCustomType;
+            IsEmptyTypeWithoutPathQueryStream = isEmptyTypeWithoutPathQueryStream;
             IsSingleValue = isSingleValue;
             SingleValue = singleValue;
             MethodInfo = methodInfo;

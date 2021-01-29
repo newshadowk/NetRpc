@@ -50,7 +50,6 @@ namespace Service
         }
 
         public async Task<string> Call3Async(CallObj obj, string s1)
-            //public async Task<string> Call3Async(CallObj obj)
         {
             var s = $"[Call3Async]...{obj.P1}, {obj.P2}";
             Console.WriteLine(s);
@@ -244,16 +243,16 @@ namespace Service
 
     public class Service4Async : IService4Async
     {
-        public async Task<Obj4> Call(Obj4 obj)
-        {
-            //id.dt = DateTime.Now;
-            //id.dt2 = DateTimeOffset.Now;
-            return new();
-        }
+        //public async Task<string> Call(CancellationToken token)
+        //{
+        //    //return obj5.TaskId;
+        //    await Task.Delay(1000 * 3600, token);
+        //    return "123";
+        //}
 
-        public async Task Call2(string testRed1, string testRed2)
+        public async Task<string> Call(Obj5 obj5)
         {
-            Console.WriteLine($"{testRed1}, {testRed2}");
+            return obj5.TaskId;
         }
     }
 }

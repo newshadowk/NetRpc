@@ -51,7 +51,7 @@ namespace NetRpc.Http
             if (isSupportBody)
             {
                 AddPathParams(contractMethod, operation, routInfo);
-                if (routInfo.MergeArgType.HasCustomType)
+                if (!routInfo.MergeArgType.IsEmptyTypeWithoutPathQueryStream)
                     operation.RequestBody = GenerateRequestBody(routInfo.MergeArgType.TypeWithoutPathQueryStream, routInfo.MergeArgType.StreamPropName);
             }
             else

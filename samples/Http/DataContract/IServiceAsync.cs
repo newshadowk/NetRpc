@@ -131,23 +131,18 @@ namespace DataContract
         //Task<string> Call5Async(string p1, int p2, Func<double, Task> cb, CancellationToken token);
     }
 
-    //[FaultExceptionDefineGroup]
-    //[InheritedFaultExceptionDefine]
-    //[HideFaultExceptionDescription]
     public interface IService4Async
     {
-        /// <summary>
-        /// Call des
-        /// </summary>
-        /// <param name="id">id des</param>
-        /// <param name="testRed">testRed des</param>
-        /// <returns>call return des.</returns>
-        [HttpGet("Call")]
-        Task<Obj4> Call(Obj4 obj);
+        [HttpPatch("call/{TaskId}")]
+        Task<string> Call(Obj5 obj5);
+        //[HttpPost]
+        //Task<string> Call(CancellationToken token);
+    }
 
-        //Task<Obj4> Call([JsonParamName("i-d")] Obj4 id);
-        //Task<Obj4> Call([JsonParamName("i-d")] Obj4 id, [JsonParamName("test-red")] string testRed);
-        //Task Call2([JsonParamName("test-red1")] string testRed1, [JsonParamName("test-red2")] string testRed2);
+    public class Obj5
+    {
+        public string TaskId { get;set; }
+        //public string TaskId2 { get;set; }
     }
 
     [Serializable]
