@@ -56,10 +56,10 @@ namespace NetRpc
             {
                 await _connection.SendAsync(new Request(RequestType.Cmd, callParam.ToBytes()).All, stream == null && token == CancellationToken.None, isPost);
             }
-            catch
+            catch (Exception e)
             {
                 _logger.LogWarning($"Client SendCmdAsync error. {callParam}");
-                throw;
+                throw new DisconnectedException(e.Message);
             }
 
             return true;
@@ -86,7 +86,7 @@ namespace NetRpc
 
         private async void ConnectionReceiveDisconnected(object? sender, EventArgsT<Exception> e)
         {
-            await OnFaultAsync(new EventArgsT<object>(new ReceiveDisconnectedException(e.Value.Message)));
+            await OnFaultAsync(new EventArgsT<object>(new DisconnectedException(e.Value.Message)));
             await DisposeAsync();
         }
 
