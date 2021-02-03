@@ -17,7 +17,7 @@ namespace NetRpc.OpenTracing
             _next = next;
         }
 
-        public async Task InvokeAsync(ClientActionExecutingContext context, ITracer tracer, IOptions<OpenTracingOptions> options)
+        public async Task InvokeAsync(ClientActionExecutingContext context, ITracer tracer, IOptions<OpenTracingOptions> options, IErrorTagHandle errorTagHandle)
         {
             if (context.ContractMethod.IsTracerIgnore)
             {
@@ -43,7 +43,7 @@ namespace NetRpc.OpenTracing
                 scope.Span.SetTagMethodObj(context, 0, true);
                 scope.Span.SetTagReturn(context, 0, true);
                 scope.Span.SetTag(new StringTag("Exception"), e.ExceptionToString());
-                Tags.Error.Set(scope.Span, true);
+                errorTagHandle.Handle(e, scope.Span);
                 throw;
             }
         }

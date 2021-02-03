@@ -16,7 +16,7 @@ namespace NetRpc.OpenTracing
             _next = next;
         }
 
-        public async Task InvokeAsync(ActionExecutingContext context, ITracer tracer, IOptions<OpenTracingOptions> options)
+        public async Task InvokeAsync(ActionExecutingContext context, ITracer tracer, IOptions<OpenTracingOptions> options, IErrorTagHandle errorTagHandle)
         {
             if (context.ContractMethod.IsTracerIgnore)
             {
@@ -37,7 +37,7 @@ namespace NetRpc.OpenTracing
                 scope.Span.SetTagMethodObj(context, options.Value.LogActionInfoMaxLength, true);
                 scope.Span.SetTagReturn(context, options.Value.LogActionInfoMaxLength, true);
                 scope.Span.SetTag(new StringTag("Exception"), e.ExceptionToString());
-                Tags.Error.Set(scope.Span, true);
+                errorTagHandle.Handle(e, scope.Span);
                 throw;
             }
         }
