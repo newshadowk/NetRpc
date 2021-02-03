@@ -24,6 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 i.UseMiddleware<StreamTracingMiddleware>();
             });
             services.AddSingleton<ILoggerProvider, SpanLoggerProvider>();
+            services.AddSingleton<IErrorTagHandle, DefaultErrorTagHandle>();
             return services;
         }
     }
