@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
-using NetRpc.Contract;
 using NetRpc.Http.Client;
 
 namespace NetRpc.Http
@@ -159,7 +158,7 @@ namespace NetRpc.Http
 
         private (ActionInfo ai, HttpRoutInfo hri, string rawPath) GetActionInfo()
         {
-            var rawPath = Helper.FormatPath(_context.Request.Path.Value);
+            var rawPath = Helper.FormatPath(_context.Request.Path.Value!);
             if (!string.IsNullOrEmpty(_rootPath))
             {
                 var startS = $"{_rootPath}/".TrimStart('/');

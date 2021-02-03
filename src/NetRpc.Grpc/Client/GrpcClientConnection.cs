@@ -16,7 +16,7 @@ namespace NetRpc.Grpc
         private readonly Client _client;
         private readonly ILogger _logger;
         private AsyncDuplexStreamingCall<StreamBuffer, StreamBuffer> _api = null!;
-        private readonly WriteOnceBlock<int> _end = new(i => i);
+        private readonly WriteOnceBlock<bool> _end = new(i => i);
 
         public GrpcClientConnection(Client client, ILogger logger)
         {
@@ -58,8 +58,7 @@ namespace NetRpc.Grpc
         {
             //before dispose requestStream need to
             //60 second to wait 'MessageCallImpl.DuplexStreamingServerMethod' execute finish from the service side.
-            await Task.WhenAny(Task.Delay(1000 * 60),
-                _end.ReceiveAsync());
+            await Task.WhenAny(Task.Delay(1000 * 60), _end.ReceiveAsync());
         }
 
         public ConnectionInfo ConnectionInfo => new()
@@ -128,7 +127,7 @@ namespace NetRpc.Grpc
                 }
                 finally
                 {
-                    _end.Post(1);
+                    _end.Post(true);
                     OnFinished();
                 }
             });

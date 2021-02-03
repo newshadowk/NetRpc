@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using DataContract;
-using NetRpc.Grpc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Client
 {
@@ -9,12 +11,19 @@ namespace Client
     {
         private static async Task Main(string[] args)
         {
-            var p = NManager.CreateClientProxy<IServiceAsync>(new GrpcClientOptions
-            {
-                Url = "http://localhost:50001"
-            });
+            var services = new ServiceCollection();
+            services.AddNClientContract<IServiceAsync>();
+            services.AddNGrpcClient(o => o.Url = "http://localhost:50001");
+            services.AddLogging(b => b.AddConsole());
+            var sp = services.BuildServiceProvider();
+            var p = sp.GetService<IServiceAsync>();
 
-            await p.Proxy.CallAsync("hello world.");
+            await p.CallAsync("hello world.");
+
+            //await using (var fr = File.OpenRead(TestHelper.Helper.GetTestFilePath()))
+            //{
+            //    await p.Call2Async(fr);
+            //}
 
             Console.Read();
         }

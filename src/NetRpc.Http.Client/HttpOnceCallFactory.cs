@@ -70,7 +70,7 @@ namespace NetRpc.Http.Client
             _notifier?.OnCallback(new CallbackEventArgs(callId, data));
         }
 
-        public async Task<IOnceCall> CreateAsync(int timeoutInterval)
+        public async Task<IOnceCall> CreateAsync(int timeoutInterval, bool isRetry)
         {
             var cid = await InitConnectionAsync();
             var convert = new HttpClientOnceApiConvert(_options.ApiUrl, cid, _notifier!, timeoutInterval);

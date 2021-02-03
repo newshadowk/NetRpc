@@ -44,16 +44,16 @@ namespace NetRpc
             _onceCallFactory = onceCallFactory;
             _logger = loggerFactory.CreateLogger("NetRpc");
 
-            var callFactory = new CallFactory(typeof(TService), 
-                Id, 
-                serviceProvider, 
-                clientMiddlewareOptions.Value, 
+            var callFactory = new CallFactory(typeof(TService),
+                Id,
+                serviceProvider,
+                clientMiddlewareOptions.Value,
                 actionExecutingContextAccessor,
-                onceCallFactory, 
-                nClientOptions.Value, 
-                AdditionHeader, 
+                onceCallFactory,
+                nClientOptions.Value,
+                AdditionHeader,
                 optionsName);
-            
+
             var invoker = new ClientMethodRetryInvoker(callFactory, GetServiceTypeSleepDurations(), _logger);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
             ((SimpleDispatchProxyAsync) (object) Proxy).ExceptionInvoked += ProxyExceptionInvoked;
@@ -78,10 +78,9 @@ namespace NetRpc
         {
         }
 
-        private static TimeSpan[]? GetServiceTypeSleepDurations()
+        private static ClientRetryAttribute? GetServiceTypeSleepDurations()
         {
-            var retry = typeof(TService).GetCustomAttribute<ClientRetryAttribute>(true);
-            return retry?.SleepDurations.ToList().ConvertAll(i => TimeSpan.FromMilliseconds(i)).ToArray();
+            return typeof(TService).GetCustomAttribute<ClientRetryAttribute>(true);
         }
 
         private void ProxyExceptionInvoked(object? sender, EventArgsT<Exception> e)

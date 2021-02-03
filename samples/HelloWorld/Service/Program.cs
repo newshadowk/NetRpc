@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NetRpc;
-using NetRpc.Grpc;
 
 namespace Service
 {
@@ -11,7 +12,20 @@ namespace Service
     {
         private static async Task Main(string[] args)
         {
-            var host = NManager.CreateHost(50001, null, new ContractParam<IServiceAsync, ServiceAsync>());
+            var host = Host.CreateDefaultBuilder()
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.ConfigureKestrel((_, options) =>
+                        {
+                            options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+                        })
+                        .ConfigureServices((_, services) =>
+                        {
+                            services.AddNGrpcService();
+                            services.AddNServiceContract<IServiceAsync, ServiceAsync>(ServiceLifetime.Scoped);
+                        }).Configure(app => { app.UseNGrpc(); });
+                }).Build();
+
             await host.RunAsync();
         }
     }

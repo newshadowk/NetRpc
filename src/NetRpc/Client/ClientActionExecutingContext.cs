@@ -37,7 +37,7 @@ namespace NetRpc
 
         public CancellationToken CancellationToken { get; }
 
-        public ReadStream? Stream { get; }
+        public ProxyStream? Stream { get; }
 
         /// <summary>
         /// Args of invoked action without stream and action.
@@ -55,7 +55,7 @@ namespace NetRpc
             CancellationToken token,
             ContractInfo contract,
             ContractMethod contractMethod,
-            ReadStream? stream,
+            ProxyStream? stream,
             Dictionary<string, object?> header,
             object?[] pureArgs)
         {

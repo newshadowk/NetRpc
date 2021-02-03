@@ -90,7 +90,7 @@ namespace NetRpc.Http
             var doc = new XmlDocument();
             doc.Load(docPath);
             var nav = doc.CreateNavigator();
-            return nav;
+            return nav!;
         }
 
         private static (XPathNavigator pathMembers, XmlDocument doc) CreateNewDoc()
@@ -98,7 +98,7 @@ namespace NetRpc.Http
             var doc = new XmlDocument();
             doc.LoadXml("<doc><members></members></doc>");
             var nav = doc.CreateNavigator();
-            var pathMembers = nav.SelectSingleNode("/doc/members")!;
+            var pathMembers = nav!.SelectSingleNode("/doc/members")!;
             return (pathMembers, doc);
         }
 

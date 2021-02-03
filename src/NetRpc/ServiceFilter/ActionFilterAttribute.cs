@@ -8,7 +8,7 @@ namespace NetRpc
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
     public class ActionFilterAttribute : Attribute, IAsyncActionFilter
     {
-        public virtual void OnActionExecuted(ActionExecutedContext context)
+        public virtual void OnActionExecuted(ActionExecutedContext _)
         {
         }
 

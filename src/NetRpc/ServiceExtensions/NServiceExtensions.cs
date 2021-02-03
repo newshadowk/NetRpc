@@ -150,15 +150,15 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 case ServiceLifetime.Singleton:
                     services.TryAddSingleton<IClientProxy<TService>, ClientProxy<TService>>();
-                    services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxy<TService>>().Proxy);
+                    services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxy<TService>>()!.Proxy);
                     break;
                 case ServiceLifetime.Scoped:
                     services.TryAddScoped<IClientProxy<TService>, ClientProxy<TService>>();
-                    services.TryAddScoped(typeof(TService), p => p.GetService<IClientProxy<TService>>().Proxy);
+                    services.TryAddScoped(typeof(TService), p => p.GetService<IClientProxy<TService>>()!.Proxy);
                     break;
                 case ServiceLifetime.Transient:
                     services.TryAddTransient<IClientProxy<TService>, ClientProxy<TService>>();
-                    services.TryAddTransient(typeof(TService), p => p.GetService<IClientProxy<TService>>().Proxy);
+                    services.TryAddTransient(typeof(TService), p => p.GetService<IClientProxy<TService>>()!.Proxy);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
@@ -175,16 +175,16 @@ namespace Microsoft.Extensions.DependencyInjection
             switch (serviceLifetime)
             {
                 case ServiceLifetime.Singleton:
-                    services.TryAddSingleton(typeof(IClientProxy<TService>), p => p.GetService<IClientProxyFactory>().CreateProxy<TService>(optionsName));
-                    services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxyFactory>().CreateProxy<TService>(optionsName)!.Proxy);
+                    services.TryAddSingleton(typeof(IClientProxy<TService>), p => p.GetService<IClientProxyFactory>()!.CreateProxy<TService>(optionsName)!);
+                    services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxyFactory>()!.CreateProxy<TService>(optionsName)!.Proxy);
                     break;
                 case ServiceLifetime.Scoped:
-                    services.TryAddScoped(typeof(IClientProxy<TService>), p => p.GetService<IClientProxyFactory>().CreateProxy<TService>(optionsName));
-                    services.TryAddScoped(typeof(TService), p => p.GetService<IClientProxyFactory>().CreateProxy<TService>(optionsName)!.Proxy);
+                    services.TryAddScoped(typeof(IClientProxy<TService>), p => p.GetService<IClientProxyFactory>()!.CreateProxy<TService>(optionsName)!);
+                    services.TryAddScoped(typeof(TService), p => p.GetService<IClientProxyFactory>()!.CreateProxy<TService>(optionsName)!.Proxy);
                     break;
                 case ServiceLifetime.Transient:
-                    services.TryAddTransient(typeof(IClientProxy<TService>), p => p.GetService<IClientProxyFactory>().CreateProxy<TService>(optionsName));
-                    services.TryAddTransient(typeof(TService), p => p.GetService<IClientProxyFactory>().CreateProxy<TService>(optionsName)!.Proxy);
+                    services.TryAddTransient(typeof(IClientProxy<TService>), p => p.GetService<IClientProxyFactory>()!.CreateProxy<TService>(optionsName)!);
+                    services.TryAddTransient(typeof(TService), p => p.GetService<IClientProxyFactory>()!.CreateProxy<TService>(optionsName)!.Proxy);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);

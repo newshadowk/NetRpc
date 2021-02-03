@@ -15,7 +15,7 @@ namespace NetRpc.Grpc
         private readonly IAsyncStreamReader<StreamBuffer> _requestStream;
         private readonly IServerStreamWriter<StreamBuffer> _responseStream;
         private readonly ILogger _logger;
-        private readonly WriteOnceBlock<int> _end = new(i => i);
+        private readonly WriteOnceBlock<bool> _end = new(i => i);
 
         public GrpcServiceConnection(IAsyncStreamReader<StreamBuffer> requestStream, IServerStreamWriter<StreamBuffer> responseStream, ILogger logger)
         {
@@ -24,12 +24,7 @@ namespace NetRpc.Grpc
             _logger = logger;
         }
 
-        public ValueTask DisposeAsync()
-        {
-            return new();
-        }
-
-        public async Task DisposeFinishAsync()
+        public async ValueTask DisposeAsync()
         {
             //before dispose requestStream need to
             //wait 60 second to receive 'completed' from client side.
@@ -46,7 +41,7 @@ namespace NetRpc.Grpc
             {
                 try
                 {
-                    await _responseStream.WriteAsync(new StreamBuffer { Body = ByteString.CopyFrom(buffer.Span) });
+                    await _responseStream.WriteAsync(new StreamBuffer {Body = ByteString.CopyFrom(buffer.Span)});
                 }
                 catch (Exception e)
                 {
@@ -72,7 +67,7 @@ namespace NetRpc.Grpc
                 }
                 finally
                 {
-                    _end.Post(1);
+                    _end.Post(true);
                 }
             });
 

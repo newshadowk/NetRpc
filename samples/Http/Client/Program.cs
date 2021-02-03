@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.Extensions.DependencyInjection;
 using NetRpc.Contract;
 using NetRpc.Http.Client;
-using TestHelper;
+using Helper = TestHelper.Helper;
 
 namespace Client
 {
@@ -16,13 +16,15 @@ namespace Client
 
         private static async Task Main(string[] args)
         {
-            _proxyAsync = NManager.CreateClientProxy<IServiceAsync>(new HttpClientOptions
+            var services = new ServiceCollection();
+            services.AddNClientContract<IServiceAsync>();
+            services.AddNHttpClient(o =>
             {
-                SignalRHubUrl = "http://localhost:5000/callback",
-                ApiUrl = "http://localhost:5000/api"
-                //SignalRHubUrl = "https://localhost:5001/callback",
-                //ApiUrl = "https://localhost:5001/api"
-            }).Proxy;
+                o.SignalRHubUrl = "http://localhost:5000/callback";
+                o.ApiUrl = "http://localhost:5000/api";
+            });
+            var sp = services.BuildServiceProvider();
+            _proxyAsync = sp.GetService<IServiceAsync>();
 
             await Test_CallAsync();
             await Test_CallByCancelAsync();
@@ -110,7 +112,7 @@ namespace Client
                 Console.Write("[ComplexCallAsync]...Send TestFile.txt...");
 
                 var complexStream = await _proxyAsync.ComplexCallAsync(
-                    new CustomObj {Date = DateTime.Now, Name = NameEnum.John},
+                    new CustomObj { Date = DateTime.Now, Name = NameEnum.John },
                     "123",
                     stream,
                     async i => Console.Write(", " + i.Progress),

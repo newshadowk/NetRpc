@@ -58,7 +58,6 @@ namespace NetRpc
             var attributeData = CustomAttributeData.GetCustomAttributes(method).Where(i => i.AttributeType == typeof(ExampleAttribute)).ToList();
             var addedCallId = false;
             var addedStream = false;
-            var hasCustomType = false;
             foreach (var p in firstLevelParams)
             {
                 //callback
@@ -76,9 +75,6 @@ namespace NetRpc
                     addedCallId = true;
                     continue;
                 }
-
-                //hasCustomType
-                hasCustomType = true;
 
                 //Stream
                 if (p.Type.IsStream())
@@ -106,7 +102,7 @@ namespace NetRpc
                 cis.Add(new CustomsPropertyInfo(typeof(long), CallConst.StreamLength));
 
             var t = TypeFactory.BuildType(typeName, cis);
-            var t2 = BuildTypeWithoutPathQueryStream(typeNameWithoutStreamName, cis, pathQueryParams);
+            (Type t2, bool isEmpty) = BuildTypeWithoutPathQueryStream(typeNameWithoutStreamName, cis, pathQueryParams);
 
             if (cis.Count == 0)
                 return new MergeArgType(null, null, null, null, null,
@@ -115,7 +111,7 @@ namespace NetRpc
             //SetInnerTypeMap
             SetInnerTypeMap(t2, isSingleValue, singleValue!);
 
-            return new MergeArgType(t, t2, streamName, action, cancelToken, hasCustomType, isSingleValue, singleValue, method);
+            return new MergeArgType(t, t2, streamName, action, cancelToken, isEmpty, isSingleValue, singleValue, method);
         }
 
         private static CustomAttributeData? FindCustomAttributeData(List<CustomAttributeData> methodsAd, PPInfo p)
@@ -152,7 +148,7 @@ namespace NetRpc
             }
         }
 
-        private static Type BuildTypeWithoutPathQueryStream(string typeName, List<CustomsPropertyInfo> cis, List<string> pathQueryParams)
+        private static (Type t, bool isEmpty) BuildTypeWithoutPathQueryStream(string typeName, List<CustomsPropertyInfo> cis, List<string> pathQueryParams)
         {
             var list = cis.ToList();
             list.RemoveAll(i =>
@@ -161,7 +157,7 @@ namespace NetRpc
                     !i.Type.IsFuncT() && !i.Type.IsCancellationToken() && pathQueryParams.Any(j => j == i.PropertyName.ToLower()) // pathQueryParams
             );
 
-            return TypeFactory.BuildType(typeName, list);
+            return (TypeFactory.BuildType(typeName, list), list.Count == 0);
         }
     }
 }

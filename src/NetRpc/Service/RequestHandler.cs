@@ -13,17 +13,17 @@ namespace NetRpc
         private readonly MiddlewareBuilder _middlewareBuilder;
         private readonly IServiceProvider _serviceProvider;
 
-        public RequestHandler(IServiceProvider serviceProvider)
+        public RequestHandler(IServiceProvider serviceProvider, ILoggerFactory factory, IOptions<MiddlewareOptions> middlewareOptions)
         {
             _serviceProvider = serviceProvider;
-            _logger = _serviceProvider.GetService<ILoggerFactory>().CreateLogger("NetRpc");
-            var middlewareOptions = _serviceProvider.GetService<IOptions<MiddlewareOptions>>().Value;
-            _middlewareBuilder = new MiddlewareBuilder(middlewareOptions, serviceProvider);
+            _logger = factory.CreateLogger("NetRpc");
+            _middlewareBuilder = new MiddlewareBuilder(middlewareOptions.Value, serviceProvider);
         }
 
         public async Task HandleAsync(IServiceConnection connection, ChannelType channelType)
         {
-            await HandleAsync(new BufferServiceOnceApiConvert(connection, _logger), channelType);
+            await using var convert = new BufferServiceOnceApiConvert(connection, _logger);
+            await HandleAsync(convert, channelType);
         }
 
         public async Task HandleAsync(IServiceOnceApiConvert convert, ChannelType channelType)

@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.Configure<MiddlewareOptions>(i => i.UseMiddleware<ServiceJaegerMiddleware>());
             services.AddSingleton(typeof(ITracer), i =>
             {
-                var opt = i.GetService<IOptions<JaegerOptions>>();
+                var opt = i.GetService<IOptions<JaegerOptions>>()!;
                 var tracer = GetTracer(opt.Value);
                 GlobalTracer.Register(tracer);
                 return tracer;

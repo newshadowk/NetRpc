@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net.Http;
 using System.Reflection;
 using NetRpc.Contract;
 
@@ -17,7 +16,7 @@ namespace NetRpc
         /// </summary>
         public ReadOnlyCollection<PPInfo> InnerSystemTypeParameters { get; }
 
-        public ContractMethod(Type contractType, Type? instanceType, List<SwaggerRoleAttribute> contractTypeRoles, string contractTypeTag, MethodInfo methodInfo,
+        public ContractMethod(Type contractType, List<SwaggerRoleAttribute> contractTypeRoles, string contractTypeTag, MethodInfo methodInfo,
             List<FaultExceptionAttribute> faultExceptionAttributes, List<HttpHeaderAttribute> httpHeaderAttributes,
             List<ResponseTextAttribute> responseTextAttributes, List<SecurityApiKeyAttribute> securityApiKeyAttributes)
         {
@@ -35,7 +34,7 @@ namespace NetRpc
             IsTracerIgnore = GetCustomAttribute<TracerIgnoreAttribute>(contractType, methodInfo) != null;
             IsTracerArgsIgnore = GetCustomAttribute<TracerArgsIgnoreAttribute>(contractType, methodInfo) != null;
             IsTraceReturnIgnore = GetCustomAttribute<TracerReturnIgnoreAttribute>(contractType, methodInfo) != null;
-            
+
             Route = new MethodRoute(contractType, methodInfo);
             IsMQPost = GetCustomAttribute<MQPostAttribute>(contractType, methodInfo) != null;
             IsHideFaultExceptionDescription = GetCustomAttribute<HideFaultExceptionDescriptionAttribute>(contractType, methodInfo) != null;
@@ -68,7 +67,7 @@ namespace NetRpc
         public bool IsTracerIgnore { get; }
 
         public bool IsMQPost { get; }
-        
+
         public bool IsHideFaultExceptionDescription { get; }
 
         public bool InRoles(IList<string> roles)
@@ -102,15 +101,26 @@ namespace NetRpc
 
             var instance = Activator.CreateInstance(Route.DefaultRout.MergeArgType.Type);
             var newArgs = args.ToList();
-            //_conn_id _callId streamLength
-            newArgs.Add(connectionId);
-            newArgs.Add(callId);
-            newArgs.Add(streamLength);
 
             var i = 0;
             foreach (var p in Route.DefaultRout.MergeArgType.Type.GetProperties())
             {
-                p.SetValue(instance, newArgs[i]);
+                switch (p.Name)
+                {
+                    case CallConst.ConnIdName:
+                        p.SetValue(instance, connectionId);
+                        break;
+                    case CallConst.CallIdName:
+                        p.SetValue(instance, callId);
+                        break;
+                    case CallConst.StreamLength:
+                        p.SetValue(instance, streamLength);
+                        break;
+                    default:
+                        p.SetValue(instance, newArgs[i]);
+                        break;
+                }
+
                 i++;
             }
 
@@ -229,7 +239,6 @@ namespace NetRpc
             foreach (var (key, value) in faultDic)
                 methods.Add(new ContractMethod(
                     Type,
-                    instanceType,
                     contractTypeRoles,
                     tag,
                     key,
@@ -241,7 +250,7 @@ namespace NetRpc
             Methods = new ReadOnlyCollection<ContractMethod>(methods);
             Tags = new ReadOnlyCollection<string>(GetTags(methods));
         }
-    
+
         public Type Type { get; }
 
         public ReadOnlyCollection<SecurityApiKeyDefineAttribute> SecurityApiKeyDefineAttributes { get; }
@@ -272,13 +281,13 @@ namespace NetRpc
                 isInheritedFault);
             return faultDic;
         }
-        
+
         private static List<FaultExceptionDefineAttribute> GetFaultExceptionDefineFromGroup(Type contractType)
         {
             List<FaultExceptionDefineAttribute> ret = new();
             foreach (var a in contractType.GetCustomAttributes(true))
             {
-                if (a is IFaultExceptionGroup feg) 
+                if (a is IFaultExceptionGroup feg)
                     ret.AddRange(feg.FaultExceptionDefineAttributes);
             }
 
@@ -286,15 +295,15 @@ namespace NetRpc
         }
 
         private static Dictionary<MethodInfo, List<T>> GetItemsFromDefines<T, TDefine>(
-            Type contractType, 
-            IEnumerable<MethodInfo> methodInfos, 
+            Type contractType,
+            IEnumerable<MethodInfo> methodInfos,
             Func<T, TDefine, bool> match)
             where T : Attribute
             where TDefine : Attribute
         {
             var dic = new Dictionary<MethodInfo, List<T>>();
             var defines = contractType.GetCustomAttributes<TDefine>(true).ToList();
-            
+
             var items = contractType.GetCustomAttributes<T>(true).ToList();
 
             foreach (var m in methodInfos)
@@ -329,7 +338,7 @@ namespace NetRpc
             defines.AddRange(existDefines);
 
             var items = contractType.GetCustomAttributes<T>(true).ToList();
-            
+
             if (isInheritedDefines)
                 items.AddRange(existDefines.ConvertAll(i => convert(i)));
 
@@ -385,7 +394,7 @@ namespace NetRpc
         private static List<SwaggerRoleAttribute> GetRoleAttributes(Type contractType)
         {
             var ret = contractType.GetCustomAttributes<SwaggerRoleAttribute>(true).ToList();
-            if (!ret.Exists(i => i.Role == "default")) 
+            if (!ret.Exists(i => i.Role == "default"))
                 ret.Add(new SwaggerRoleAttribute("default"));
             return ret;
         }

@@ -45,14 +45,14 @@ namespace NetRpc.Http
             //body
             ValidateSection(section);
             var ms = new MemoryStream();
-            await section.Body.CopyToAsync(ms);
+            await section!.Body.CopyToAsync(ms);
             var body = Encoding.UTF8.GetString(ms.ToArray());
             var dataObj = Helper.ToHttpDataObj(body, item.DataObjType!);
 
             //stream
             section = await reader.ReadNextSectionAsync();
             ValidateSection(section);
-            var fileName = GetFileName(section.ContentDisposition);
+            var fileName = GetFileName(section!.ContentDisposition);
             if (fileName == null)
                 throw new ArgumentNullException("", "File name is null.");
             dataObj.TrySetStreamName(fileName);
@@ -68,20 +68,26 @@ namespace NetRpc.Http
             return null;
         }
 
-        private static string? GetFileName(string contentDisposition)
+        private static string? GetFileName(string? contentDisposition)
         {
+            if (contentDisposition == null)
+                return null;
+
             //Content-Disposition: form-data; name="stream"; filename="t1.docx"
             return Match(contentDisposition, "filename=\"", "\"");
         }
 
-        private static void ValidateSection(MultipartSection section)
+        private static void ValidateSection(MultipartSection? section)
         {
+            if (section == null)
+                throw new HttpFailedException("ValidateSection, section is null.");
+
             var hasContentDispositionHeader =
                 ContentDispositionHeaderValue.TryParse(
                     section.ContentDisposition, out _);
 
             if (!hasContentDispositionHeader)
-                throw new HttpFailedException("Has not ContentDispositionHeader.");
+                throw new HttpFailedException("ValidateSection, Has not ContentDispositionHeader.");
         }
     }
 
@@ -174,14 +180,14 @@ namespace NetRpc.Http
         {
             var ret = new Dictionary<string, StringValues>();
             List<KeyValuePair<string, StringValues>> pairs = new();
-            
+
             pairs.AddRange(request.Query);
 
             //Form may be read by stream before.
             if (!hasStream && request.HasFormContentType)
                 pairs.AddRange(request.Form);
 
-            foreach (KeyValuePair<string, StringValues> p in pairs)
+            foreach (var p in pairs)
             {
                 string pName;
                 if (queryParams.TryGetValue(p.Key.ToLower(), out var outName))

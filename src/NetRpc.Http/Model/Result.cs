@@ -30,7 +30,7 @@ namespace NetRpc.Http
             return new()
             {
                 Ret = obj,
-                StatusCode = statusCode,
+                StatusCode = statusCode
             };
         }
 
@@ -44,7 +44,7 @@ namespace NetRpc.Http
         {
             if (Ret == null)
                 return null;
-            
+
             if (IsPainText)
                 return Ret.ToString();
 

@@ -2,41 +2,69 @@
 using System.IO;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.Extensions.DependencyInjection;
 using NetRpc;
-using NetRpc.Grpc;
-using NetRpc.Http.Client;
 using Helper = TestHelper.Helper;
-using NManager = NetRpc.RabbitMQ.NManager;
 
 namespace Client
 {
     internal class Program
     {
-        private static ClientProxy<IService> _c1;
-        private static ClientProxy<IService2> _c2;
+        private static IClientProxy<IServiceAsync> _c1;
+        private static IClientProxy<IService2Async> _c2;
 
         private static async Task Main(string[] args)
         {
-            Console.WriteLine("---- MQ test ----");
-            var mqOptions = Helper.GetMQOptions();
-            _c1 = NManager.CreateClientProxy<IService>(mqOptions);
-            _c2 = NManager.CreateClientProxy<IService2>(mqOptions);
-            await TestAsync();
+            await RabbitMQ();
+            await Grpc();
+            await Http();
 
-            Console.WriteLine("---- Http test ----");
-            var httpOptions = new HttpClientOptions {ApiUrl = "http://localhost:5000", SignalRHubUrl = "http://localhost:5000/callback"};
-            _c1 = NetRpc.Http.Client.NManager.CreateClientProxy<IService>(httpOptions);
-            _c2 = NetRpc.Http.Client.NManager.CreateClientProxy<IService2>(httpOptions);
-            await TestAsync();
-
-            Console.WriteLine("---- Grpc test ----");
-            var grpcOpt = new GrpcClientOptions {Url = "http://localhost:50000"};
-            _c1 = NetRpc.Grpc.NManager.CreateClientProxy<IService>(grpcOpt);
-            _c2 = NetRpc.Grpc.NManager.CreateClientProxy<IService2>(grpcOpt);
-            await TestAsync();
-
-            Console.WriteLine("---- end ----");
+            Console.WriteLine("\r\n--------------- End ---------------");
             Console.Read();
+        }
+
+        private static async Task RabbitMQ()
+        {
+            //RabbitMQ
+            Console.WriteLine("\r\n--------------- Client RabbitMQ ---------------");
+            var services = new ServiceCollection();
+            services.AddNClientContract<IServiceAsync>();
+            services.AddNClientContract<IService2Async>();
+            services.AddNRabbitMQClient(o => o.CopyFrom(Helper.GetMQOptions()));
+            var sp = services.BuildServiceProvider();
+            _c1 = sp.GetService<IClientProxy<IServiceAsync>>();
+            _c2 = sp.GetService<IClientProxy<IService2Async>>();
+            await TestAsync();
+        }
+
+        private static async Task Grpc()
+        {
+            Console.WriteLine("\r\n--------------- Client Grpc ---------------");
+            var services = new ServiceCollection();
+            services.AddNClientContract<IServiceAsync>();
+            services.AddNClientContract<IService2Async>();
+            services.AddNGrpcClient(o => o.Url = "http://localhost:50000");
+            var sp = services.BuildServiceProvider();
+            _c1 = sp.GetService<IClientProxy<IServiceAsync>>();
+            _c2 = sp.GetService<IClientProxy<IService2Async>>();
+            await TestAsync();
+        }
+
+        private static async Task Http()
+        {
+            Console.WriteLine("\r\n--------------- Client Http ---------------");
+            var services = new ServiceCollection();
+            services.AddNClientContract<IServiceAsync>();
+            services.AddNClientContract<IService2Async>();
+            services.AddNHttpClient(o =>
+            {
+                o.SignalRHubUrl = "http://localhost:5000/callback";
+                o.ApiUrl = "http://localhost:5000/api";
+            });
+            var sp = services.BuildServiceProvider();
+            _c1 = sp.GetService<IClientProxy<IServiceAsync>>();
+            _c2 = sp.GetService<IClientProxy<IService2Async>>();
+            await TestAsync();
         }
 
         private static async Task TestAsync()

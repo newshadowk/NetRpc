@@ -13,6 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (httpClientConfigureOptions != null)
                 services.Configure(httpClientConfigureOptions);
+            services.AddLogging();
             services.AddNClientByOnceCallFactory<HttpOnceCallFactory>(clientConfigureOptions, serviceLifetime);
             switch (serviceLifetime)
             {

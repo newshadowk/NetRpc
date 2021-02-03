@@ -15,7 +15,7 @@ namespace NetRpc.Http.Client
             Converters = {new JsonStringEnumConverter(JsonNamingPolicy.CamelCase), new StreamConverter()}
         };
 
-        public static object? ToDtoObject(this string str, Type t)
+        public static object? ToDtoObject(this string? str, Type t)
         {
             if (string.IsNullOrEmpty(str))
                 return default;
@@ -23,12 +23,12 @@ namespace NetRpc.Http.Client
             return JsonSerializer.Deserialize(str, t, JsOptions);
         }
 
-        public static object? ToDtoObjectByNumber(this string str, Type t)
+        public static object? ToDtoObjectByNumber(this string? str, Type t)
         {
             if (string.IsNullOrEmpty(str))
                 return default;
 
-            return JsonSerializer.Deserialize(str, t, new JsonSerializerOptions()
+            return JsonSerializer.Deserialize(str, t, new JsonSerializerOptions
             {
                 Converters =
                 {

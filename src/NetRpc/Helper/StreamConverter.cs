@@ -12,7 +12,7 @@ namespace NetRpc
             Type typeToConvert,
             JsonSerializerOptions options)
         {
-            return null;
+            return null!;
         }
 
         public override void Write(

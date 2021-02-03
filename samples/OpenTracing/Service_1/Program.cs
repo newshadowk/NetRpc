@@ -100,7 +100,6 @@ namespace Service_1
             //    await Task.Delay(100);
             //}
 
-            return new Result();
 
             Console.WriteLine($"Receive: {s}");
 

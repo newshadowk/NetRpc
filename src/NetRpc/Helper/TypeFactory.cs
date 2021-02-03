@@ -24,7 +24,7 @@ namespace NetRpc
             PropertyName = propertyName;
             if (cad != null)
                 Attributes = new List<CustomAttributeData> {cad};
-            if (cab != null) 
+            if (cab != null)
                 AttributeBuilders = new List<CustomAttributeBuilder> {cab};
         }
 

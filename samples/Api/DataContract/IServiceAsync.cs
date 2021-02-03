@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using NetRpc.Contract;
 
 namespace DataContract
 {
@@ -9,15 +10,14 @@ namespace DataContract
     {
         Task<CustomObj> SetAndGetObj(CustomObj obj);
 
-        /// <exception cref="TaskCanceledException"></exception>
         Task CallByCancelAsync(CancellationToken token);
 
         Task CallByCallBackAsync(Func<CustomCallbackObj, Task> cb);
 
-        /// <exception cref="NotImplementedException"></exception>
+        [FaultException(typeof(NotImplementedException))]  //defined only for http channel
         Task CallBySystemExceptionAsync();
 
-        /// <exception cref="CustomException"></exception>>
+        [FaultException(typeof(CustomException))]      //defined only for http channel
         Task CallByCustomExceptionAsync();
 
         Task<Stream> GetStreamAsync();

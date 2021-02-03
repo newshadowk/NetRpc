@@ -11,14 +11,9 @@ namespace NetRpc
 {
     internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
     {
-        private readonly DuplexPipe _streamPipe = new(new PipeOptions(pauseWriterThreshold: Helper.StreamBufferCacheCount, resumeWriterThreshold: 1));
         private readonly IClientConnection _connection;
         private readonly ILogger _logger;
-
-        public event EventHandler<EventArgsT<object>>? ResultStream;
-        public event AsyncEventHandler<EventArgsT<object?>>? ResultAsync;
-        public event AsyncEventHandler<EventArgsT<object>>? CallbackAsync;
-        public event AsyncEventHandler<EventArgsT<object>>? FaultAsync;
+        private readonly DuplexPipe _streamPipe = new(new PipeOptions(pauseWriterThreshold: Helper.StreamBufferCacheCount, resumeWriterThreshold: 1));
 
         public BufferClientOnceApiConvert(IClientConnection connection, ILogger logger)
         {
@@ -27,6 +22,11 @@ namespace NetRpc
             _connection.ReceivedAsync += ConnectionReceivedAsync;
             _connection.ReceiveDisconnected += ConnectionReceiveDisconnected;
         }
+
+        public event EventHandler<EventArgsT<object>>? ResultStream;
+        public event AsyncEventHandler<EventArgsT<object?>>? ResultAsync;
+        public event AsyncEventHandler<EventArgsT<object>>? CallbackAsync;
+        public event AsyncEventHandler<EventArgsT<object>>? FaultAsync;
 
         public ConnectionInfo ConnectionInfo => _connection.ConnectionInfo;
 
@@ -52,20 +52,16 @@ namespace NetRpc
 
         public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, CancellationToken token)
         {
-
             try
             {
-                await _connection.SendAsync(
-                    new Request(RequestType.Cmd, callParam.ToBytes()).All,
-                    stream == null && token == CancellationToken.None,
-                    isPost);
+                await _connection.SendAsync(new Request(RequestType.Cmd, callParam.ToBytes()).All, stream == null && token == CancellationToken.None, isPost);
             }
-            catch
+            catch (Exception e)
             {
                 _logger.LogWarning($"Client SendCmdAsync error. {callParam}");
-                throw;
+                throw new DisconnectedException(e.Message);
             }
-           
+
             return true;
         }
 
@@ -80,7 +76,7 @@ namespace NetRpc
 
             async Task OnEnd(object sender, EventArgs e)
             {
-                ((ReadStream) sender).FinishedAsync -= OnEnd;
+                ((ProxyStream) sender).FinishedAsync -= OnEnd;
                 await DisposeAsync();
             }
 
@@ -90,7 +86,7 @@ namespace NetRpc
 
         private async void ConnectionReceiveDisconnected(object? sender, EventArgsT<Exception> e)
         {
-            await OnFaultAsync(new EventArgsT<object>(new ReceiveDisconnectedException(e.Value.Message)));
+            await OnFaultAsync(new EventArgsT<object>(new DisconnectedException(e.Value.Message)));
             await DisposeAsync();
         }
 

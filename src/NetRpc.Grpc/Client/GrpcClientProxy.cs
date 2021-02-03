@@ -1,5 +1,4 @@
 ﻿using System;
-using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -27,7 +26,7 @@ namespace NetRpc.Grpc
 
         private void GrpcClientProxy_ExceptionInvoked(object? sender, EventArgsT<Exception> e)
         {
-            if (e.Value is RpcException)
+            if (e.Value is DisconnectedException)
                 IsConnected = false;
         }
     }

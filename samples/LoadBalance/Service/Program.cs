@@ -2,9 +2,8 @@
 using System.IO;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NetRpc;
-using NetRpc.RabbitMQ;
 using Helper = TestHelper.Helper;
 
 namespace Service
@@ -13,14 +12,15 @@ namespace Service
     {
         private static async Task Main(string[] args)
         {
-            var host = NManager.CreateHost(Helper.GetMQOptions(),
-                null,
-                new ContractParam<IServiceAsync, ServiceAsync>());
-
+            var mpHost = new HostBuilder()
+                .ConfigureServices((_, services) =>
+                {
+                    services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
+                    services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+                })
+                .Build();
             Console.WriteLine("Service Opened.");
-            await host.RunAsync();
-
-            Console.Read();
+            await mpHost.RunAsync();
         }
     }
 

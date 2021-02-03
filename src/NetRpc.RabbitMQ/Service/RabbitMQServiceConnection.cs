@@ -11,13 +11,13 @@ namespace NetRpc.RabbitMQ
         public RabbitMQServiceConnection(CallSession callSession)
         {
             _callSession = callSession;
-            _callSession.ReceivedAsync += (s, e) => OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Value));
+            _callSession.ReceivedAsync += (_, e) => OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Value));
         }
 
         public ValueTask DisposeAsync()
         {
             _callSession.Dispose();
-            return new ValueTask();
+            return new ();
         }
 
         public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;

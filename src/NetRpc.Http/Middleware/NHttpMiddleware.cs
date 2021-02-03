@@ -21,7 +21,7 @@ namespace NetRpc.Http
             ILoggerFactory loggerFactory)
         {
             //if grpc channel message go to next.
-            if (httpContext.Request.Path.Value.EndsWith("DuplexStreamingServerMethod"))
+            if (httpContext.Request.Path.Value!.EndsWith("DuplexStreamingServerMethod"))
             {
                 await _next(httpContext);
                 return;

@@ -50,7 +50,20 @@ class Program
 {
     static void Main(string[] args)
     {
-        var host = NManager.CreateHost(50001, null, new ContractParam<IServiceAsync, ServiceAsync>());
+        var host = Host.CreateDefaultBuilder()
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.ConfigureKestrel((_, options) =>
+                    {
+                        options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+                    })
+                    .ConfigureServices((_, services) =>
+                    {
+                        services.AddNGrpcService();
+                        services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+                    }).Configure(app => { app.UseNGrpc(); });
+            }).Build();
+
         await host.RunAsync();
     }
 }
@@ -69,11 +82,18 @@ class Program
 {
     static void Main(string[] args)
     {
-        var p = NManager.CreateClientProxy<IServiceAsync>(new GrpcClientOptions
-        {
-            Url = "http://localhost:50001"
-        });
-        await p.Proxy.CallAsync("hello world.");
+        //register
+        var services = new ServiceCollection();
+        services.AddNGrpcClient(options => options.Url = "http://localhost:50001");
+        services.AddNClientContract<IServiceAsync>();
+        services.AddLogging();
+        var buildServiceProvider = services.BuildServiceProvider();
+
+        //get service
+        var service = buildServiceProvider.GetService<IServiceAsync>();
+        Console.WriteLine("call: hello world.");
+        var ret = await service.CallAsync("hello world.");
+        Console.WriteLine($"ret: {ret}");
     }
 }
 ```
@@ -85,6 +105,8 @@ public interface IService
 }
 ```
 Code here: [samples/HelloWorld](samples/HelloWorld).
+
+Quick start: [QuickRef](QuickRef.md) 
 
 ## Overall
 NetRpc provide **RabbitMQ**/**Grpc**/**Http** Channels to connect, each one has different advantages.
@@ -100,10 +122,6 @@ All channels use uniform contract, so easily to switch channel without modify se
 There is message channel for RabbitMQ and Grpc, Http pls see topic blow.
 ![Alt text](images/nrpc.png)
 
-## Swithch RabbitMQ/Grpc/Http
-* **NetRpc.RabbitMQ.NManager** for **RabbitMQ**.
-* **NetRpc.Grpc.NManager** for **Grpc**.
-* **NetRpc.Http.NManager** for **Http**.
 ## Initialize by DI
 There has two ways to initialize service and client, See DI sample below:
 ```c#
@@ -257,7 +275,6 @@ public void TestHeader()
 On the client side, when **AdditionHeader** is not null and items count is greater than 0, **Header** will get the value of **AdditionHeader** when call the remote. This feature is usefull when you want to transfer a sessionId to service.
 ```c#
 //client side
-var proxy = NetRpc.Grpc.NManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
 //set the AdditionHeader with SessionId
 client.Context.AdditionHeader = new Dictionary<string, object> {{"SessionId", 1}};
 //will tranfer the header of SessionId to service.
@@ -411,7 +428,6 @@ internal class ServiceAsync : IServiceAsync
 ```
 ```c#
 //client side
-var proxy = NetRpc.Grpc.NManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
 try
 {
     await proxy.CallBySystemExceptionAsync();
@@ -531,19 +547,6 @@ Task PostAsync(string s1, Stream stream);
 [GrpcIgnore]
 Task CallAsync(call);
 ```
-
-## Multi contracts bind to one port
-Client should use the **ClientConnectionFactory** manage the connection, that use one connection apply to muti contracts.
-```c#
-//service side
-var service = NetRpc.Grpc.NManager.CreateServiceProxy(new ServerPort("0.0.0.0", 50001, ServerCredentials.Insecure), new Servcie1(), new Service2());
-```
-```c#
-//client side
-var factory = new NetRpc.Grpc.ClientConnectionFactory("localhost", 50001);
-_proxy = NetRpc.Grpc.NManager.CreateClientProxy<IService1>(factory).Proxy;
-_proxyAsync = NetRpc.Grpc.NManager.CreateClientProxy<IService2>(factory).Proxy;
-```
 ## Client Event
 **ClientProxy** has events:  
 * **ExceptionInvoked** it usefull when you want to log the exception when call.  
@@ -562,7 +565,6 @@ Client should register the **Heartbeat** event and implementation of heartbeat.
 According to **Heartbeat** is successfull or faild, **Connected** or **DisConnected** will invoke correspondingly.
 ```c#
 //client set the heartbeat interval to 10*1000
-var proxy = NetRpc.Grpc.NManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure), 10*1000).Proxy;
 clientProxy.Heartbeat += async s => s.Proxy.Hearbeat();
 clientProxy.StartHeartbeat(true);
 ```
@@ -594,12 +596,6 @@ The code blow show how to Receive message from RabbitMQ channel client and send 
 services.AddNRabbitMQService(i => i.Value = TestHelper.Helper.GetMQOptions());
 services.AddNRpcGateway<IService>(o => o.Channel = new Channel("localhost", 50001, ChannelCredentials.Insecure));
 services.AddNRpcGateway<IService2>();
-
-//set different target point.
-//var p1 = NManager.CreateClientProxy<IService>(new Channel("localhost", 50001, ChannelCredentials.Insecure)).Proxy;
-//var p2 = NManager.CreateClientProxy<IService2>(new Channel("localhost2", 50001, ChannelCredentials.Insecure)).Proxy;
-//services.AddNRpcContractSingleton(typeof(IService), p1);
-//services.AddNRpcContractSingleton(typeof(IService2), p2);
 ```
 Also privode middleware in the gateway service, can add access authority if needed.
 
@@ -629,18 +625,6 @@ Note:
 ![Alt text](images/nrpc_http.png)
 
 ## [Http] Create Host
-Use **NManager** create host:
-```c#
-//service side
-var webHost = NManager.CreateHost(
-    8080,
-    "/callback",
-    true,
-    new HttpServiceOptions { ApiRootPath = "/api"}, 
-    null,
-    typeof(ServiceAsync));
-await webHost.RunAsync();
-```
 Use DI to create NHttp service, also could create NHttp service base on exist MVC servcie.
 ```c#
 //regist services
@@ -660,16 +644,6 @@ app.UseSignalR(routes => { routes.MapHub<CallbackHub>(hubPath); });   // define 
 app.UseNRpcSwagger();   // use NRpcSwagger middleware
 app.UseNHttp();      // use NHttp middleware
 ```
-## [Http] Client
-use **NetRpc.Http.Client.NManager.CreateClientProxy** to create a client instance.
-```c#
-_proxyAsync = NManager.CreateClientProxy<IServiceAsync>(
-    new HttpClientOptions() { 
-        SignalRHubUrl = "http://localhost:5000/callback",
-        ApiUrl = "http://localhost:5000/api" 
-    }).Proxy;
-```
-Also support **DI**.
 ## [Http] Swagger
 Use [Swashbuckle.AspNetCore.Swagger](https://github.com/domaindrivendev/Swashbuckle.AspNetCore) to implement swagger feature.  
 Note: swagger need add Http channel, swagger api path is **[HttpServiceOptions.ApiRootPath]/swagger**, if apiRootPath is "api", should like http://localhost:5000/api/swagger, if apiRootPath is null, should like http://localhost:5000/swagger.  
@@ -997,3 +971,4 @@ CreateClientProxy<TService>(Channel channel, int timeoutInterval = 1200000)
 * [samples/CallbackThrottling](samples/CallbackThrottling) It useful when callback is progress.
 * [samples/Gateway](samples/Gateway) Gateway for NetRpc.
 * [samples/OpenTracing](samples/OpenTracing) OpenTracing for NetRpc.
+* [samples/Retry](samples/Retry) Retry for NetRpc.

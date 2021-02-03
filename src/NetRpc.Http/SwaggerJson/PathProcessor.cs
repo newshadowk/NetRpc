@@ -18,6 +18,12 @@ namespace NetRpc.Http
         public readonly SchemaRepository SchemaRepository = new();
         private readonly SwaggerGeneratorOptions _options;
 
+        public PathProcessor(ISchemaGenerator schemaGenerator, IOptions<SwaggerGeneratorOptions> options)
+        {
+            _schemaGenerator = schemaGenerator;
+            _options = options.Value;
+        }
+
         public OpenApiOperation? Process(ContractMethod contractMethod, HttpRoutInfo routInfo, HttpMethodAttribute method)
         {
             if (contractMethod.IsHttpIgnore)
@@ -45,7 +51,7 @@ namespace NetRpc.Http
             if (isSupportBody)
             {
                 AddPathParams(contractMethod, operation, routInfo);
-                if (routInfo.MergeArgType.HasCustomType)
+                if (!routInfo.MergeArgType.IsEmptyTypeWithoutPathQueryStream)
                     operation.RequestBody = GenerateRequestBody(routInfo.MergeArgType.TypeWithoutPathQueryStream, routInfo.MergeArgType.StreamPropName);
             }
             else
@@ -170,12 +176,6 @@ namespace NetRpc.Http
             }
         }
 
-        public PathProcessor(ISchemaGenerator schemaGenerator, IOptions<SwaggerGeneratorOptions> options)
-        {
-            _schemaGenerator = schemaGenerator;
-            _options = options.Value;
-        }
-
         private static List<OpenApiTag> GenerateTags(ContractMethod method)
         {
             var tags = new List<OpenApiTag>();
@@ -238,12 +238,12 @@ namespace NetRpc.Http
             {
                 //600 cancel
                 if (hasCancel)
-                    ret.Add(ClientConstValue.CancelStatusCode.ToString(), new OpenApiResponse { Description = "A task was canceled." });
+                    ret.Add(ClientConstValue.CancelStatusCode.ToString(), new OpenApiResponse {Description = "A task was canceled."});
 
                 //exception
                 GenerateException(ret, method);
             }
-         
+
             return ret;
         }
 
