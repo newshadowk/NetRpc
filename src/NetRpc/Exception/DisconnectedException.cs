@@ -17,5 +17,8 @@ namespace NetRpc
         protected DisconnectedException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
+        public DisconnectedException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }
