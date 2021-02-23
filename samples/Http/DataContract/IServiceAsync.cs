@@ -133,8 +133,15 @@ namespace DataContract
 
     public interface IService4Async
     {
-        [HttpPatch("call/{TaskId}")]
-        Task<string> Call(Obj5 obj5);
+        //[HttpPatch("call/{TaskId}")]
+        //Task<string> Call(Obj5 obj5);
+
+        /// <summary>
+        /// 验证邀请码
+        /// </summary>
+        [HttpGet("ValidateInviteCode/{code}?lang={lang}")]
+        Task<object> ValidateInviteCodeAsync(string code, string lang);
+
         //[HttpPost]
         //Task<string> Call(CancellationToken token);
     }

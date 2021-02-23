@@ -34,7 +34,7 @@ namespace NetRpc
             var tmpP = Regex.Escape(PathWithoutQuery);
 
             var keys = new List<string>();
-            var mc = Regex.Matches(tmpP, @"\\{[^/]+}");
+            var mc = Regex.Matches(tmpP, @"\\{[\w-]+}");
             if (mc.Count == 0)
                 return new Dictionary<string, string>();
 
@@ -42,11 +42,11 @@ namespace NetRpc
                 keys.Add(o!.Value.Substring(2, o.Value.Length - 3));
 
             //S/Get/C/\{p1}/D/\{p2} =>
-            //S/Get/C/([^/]+)/D/([^/]+)
-            tmpP = Regex.Replace(tmpP, @"\\{[^/]+}", @"([^/]+)");
+            //S/Get/C/([\w-]+)/D/([\w-]+)
+            tmpP = Regex.Replace(tmpP, @"\\{[\w-]+}", @"([\w-]+)");
 
             //S/Get/C/v1/D/v2 matches
-            //S/Get/C/([^/]+)/D/([^/]+)
+            //S/Get/C/([\w-]+)/D/([\w-]+)
             var dic = new Dictionary<string, string>();
             mc = Regex.Matches(rawPath, tmpP);
             var gc = mc[0].Groups;
@@ -81,7 +81,7 @@ namespace NetRpc
         public MergeArgType MergeArgType { get; }
 
         /// <summary>
-        /// S/Get/C/{p1}/sss => S/Get/C/[^/]+/sss$
+        /// S/Get/C/{p1}/sss => S/Get/C/[\w-]+/sss$
         /// </summary>
         private static string ReplacePathStr(string path)
         {
@@ -89,8 +89,8 @@ namespace NetRpc
             //S/Get/C/\{p1}/sss
             var temps = Regex.Escape(path);
 
-            //S/Get/C/[^/]+/sss
-            var ret = Regex.Replace(temps, @"\\{[^/]+}", @"[^/]+");
+            //S/Get/C/[\w-]+/sss
+            var ret = Regex.Replace(temps, @"\\{[\w-]+}", @"[\w-]+");
             return ret + "$";
         }
 
@@ -125,7 +125,7 @@ namespace NetRpc
             _regPatternPathWithoutQuery = ReplacePathStr(PathWithoutQuery);
 
             var ps = new List<string>();
-            var c = Regex.Matches(path, @"(?<={)[^/]+(?=})");
+            var c = Regex.Matches(path, @"(?<={)[\w-]+(?=})");
             foreach (Match? o in c)
                 ps.Add(o!.Value.ToLower());
 

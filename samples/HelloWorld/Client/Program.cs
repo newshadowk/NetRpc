@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using DataContract;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,9 @@ namespace Client
     {
         private static async Task Main(string[] args)
         {
+            //dns解析
+            var ipHostEntry = await Dns.GetHostEntryAsync("www.contoso.com");
+
             //register
             var services = new ServiceCollection();
             services.AddNGrpcClient(options => options.Url = "http://localhost:50001");

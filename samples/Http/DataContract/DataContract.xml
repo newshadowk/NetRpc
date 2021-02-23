@@ -21,6 +21,11 @@
         <member name="M:DataContract.IService2Async.Call1Async(System.String,System.Int32)">
             <response code="200">return the pain text.</response>
         </member>
+        <member name="M:DataContract.IService4Async.ValidateInviteCodeAsync(System.String,System.String)">
+            <summary>
+            验证邀请码
+            </summary>
+        </member>
         <member name="T:DataContract.CallObj">
             <summary>
             CallObj summary

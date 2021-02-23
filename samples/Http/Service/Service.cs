@@ -250,9 +250,14 @@ namespace Service
         //    return "123";
         //}
 
-        public async Task<string> Call(Obj5 obj5)
+        //public async Task<string> Call(Obj5 obj5)
+        //{
+        //    return obj5.TaskId;
+        //}
+
+        public Task<object> ValidateInviteCodeAsync(string code, string lang)
         {
-            return obj5.TaskId;
+            throw new NotImplementedException();
         }
     }
 }
