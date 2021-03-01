@@ -10,15 +10,19 @@ namespace Proxy.Grpc
 
         public MessageCall.MessageCallClient CallClient { get; private set; } = null!;
 
-        public Client(GrpcChannelOptions options, string url, string host, int port, string connectionDescription)
+        public Client(GrpcChannelOptions options, string url, string? headerHost, string connectionDescription)
         {
+            Uri uri = new (url);
             _channel = GrpcChannel.ForAddress(url!, options);
-            Host = host;
-            Port = port;
+            Host = uri.Host;
+            Port = uri.Port;
+            HeaderHost = headerHost;
             ConnectionDescription = connectionDescription;
         }
 
         public string Host { get; }
+
+        public string? HeaderHost { get; }
 
         public int Port { get; }
 

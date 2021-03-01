@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NetRpc.Http;
 
 namespace Service
 {
@@ -17,13 +19,34 @@ namespace Service
                 {
                     webBuilder.ConfigureKestrel((_, options) =>
                         {
+                            options.ListenAnyIP(5000);
                             options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
                         })
                         .ConfigureServices((_, services) =>
                         {
+                            services.AddCors();
+                            services.AddSignalR();
+                            services.AddNSwagger();
+                            services.AddNHttpService();
+
                             services.AddNGrpcService();
                             services.AddNServiceContract<IServiceAsync, ServiceAsync>(ServiceLifetime.Scoped);
-                        }).Configure(app => { app.UseNGrpc(); });
+                        }).Configure(app =>
+                        {
+                            app.UseCors(set =>
+                            {
+                                set.SetIsOriginAllowed(origin => true)
+                                    .AllowAnyHeader()
+                                    .AllowAnyMethod()
+                                    .AllowCredentials();
+                            });
+
+                            app.UseRouting();
+                            app.UseEndpoints(endpoints => { endpoints.MapHub<CallbackHub>("/callback"); });
+                            app.UseNSwagger();
+                            app.UseNHttp();
+                            app.UseNGrpc();
+                        });
                 }).Build();
 
             await host.RunAsync();

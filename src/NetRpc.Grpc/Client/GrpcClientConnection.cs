@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -66,6 +67,7 @@ namespace NetRpc.Grpc
             Port = _client.Port,
             Description = _client.ConnectionDescription,
             Host = _client.Host,
+            HeadHost = _client.HeaderHost,
             ChannelType = ChannelType.Grpc
         };
 
@@ -96,17 +98,20 @@ namespace NetRpc.Grpc
         public async Task StartAsync(string? authorizationToken)
 #pragma warning restore 1998
         {
+            //create header
+            List<(string, string)> headersList = new();
             Metadata? headers = null;
-            if (authorizationToken != null)
+            if (authorizationToken != null) 
+                headersList.Add(("Authorization", $"Bearer {authorizationToken}"));
+            if (_client.HeaderHost != null) 
+                headersList.Add(("Host", _client.HeaderHost));
+            if (headersList.Count > 0)
             {
-                headers = new Metadata
-                {
-                    {
-                        "Authorization", $"Bearer {authorizationToken}"
-                    }
-                };
+                headers = new Metadata();
+                headersList.ForEach(i => headers.Add(i.Item1, i.Item2));
             }
 
+            //create connection.
             _api = _client.CallClient.DuplexStreamingServerMethod(headers);
 #pragma warning disable 4014
             Task.Run(async () =>

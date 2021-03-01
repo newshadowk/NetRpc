@@ -12,12 +12,15 @@ namespace Client
     {
         private static async Task Main(string[] args)
         {
-            //dns解析
-            var ipHostEntry = await Dns.GetHostEntryAsync("www.contoso.com");
-
             //register
             var services = new ServiceCollection();
-            services.AddNGrpcClient(options => options.Url = "http://localhost:50001");
+
+            services.AddNGrpcClient(options =>
+            {
+                options.Url = "http://localhost:50001";
+                options.HeaderHost = "www.baidu.com:8080";
+            });
+
             services.AddNClientContract<IServiceAsync>();
             var sp = services.BuildServiceProvider();
 

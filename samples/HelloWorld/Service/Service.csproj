@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NetRpc.Grpc\NetRpc.Grpc.csproj" />
+    <ProjectReference Include="..\..\..\src\NetRpc.Http\NetRpc.Http.csproj" />
     <ProjectReference Include="..\DataContract\DataContract.csproj" />
   </ItemGroup>
 

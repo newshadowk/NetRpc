@@ -56,6 +56,7 @@ namespace NetRpc.Http.Client
                     Host = host,
                     Port = port,
                     Description = _apiUrl,
+                    HeadHost = host,
                     ChannelType = ChannelType.Http
                 };
             }

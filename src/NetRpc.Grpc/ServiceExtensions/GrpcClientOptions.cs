@@ -8,9 +8,11 @@ namespace NetRpc.Grpc
 
         public string Url { get; set; } = null!;
 
+        public string? HeaderHost { get; set; }
+
         public override string ToString()
         {
-            return Url;
+            return $"HeaderHost:{HeaderHost}, {Url}";
         }
     }
 }

@@ -50,9 +50,7 @@ namespace NetRpc.Grpc
         {
             _logger = loggerFactory.CreateLogger("NetRpc");
             var opt = options.Value;
-            var host = new Uri(opt.Url!).Host;
-            var port = new Uri(opt.Url!).Port;
-            _client = new Client(opt.ChannelOptions, opt.Url!, host, port, opt.ToString());
+            _client = new Client(opt.ChannelOptions, opt.Url, opt.HeaderHost, opt.ToString());
             _client.Connect();
         }
 
