@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Reflection;
 using System.Threading.Tasks;
 using DataContract;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +19,7 @@ namespace Client
             services.AddNGrpcClient(options =>
             {
                 options.Url = "http://localhost:50001";
-                options.HeaderHost = "www.baidu.com:8080";
+                //options.HeaderHost = "www.baidu.com:8080";
             });
 
             services.AddNClientContract<IServiceAsync>();

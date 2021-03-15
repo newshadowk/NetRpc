@@ -16,7 +16,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.AddGrpc(configureOptions);
             else
                 services.AddGrpc();
-
             services.AddNService();
             return services;
         }

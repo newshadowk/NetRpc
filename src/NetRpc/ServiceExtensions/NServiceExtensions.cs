@@ -11,6 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddNService(this IServiceCollection services)
         {
+            Helper.CheckBinSer();
             services.TryAddSingleton<BusyFlag>();
             services.TryAddSingleton<RequestHandler>();
             services.TryAddSingleton<IActionExecutingContextAccessor, ActionExecutingContextAccessor>();
@@ -20,6 +21,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddNServiceContract(this IServiceCollection services, Type serviceType, Type implementationType,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
+            Helper.CheckContract(serviceType);
+
             services.Configure<ContractOptions>(i => i.Contracts.Add(new ContractInfo(serviceType, implementationType)));
 
             switch (serviceLifetime)
@@ -42,6 +45,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddNServiceContract(this IServiceCollection services, Type serviceType, object implementationInstance)
         {
+            Helper.CheckContract(serviceType);
+
             services.Configure<ContractOptions>(i => i.Contracts.Add(new ContractInfo(serviceType, implementationInstance.GetType())));
             services.AddSingleton(serviceType, implementationInstance);
             return services;
@@ -58,6 +63,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddNServiceContract(this IServiceCollection services, Type serviceType,
             Func<IServiceProvider, object> implementationFactory, ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
+            Helper.CheckContract(serviceType);
+
             services.Configure<ContractOptions>(i => i.Contracts.Add(new ContractInfo(serviceType)));
 
             switch (serviceLifetime)
@@ -117,6 +124,8 @@ namespace Microsoft.Extensions.DependencyInjection
         private static IServiceCollection AddNClient(this IServiceCollection services, Action<NClientOptions>? configureOptions = null,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
         {
+            Helper.CheckBinSer();
+
             if (configureOptions != null)
                 services.Configure(configureOptions);
 
@@ -144,6 +153,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddNClientContract<TService>(this IServiceCollection services,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
         {
+            Helper.CheckContract(typeof(TService));
+
             ClientContractInfoCache.GetOrAdd<TService>();
 
             switch (serviceLifetime)
@@ -170,6 +181,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddNClientContract<TService>(this IServiceCollection services, string optionsName,
             ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
         {
+            Helper.CheckContract(typeof(TService));
+
             ClientContractInfoCache.GetOrAdd<TService>();
 
             switch (serviceLifetime)

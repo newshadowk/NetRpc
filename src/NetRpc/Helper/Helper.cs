@@ -405,6 +405,21 @@ namespace NetRpc
             return stream.WriteAsync(buffer);
         }
 
+        internal static void CheckBinSer()
+        {
+            "".ToBytes();
+        }
+
+        internal static void CheckContract(Type t)
+        {
+            var methods = t.GetMethods();
+            foreach (var g in methods.GroupBy(i => i.Name))
+            {
+                if (g.Count() > 1)
+                    throw new ArgumentException($"Contract methods can not have same name:{g.Key}");
+            }
+        }
+
         private static async Task<int> GreedReadAsync(this Stream stream, byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             var sumCount = 0;
