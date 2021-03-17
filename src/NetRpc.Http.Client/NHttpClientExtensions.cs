@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddNHttpClient(this IServiceCollection services,
             Action<HttpClientOptions>? httpClientConfigureOptions = null,
             Action<NClientOptions>? clientConfigureOptions = null,
-            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
+            ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
         {
             if (httpClientConfigureOptions != null)
                 services.Configure(httpClientConfigureOptions);

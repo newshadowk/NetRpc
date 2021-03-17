@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNServiceContract(this IServiceCollection services, Type serviceType, Type implementationType,
-            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
+            ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
         {
             Helper.CheckContract(serviceType);
 
@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNServiceContract<TService, TImplementation>(this IServiceCollection services,
-            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
+            ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
             where TImplementation : class, TService
         {
             services.AddNServiceContract(typeof(TService), typeof(TImplementation), serviceLifetime);
@@ -61,7 +61,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNServiceContract(this IServiceCollection services, Type serviceType,
-            Func<IServiceProvider, object> implementationFactory, ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
+            Func<IServiceProvider, object> implementationFactory, ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
         {
             Helper.CheckContract(serviceType);
 
@@ -122,7 +122,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         // ReSharper disable once UnusedMethodReturnValue.Local
         private static IServiceCollection AddNClient(this IServiceCollection services, Action<NClientOptions>? configureOptions = null,
-            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
+            ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
         {
             Helper.CheckBinSer();
 
@@ -151,7 +151,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNClientContract<TService>(this IServiceCollection services,
-            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
+            ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
         {
             Helper.CheckContract(typeof(TService));
 
@@ -179,7 +179,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNClientContract<TService>(this IServiceCollection services, string optionsName,
-            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
+            ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
         {
             Helper.CheckContract(typeof(TService));
 
@@ -207,7 +207,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNClientByOnceCallFactory<TOnceCallFactoryImplementation>(this IServiceCollection services,
-            Action<NClientOptions>? configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
+            Action<NClientOptions>? configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
             where TOnceCallFactoryImplementation : class, IOnceCallFactory
         {
             switch (serviceLifetime)
@@ -230,7 +230,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddNClientByClientConnectionFactory<TClientConnectionFactoryImplementation>(this IServiceCollection services,
-            Action<NClientOptions>? configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
+            Action<NClientOptions>? configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
             where TClientConnectionFactoryImplementation : class, IClientConnectionFactory
         {
             switch (serviceLifetime)

@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddNRabbitMQClient(this IServiceCollection services,
             Action<RabbitMQClientOptions>? mQClientConfigureOptions = null,
             Action<NClientOptions>? clientConfigureOptions = null,
-            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton)
+            ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
         {
             if (mQClientConfigureOptions != null)
                 services.Configure(mQClientConfigureOptions);
@@ -48,7 +48,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddNRabbitMQGateway<TService>(this IServiceCollection services,
             Action<RabbitMQClientOptions>? mQClientConfigureOptions = null,
             Action<NClientOptions>? clientConfigureOptions = null,
-            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
+            ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
         {
             services.AddNRabbitMQClient(mQClientConfigureOptions, clientConfigureOptions, serviceLifetime);
             services.Configure<NClientOptions>(i => i.ForwardHeader = true);

@@ -60,7 +60,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddNHttpGateway<TService>(this IServiceCollection services,
             Action<HttpClientOptions>? httpClientConfigureOptions = null,
             Action<NClientOptions>? clientConfigureOptions = null,
-            ServiceLifetime serviceLifetime = ServiceLifetime.Singleton) where TService : class
+            ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
         {
             services.AddNHttpClient(httpClientConfigureOptions, clientConfigureOptions, serviceLifetime);
             services.Configure<NClientOptions>(i => i.ForwardHeader = true);
