@@ -36,7 +36,7 @@ namespace NetRpc.RabbitMQ
                 _service.ReceivedAsync -= ServiceReceivedAsync;
             }
 
-            _service = new Service(opt.CreateConnectionFactory(), opt.RpcQueue, opt.PrefetchCount, _logger);
+            _service = new Service(opt.CreateConnectionFactory(), opt.RpcQueue, opt.PrefetchCount, opt.Durable, opt.AutoDelete, _logger);
             _service.ReceivedAsync += ServiceReceivedAsync;
         }
 

@@ -15,16 +15,20 @@ namespace RabbitMQ.Base
         private readonly IConnection _connect;
         private readonly ILogger _logger;
         private readonly string _rpcQueue;
+        private readonly bool _durable;
+        private readonly bool _autoDelete;
         private string _clientToServiceQueue = null!;
         private volatile bool _disposed;
         private volatile IModel? _model;
         private string _serviceToClientQueue = null!;
         private bool isFirstSend = true;
 
-        public RabbitMQOnceCall(IConnection connect, string rpcQueue, ILogger logger)
+        public RabbitMQOnceCall(IConnection connect, string rpcQueue, bool durable, bool autoDelete, ILogger logger)
         {
             _connect = connect;
             _rpcQueue = rpcQueue;
+            _durable = durable;
+            _autoDelete = autoDelete;
             _logger = logger;
         }
 
@@ -50,7 +54,11 @@ namespace RabbitMQ.Base
         public async Task CreateChannelAsync()
         {
             //bug:block issue, need start a task.
-            await Task.Run(() => { _model = _connect.CreateModel(); });
+            await Task.Run(() =>
+            {
+                _model = _connect.CreateModel();
+                _model.QueueDeclare(_rpcQueue, _durable, false, _autoDelete, null);
+            });
 
             _serviceToClientQueue = _model.QueueDeclare().QueueName;
             var consumer = new AsyncEventingBasicConsumer(_model);

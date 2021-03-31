@@ -9,28 +9,32 @@ namespace RabbitMQ.Base
     public sealed class ServiceInner : IDisposable
     {
         public event AsyncEventHandler<EventArgsT<CallSession>>? ReceivedAsync;
-        private readonly string _rpcQueueName;
+        private readonly string _rpcQueue;
         private readonly int _prefetchCount;
+        private readonly bool _durable;
+        private readonly bool _autoDelete;
         private readonly ILogger _logger;
         private readonly IConnection _connect;
         private volatile IModel? _mainModel;
         private volatile bool _disposed;
 
-        public ServiceInner(IConnection connect, string rpcQueueName, int prefetchCount, ILogger logger)
+        public ServiceInner(IConnection connect, string rpcQueue, int prefetchCount, bool durable, bool autoDelete, ILogger logger)
         {
             _connect = connect;
-            _rpcQueueName = rpcQueueName;
+            _rpcQueue = rpcQueue;
             _prefetchCount = prefetchCount;
+            _durable = durable;
+            _autoDelete = autoDelete;
             _logger = logger;
         }
 
         public void CreateChannel()
         {
             _mainModel = _connect.CreateModel();
-            _mainModel.QueueDeclare(_rpcQueueName, false, false, true, null);
+            _mainModel.QueueDeclare(_rpcQueue, _durable, false, _autoDelete, null);
             var consumer = new AsyncEventingBasicConsumer(_mainModel);
             _mainModel.BasicQos(0, (ushort) _prefetchCount, true);
-            _mainModel.BasicConsume(_rpcQueueName, false, consumer);
+            _mainModel.BasicConsume(_rpcQueue, false, consumer);
             consumer.Received +=  (_, e) => OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_connect, _mainModel, e, _logger)));
         }
 
