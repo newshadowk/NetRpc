@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NetRpc;
 using NetRpc.Contract;
 using Helper = TestHelper.Helper;
@@ -35,6 +36,7 @@ namespace Client
             var services = new ServiceCollection();
             services.AddNClientContract<IServiceAsync>();
             services.AddNClientContract<IService>();
+            services.AddLogging(configure => configure.AddConsole());
             services.AddNRabbitMQClient(o => o.CopyFrom(Helper.GetMQOptions()));
             var sp = services.BuildServiceProvider();
             _clientProxy = sp.GetService<IClientProxy<IService>>();
@@ -53,7 +55,7 @@ namespace Client
 
             _proxy = _clientProxy.Proxy;
             _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
-            RunTest();
+            //RunTest();
             await RunTestAsync();
         }
 

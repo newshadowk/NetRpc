@@ -12,9 +12,14 @@
         public bool Durable { get; set;}
         public bool AutoDelete { get; set;}
 
+        /// <summary>
+        /// 连接重试次数  默认:5
+        /// </summary>
+        public int RetryCount { get; set; }
 
-        public MQOptions(string host, string virtualHost, string rpcQueue, int port, string user, string password, int prefetchCount = 1, bool durable = false,
-            bool autoDelete = true)
+
+        public MQOptions(string host, string virtualHost, string rpcQueue, int port, string user, string password,
+            int prefetchCount = 1, int retryCount = 5, bool durable = false, bool autoDelete = true)
         {
             User = user;
             Password = password;
@@ -25,6 +30,7 @@
             PrefetchCount = prefetchCount;
             Durable = durable;
             AutoDelete = autoDelete;
+            RetryCount = retryCount;
         }
 
         public MQOptions()

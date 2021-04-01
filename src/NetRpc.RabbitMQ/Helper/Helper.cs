@@ -16,7 +16,8 @@ namespace NetRpc.RabbitMQ
                 Port = options.Port,
                 AutomaticRecoveryEnabled = true,
                 NetworkRecoveryInterval = TimeSpan.FromSeconds(5),
-                DispatchConsumersAsync = true
+                DispatchConsumersAsync = true,
+                ConsumerDispatchConcurrency =  options.PrefetchCount
             };
         }
     }

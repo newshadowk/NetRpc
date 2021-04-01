@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NetRpc.Http;
 using Helper = TestHelper.Helper;
 
@@ -22,6 +23,9 @@ namespace Service
                     services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
                     services.AddNServiceContract<IServiceAsync, ServiceAsync>();
                     services.AddNServiceContract<IService, Service>();
+                }).ConfigureLogging((hostContext, loggingBuilder) =>
+                {
+                    loggingBuilder.AddConsole();
                 })
                 .Build();
             mpHost.RunAsync();
