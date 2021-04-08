@@ -33,7 +33,10 @@ namespace NetRpc
         private void DisposeManaged()
         {
             foreach (var proxy in _caches.Values)
-                ((IClientProxy) proxy.Value!)!.Dispose();
+            {
+                var clientProxy = proxy.Value as IClientProxy;
+                clientProxy?.Dispose();
+            }
         }
     }
 }
