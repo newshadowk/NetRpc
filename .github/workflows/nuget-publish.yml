@@ -1,0 +1,20 @@
+name: "nuget publish"
+
+on:
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: '版本号'
+        required: true
+        default: ''
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Make executeable
+      run: chmod +x ./.github/scripts/nuget-publish.sh
+    - name: Nuget Publish
+      run:  ./.github/scripts/nuget-publish.sh ${{secrets.NUGET_PASSWORD}} ${{github.event.inputs.tags}}
+      shell: bash
