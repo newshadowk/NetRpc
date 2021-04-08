@@ -16,5 +16,5 @@ jobs:
     - name: Make executeable
       run: chmod +x ./.github/scripts/nuget-publish.sh
     - name: Nuget Publish
-      run:  ./.github/scripts/nuget-publish.sh ${{secrets.NUGET_PASSWORD}} ${{github.event.inputs.tags}}
+      run:  ./.github/scripts/nuget-publish.sh ${{github.event.inputs.tags}} ${{secrets.NUGET_PASSWORD}}
       shell: bash

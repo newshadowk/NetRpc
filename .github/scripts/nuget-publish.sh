@@ -1,7 +1,7 @@
 #!/bin/bash
 
-pwd=$1
-version=$2
+version=$1
+pwd=$2
 
 dotnet build All.sln --configuration Release
 
