@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -23,6 +24,8 @@ namespace NetRpc
         private readonly ILogger _logger;
         private bool _isConnected;
         private readonly Timer _tHearbeat;
+        private static readonly ConcurrentDictionary<Type, ClientRetryAttribute?>? ClientRetryAttributes = new();
+        private static readonly ConcurrentDictionary<Type, ClientNotRetryAttribute?>? ClientNotRetryAttributes = new();
         public Guid Id { get; } = Guid.NewGuid();
 
         public Dictionary<string, object?> AdditionContextHeader
@@ -54,7 +57,7 @@ namespace NetRpc
                 AdditionHeader,
                 optionsName);
 
-            var invoker = new ClientMethodRetryInvoker(callFactory, GetServiceTypeSleepDurations(), _logger);
+            var invoker = new ClientMethodRetryInvoker(callFactory, GetServiceTypeSleepDurations(),GetServiceTypeNotRetryAttribute(), _logger);
             Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
             ((SimpleDispatchProxyAsync) (object) Proxy).ExceptionInvoked += ProxyExceptionInvoked;
             _tHearbeat = new Timer(nClientOptions.Value.HearbeatInterval);
@@ -80,7 +83,17 @@ namespace NetRpc
 
         private static ClientRetryAttribute? GetServiceTypeSleepDurations()
         {
-            return typeof(TService).GetCustomAttribute<ClientRetryAttribute>(true);
+            var ret = ClientRetryAttributes.GetOrAdd(typeof(TService),
+                t => t.GetCustomAttribute<ClientRetryAttribute>(true));
+            return ret;
+            //return typeof(TService).GetCustomAttribute<ClientRetryAttribute>(true);
+        }
+
+        private static ClientNotRetryAttribute? GetServiceTypeNotRetryAttribute()
+        {
+            var ret = ClientNotRetryAttributes.GetOrAdd(typeof(TService),
+                t => t.GetCustomAttribute<ClientNotRetryAttribute>(true));
+            return ret;
         }
 
         private void ProxyExceptionInvoked(object? sender, EventArgsT<Exception> e)

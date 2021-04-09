@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -15,12 +16,16 @@ namespace NetRpc
     {
         private readonly CallFactory _callFactory;
         private readonly ClientRetryAttribute? _parentRetryAttribute;
+        private readonly ClientNotRetryAttribute? _clientNotRetryAttribute;
         private readonly ILogger _logger;
+        private static readonly ConcurrentDictionary<MethodInfo, ClientRetryAttribute?>? ClientRetryAttributes = new();
+        private static readonly ConcurrentDictionary<MethodInfo, ClientNotRetryAttribute?>? ClientNotRetryAttributes = new();
 
-        public ClientMethodRetryInvoker(CallFactory callFactory, ClientRetryAttribute? parentRetryAttribute, ILogger logger)
+        public ClientMethodRetryInvoker(CallFactory callFactory, ClientRetryAttribute? parentRetryAttribute, ClientNotRetryAttribute? clientNotRetryAttribute, ILogger logger)
         {
             _callFactory = callFactory;
             _parentRetryAttribute = parentRetryAttribute;
+            _clientNotRetryAttribute = clientNotRetryAttribute;
             _logger = logger;
         }
 
@@ -73,7 +78,7 @@ namespace NetRpc
 
             //retry call
             var p = Policy
-                .Handle<Exception>(e => retryInfo.ExceptionTypes.Any(i => i.IsInstanceOfType(e)))
+                .Handle<Exception>(e => retryInfo.NeedRetry(e))
                 .WaitAndRetryAsync(retryInfo.Durations,
                     (exception, span, context) => 
                         _logger.LogWarning(exception, $"{context["name"]}, retry count:{context["count"]}, wait ms:{span.TotalMilliseconds}"));
@@ -101,20 +106,28 @@ namespace NetRpc
 
         private RetryInfo? GetRetryInfo(MethodInfo targetMethod)
         {
-            var retry = targetMethod.GetCustomAttribute<ClientRetryAttribute>();
+            var retry = ClientRetryAttributes.GetOrAdd(targetMethod, t => t.GetCustomAttribute<ClientRetryAttribute>());
+            var notRetry = ClientNotRetryAttributes.GetOrAdd(targetMethod, t => t.GetCustomAttribute<ClientNotRetryAttribute>());
             if (retry != null)
-                return GetRetryInfo(retry);
+            {
+                return GetRetryInfo(retry, notRetry);
+            }
 
             if (_parentRetryAttribute != null)
-                return GetRetryInfo(_parentRetryAttribute);
+                return GetRetryInfo(_parentRetryAttribute, notRetry ?? _clientNotRetryAttribute);
 
             return default;
         }
 
-        private static RetryInfo GetRetryInfo(ClientRetryAttribute attribute)
+        private static RetryInfo GetRetryInfo(ClientRetryAttribute attribute,ClientNotRetryAttribute? notRetryAttribute)
         {
             var durations = attribute.SleepDurations.ToList().ConvertAll(i => TimeSpan.FromMilliseconds(i)).ToArray();
-            return new RetryInfo {ExceptionTypes = attribute.ExceptionTypes, Durations = durations};
+            var notRetryExceptionTypes = notRetryAttribute?.ExceptionTypes;
+            return new RetryInfo
+            {
+                ExceptionTypes = attribute.ExceptionTypes, ExcludeExceptionTypes = notRetryExceptionTypes,
+                Durations = durations
+            };
         }
 
         private static (Func<object?, Task>? callback, CancellationToken token, Stream? stream, object?[] otherArgs) GetArgs(object?[] args)
@@ -175,6 +188,20 @@ namespace NetRpc
             public TimeSpan[] Durations { get; init; } = null!;
 
             public Type[] ExceptionTypes { get; init; } = null!;
+            public Type[]? ExcludeExceptionTypes { get; init; } = null!;
+
+            public bool NeedRetry(Exception e)
+            {
+                if (ExcludeExceptionTypes?.Length > 0)
+                {
+                    var notRetry = ExcludeExceptionTypes.Any(i => i.IsInstanceOfType(e));
+                    if (notRetry)
+                        return false;
+                }
+                var ret = this.ExceptionTypes.Any(i => i.IsInstanceOfType(e));
+                return ret;
+            }
+
         }
     }
 }
