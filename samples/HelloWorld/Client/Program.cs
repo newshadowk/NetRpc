@@ -30,6 +30,7 @@ namespace Client
             Console.WriteLine("call: hello world.");
             var ret = await service.CallAsync("hello world.");
             Console.WriteLine($"ret: {ret}");
+
             Console.Read();
         }
     }

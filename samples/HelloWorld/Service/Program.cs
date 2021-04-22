@@ -60,10 +60,5 @@ namespace Service
             Console.WriteLine($"Receive: {s}");
             return s;
         }
-
-        public Task<string> CallAsync(string s, string s1)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
