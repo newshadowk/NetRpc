@@ -21,7 +21,7 @@ namespace Client
 
         private static async Task Main(string[] args)
         {
-            await RabbitMQ();
+            //await RabbitMQ();
             await Grpc();
             await Http();
 
