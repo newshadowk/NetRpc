@@ -32,9 +32,8 @@ namespace NetRpc.Http
                                 property.Value.Example = new OpenApiNull();
                                 break;
                             }
-
-                            property.Value.Example = OpenApiAnyFactory.CreateFor(property.Value, attribute.Value);
-
+                    
+                            property.Value.Example = OpenApiAnyFactoryOld.CreateFor(property.Value, attribute.Value);
                             //property.Value.Example = OpenApiAnyFactory.TryCreateFor(property.Value, attribute.Value, out IOpenApiAny openApiAny)
                             //    ? openApiAny
                             //    : null;
