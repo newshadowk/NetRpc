@@ -16,10 +16,14 @@
         /// 连接重试次数  默认:5
         /// </summary>
         public int RetryCount { get; set; }
+        /// <summary>
+        /// 队列优先级 数字越大优先级越高 0表示不开启优先级队列
+        /// </summary>
+        public int MaxPriority { get; set; }
 
 
         public MQOptions(string host, string virtualHost, string rpcQueue, int port, string user, string password,
-            int prefetchCount = 1, int retryCount = 5, bool durable = false, bool autoDelete = true)
+            int prefetchCount = 1, int retryCount = 5, bool durable = false, bool autoDelete = true,int maxPriority = 0)
         {
             User = user;
             Password = password;
@@ -31,6 +35,7 @@
             Durable = durable;
             AutoDelete = autoDelete;
             RetryCount = retryCount;
+            MaxPriority = maxPriority;
         }
 
         public MQOptions()

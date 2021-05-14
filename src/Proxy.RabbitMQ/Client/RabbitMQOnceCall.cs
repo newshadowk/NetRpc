@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -22,13 +23,14 @@ namespace RabbitMQ.Base
         private readonly bool _durable;
         private readonly bool _autoDelete;
         private readonly int _retryCount;
+        private readonly int _maxPriority;
         private string _clientToServiceQueue = null!;
         private volatile bool _disposed;
         private volatile IModel? _model;
         private string _serviceToClientQueue = null!;
         private bool isFirstSend = true;
 
-        public RabbitMQOnceCall(IConnection connect, string rpcQueue, bool durable, bool autoDelete,int retryCount, ILogger logger)
+        public RabbitMQOnceCall(IConnection connect, string rpcQueue, bool durable, bool autoDelete,int maxPriority, int retryCount, ILogger logger)
         {
             _connect = connect;
             _rpcQueue = rpcQueue;
@@ -36,6 +38,7 @@ namespace RabbitMQ.Base
             _autoDelete = autoDelete;
             _logger = logger;
             _retryCount = retryCount;
+            _maxPriority = maxPriority;
         }
 
         public void Dispose()
@@ -63,7 +66,10 @@ namespace RabbitMQ.Base
             await Task.Run(() =>
             {
                 _model = _connect.CreateModel();
-                _model.QueueDeclare(_rpcQueue, _durable, false, _autoDelete, null);
+                var args = new Dictionary<string, object>();
+                if (_maxPriority > 0)
+                    args.Add("x-max-priority", _maxPriority);
+                _model.QueueDeclare(_rpcQueue, _durable, false, _autoDelete, args);
             });
 
             _serviceToClientQueue = _model.QueueDeclare().QueueName;

@@ -15,7 +15,7 @@ namespace NetRpc.RabbitMQ
         public RabbitMQClientConnection(IConnection connect, MQOptions opt, ILogger logger)
         {
             _opt = opt;
-            _call = new RabbitMQOnceCall(connect, opt.RpcQueue, opt.Durable, opt.AutoDelete, opt.RetryCount, logger);
+            _call = new RabbitMQOnceCall(connect, opt.RpcQueue, opt.Durable, opt.AutoDelete, opt.MaxPriority, opt.RetryCount, logger);
             _call.ReceivedAsync += CallReceived;
         }
 
