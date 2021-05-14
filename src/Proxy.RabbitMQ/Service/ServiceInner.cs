@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
@@ -17,8 +18,9 @@ namespace RabbitMQ.Base
         private readonly IConnection _connect;
         private volatile IModel? _mainModel;
         private volatile bool _disposed;
+        private readonly int _maxPriority;
 
-        public ServiceInner(IConnection connect, string rpcQueue, int prefetchCount, bool durable, bool autoDelete, ILogger logger)
+        public ServiceInner(IConnection connect, string rpcQueue, int prefetchCount, int maxPriority, bool durable, bool autoDelete, ILogger logger)
         {
             _connect = connect;
             _rpcQueue = rpcQueue;
@@ -26,12 +28,16 @@ namespace RabbitMQ.Base
             _durable = durable;
             _autoDelete = autoDelete;
             _logger = logger;
+            _maxPriority = maxPriority;
         }
 
         public void CreateChannel()
         {
             _mainModel = _connect.CreateModel();
-            _mainModel.QueueDeclare(_rpcQueue, _durable, false, _autoDelete, null);
+            var args = new Dictionary<string, object>();
+            if (_maxPriority > 0)
+                args.Add("x-max-priority", _maxPriority);
+            _mainModel.QueueDeclare(_rpcQueue, _durable, false, _autoDelete, args);
             var consumer = new AsyncEventingBasicConsumer(_mainModel);
             _mainModel.BasicQos(0, (ushort) _prefetchCount, true);
             _mainModel.BasicConsume(_rpcQueue, false, consumer);

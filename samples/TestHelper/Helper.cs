@@ -18,7 +18,7 @@ namespace TestHelper
             var virtualHost = "testvh";
             var port = 5672;
             var rpcQueue = "rpc_test";
-            var prefetchCount = 10;
+            var prefetchCount = 1;
             var p = new MQOptions(host, virtualHost, rpcQueue, port, user, password, prefetchCount, 5, true, false);
             return p;
         }

@@ -21,9 +21,9 @@ namespace Client
 
         private static async Task Main(string[] args)
         {
-            //await RabbitMQ();
-            await Grpc();
-            await Http();
+            await RabbitMQ();
+            //await Grpc();
+            //await Http();
 
             Console.WriteLine("\r\n--------------- End ---------------");
             Console.Read();

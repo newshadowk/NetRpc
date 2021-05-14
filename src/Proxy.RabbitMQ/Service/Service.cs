@@ -20,13 +20,14 @@ namespace RabbitMQ.Base
         private readonly bool _durable;
         private readonly bool _autoDelete;
         private readonly int _retryCount;
+        private readonly int _maxPriority;
         private readonly ILogger _logger;
         private volatile bool _disposed;
         private readonly object _lockObj = new();
 
         public ServiceInner? Inner { get; private set; }
 
-        public Service(ConnectionFactory factory, string rpcQueue, int prefetchCount, bool durable, bool autoDelete,int retryCount, ILogger logger)
+        public Service(ConnectionFactory factory, string rpcQueue, int prefetchCount, int maxPriority, bool durable, bool autoDelete,int retryCount, ILogger logger)
         {
             _factory = factory;
             _rpcQueue = rpcQueue;
@@ -35,6 +36,7 @@ namespace RabbitMQ.Base
             _autoDelete = autoDelete;
             _logger = logger;
             _retryCount = retryCount;
+            _maxPriority = maxPriority;
         }
 
         public void Open()
@@ -42,7 +44,7 @@ namespace RabbitMQ.Base
             TryConnect();
             //_connection = _factory.CreateConnection();
             //_connection.ConnectionShutdown += ConnectionConnectionShutdown;
-            Inner = new ServiceInner(_connection, _rpcQueue, _prefetchCount, _durable, _autoDelete, _logger);
+            Inner = new ServiceInner(_connection, _rpcQueue, _prefetchCount, _maxPriority, _durable, _autoDelete, _logger);
             Inner.CreateChannel();
             Inner.ReceivedAsync += (_, e) => OnReceivedAsync(e);
         }
