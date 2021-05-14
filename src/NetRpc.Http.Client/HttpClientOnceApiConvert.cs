@@ -82,7 +82,7 @@ namespace NetRpc.Http.Client
             return Task.CompletedTask;
         }
 
-        public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, CancellationToken token)
+        public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, byte mqPriority, CancellationToken token)
         {
             _callbackAction = methodContext.ContractMethod.Route.DefaultRout.MergeArgType.CallbackAction;
             var postObj = methodContext.ContractMethod.CreateMergeArgTypeObj(_callId, _connId, stream?.Length ?? 0, callParam.PureArgs);

@@ -71,7 +71,7 @@ namespace NetRpc.Grpc
             ChannelType = ChannelType.Grpc
         };
 
-        public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false)
+        public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false,byte mqPriority = 0)
         {
             //add a lock here will not slowdown send speed.
             using (await _sendLock.LockAsync())

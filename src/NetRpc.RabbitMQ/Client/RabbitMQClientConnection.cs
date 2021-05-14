@@ -45,9 +45,9 @@ namespace NetRpc.RabbitMQ
 
         public event EventHandler<EventArgsT<Exception>>? ReceiveDisconnected;
 
-        public Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false)
+        public Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false, byte mqPriority = 0)
         {
-            return _call.SendAsync(buffer, isPost);
+            return _call.SendAsync(buffer, isPost, mqPriority);
         }
 
         public async Task StartAsync(string? authorizationToken)

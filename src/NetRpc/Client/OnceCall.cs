@@ -76,7 +76,7 @@ namespace NetRpc
                     }
 
                     //sendCmd
-                    var sendStreamNext = await _convert.SendCmdAsync(p, methodContext, stream, methodContext.ContractMethod.IsMQPost, token);
+                    var sendStreamNext = await _convert.SendCmdAsync(p, methodContext, stream, methodContext.ContractMethod.IsMQPost, methodContext.ContractMethod.MqPriority, token);
 
                     //cancel token
                     _reg = token.Register(async () =>

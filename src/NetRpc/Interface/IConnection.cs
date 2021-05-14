@@ -11,7 +11,7 @@ namespace NetRpc
 
         event EventHandler<EventArgsT<Exception>>? ReceiveDisconnected;
 
-        Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false);
+        Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false,byte mqPriority = 0);
 
         Task StartAsync(string? authorizationToken);
     }

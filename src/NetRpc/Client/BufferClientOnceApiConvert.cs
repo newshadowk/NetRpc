@@ -50,11 +50,11 @@ namespace NetRpc
             return _connection.SendAsync(new Request(RequestType.BufferEnd).All);
         }
 
-        public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, CancellationToken token)
+        public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, byte mqPriority, CancellationToken token)
         {
             try
             {
-                await _connection.SendAsync(new Request(RequestType.Cmd, callParam.ToBytes()).All, stream == null && token == CancellationToken.None, isPost);
+                await _connection.SendAsync(new Request(RequestType.Cmd, callParam.ToBytes()).All, stream == null && token == CancellationToken.None, isPost, mqPriority);
             }
             catch (Exception e)
             {

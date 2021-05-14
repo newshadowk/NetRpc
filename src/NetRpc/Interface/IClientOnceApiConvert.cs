@@ -18,7 +18,7 @@ namespace NetRpc
         Task SendBufferEndAsync();
 
         /// <returns>True do not send stream next, otherwise false.</returns>
-        Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, CancellationToken token);
+        Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, byte mqPriority, CancellationToken token);
 
         event EventHandler<EventArgsT<object>>? ResultStream;
         event AsyncEventHandler<EventArgsT<object?>>? ResultAsync;

@@ -72,7 +72,7 @@ namespace RabbitMQ.Base
             consumer.Received += ConsumerReceived;
         }
 
-        public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isPost)
+        public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isPost,byte mqPriority)
         {
             var policy = Policy.Handle<BrokerUnreachableException>()
                 .Or<SocketException>()
@@ -89,6 +89,8 @@ namespace RabbitMQ.Base
                     var p = _model!.CreateBasicProperties();
                     if (_durable)
                         p.DeliveryMode = 2;
+                    if (mqPriority != 0)
+                        p.Priority = mqPriority;
                     _model.BasicPublish("", _rpcQueue, p, buffer);
                     await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>?>(null));
                 });

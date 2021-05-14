@@ -36,7 +36,9 @@ namespace NetRpc
             IsTraceReturnIgnore = GetCustomAttribute<TracerReturnIgnoreAttribute>(contractType, methodInfo) != null;
 
             Route = new MethodRoute(contractType, methodInfo);
-            IsMQPost = GetCustomAttribute<MQPostAttribute>(contractType, methodInfo) != null;
+            var mqPostAttribute = GetCustomAttribute<MQPostAttribute>(contractType, methodInfo);
+            IsMQPost = mqPostAttribute != null;
+            MqPriority = mqPostAttribute?.Priority ?? 0;
             IsHideFaultExceptionDescription = GetCustomAttribute<HideFaultExceptionDescriptionAttribute>(contractType, methodInfo) != null;
             Tags = new ReadOnlyCollection<string>(GetTags(contractTypeTag, methodInfo));
 
@@ -67,6 +69,11 @@ namespace NetRpc
         public bool IsTracerIgnore { get; }
 
         public bool IsMQPost { get; }
+
+        /// <summary>
+        /// 队列优先级
+        /// </summary>
+        public byte MqPriority { get; set; }
 
         public bool IsHideFaultExceptionDescription { get; }
 
