@@ -22,8 +22,8 @@ namespace Client
         private static async Task Main(string[] args)
         {
             await RabbitMQ();
-            //await Grpc();
-            //await Http();
+            await Grpc();
+            await Http();
 
             Console.WriteLine("\r\n--------------- End ---------------");
             Console.Read();
@@ -55,7 +55,7 @@ namespace Client
 
             _proxy = _clientProxy.Proxy;
             _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
-            //RunTest();
+            RunTest();
             await RunTestAsync();
         }
 
