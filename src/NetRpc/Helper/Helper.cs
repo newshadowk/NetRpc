@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NetRpc.Contract;
+#pragma warning disable 618
 
 namespace NetRpc
 {
@@ -102,12 +103,12 @@ namespace NetRpc
             {
                 if (readCount < StreamBufferSize)
                 {
-                    await publishBuffer(bo.Array.AsMemory().Slice(0, readCount));
+                    await publishBuffer(bo.Array.AsMemory()[..readCount]);
                     await publishBufferEnd();
                     return;
                 }
 
-                await publishBuffer(bo.Array.AsMemory().Slice(0, readCount));
+                await publishBuffer(bo.Array.AsMemory()[..readCount]);
                 readCount = await stream.GreedReadAsync(bo.Array, 0, StreamBufferSize, token);
             }
 
