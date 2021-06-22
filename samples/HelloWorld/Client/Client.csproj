@@ -10,4 +10,12 @@
     <ProjectReference Include="..\DataContract\DataContract.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="config\appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
+
 </Project>
