@@ -107,8 +107,15 @@ namespace NetRpc
                 catch (Exception e)
                 {
                     _logger.LogWarning(e, "Callback error, cancel action.");
-                    _serviceCts.Cancel();
-                    throw;
+
+                    try
+                    {
+                        _serviceCts.Cancel();
+                    }
+                    catch
+                    {
+                        _logger.LogWarning(e, "_serviceCts.Cancel(), failed.");
+                    }
                 }
             }
 
