@@ -81,7 +81,14 @@ namespace NetRpc
 
         public async ValueTask DisposeAsync()
         {
-            await InvokeAsync();
+            try
+            {
+                await InvokeAsync();
+            }
+            catch
+            {
+            }
+
             _isEnd = true;
             _t.Dispose();
         }

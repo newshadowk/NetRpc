@@ -43,7 +43,13 @@ namespace NetRpc
             if ((DateTime.Now - _lastTime).TotalMilliseconds < Interval)
                 return;
 
-            await OnElapsedAsync(e);
+            try
+            {
+                await OnElapsedAsync(e);
+            }
+            catch
+            {
+            }
             _lastTime = DateTime.Now;
         }
     }
