@@ -16,10 +16,8 @@ namespace NetRpc
         Task StartAsync(string? authorizationToken);
     }
 
-    public interface IServiceConnection
+    public interface IServiceConnection : IAsyncDisposable
     {
-        ValueTask DisposeAsync();
-
         event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>> ReceivedAsync;
 
         Task SendAsync(ReadOnlyMemory<byte> buffer);
