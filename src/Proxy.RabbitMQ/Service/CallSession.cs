@@ -9,11 +9,12 @@ namespace RabbitMQ.Base
 {
     public sealed class CallSession : IDisposable
     {
+        private readonly IConnection _connection;
         private readonly IModel _mainModel;
         private readonly BasicDeliverEventArgs _e;
         private readonly ILogger _logger;
 
-        private readonly IModel _clientToServiceModel;
+        private IModel? _clientToServiceModel;
         private readonly string _serviceToClientQueue;
         private string? _clientToServiceQueue;
         private bool _disposed;
@@ -23,9 +24,9 @@ namespace RabbitMQ.Base
 
         public CallSession(IConnection connection, IModel mainModel, BasicDeliverEventArgs e, ILogger logger)
         {
-            _clientToServiceModel = connection.CreateModel();
             _isPost = e.BasicProperties.ReplyTo == null;
             _serviceToClientQueue = e.BasicProperties.ReplyTo!;
+            _connection = connection;
             _mainModel = mainModel;
             _e = e;
             _logger = logger;
@@ -35,6 +36,7 @@ namespace RabbitMQ.Base
         {
             if (!_isPost)
             {
+                _clientToServiceModel = _connection.CreateModel();
                 _clientToServiceQueue = _clientToServiceModel.QueueDeclare().QueueName;
                 var clientToServiceConsumer = new AsyncEventingBasicConsumer(_clientToServiceModel);
                 clientToServiceConsumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Body));
@@ -59,7 +61,7 @@ namespace RabbitMQ.Base
             try
             {
                 _mainModel.BasicAck(_e.DeliveryTag, false);
-                if (_clientToServiceQueue != null)
+                if (_clientToServiceModel != null)
                 {
                     _clientToServiceModel.Close();
                     _clientToServiceModel.Dispose();
