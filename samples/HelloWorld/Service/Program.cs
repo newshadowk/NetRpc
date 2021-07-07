@@ -30,7 +30,7 @@ namespace Service
                             services.AddNHttpService();
 
                             services.AddNGrpcService();
-                            services.AddNServiceContract<IServiceAsync, ServiceAsync>(ServiceLifetime.Scoped);
+                            services.AddNServiceContract<IServiceAsync, ServiceAsync>();
                         }).Configure(app =>
                         {
                             app.UseCors(set =>

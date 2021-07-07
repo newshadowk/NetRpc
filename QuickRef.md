@@ -85,10 +85,10 @@ var httpHost = Host.CreateDefaultBuilder(args)
     .ConfigureWebHostDefaults(builder =>
     {
         builder.ConfigureKestrel((_, options) =>
-        {
-            options.Limits.MaxRequestBodySize = 10737418240; //10G
-            options.ListenAnyIP(50002);
-        })
+            {
+                options.Limits.MaxRequestBodySize = 10737418240; //10G
+                options.ListenAnyIP(50002);
+            })
             .ConfigureServices(services =>
             {
                 services.AddCors();
