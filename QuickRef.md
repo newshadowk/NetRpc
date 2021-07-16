@@ -59,7 +59,7 @@ var mpHost = new HostBuilder()
         services.AddNServiceContract<IService, Service>();
     })
     .Build();
-mpHost.RunAsync();
+await mpHost.RunAsync();
 ```
 ```c#
 //grpc service
@@ -77,7 +77,7 @@ var grpcHost = Host.CreateDefaultBuilder()
                 services.AddNServiceContract<IService, Service>();
             }).Configure(app => { app.UseNGrpc(); });
     }).Build();
-grpcHost.RunAsync();
+await grpcHost.RunAsync();
 ```
 ```c#
 //http service
@@ -112,5 +112,5 @@ var httpHost = Host.CreateDefaultBuilder(args)
                 app.UseNHttp();
             });
     }).Build();
-httpHost.RunAsync();
+await httpHost.RunAsync();
 ```
