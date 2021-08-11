@@ -5,13 +5,13 @@ services.AddNClientContract<IServiceAsync>();
 services.AddNClientContract<IService>();
 services.AddNRabbitMQClient(o => o.CopyFrom(Helper.GetMQOptions()));
 var sp = services.BuildServiceProvider();
-_clientProxy = sp.GetService<IClientProxy<IService>>();
-_clientProxy.Connected += (_, _) => Console.WriteLine("[event] Connected");
-_clientProxy.DisConnected += (_, _) => Console.WriteLine("[event] DisConnected");
-_clientProxy.ExceptionInvoked += (_, _) => Console.WriteLine("[event] ExceptionInvoked");
+var clientProxy = sp.GetService<IClientProxy<IService>>();
+clientProxy.Connected += (_, _) => Console.WriteLine("[event] Connected");
+clientProxy.DisConnected += (_, _) => Console.WriteLine("[event] DisConnected");
+clientProxy.ExceptionInvoked += (_, _) => Console.WriteLine("[event] ExceptionInvoked");
 
 //Heartbeat
-_clientProxy.HeartbeatAsync += (s, e) =>
+clientProxy.HeartbeatAsync += (s, e) =>
 {
     Console.WriteLine("[event] Heartbeat");
     ((IService)((IClientProxy)s).Proxy).Hearbeat();
@@ -19,8 +19,8 @@ _clientProxy.HeartbeatAsync += (s, e) =>
 };
 clientProxy.StartHeartbeat(true);
 
-_proxy = _clientProxy.Proxy;
-_proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
+var proxy = _clientProxy.Proxy;
+var proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
 ```
 ```c#
 //Grpc client
@@ -29,9 +29,9 @@ services.AddNClientContract<IServiceAsync>();
 services.AddNClientContract<IService>();
 services.AddNGrpcClient(o => o.Url = "http://localhost:50001");
 var sp = services.BuildServiceProvider();
-_clientProxy = sp.GetService<IClientProxy<IService>>();
-_proxy = _clientProxy.Proxy;
-_proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
+var clientProxy = sp.GetService<IClientProxy<IService>>();
+var proxy = _clientProxy.Proxy;
+var proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
 ```
 ```c#
 //Http client
@@ -40,13 +40,12 @@ services.AddNClientContract<IService>();
 services.AddNClientContract<IServiceAsync>();
 services.AddNHttpClient(o =>
 {
-    o.SignalRHubUrl = "http://localhost:50002/callback";
     o.ApiUrl = "http://localhost:50002/api";
 });
 var sp = services.BuildServiceProvider();
-_clientProxy = sp.GetService<IClientProxy<IService>>();
-_proxy = _clientProxy.Proxy;
-_proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
+var clientProxy = sp.GetService<IClientProxy<IService>>();
+var proxy = _clientProxy.Proxy;
+var proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
 ```
 
 ```c#
