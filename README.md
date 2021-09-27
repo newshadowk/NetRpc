@@ -949,6 +949,7 @@ Task UploadAsync(Stream stream, string streamName);
 ```c#
 public interface IServiceAsync
 {
+    //default Content-Type "image/jepg"
     [HttpImages()]
     Task<Stream> CallAsync();
 ```
