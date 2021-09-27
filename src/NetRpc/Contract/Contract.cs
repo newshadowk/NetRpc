@@ -34,6 +34,7 @@ namespace NetRpc
             IsTracerIgnore = GetCustomAttribute<TracerIgnoreAttribute>(contractType, methodInfo) != null;
             IsTracerArgsIgnore = GetCustomAttribute<TracerArgsIgnoreAttribute>(contractType, methodInfo) != null;
             IsTraceReturnIgnore = GetCustomAttribute<TracerReturnIgnoreAttribute>(contractType, methodInfo) != null;
+            IsImages = GetCustomAttribute<HttpImagesAttribute>(contractType, methodInfo) != null;
 
             Route = new MethodRoute(contractType, methodInfo);
             var mqPostAttribute = GetCustomAttribute<MQPostAttribute>(contractType, methodInfo);
@@ -69,6 +70,8 @@ namespace NetRpc
         public bool IsTracerIgnore { get; }
 
         public bool IsMQPost { get; }
+
+        public bool IsImages { get; }
 
         /// <summary>
         /// 队列优先级

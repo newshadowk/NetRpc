@@ -84,7 +84,7 @@ namespace NetRpc.Http
             if (!result.HasStream)
                 await _connection.SendAsync(new Result(result.Result));
             else
-                await _connection.SendWithStreamAsync(result, stream!, streamName!);
+                await _connection.SendWithStreamAsync(result, stream!, streamName);
             return false;
         }
 

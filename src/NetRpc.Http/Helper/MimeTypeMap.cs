@@ -711,9 +711,9 @@ namespace NetRpc.Http
             return mappings;
         }
 
-        public static string GetMimeType(string extension)
+        public static string GetMimeType(string? extension)
         {
-            if (extension == null)
+            if (string.IsNullOrEmpty(extension))
                 return "application/octet-stream";
 
             if (!extension.StartsWith("."))

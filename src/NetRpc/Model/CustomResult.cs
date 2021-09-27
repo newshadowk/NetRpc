@@ -11,10 +11,13 @@ namespace NetRpc
 
         public bool HasStream { get; set; }
 
-        public CustomResult(object? result, bool hasStream, long streamLength)
+        public bool IsImages { get; set; }
+
+        public CustomResult(object? result, bool hasStream, bool isImages, long streamLength)
         {
             Result = result;
             HasStream = hasStream;
+            IsImages = isImages;
             StreamLength = streamLength;
         }
     }

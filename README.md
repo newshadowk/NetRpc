@@ -945,6 +945,30 @@ public class ComplexStream
 Task UploadAsync(Stream stream, string streamName);
 
 ```
+## [Http] HttpImages
+```c#
+public interface IServiceAsync
+{
+    [HttpImages()]
+    Task<Stream> CallAsync();
+```
+Means return type is images to show in browser, not a download file.
+
+```c#
+
+public class ComplexStream
+{
+    public Stream Stream { get; set; }
+
+    //affect Content-Type, 1.png -> "image/png", 1.jpg -> "image/jepg"
+    public string StreamName { get; set; }  
+}
+
+public interface IServiceAsync
+{
+    [HttpImages()]
+    Task<ComplexStream> CallAsync();
+```
 
 ## [Http] DefaultValue
 Set DefaultValue to contract, will effect to swagger.

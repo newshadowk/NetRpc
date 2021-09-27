@@ -59,7 +59,7 @@ namespace NetRpc
                 var hasStream = ret.TryGetStream(out var retStream, out var retStreamName);
 
                 //send result
-                var sendStreamNext = await _convert.SendResultAsync(new CustomResult(ret, hasStream, retStream.GetLength()), retStream, retStreamName, context);
+                var sendStreamNext = await _convert.SendResultAsync(new CustomResult(ret, hasStream, context.ContractMethod.IsImages, retStream.GetLength()), retStream, retStreamName, context);
                 if (!sendStreamNext)
                     return;
 

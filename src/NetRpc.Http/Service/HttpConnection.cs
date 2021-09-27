@@ -83,16 +83,34 @@ namespace NetRpc.Http
             }
         }
 
-        public async Task SendWithStreamAsync(CustomResult result, Stream stream, string streamName)
+        public async Task SendWithStreamAsync(CustomResult result, Stream stream, string? streamName)
         {
             var emptyActionDescriptor = new ActionDescriptor();
+            // ReSharper disable once ConstantNullCoalescingCondition
+            // _context.GetRouteData() may null here.
             var routeData = _context.GetRouteData() ?? new RouteData();
             var actionContext = new ActionContext(_context, routeData, emptyActionDescriptor);
 
-            var fRet = new FileStreamResult(stream, MimeTypeMap.GetMimeType(Path.GetExtension(streamName)))
+            FileStreamResult fRet;
+
+            if (result.IsImages)
             {
-                FileDownloadName = streamName
-            };
+                //images no FileDownloadName
+                string ext;
+                if (string.IsNullOrEmpty(streamName))
+                    ext = "image/jpeg";
+                else
+                    ext = MimeTypeMap.GetMimeType(Path.GetExtension(streamName));
+                fRet = new FileStreamResult(stream, ext);
+            }
+            else
+            {
+                fRet = new FileStreamResult(stream, MimeTypeMap.GetMimeType(Path.GetExtension(streamName)))
+                {
+                    FileDownloadName = streamName
+                };
+            }
+
 
             if (!(result.Result is Stream))
             {

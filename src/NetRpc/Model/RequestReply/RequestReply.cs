@@ -4,7 +4,7 @@ namespace NetRpc
 {
     public static class NullReply
     {
-        public static ReadOnlyMemory<byte> All { get; } = Reply.FromResult(new CustomResult(null, false, 0)).All;
+        public static ReadOnlyMemory<byte> All { get; } = Reply.FromResult(new CustomResult(null, false, false, 0)).All;
     }
 
     internal class Message
