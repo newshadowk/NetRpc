@@ -98,7 +98,9 @@ namespace NetRpc.Http
     {
         public bool MatchContentType(string? contentType)
         {
-            return contentType == "application/json";
+            if (contentType == null)
+                return false;
+            return contentType.StartsWith("application/json");
         }
 
         public async Task<HttpObj> ProcessAsync(ProcessItem item)
