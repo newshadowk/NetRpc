@@ -75,27 +75,15 @@ namespace NetRpc
         {
             foreach (var i in instances)
             {
-                (MethodInfo instanceMethodInfo, ContractMethod contractMethod) = GetMethodInfo(action, i.Contract, i.Target);
+                (MethodInfo? instanceMethodInfo, ContractMethod? contractMethod) = GetMethodInfo(action, i.Contract, i.Target);
                 if (instanceMethodInfo != default)
-                    return (instanceMethodInfo, contractMethod, i);
+                    return (instanceMethodInfo, contractMethod!, i);
             }
 
             throw new MethodNotFoundException($"{action.FullName} not found in instances");
         }
 
-        public static ContractMethod GetContractMethod(ActionInfo action, List<ContractInfo> contracts)
-        {
-            foreach (var contract in contracts)
-            {
-                var found = contract.Methods.FirstOrDefault(i => i.MethodInfo.ToFullMethodName() == action.FullName);
-                if (found != null)
-                    return found;
-            }
-
-            throw new ArgumentException($"{action} is not found.");
-        }
-
-        private static (MethodInfo instanceMethodInfo, ContractMethod contractMethod) GetMethodInfo(ActionInfo action, ContractInfo contract, object instance)
+        private static (MethodInfo? instanceMethodInfo, ContractMethod? contractMethod) GetMethodInfo(ActionInfo action, ContractInfo contract, object instance)
         {
             var methodObj = contract.Methods.FirstOrDefault(i => i.MethodInfo.ToFullMethodName() == action.FullName);
             if (methodObj != null)
