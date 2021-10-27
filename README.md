@@ -48,7 +48,7 @@ PM> Install-Package NetRpc.Grpc
 //service side
 class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         var host = Host.CreateDefaultBuilder()
             .ConfigureWebHostDefaults(webBuilder =>
@@ -70,9 +70,10 @@ class Program
 
 public class ServiceAsync : IServiceAsync
 {
-    public async Task CallAsync(string s)
+    public async Task<string> CallAsync(string s)
     {
         Console.WriteLine($"Receive: {s}");
+        return "call ret";
     }
 }
 ```
@@ -80,7 +81,7 @@ public class ServiceAsync : IServiceAsync
 //client side
 class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         //register
         var services = new ServiceCollection();
@@ -99,9 +100,9 @@ class Program
 ```
 ```c#
 //datacontract is referenced by client and service
-public interface IService
+public interface IServiceAsync
 {
-    void Call(string s);
+    Task<string> CallAsync(string s);
 }
 ```
 Code here: [samples/HelloWorld](samples/HelloWorld).
