@@ -56,7 +56,6 @@ namespace NetRpc
                         catch (Exception ex)
                         {
                             _logger.LogWarning(ex, "client callback");
-                            throw;
                         }
                     };
 

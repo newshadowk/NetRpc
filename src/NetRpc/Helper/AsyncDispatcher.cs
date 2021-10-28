@@ -79,9 +79,12 @@ namespace NetRpc
 
         public async Task<TResult> InvokeAsync<TResult>(Func<TResult> callback)
         {
+            if (_cts.IsCancellationRequested)
+                throw new ObjectDisposedException("AsyncDispatcher");
+
             var invokeFunc = new InvokeFunc(() => callback.Invoke());
             _funcQ.Post(invokeFunc);
-            var (exceptionDispatchInfo, result) = await invokeFunc.InvokedFlag.ReceiveAsync();
+            var (exceptionDispatchInfo, result) = await invokeFunc.InvokedFlag.ReceiveAsync(_cts.Token);
             exceptionDispatchInfo?.Throw();
             return (TResult) result!;
         }
