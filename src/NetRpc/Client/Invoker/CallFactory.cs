@@ -45,6 +45,7 @@ namespace NetRpc
                 _additionHeader,
                 _nClientOptions.TimeoutInterval,
                 _nClientOptions.ForwardHeader,
+                _nClientOptions.ForwardHeaderKeys,
                 _optionsName);
         }
     }

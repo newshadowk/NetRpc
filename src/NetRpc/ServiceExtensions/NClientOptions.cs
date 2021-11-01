@@ -1,4 +1,6 @@
-﻿namespace NetRpc
+﻿using System.Collections.Generic;
+
+namespace NetRpc
 {
     public class NClientOptions
     {
@@ -16,5 +18,10 @@
         /// Forward header from coming side, default value is false.
         /// </summary>
         public bool ForwardHeader { get; set; }
+
+        /// <summary>
+        /// Forward header from coming side by keys.
+        /// </summary>
+        public List<string> ForwardHeaderKeys { get; set; } = new();
     }
 }

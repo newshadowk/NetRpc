@@ -19,6 +19,7 @@ namespace NetRpc
         private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
         private volatile int _timeoutInterval;
         private readonly bool _forwardHeader;
+        private readonly List<string> _forwardHeaderKeys;
         private static readonly AsyncLocal<Dictionary<string, object?>> AsyncLocalHeader = new();
 
         public Call(Guid clientProxyId,
@@ -30,6 +31,7 @@ namespace NetRpc
             Dictionary<string, object?> additionHeader,
             int timeoutInterval,
             bool forwardHeader,
+            List<string> forwardHeaderKeys,
             string? optionsName)
         {
             _clientProxyId = clientProxyId;
@@ -39,6 +41,7 @@ namespace NetRpc
             _factory = factory;
             _timeoutInterval = timeoutInterval;
             _forwardHeader = forwardHeader;
+            _forwardHeaderKeys = forwardHeaderKeys;
             _optionsName = optionsName;
             _middlewareBuilder = new ClientMiddlewareBuilder(middlewareOptions, serviceProvider);
             AdditionHeader = additionHeader;
@@ -109,6 +112,15 @@ namespace NetRpc
                 if (contextH != null)
                     foreach (var key in contextH.Keys)
                         dic.Add(key, contextH[key]);
+            }
+            else if (_forwardHeaderKeys.Count > 0)
+            {
+                if (contextH != null)
+                    foreach (var key in contextH.Keys)
+                    {
+                        if (_forwardHeaderKeys.Exists(i => i.ToLower() == key.ToLower()))
+                            dic.Add(key, contextH[key]);
+                    }
             }
 
             foreach (var key in AdditionHeader.Keys)
