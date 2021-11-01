@@ -18,8 +18,8 @@ namespace NetRpc
         private readonly ClientRetryAttribute? _parentRetryAttribute;
         private readonly ClientNotRetryAttribute? _clientNotRetryAttribute;
         private readonly ILogger _logger;
-        private static readonly ConcurrentDictionary<MethodInfo, ClientRetryAttribute?>? ClientRetryAttributes = new();
-        private static readonly ConcurrentDictionary<MethodInfo, ClientNotRetryAttribute?>? ClientNotRetryAttributes = new();
+        private static readonly ConcurrentDictionary<MethodInfo, ClientRetryAttribute?> ClientRetryAttributes = new();
+        private static readonly ConcurrentDictionary<MethodInfo, ClientNotRetryAttribute?> ClientNotRetryAttributes = new();
 
         public ClientMethodRetryInvoker(CallFactory callFactory, ClientRetryAttribute? parentRetryAttribute, ClientNotRetryAttribute? clientNotRetryAttribute, ILogger logger)
         {
@@ -188,7 +188,7 @@ namespace NetRpc
             public TimeSpan[] Durations { get; init; } = null!;
 
             public Type[] ExceptionTypes { get; init; } = null!;
-            public Type[]? ExcludeExceptionTypes { get; init; } = null!;
+            public Type[]? ExcludeExceptionTypes { get; init; }
 
             public bool NeedRetry(Exception e)
             {
@@ -198,7 +198,7 @@ namespace NetRpc
                     if (notRetry)
                         return false;
                 }
-                var ret = this.ExceptionTypes.Any(i => i.IsInstanceOfType(e));
+                var ret = ExceptionTypes.Any(i => i.IsInstanceOfType(e));
                 return ret;
             }
 

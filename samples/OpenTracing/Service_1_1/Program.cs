@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NetRpc;
 using NetRpc.Http;
 using NetRpc.Jaeger;
 
@@ -74,6 +75,7 @@ namespace Service
             }
 
             Console.WriteLine($"Receive: {i1}");
+            Console.WriteLine($"H---:{GlobalActionExecutingContext.Context.Header["t"]}");
             return new Result();
         }
     }

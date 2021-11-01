@@ -127,11 +127,11 @@ namespace Service
                 }
             };
 
-            using (var scope = TracerScope.BuildChild("test"))
-            {
-                scope.Span.SetTag("p1", "123");
-                await Task.Delay(500);
-            }
+            //using (var scope = TracerScope.BuildChild("test"))
+            //{
+            //    scope.Span.SetTag("p1", "123");
+            //    await Task.Delay(500);
+            //}
 
             //try
             //{
@@ -155,7 +155,9 @@ namespace Service
 
             try
             {
-                await _factory.CreateProxy<IService_1>("grpc1").Proxy.Call_1(obj, 101, true,
+                var c = _factory.CreateProxy<IService_1>("grpc1");
+                c.AdditionContextHeader.Add("t", "123");
+                await c.Proxy.Call_1(obj, 101, true,
                     async i => { _logger.LogInformation($"tid:{GlobalTracer.Instance?.ActiveSpan.Context.TraceId}, callback:{i}"); }, default);
             }
             catch (FaultException e)
