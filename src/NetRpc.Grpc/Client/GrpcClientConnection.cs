@@ -99,21 +99,18 @@ namespace NetRpc.Grpc
 #pragma warning restore 1998
         {
             //create header
-            List<(string, string)> headersList = new();
-            Metadata? sendHeaders = null;
+            Metadata? sendHeaders = new ();
 
             if (_client.HeaderHost != null)
-                headersList.Add(("Host", _client.HeaderHost));
+                sendHeaders.Add("Host", _client.HeaderHost);
 
-            AddHeaders(headersList, headers);
-
-            if (headersList.Count > 0)
-            {
-                sendHeaders = new Metadata();
-                headersList.ForEach(i => sendHeaders.Add(i.Item1, i.Item2));
-            }
+            foreach (var p in headers) 
+                sendHeaders.Add(p.Key, p.Value?.ToString());
 
             //create connection.
+            if (sendHeaders.Count == 0)
+                sendHeaders = null;
+
             _api = _client.CallClient.DuplexStreamingServerMethod(sendHeaders);
 #pragma warning disable 4014
             Task.Run(async () =>
@@ -138,15 +135,6 @@ namespace NetRpc.Grpc
                     OnFinished();
                 }
             });
-        }
-
-        private static void AddHeaders(List<(string, string)> headersList, Dictionary<string, object?> headers)
-        {
-            foreach (var p in headers)
-            {
-                if (p.Value == null) 
-                    headersList.Add((p.Key, p.Value == null ? "" : p.Value.ToString()!));
-            }
         }
 
         private Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>> e)

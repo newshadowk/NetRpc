@@ -18,7 +18,7 @@ namespace NetRpc
         private readonly IServiceProvider _serviceProvider;
         private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
         private volatile int _timeoutInterval;
-        private readonly bool _forwardHeader;
+        private readonly bool _forwardAllHeaders;
         private readonly List<string> _forwardHeaderKeys;
         private static readonly AsyncLocal<Dictionary<string, object?>> AsyncLocalHeader = new();
 
@@ -30,7 +30,7 @@ namespace NetRpc
             IOnceCallFactory factory,
             Dictionary<string, object?> additionHeaders,
             int timeoutInterval,
-            bool forwardHeader,
+            bool forwardAllHeaders,
             List<string> forwardHeaderKeys,
             string? optionsName)
         {
@@ -40,7 +40,7 @@ namespace NetRpc
             _contract = contractInfo;
             _factory = factory;
             _timeoutInterval = timeoutInterval;
-            _forwardHeader = forwardHeader;
+            _forwardAllHeaders = forwardAllHeaders;
             _forwardHeaderKeys = forwardHeaderKeys;
             _optionsName = optionsName;
             _middlewareBuilder = new ClientMiddlewareBuilder(middlewareOptions, serviceProvider);
@@ -107,7 +107,7 @@ namespace NetRpc
             //_actionExecutingContextAccessor.Context?.Header is immutable here, should only change via middleware.
             var contextH = _actionExecutingContextAccessor.Context?.Headers;
             var dic = new Dictionary<string, object?>();
-            if (_forwardHeader)
+            if (_forwardAllHeaders)
             {
                 if (contextH != null)
                     foreach (var key in contextH.Keys)
@@ -130,18 +130,6 @@ namespace NetRpc
                 dic[key] = AdditionContextHeaders[key];
 
             return dic;
-        }
-
-        private static string? GetAuthorizationToken(Dictionary<string, object?> additionHeader)
-        {
-            if (!additionHeader.TryGetValue("Authorization", out var v))
-                return null;
-
-            var s = v!.ToString();
-            if (s == null || !s.StartsWith("Bearer "))
-                return null;
-
-            return s.Substring(7);
         }
     }
 }
