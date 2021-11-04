@@ -17,7 +17,7 @@ namespace Service
         [TestFilter]
         public void FilterAndHeader()
         {
-            var h = GlobalActionExecutingContext.Context.Header;
+            var h = GlobalActionExecutingContext.Context.Headers;
             Console.WriteLine($"[TestFilter], Header:{h["k1"]}");
         }
 

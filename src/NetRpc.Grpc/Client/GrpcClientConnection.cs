@@ -71,12 +71,12 @@ namespace NetRpc.Grpc
             ChannelType = ChannelType.Grpc
         };
 
-        public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false,byte mqPriority = 0)
+        public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false, byte mqPriority = 0)
         {
             //add a lock here will not slowdown send speed.
             using (await _sendLock.LockAsync())
             {
-                var sb = new StreamBuffer {Body = ByteString.CopyFrom(buffer.ToArray())};
+                var sb = new StreamBuffer { Body = ByteString.CopyFrom(buffer.ToArray()) };
                 try
                 {
                     await _api.RequestStream.WriteAsync(sb);
@@ -95,24 +95,26 @@ namespace NetRpc.Grpc
         }
 
 #pragma warning disable 1998
-        public async Task StartAsync(string? authorizationToken)
+        public async Task StartAsync(Dictionary<string, object?> headers)
 #pragma warning restore 1998
         {
             //create header
             List<(string, string)> headersList = new();
-            Metadata? headers = null;
-            if (authorizationToken != null) 
-                headersList.Add(("Authorization", $"Bearer {authorizationToken}"));
-            if (_client.HeaderHost != null) 
+            Metadata? sendHeaders = null;
+
+            if (_client.HeaderHost != null)
                 headersList.Add(("Host", _client.HeaderHost));
+
+            AddHeaders(headersList, headers);
+
             if (headersList.Count > 0)
             {
-                headers = new Metadata();
-                headersList.ForEach(i => headers.Add(i.Item1, i.Item2));
+                sendHeaders = new Metadata();
+                headersList.ForEach(i => sendHeaders.Add(i.Item1, i.Item2));
             }
 
             //create connection.
-            _api = _client.CallClient.DuplexStreamingServerMethod(headers);
+            _api = _client.CallClient.DuplexStreamingServerMethod(sendHeaders);
 #pragma warning disable 4014
             Task.Run(async () =>
 #pragma warning restore 4014
@@ -136,6 +138,15 @@ namespace NetRpc.Grpc
                     OnFinished();
                 }
             });
+        }
+
+        private static void AddHeaders(List<(string, string)> headersList, Dictionary<string, object?> headers)
+        {
+            foreach (var p in headers)
+            {
+                if (p.Value == null) 
+                    headersList.Add((p.Key, p.Value == null ? "" : p.Value.ToString()!));
+            }
         }
 
         private Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>> e)

@@ -23,9 +23,9 @@ namespace NetRpc
             _convert = convert;
         }
 
-        public async Task StartAsync(string? authorizationToken)
+        public async Task StartAsync(Dictionary<string, object?> headers)
         {
-            await _convert.StartAsync(authorizationToken);
+            await _convert.StartAsync(headers);
         }
 
         public event EventHandler? SendRequestStreamStarted;

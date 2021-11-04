@@ -63,7 +63,7 @@ namespace Microsoft.Extensions.DependencyInjection
             ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
         {
             services.AddNHttpClient(httpClientConfigureOptions, clientConfigureOptions, serviceLifetime);
-            services.Configure<NClientOptions>(i => i.ForwardHeader = true);
+            services.Configure<NClientOptions>(i => i.ForwardAllHeaders = true);
             services.AddNClientContract<TService>(serviceLifetime);
             services.AddNServiceContract(typeof(TService),
                 p => ((ClientProxy<TService>) p.GetService(typeof(ClientProxy<TService>))!).Proxy,

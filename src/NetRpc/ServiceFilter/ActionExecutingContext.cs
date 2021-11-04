@@ -22,7 +22,7 @@ namespace NetRpc
 
         public IServiceProvider ServiceProvider { get; }
 
-        public Dictionary<string, object?> Header { get; set; }
+        public Dictionary<string, object?> Headers { get; set; }
 
         public InstanceMethod InstanceMethod { get; }
 
@@ -83,7 +83,7 @@ namespace NetRpc
         public Dictionary<object, object?> Properties { get; set; }
 
         public ActionExecutingContext(IServiceProvider serviceProvider,
-            Dictionary<string, object?> header,
+            Dictionary<string, object?> headers,
             Instance instance,
             MethodInfo instanceMethodInfo,
             ContractMethod contractMethod,
@@ -100,7 +100,7 @@ namespace NetRpc
             StartTime = DateTimeOffset.Now;
             ServiceProvider = serviceProvider;
             ChannelType = channelType;
-            Header = header;
+            Headers = headers;
             InstanceMethod = instance.Methods.Find(i => i.MethodInfo == instanceMethodInfo)!;
             ContractMethod = contractMethod;
             Instance = instance;
@@ -146,7 +146,7 @@ namespace NetRpc
 
         public override string ToString()
         {
-            return $"Header:{DicToStringForDisplay(Header)}, MethodName:{InstanceMethod.MethodInfo.Name}, Args:{Args.ListToStringForDisplay(",")}";
+            return $"Header:{DicToStringForDisplay(Headers)}, MethodName:{InstanceMethod.MethodInfo.Name}, Args:{Args.ListToStringForDisplay(",")}";
         }
 
         private static Type? GetFuncType(IEnumerable<object?> args)

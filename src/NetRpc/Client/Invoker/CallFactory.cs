@@ -44,7 +44,7 @@ namespace NetRpc
                 _onceCallFactory,
                 _additionHeader,
                 _nClientOptions.TimeoutInterval,
-                _nClientOptions.ForwardHeader,
+                _nClientOptions.ForwardAllHeaders,
                 _nClientOptions.ForwardHeaderKeys,
                 _optionsName);
         }

@@ -16,7 +16,7 @@ namespace NetRpc
         /// </summary>
         object? Result { get; set; }
 
-        Dictionary<string, object?> Header { get; set; }
+        Dictionary<string, object?> Headers { get; set; }
 
         /// <summary>
         /// A central location for sharing state between components during the invoking process.

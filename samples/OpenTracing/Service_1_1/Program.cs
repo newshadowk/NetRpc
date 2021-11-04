@@ -75,7 +75,7 @@ namespace Service
             }
 
             Console.WriteLine($"Receive: {i1}");
-            Console.WriteLine($"H---:{GlobalActionExecutingContext.Context.Header["t"]}");
+            Console.WriteLine($"H---:{GlobalActionExecutingContext.Context.Headers["t"]}");
             return new Result();
         }
     }

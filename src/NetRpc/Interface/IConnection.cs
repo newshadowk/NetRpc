@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace NetRpc
@@ -13,7 +14,7 @@ namespace NetRpc
 
         Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false,byte mqPriority = 0);
 
-        Task StartAsync(string? authorizationToken);
+        Task StartAsync(Dictionary<string, object?> headers);
     }
 
     public interface IServiceConnection : IAsyncDisposable

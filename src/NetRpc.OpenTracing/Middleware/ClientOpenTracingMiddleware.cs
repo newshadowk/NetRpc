@@ -29,7 +29,7 @@ namespace NetRpc.OpenTracing
             using var scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.SendStr}").StartActive(true);
             tracer.Inject(scope.Span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(injectDic));
             foreach (var dic in injectDic)
-                context.Header[dic.Key] = dic.Value;
+                context.Headers[dic.Key] = dic.Value;
 
             try
             {

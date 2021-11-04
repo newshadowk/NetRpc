@@ -30,8 +30,8 @@ namespace NetRpc
 
         public Dictionary<string, object?> AdditionContextHeader
         {
-            get => Call.AdditionContextHeader;
-            set => Call.AdditionContextHeader = value;
+            get => Call.AdditionContextHeaders;
+            set => Call.AdditionContextHeaders = value;
         }
 
         public Dictionary<string, object?> AdditionHeader { get; } = new();

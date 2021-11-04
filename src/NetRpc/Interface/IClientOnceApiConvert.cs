@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace NetRpc
     {
         ConnectionInfo ConnectionInfo { get; }
 
-        Task StartAsync(string? authorizationToken);
+        Task StartAsync(Dictionary<string, object?> headers);
 
         Task SendCancelAsync();
 

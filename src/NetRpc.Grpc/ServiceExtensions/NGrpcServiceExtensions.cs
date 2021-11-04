@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
             ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
         {
             services.AddNGrpcClient(grpcClientConfigureOptions, clientConfigureOptions, serviceLifetime);
-            services.Configure<NClientOptions>(i => i.ForwardHeader = true);
+            services.Configure<NClientOptions>(i => i.ForwardAllHeaders = true);
             services.AddNGrpcClientContract<TService>(serviceLifetime);
             services.AddNServiceContract(typeof(TService),
                 p => ((IClientProxy<TService>) p.GetService(typeof(IClientProxy<TService>))!).Proxy, serviceLifetime);

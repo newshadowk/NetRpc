@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Pipelines;
@@ -30,9 +31,9 @@ namespace NetRpc
 
         public ConnectionInfo ConnectionInfo => _connection.ConnectionInfo;
 
-        public async Task StartAsync(string? authorizationToken)
+        public async Task StartAsync(Dictionary<string, object?> headers)
         {
-            await _connection.StartAsync(authorizationToken);
+            await _connection.StartAsync(headers);
         }
 
         public Task SendCancelAsync()

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetRpc.Contract;
@@ -50,7 +51,7 @@ namespace NetRpc.RabbitMQ
             return _call.SendAsync(buffer, isPost, mqPriority);
         }
 
-        public async Task StartAsync(string? authorizationToken)
+        public async Task StartAsync(Dictionary<string, object?> headers)
         {
             await _call.CreateChannelAsync();
         }

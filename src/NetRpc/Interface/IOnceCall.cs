@@ -14,7 +14,7 @@ namespace NetRpc
             Stream? stream,
             params object?[] pureArgs);
 
-        Task StartAsync(string? authorizationToken);
+        Task StartAsync(Dictionary<string, object?> headers);
 
         event EventHandler? SendRequestStreamStarted;
 

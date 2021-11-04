@@ -47,7 +47,7 @@ namespace Service
     {
         public async Task Call(string s)
         {
-            var h = GlobalActionExecutingContext.Context.Header;
+            var h = GlobalActionExecutingContext.Context.Headers;
             Console.WriteLine($"Receive: {s}, {h["k1"]}");
         }
 

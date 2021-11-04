@@ -46,10 +46,10 @@ namespace NetRpc.OpenTracing
         {
             //get spanContext
             ISpanContext? spanContext;
-            if (context.Header.Count == 0)
+            if (context.Headers.Count == 0)
                 spanContext = null;
             else
-                spanContext = tracer.Extract(BuiltinFormats.HttpHeaders, new RequestHeadersExtractAdapter(context.Header));
+                spanContext = tracer.Extract(BuiltinFormats.HttpHeaders, new RequestHeadersExtractAdapter(context.Headers));
 
             //get scope
             IScope scope;

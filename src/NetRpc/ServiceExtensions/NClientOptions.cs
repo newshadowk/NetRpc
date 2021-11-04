@@ -15,12 +15,12 @@ namespace NetRpc
         public int HearbeatInterval { get; set; } = 10000;
 
         /// <summary>
-        /// Forward header from coming side, default value is false.
+        /// Forward all headers from coming side, default value is false.
         /// </summary>
-        public bool ForwardHeader { get; set; }
+        public bool ForwardAllHeaders { get; set; }
 
         /// <summary>
-        /// Forward header from coming side by keys.
+        /// Forward headers from coming side by keys.
         /// </summary>
         public List<string> ForwardHeaderKeys { get; set; } = new();
     }

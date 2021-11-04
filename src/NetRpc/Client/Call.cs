@@ -28,7 +28,7 @@ namespace NetRpc
             ClientMiddlewareOptions middlewareOptions,
             IActionExecutingContextAccessor actionExecutingContextAccessor,
             IOnceCallFactory factory,
-            Dictionary<string, object?> additionHeader,
+            Dictionary<string, object?> additionHeaders,
             int timeoutInterval,
             bool forwardHeader,
             List<string> forwardHeaderKeys,
@@ -44,12 +44,12 @@ namespace NetRpc
             _forwardHeaderKeys = forwardHeaderKeys;
             _optionsName = optionsName;
             _middlewareBuilder = new ClientMiddlewareBuilder(middlewareOptions, serviceProvider);
-            AdditionHeader = additionHeader;
+            AdditionHeaders = additionHeaders;
         }
 
-        public Dictionary<string, object?> AdditionHeader { get; }
+        public Dictionary<string, object?> AdditionHeaders { get; }
 
-        public static Dictionary<string, object?> AdditionContextHeader
+        public static Dictionary<string, object?> AdditionContextHeaders
         {
             get
             {
@@ -64,18 +64,18 @@ namespace NetRpc
             params object?[] pureArgs)
         {
             //merge header
-            var mergeHeader = MergeHeader();
+            var mergeHeaders = MergeHeaders();
 
             //start
             var call = await _factory.CreateAsync(_timeoutInterval, isRetry);
-            await call.StartAsync(GetAuthorizationToken(mergeHeader));
+            await call.StartAsync(mergeHeaders);
 
             //stream
             var contractMethod = _contract.Methods.First(i => i.MethodInfo == methodInfo);
             var instanceMethod = new InstanceMethod(methodInfo);
             var readStream = GetReadStream(stream);
             var clientContext = new ClientActionExecutingContext(_clientProxyId, _serviceProvider, _optionsName, call, instanceMethod, callback, token,
-                _contract, contractMethod, readStream, mergeHeader, pureArgs);
+                _contract, contractMethod, readStream, mergeHeaders, pureArgs);
 
             //invoke
             //onceTransfer will dispose after stream translate finished in OnceCall.
@@ -102,10 +102,10 @@ namespace NetRpc
             return proxyStream;
         }
 
-        private Dictionary<string, object?> MergeHeader()
+        private Dictionary<string, object?> MergeHeaders()
         {
             //_actionExecutingContextAccessor.Context?.Header is immutable here, should only change via middleware.
-            var contextH = _actionExecutingContextAccessor.Context?.Header;
+            var contextH = _actionExecutingContextAccessor.Context?.Headers;
             var dic = new Dictionary<string, object?>();
             if (_forwardHeader)
             {
@@ -123,11 +123,11 @@ namespace NetRpc
                     }
             }
 
-            foreach (var key in AdditionHeader.Keys)
-                dic[key] = AdditionHeader[key];
+            foreach (var key in AdditionHeaders.Keys)
+                dic[key] = AdditionHeaders[key];
 
-            foreach (var key in AdditionContextHeader.Keys)
-                dic[key] = AdditionContextHeader[key];
+            foreach (var key in AdditionContextHeaders.Keys)
+                dic[key] = AdditionContextHeaders[key];
 
             return dic;
         }

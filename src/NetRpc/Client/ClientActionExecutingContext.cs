@@ -20,7 +20,7 @@ namespace NetRpc
         /// </summary>
         public object? Result { get; set; }
 
-        public Dictionary<string, object?> Header { get; set; }
+        public Dictionary<string, object?> Headers { get; set; }
 
         /// <summary>
         /// A central location for sharing state between components during the invoking process.
@@ -71,7 +71,7 @@ namespace NetRpc
             Stream = stream;
             PureArgs = pureArgs;
             OptionsName = optionsName;
-            Header = header;
+            Headers = header;
         }
     }
 }

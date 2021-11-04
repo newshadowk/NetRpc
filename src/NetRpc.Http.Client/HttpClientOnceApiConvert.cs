@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -62,7 +63,7 @@ namespace NetRpc.Http.Client
             }
         }
 
-        public Task StartAsync(string? authorizationToken)
+        public Task StartAsync(Dictionary<string, object?> headers)
         {
             return Task.CompletedTask;
         }

@@ -102,7 +102,7 @@ namespace Service_1
 
 
             Console.WriteLine($"Receive: {s}");
-            Console.WriteLine($"H:{GlobalActionExecutingContext.Context.Header["t"]}");
+            Console.WriteLine($"H:{GlobalActionExecutingContext.Context.Headers["t"]}");
 
             Func<int, Task> newCb = async i =>
             {
