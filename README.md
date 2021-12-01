@@ -2,7 +2,7 @@
 [![NuGet Badge](https://buildstats.info/nuget/NetRpc)](https://www.nuget.org/packages/NetRpc/)
 [![GitHub license](https://img.shields.io/badge/license-Mit-blue)](https://github.com/newshadowk/NetRpc/blob/master/LICENSE.md)
 
-NetRpc is a light weight rpc engine base on **RabbitMQ**, **Grpc**, **Http** targeting .NET 5.0.  It use the simple interface to call each other, 
+NetRpc is a light weight rpc engine base on **RabbitMQ**, **Grpc**, **Http** targeting .NET 5.0/6.0.  It use the simple interface to call each other, 
 provide callback/cancel during invoking, so especially suitable for handle **long running call**.
 
 ## NuGet
