@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace NetRpc.Contract
+namespace NetRpc.Contract;
+
+[AttributeUsage(AttributeTargets.Method, Inherited = false)]
+public class HttpImagesAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-    public class HttpImagesAttribute : Attribute
-    {
-    }
 }

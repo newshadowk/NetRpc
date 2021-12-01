@@ -5,27 +5,26 @@ using DataContract;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Client
+namespace Client;
+
+internal class Program
 {
-    internal class Program
+    private static async Task Main(string[] args)
     {
-        private static async Task Main(string[] args)
-        {
-            var services = new ServiceCollection();
-            services.AddNClientContract<IServiceAsync>();
-            services.AddNGrpcClient(o => o.Url = "http://localhost:50001");
-            services.AddLogging(b => b.AddConsole());
-            var sp = services.BuildServiceProvider();
-            var p = sp.GetService<IServiceAsync>();
+        var services = new ServiceCollection();
+        services.AddNClientContract<IServiceAsync>();
+        services.AddNGrpcClient(o => o.Url = "http://localhost:50001");
+        services.AddLogging(b => b.AddConsole());
+        var sp = services.BuildServiceProvider();
+        var p = sp.GetService<IServiceAsync>();
 
-            await p.CallAsync("hello world.");
+        await p.CallAsync("hello world.");
 
-            //await using (var fr = File.OpenRead(TestHelper.Helper.GetTestFilePath()))
-            //{
-            //    await p.Call2Async(fr);
-            //}
+        //await using (var fr = File.OpenRead(TestHelper.Helper.GetTestFilePath()))
+        //{
+        //    await p.Call2Async(fr);
+        //}
 
-            Console.Read();
-        }
+        Console.Read();
     }
 }

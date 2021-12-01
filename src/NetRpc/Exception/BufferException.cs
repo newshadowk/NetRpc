@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace NetRpc
+namespace NetRpc;
+
+[Serializable]
+public class BufferException : Exception
 {
-    [Serializable]
-    public class BufferException : Exception
+    public BufferException()
     {
-        public BufferException()
-        {
-        }
+    }
 
-        public BufferException(string message) : base(message)
-        {
-        }
+    public BufferException(string message) : base(message)
+    {
+    }
 
-        protected BufferException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+    protected BufferException(SerializationInfo info, StreamingContext context) : base(info, context)
+    {
     }
 }

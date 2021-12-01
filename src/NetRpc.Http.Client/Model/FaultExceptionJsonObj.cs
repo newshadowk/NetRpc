@@ -1,23 +1,22 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace NetRpc.Http.Client
+namespace NetRpc.Http.Client;
+
+public sealed class FaultExceptionJsonObj
 {
-    public sealed class FaultExceptionJsonObj
+    [JsonPropertyName("error_code")]
+    public string? ErrorCode { get; set; }
+
+    [JsonPropertyName("message")]
+    public string? Message { get; set; }
+
+    public FaultExceptionJsonObj(string? errorCode, string? message)
     {
-        [JsonPropertyName("error_code")]
-        public string? ErrorCode { get; set; }
+        ErrorCode = errorCode;
+        Message = message;
+    }
 
-        [JsonPropertyName("message")]
-        public string? Message { get; set; }
-
-        public FaultExceptionJsonObj(string? errorCode, string? message)
-        {
-            ErrorCode = errorCode;
-            Message = message;
-        }
-
-        public FaultExceptionJsonObj()
-        {
-        }
+    public FaultExceptionJsonObj()
+    {
     }
 }

@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace NetRpc
+namespace NetRpc;
+
+public class ContractOptions
 {
-    public class ContractOptions
-    {
-        public List<ContractInfo> Contracts { get; } = new();
-    }
+    public List<ContractInfo> Contracts { get; } = new();
 }

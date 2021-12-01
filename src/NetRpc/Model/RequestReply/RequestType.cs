@@ -1,10 +1,9 @@
-﻿namespace NetRpc
+﻿namespace NetRpc;
+
+internal enum RequestType
 {
-    internal enum RequestType
-    {
-        Cmd,
-        Buffer,
-        BufferEnd,
-        Cancel
-    }
+    Cmd,
+    Buffer,
+    BufferEnd,
+    Cancel
 }

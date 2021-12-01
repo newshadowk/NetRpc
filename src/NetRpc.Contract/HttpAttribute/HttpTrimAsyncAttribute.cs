@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace NetRpc.Contract
+namespace NetRpc.Contract;
+
+[AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, Inherited = false)]
+public class HttpTrimAsyncAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, Inherited = false)]
-    public class HttpTrimAsyncAttribute : Attribute
-    {
-    }
 }

@@ -1,7 +1,6 @@
-﻿namespace NetRpc
+﻿namespace NetRpc;
+
+public interface IOrphanClientProxyProvider
 {
-    public interface IOrphanClientProxyProvider
-    {
-        ClientProxy<TService>? CreateProxy<TService>(string optionsName) where TService : class;
-    }
+    ClientProxy<TService>? CreateProxy<TService>(string optionsName) where TService : class;
 }

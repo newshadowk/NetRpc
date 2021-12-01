@@ -1,75 +1,74 @@
 ﻿using System.Threading.Tasks;
 using NetRpc;
 
-namespace System.Reflection
+namespace System.Reflection;
+
+public class SimpleDispatchProxyAsync : DispatchProxyAsync
 {
-    public class SimpleDispatchProxyAsync : DispatchProxyAsync
+    private IMethodInvoker _invoker = null!;
+
+    public event EventHandler<EventArgsT<Exception>>? ExceptionInvoked;
+
+    private void SetParams(IMethodInvoker invoker)
     {
-        private IMethodInvoker _invoker = null!;
+        _invoker = invoker;
+    }
 
-        public event EventHandler<EventArgsT<Exception>>? ExceptionInvoked;
+    public static T Create<T>(IMethodInvoker invoker) where T : class
+    {
+        object proxy = Create<T, SimpleDispatchProxyAsync>();
+        ((SimpleDispatchProxyAsync) proxy).SetParams(invoker);
+        return (T) proxy;
+    }
 
-        private void SetParams(IMethodInvoker invoker)
+    public static object Create(Type baseType, IMethodInvoker invoker)
+    {
+        object proxy = Create(baseType, typeof(SimpleDispatchProxyAsync));
+        ((SimpleDispatchProxyAsync) proxy).SetParams(invoker);
+        return proxy;
+    }
+
+    public override object? Invoke(MethodInfo method, object?[] args)
+    {
+        try
         {
-            _invoker = invoker;
+            return _invoker.Invoke(method, args);
         }
-
-        public static T Create<T>(IMethodInvoker invoker) where T : class
+        catch (Exception e)
         {
-            object proxy = Create<T, SimpleDispatchProxyAsync>();
-            ((SimpleDispatchProxyAsync) proxy).SetParams(invoker);
-            return (T) proxy;
+            OnExceptionInvoked(new EventArgsT<Exception>(e));
+            throw;
         }
+    }
 
-        public static object Create(Type baseType, IMethodInvoker invoker)
+    public override async Task InvokeAsync(MethodInfo method, object?[] args)
+    {
+        try
         {
-            object proxy = Create(baseType, typeof(SimpleDispatchProxyAsync));
-            ((SimpleDispatchProxyAsync) proxy).SetParams(invoker);
-            return proxy;
+            await _invoker.InvokeAsync(method, args);
         }
+        catch (Exception e)
+        {
+            OnExceptionInvoked(new EventArgsT<Exception>(e));
+            throw;
+        }
+    }
 
-        public override object? Invoke(MethodInfo method, object?[] args)
+    public override async Task<T> InvokeAsyncT<T>(MethodInfo method, object?[] args)
+    {
+        try
         {
-            try
-            {
-                return _invoker.Invoke(method, args);
-            }
-            catch (Exception e)
-            {
-                OnExceptionInvoked(new EventArgsT<Exception>(e));
-                throw;
-            }
+            return await _invoker.InvokeAsyncT<T>(method, args);
         }
+        catch (Exception e)
+        {
+            OnExceptionInvoked(new EventArgsT<Exception>(e));
+            throw;
+        }
+    }
 
-        public override async Task InvokeAsync(MethodInfo method, object?[] args)
-        {
-            try
-            {
-                await _invoker.InvokeAsync(method, args);
-            }
-            catch (Exception e)
-            {
-                OnExceptionInvoked(new EventArgsT<Exception>(e));
-                throw;
-            }
-        }
-
-        public override async Task<T> InvokeAsyncT<T>(MethodInfo method, object?[] args)
-        {
-            try
-            {
-                return await _invoker.InvokeAsyncT<T>(method, args);
-            }
-            catch (Exception e)
-            {
-                OnExceptionInvoked(new EventArgsT<Exception>(e));
-                throw;
-            }
-        }
-
-        protected virtual void OnExceptionInvoked(EventArgsT<Exception> e)
-        {
-            ExceptionInvoked?.Invoke(this, e);
-        }
+    protected virtual void OnExceptionInvoked(EventArgsT<Exception> e)
+    {
+        ExceptionInvoked?.Invoke(this, e);
     }
 }

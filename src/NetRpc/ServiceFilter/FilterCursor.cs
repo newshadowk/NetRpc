@@ -1,33 +1,32 @@
 ﻿using System.Collections.Generic;
 
-namespace NetRpc
+namespace NetRpc;
+
+public class FilterCursor
 {
-    public class FilterCursor
+    private readonly List<IAsyncActionFilter> _filters;
+    private int _index;
+
+    public FilterCursor(List<IAsyncActionFilter> filters)
     {
-        private readonly List<IAsyncActionFilter> _filters;
-        private int _index;
+        _filters = filters;
+        _index = 0;
+    }
 
-        public FilterCursor(List<IAsyncActionFilter> filters)
+    public void Reset()
+    {
+        _index = 0;
+    }
+
+    public IAsyncActionFilter? GetNextFilter()
+    {
+        while (_index < _filters.Count)
         {
-            _filters = filters;
-            _index = 0;
+            var filterAsync = _filters[_index];
+            _index += 1;
+            return filterAsync;
         }
 
-        public void Reset()
-        {
-            _index = 0;
-        }
-
-        public IAsyncActionFilter? GetNextFilter()
-        {
-            while (_index < _filters.Count)
-            {
-                var filterAsync = _filters[_index];
-                _index += 1;
-                return filterAsync;
-            }
-
-            return default;
-        }
+        return default;
     }
 }

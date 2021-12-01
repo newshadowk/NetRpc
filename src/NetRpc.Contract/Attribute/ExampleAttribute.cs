@@ -1,22 +1,21 @@
 ﻿using System;
 
-namespace NetRpc.Contract
+namespace NetRpc.Contract;
+
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = true)]
+public class ExampleAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = true)]
-    public class ExampleAttribute : Attribute
+    public string? Key { get; }
+    public object? Value { get; }
+
+    public ExampleAttribute(object? value)
     {
-        public string? Key { get; }
-        public object? Value { get; }
+        Value = value;
+    }
 
-        public ExampleAttribute(object? value)
-        {
-            Value = value;
-        }
-
-        public ExampleAttribute(string key, object? value)
-        {
-            Key = key;
-            Value = value;
-        }
+    public ExampleAttribute(string key, object? value)
+    {
+        Key = key;
+        Value = value;
     }
 }

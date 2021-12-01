@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace NetRpc
+namespace NetRpc;
+
+[Serializable]
+public class MethodNotFoundException : Exception
 {
-    [Serializable]
-    public class MethodNotFoundException : Exception
+    public MethodNotFoundException()
     {
-        public MethodNotFoundException()
-        {
-        }
+    }
 
-        protected MethodNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+    protected MethodNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
+    {
+    }
 
-        public MethodNotFoundException(string message) : base(message)
-        {
-        }
+    public MethodNotFoundException(string message) : base(message)
+    {
     }
 }

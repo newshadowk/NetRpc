@@ -10,96 +10,95 @@ using NetRpc.Grpc;
 using NetRpc.RabbitMQ;
 using Helper = TestHelper.Helper;
 
-namespace Client
-{
-    internal class Program
-    {
-        private static async Task Main(string[] args)
-        {
-            var h = new HostBuilder()
-                .ConfigureServices((context, services) =>
-                {
-                    services.AddOptions();
-                    services.AddHostedService<MyHost>();
-                    services.Configure<RabbitMQClientOptions>("mq", i => i.CopyFrom(Helper.GetMQOptions()));
-                    services.Configure<GrpcClientOptions>("grpc", i => { i.Url = "http://localhost:50001"; });
-                    services.AddNRabbitMQClient();
-                    services.AddNGrpcClient();
-                })
-                .ConfigureLogging((context, builder) => { builder.AddConsole(); })
-                .Build();
+namespace Client;
 
-            await h.RunAsync();
-        }
+internal class Program
+{
+    private static async Task Main(string[] args)
+    {
+        var h = new HostBuilder()
+            .ConfigureServices((context, services) =>
+            {
+                services.AddOptions();
+                services.AddHostedService<MyHost>();
+                services.Configure<RabbitMQClientOptions>("mq", i => i.CopyFrom(Helper.GetMQOptions()));
+                services.Configure<GrpcClientOptions>("grpc", i => { i.Url = "http://localhost:50001"; });
+                services.AddNRabbitMQClient();
+                services.AddNGrpcClient();
+            })
+            .ConfigureLogging((context, builder) => { builder.AddConsole(); })
+            .Build();
+
+        await h.RunAsync();
+    }
+}
+
+public class MyHost : IHostedService
+{
+    private readonly IClientProxyFactory _factory;
+
+    public MyHost(IClientProxyFactory factory, ILoggerFactory factory2)
+    {
+        var l = factory2.CreateLogger("sdfsdf");
+        l.LogInformation("test");
+        _factory = factory;
     }
 
-    public class MyHost : IHostedService
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
-        private readonly IClientProxyFactory _factory;
+        var clientProxy = _factory.CreateProxy<IService>("mq");
+        clientProxy.Connected += ClientProxy_Connected;
+        clientProxy.DisConnected += ClientProxy_DisConnected;
+        clientProxy.HeartbeatAsync += ClientProxy_Heartbeat;
+        clientProxy.ExceptionInvoked += ClientProxy_ExceptionInvoked;
 
-        public MyHost(IClientProxyFactory factory, ILoggerFactory factory2)
-        {
-            var l = factory2.CreateLogger("sdfsdf");
-            l.LogInformation("test");
-            _factory = factory;
-        }
-
-        public async Task StartAsync(CancellationToken cancellationToken)
-        {
-            var clientProxy = _factory.CreateProxy<IService>("mq");
-            clientProxy.Connected += ClientProxy_Connected;
-            clientProxy.DisConnected += ClientProxy_DisConnected;
-            clientProxy.HeartbeatAsync += ClientProxy_Heartbeat;
-            clientProxy.ExceptionInvoked += ClientProxy_ExceptionInvoked;
-
-            Console.WriteLine("start");
+        Console.WriteLine("start");
 
 #pragma warning disable 4014
-            Task.Run(async () =>
+        Task.Run(async () =>
 #pragma warning restore 4014
+        {
+            while (true)
             {
-                while (true)
+                Console.WriteLine("test start...");
+                try
                 {
-                    Console.WriteLine("test start...");
-                    try
-                    {
-                        await clientProxy.Proxy.CallAsync("test");
-                        Console.WriteLine("test start...end");
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.Message);
-                    }
-
-                    await Task.Delay(1000);
+                    await clientProxy.Proxy.CallAsync("test");
+                    Console.WriteLine("test start...end");
                 }
-            });
-        }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
 
-        private void ClientProxy_ExceptionInvoked(object sender, EventArgsT<Exception> e)
-        {
-            Console.WriteLine($"ClientProxy_ExceptionInvoked, {e.Value.Message}");
-        }
+                await Task.Delay(1000);
+            }
+        });
+    }
 
-        private Task ClientProxy_Heartbeat(object sender, EventArgs e)
-        {
-            Console.WriteLine("ClientProxy_Heartbeat");
-            return Task.CompletedTask;
-        }
+    private void ClientProxy_ExceptionInvoked(object sender, EventArgsT<Exception> e)
+    {
+        Console.WriteLine($"ClientProxy_ExceptionInvoked, {e.Value.Message}");
+    }
 
-        private void ClientProxy_DisConnected(object sender, EventArgs e)
-        {
-            Console.WriteLine("ClientProxy_DisConnected");
-        }
+    private Task ClientProxy_Heartbeat(object sender, EventArgs e)
+    {
+        Console.WriteLine("ClientProxy_Heartbeat");
+        return Task.CompletedTask;
+    }
 
-        private void ClientProxy_Connected(object sender, EventArgs e)
-        {
-            Console.WriteLine("ClientProxy_Connected");
-        }
+    private void ClientProxy_DisConnected(object sender, EventArgs e)
+    {
+        Console.WriteLine("ClientProxy_DisConnected");
+    }
 
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            Console.WriteLine("StopAsync");
-        }
+    private void ClientProxy_Connected(object sender, EventArgs e)
+    {
+        Console.WriteLine("ClientProxy_Connected");
+    }
+
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        Console.WriteLine("StopAsync");
     }
 }

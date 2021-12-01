@@ -3,27 +3,26 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NetRpc
+namespace NetRpc;
+
+public interface IServiceOnceApiConvert : IAsyncDisposable
 {
-    public interface IServiceOnceApiConvert : IAsyncDisposable
-    {
-        Task SendBufferAsync(ReadOnlyMemory<byte> buffer);
+    Task SendBufferAsync(ReadOnlyMemory<byte> buffer);
 
-        Task SendBufferEndAsync();
+    Task SendBufferEndAsync();
 
-        Task SendBufferCancelAsync();
+    Task SendBufferCancelAsync();
 
-        Task SendBufferFaultAsync();
+    Task SendBufferFaultAsync();
 
-        Task StartAsync(CancellationTokenSource cts);
+    Task StartAsync(CancellationTokenSource cts);
 
-        Task<ServiceOnceCallParam> GetServiceOnceCallParamAsync();
+    Task<ServiceOnceCallParam> GetServiceOnceCallParamAsync();
 
-        /// <returns>True need send stream next, otherwise false.</returns>
-        Task<bool> SendResultAsync(CustomResult result, Stream? stream, string? streamName, ActionExecutingContext context);
+    /// <returns>True need send stream next, otherwise false.</returns>
+    Task<bool> SendResultAsync(CustomResult result, Stream? stream, string? streamName, ActionExecutingContext context);
 
-        Task SendFaultAsync(Exception body, ActionExecutingContext? context);
+    Task SendFaultAsync(Exception body, ActionExecutingContext? context);
 
-        Task SendCallbackAsync(object? callbackObj);
-    }
+    Task SendCallbackAsync(object? callbackObj);
 }

@@ -1,7 +1,6 @@
-﻿namespace NetRpc.OpenTracing
+﻿namespace NetRpc.OpenTracing;
+
+public class OpenTracingOptions
 {
-    public class OpenTracingOptions
-    {
-        public int LogActionInfoMaxLength { get; set; }
-    }
+    public int LogActionInfoMaxLength { get; set; }
 }

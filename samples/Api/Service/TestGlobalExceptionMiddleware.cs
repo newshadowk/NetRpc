@@ -2,29 +2,28 @@
 using System.Threading.Tasks;
 using NetRpc;
 
-namespace Service
+namespace Service;
+
+public class TestGlobalExceptionMiddleware
 {
-    public class TestGlobalExceptionMiddleware
+    private readonly RequestDelegate _next;
+
+    public TestGlobalExceptionMiddleware(RequestDelegate next)
     {
-        private readonly RequestDelegate _next;
+        _next = next;
+        Console.WriteLine("[testArg1]");
+    }
 
-        public TestGlobalExceptionMiddleware(RequestDelegate next)
+    public async Task InvokeAsync(ActionExecutingContext context)
+    {
+        try
         {
-            _next = next;
-            Console.WriteLine("[testArg1]");
+            await _next(context);
         }
-
-        public async Task InvokeAsync(ActionExecutingContext context)
+        catch (Exception e)
         {
-            try
-            {
-                await _next(context);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[log by Middleware] {e.GetType().Name}");
-                throw;
-            }
+            Console.WriteLine($"[log by Middleware] {e.GetType().Name}");
+            throw;
         }
     }
 }

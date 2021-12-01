@@ -1,69 +1,68 @@
 ﻿using System;
 using System.Timers;
 
-namespace NetRpc.Http
+namespace NetRpc.Http;
+
+internal sealed class RateAction : IDisposable
 {
-    internal sealed class RateAction : IDisposable
+    private readonly Timer _t;
+    private Action? _action;
+    private Action? _lastAction;
+
+    private DateTime _lastTime;
+
+    private bool _isEnd;
+    private readonly object _lockObj = new();
+
+    public RateAction(int intervalMs)
     {
-        private readonly Timer _t;
-        private Action? _action;
-        private Action? _lastAction;
+        _t = new Timer(intervalMs);
+        _t.Elapsed += TElapsed;
+        _t.Start();
+    }
 
-        private DateTime _lastTime;
+    private void TElapsed(object sender, ElapsedEventArgs e)
+    {
+        Invoke();
+    }
 
-        private bool _isEnd;
-        private readonly object _lockObj = new();
-
-        public RateAction(int intervalMs)
+    private void Invoke()
+    {
+        lock (_lockObj)
         {
-            _t = new Timer(intervalMs);
-            _t.Elapsed += TElapsed;
-            _t.Start();
-        }
+            if (_isEnd)
+                return;
 
-        private void TElapsed(object sender, ElapsedEventArgs e)
+            if (_action == null)
+                return;
+
+            if (_action == _lastAction)
+                return;
+
+            _lastAction = _action;
+            _lastAction.Invoke();
+            _lastTime = DateTime.Now;
+        }
+    }
+
+    public void Post(Action action)
+    {
+        lock (_lockObj)
+        {
+            _action = action;
+
+            if ((DateTime.Now - _lastTime).TotalMilliseconds >= _t.Interval)
+                Invoke();
+        }
+    }
+
+    public void Dispose()
+    {
+        lock (_lockObj)
         {
             Invoke();
-        }
-
-        private void Invoke()
-        {
-            lock (_lockObj)
-            {
-                if (_isEnd)
-                    return;
-
-                if (_action == null)
-                    return;
-
-                if (_action == _lastAction)
-                    return;
-
-                _lastAction = _action;
-                _lastAction.Invoke();
-                _lastTime = DateTime.Now;
-            }
-        }
-
-        public void Post(Action action)
-        {
-            lock (_lockObj)
-            {
-                _action = action;
-
-                if ((DateTime.Now - _lastTime).TotalMilliseconds >= _t.Interval)
-                    Invoke();
-            }
-        }
-
-        public void Dispose()
-        {
-            lock (_lockObj)
-            {
-                Invoke();
-                _isEnd = true;
-                _t.Dispose();
-            }
+            _isEnd = true;
+            _t.Dispose();
         }
     }
 }

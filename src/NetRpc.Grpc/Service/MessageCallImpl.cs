@@ -4,35 +4,34 @@ using Microsoft.Extensions.Logging;
 using NetRpc.Contract;
 using Proxy.Grpc;
 
-namespace NetRpc.Grpc
+namespace NetRpc.Grpc;
+
+public sealed class MessageCallImpl : MessageCall.MessageCallBase
 {
-    public sealed class MessageCallImpl : MessageCall.MessageCallBase
+    private readonly BusyFlag _busyFlag;
+    private readonly RequestHandler _requestHandler;
+    private readonly ILogger _logger;
+
+    public MessageCallImpl(RequestHandler requestHandler, ILoggerFactory factory, BusyFlag busyFlag)
     {
-        private readonly BusyFlag _busyFlag;
-        private readonly RequestHandler _requestHandler;
-        private readonly ILogger _logger;
+        _busyFlag = busyFlag;
+        _requestHandler = requestHandler;
+        _logger = factory.CreateLogger("NetRpc");
+    }
 
-        public MessageCallImpl(RequestHandler requestHandler, ILoggerFactory factory, BusyFlag busyFlag)
+    public override async Task DuplexStreamingServerMethod(IAsyncStreamReader<StreamBuffer> requestStream, IServerStreamWriter<StreamBuffer> responseStream,
+        ServerCallContext context)
+    {
+        _busyFlag.Increment();
+
+        await using var connection = new GrpcServiceConnection(requestStream, responseStream, _logger);
+        try
         {
-            _busyFlag = busyFlag;
-            _requestHandler = requestHandler;
-            _logger = factory.CreateLogger("NetRpc");
+            await _requestHandler.HandleAsync(connection, ChannelType.Grpc);
         }
-
-        public override async Task DuplexStreamingServerMethod(IAsyncStreamReader<StreamBuffer> requestStream, IServerStreamWriter<StreamBuffer> responseStream,
-            ServerCallContext context)
+        finally
         {
-            _busyFlag.Increment();
-
-            await using var connection = new GrpcServiceConnection(requestStream, responseStream, _logger);
-            try
-            {
-                await _requestHandler.HandleAsync(connection, ChannelType.Grpc);
-            }
-            finally
-            {
-                _busyFlag.Decrement();
-            }
+            _busyFlag.Decrement();
         }
     }
 }

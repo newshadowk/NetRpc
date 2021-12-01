@@ -6,81 +6,80 @@ using System.Text.Json;
 using OpenTracing;
 using OpenTracing.Tag;
 
-namespace NetRpc.OpenTracing
+namespace NetRpc.OpenTracing;
+
+public static class Helper
 {
-    public static class Helper
+    private static readonly JsonSerializerOptions JsOptions = new()
     {
-        private static readonly JsonSerializerOptions JsOptions = new()
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        IgnoreReadOnlyProperties = true,
+        Converters = {new StreamConverter()}
+    };
+
+    public static ISpan SetTagMethodObj(this ISpan span, IActionExecutingContext context, int maxLength, bool isForce = false)
+    {
+        span.SetTag(new StringTag("Name"), context.ContractMethod.MethodInfo.ToFullMethodName());
+
+        if (!isForce && context.ContractMethod.IsTracerArgsIgnore)
         {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            IgnoreReadOnlyProperties = true,
-            Converters = {new StreamConverter()}
-        };
-
-        public static ISpan SetTagMethodObj(this ISpan span, IActionExecutingContext context, int maxLength, bool isForce = false)
-        {
-            span.SetTag(new StringTag("Name"), context.ContractMethod.MethodInfo.ToFullMethodName());
-
-            if (!isForce && context.ContractMethod.IsTracerArgsIgnore)
-            {
-                span.SetTag(new StringTag("Args"), "[Ignore]");
-                return span;
-            }
-
-            if (context.ContractMethod.MethodInfo.GetParameters().Length == 0)
-                return span;
-
-            var mergeArgTypeObj = context.ContractMethod.CreateMergeArgTypeObj(null, null, 0, context.PureArgs);
-            span.SetTag(new StringTag("Args"), mergeArgTypeObj.ToDisplayJson(maxLength));
+            span.SetTag(new StringTag("Args"), "[Ignore]");
             return span;
         }
 
-        public static ISpan SetTagReturn(this ISpan span, IActionExecutingContext context, int maxLength, bool isForce = false)
+        if (context.ContractMethod.MethodInfo.GetParameters().Length == 0)
+            return span;
+
+        var mergeArgTypeObj = context.ContractMethod.CreateMergeArgTypeObj(null, null, 0, context.PureArgs);
+        span.SetTag(new StringTag("Args"), mergeArgTypeObj.ToDisplayJson(maxLength));
+        return span;
+    }
+
+    public static ISpan SetTagReturn(this ISpan span, IActionExecutingContext context, int maxLength, bool isForce = false)
+    {
+        if (!isForce && context.ContractMethod.IsTraceReturnIgnore)
         {
-            if (!isForce && context.ContractMethod.IsTraceReturnIgnore)
-            {
-                span.SetTag(new StringTag("Result"), "[Ignore]");
-                return span;
-            }
-
-            if (context.ContractMethod.MethodInfo.ReturnType != typeof(void))
-                span.SetTag(new StringTag("Result"), context.Result.ToDisplayJson(maxLength));
-
+            span.SetTag(new StringTag("Result"), "[Ignore]");
             return span;
         }
 
-        [return: NotNullIfNotNull("obj")]
-        public static string? ToDisplayJson<T>(this T obj, int maxLength)
-        {
-            if (obj == null)
-                return null;
+        if (context.ContractMethod.MethodInfo.ReturnType != typeof(void))
+            span.SetTag(new StringTag("Result"), context.Result.ToDisplayJson(maxLength));
 
-            if (obj is Stream)
-                return "Stream";
+        return span;
+    }
 
-            var s = JsonSerializer.Serialize(obj, JsOptions);
-            if (maxLength > 0 && s.Length > maxLength)
-                return s.Substring(0, maxLength) + "...";
-            return s;
-        }
+    [return: NotNullIfNotNull("obj")]
+    public static string? ToDisplayJson<T>(this T obj, int maxLength)
+    {
+        if (obj == null)
+            return null;
 
-        public static bool HasStream(this Type? t)
-        {
-            if (t == null)
-                return false;
+        if (obj is Stream)
+            return "Stream";
 
-            if (t.IsStream())
-                return true;
+        var s = JsonSerializer.Serialize(obj, JsOptions);
+        if (maxLength > 0 && s.Length > maxLength)
+            return s.Substring(0, maxLength) + "...";
+        return s;
+    }
 
-            var propertyInfos = t.GetProperties();
-            return propertyInfos.Any(i => i.PropertyType.IsStream());
-        }
+    public static bool HasStream(this Type? t)
+    {
+        if (t == null)
+            return false;
 
-        public static void CopyBaggageItemsTo(this ISpanContext spanContext, ISpan span)
-        {
-            foreach (var pair in spanContext.GetBaggageItems())
-                span.SetBaggageItem(pair.Key, pair.Value);
-        }
+        if (t.IsStream())
+            return true;
+
+        var propertyInfos = t.GetProperties();
+        return propertyInfos.Any(i => i.PropertyType.IsStream());
+    }
+
+    public static void CopyBaggageItemsTo(this ISpanContext spanContext, ISpan span)
+    {
+        foreach (var pair in spanContext.GetBaggageItems())
+            span.SetBaggageItem(pair.Key, pair.Value);
     }
 }

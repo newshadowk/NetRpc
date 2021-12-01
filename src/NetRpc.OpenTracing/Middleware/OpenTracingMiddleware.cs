@@ -5,67 +5,66 @@ using OpenTracing;
 using OpenTracing.Propagation;
 using OpenTracing.Tag;
 
-namespace NetRpc.OpenTracing
+namespace NetRpc.OpenTracing;
+
+public class OpenTracingMiddleware
 {
-    public class OpenTracingMiddleware
+    private readonly RequestDelegate _next;
+
+    public OpenTracingMiddleware(RequestDelegate next)
     {
-        private readonly RequestDelegate _next;
+        _next = next;
+    }
 
-        public OpenTracingMiddleware(RequestDelegate next)
+    public async Task InvokeAsync(ActionExecutingContext context, ITracer tracer, IOptions<OpenTracingOptions> options, IErrorTagHandle errorTagHandle)
+    {
+        if (context.ContractMethod.IsTracerIgnore)
         {
-            _next = next;
+            await _next(context);
+            return;
         }
 
-        public async Task InvokeAsync(ActionExecutingContext context, ITracer tracer, IOptions<OpenTracingOptions> options, IErrorTagHandle errorTagHandle)
+        using var scope = GetScope(context, tracer);
+
+        try
         {
-            if (context.ContractMethod.IsTracerIgnore)
-            {
-                await _next(context);
-                return;
-            }
+            await _next(context);
+            scope.Span.SetTagMethodObj(context, options.Value.LogActionInfoMaxLength);
+            scope.Span.SetTagReturn(context, options.Value.LogActionInfoMaxLength);
+        }
+        catch (Exception e)
+        {
+            scope.Span.SetTagMethodObj(context, options.Value.LogActionInfoMaxLength, true);
+            scope.Span.SetTagReturn(context, options.Value.LogActionInfoMaxLength, true);
+            scope.Span.SetTag(new StringTag("Exception"), e.ExceptionToString());
+            errorTagHandle.Handle(e, scope.Span);
+            throw;
+        }
+    }
 
-            using var scope = GetScope(context, tracer);
+    private static IScope GetScope(ActionExecutingContext context, ITracer tracer)
+    {
+        //get spanContext
+        ISpanContext? spanContext;
+        if (context.Header.Count == 0)
+            spanContext = null;
+        else
+            spanContext = tracer.Extract(BuiltinFormats.HttpHeaders, new RequestHeadersExtractAdapter(context.Header));
 
-            try
-            {
-                await _next(context);
-                scope.Span.SetTagMethodObj(context, options.Value.LogActionInfoMaxLength);
-                scope.Span.SetTagReturn(context, options.Value.LogActionInfoMaxLength);
-            }
-            catch (Exception e)
-            {
-                scope.Span.SetTagMethodObj(context, options.Value.LogActionInfoMaxLength, true);
-                scope.Span.SetTagReturn(context, options.Value.LogActionInfoMaxLength, true);
-                scope.Span.SetTag(new StringTag("Exception"), e.ExceptionToString());
-                errorTagHandle.Handle(e, scope.Span);
-                throw;
-            }
+        //get scope
+        IScope scope;
+        if (spanContext == null)
+        {
+            scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.ReceiveStr}")
+                .StartActive(true);
+        }
+        else
+        {
+            scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.ReceiveStr}")
+                .AsChildOf(spanContext).StartActive(true);
+            spanContext.CopyBaggageItemsTo(scope.Span);
         }
 
-        private static IScope GetScope(ActionExecutingContext context, ITracer tracer)
-        {
-            //get spanContext
-            ISpanContext? spanContext;
-            if (context.Headers.Count == 0)
-                spanContext = null;
-            else
-                spanContext = tracer.Extract(BuiltinFormats.HttpHeaders, new RequestHeadersExtractAdapter(context.Headers));
-
-            //get scope
-            IScope scope;
-            if (spanContext == null)
-            {
-                scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.ReceiveStr}")
-                    .StartActive(true);
-            }
-            else
-            {
-                scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.ReceiveStr}")
-                    .AsChildOf(spanContext).StartActive(true);
-                spanContext.CopyBaggageItemsTo(scope.Span);
-            }
-
-            return scope;
-        }
+        return scope;
     }
 }

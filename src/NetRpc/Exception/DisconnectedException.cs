@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace NetRpc
+namespace NetRpc;
+
+[Serializable]
+public class DisconnectedException : Exception
 {
-    [Serializable]
-    public class DisconnectedException : Exception
+    public DisconnectedException(string message) : base(message)
     {
-        public DisconnectedException(string message) : base(message)
-        {
-        }
+    }
 
-        public DisconnectedException()
-        {
-        }
+    public DisconnectedException()
+    {
+    }
 
-        protected DisconnectedException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+    protected DisconnectedException(SerializationInfo info, StreamingContext context) : base(info, context)
+    {
     }
 }

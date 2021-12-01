@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using Microsoft.OpenApi.Models;
 
-namespace NetRpc.Http
+namespace NetRpc.Http;
+
+public interface INSwaggerProvider
 {
-    public interface INSwaggerProvider
-    {
-        OpenApiDocument GetSwagger(string? apiRootPath, List<ContractInfo> contracts, string? key);
-    }
+    OpenApiDocument GetSwagger(string? apiRootPath, List<ContractInfo> contracts, string? key);
 }

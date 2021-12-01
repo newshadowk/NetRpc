@@ -1,17 +1,16 @@
 ﻿using System;
 
-namespace NetRpc
+namespace NetRpc;
+
+[Serializable]
+public sealed class ActionInfo
 {
-    [Serializable]
-    public sealed class ActionInfo
+    public string FullName { get; set; } = null!;
+
+    public string[] GenericArguments { get; set; } = new string[0];
+
+    public override string ToString()
     {
-        public string FullName { get; set; } = null!;
-
-        public string[] GenericArguments { get; set; } = new string[0];
-
-        public override string ToString()
-        {
-            return $"{FullName}<{GenericArguments.ListToString(",")}>";
-        }
+        return $"{FullName}<{GenericArguments.ListToString(",")}>";
     }
 }

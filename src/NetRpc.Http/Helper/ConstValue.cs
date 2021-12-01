@@ -1,7 +1,6 @@
-﻿namespace NetRpc.Http
+﻿namespace NetRpc.Http;
+
+internal static class ConstValue
 {
-    internal static class ConstValue
-    {
-        public const string SwaggerUi3Base = "NetRpc.Http.SwaggerUi3";
-    }
+    public const string SwaggerUi3Base = "NetRpc.Http.SwaggerUi3";
 }

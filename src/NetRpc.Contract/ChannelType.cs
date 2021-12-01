@@ -1,10 +1,9 @@
-﻿namespace NetRpc.Contract
+﻿namespace NetRpc.Contract;
+
+public enum ChannelType
 {
-    public enum ChannelType
-    {
-        Undefined,
-        Grpc,
-        RabbitMQ,
-        Http
-    }
+    Undefined,
+    Grpc,
+    RabbitMQ,
+    Http
 }

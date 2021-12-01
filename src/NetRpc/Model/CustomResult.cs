@@ -1,24 +1,23 @@
 ﻿using System;
 
-namespace NetRpc
+namespace NetRpc;
+
+[Serializable]
+public sealed class CustomResult
 {
-    [Serializable]
-    public sealed class CustomResult
+    public object? Result { get; set; }
+
+    public long StreamLength { get; set; }
+
+    public bool HasStream { get; set; }
+
+    public bool IsImages { get; set; }
+
+    public CustomResult(object? result, bool hasStream, bool isImages, long streamLength)
     {
-        public object? Result { get; set; }
-
-        public long StreamLength { get; set; }
-
-        public bool HasStream { get; set; }
-
-        public bool IsImages { get; set; }
-
-        public CustomResult(object? result, bool hasStream, bool isImages, long streamLength)
-        {
-            Result = result;
-            HasStream = hasStream;
-            IsImages = isImages;
-            StreamLength = streamLength;
-        }
+        Result = result;
+        HasStream = hasStream;
+        IsImages = isImages;
+        StreamLength = streamLength;
     }
 }

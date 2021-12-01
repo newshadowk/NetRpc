@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace NetRpc
+namespace NetRpc;
+
+[Serializable]
+public class NIgnoreException : Exception
 {
-    [Serializable]
-    public class NIgnoreException : Exception
+    public NIgnoreException()
     {
-        public NIgnoreException()
-        {
-        }
+    }
 
-        public NIgnoreException(string message) : base(message)
-        {
-        }
+    public NIgnoreException(string message) : base(message)
+    {
+    }
 
-        protected NIgnoreException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+    protected NIgnoreException(SerializationInfo info, StreamingContext context) : base(info, context)
+    {
     }
 }

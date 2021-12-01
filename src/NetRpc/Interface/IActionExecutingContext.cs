@@ -3,41 +3,40 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NetRpc
+namespace NetRpc;
+
+public interface IActionExecutingContext
 {
-    public interface IActionExecutingContext
-    {
-        DateTimeOffset StartTime { get; }
+    DateTimeOffset StartTime { get; }
 
-        IServiceProvider ServiceProvider { get; }
+    IServiceProvider ServiceProvider { get; }
 
-        /// <summary>
-        /// Result of invoked action.
-        /// </summary>
-        object? Result { get; set; }
+    /// <summary>
+    /// Result of invoked action.
+    /// </summary>
+    object? Result { get; set; }
 
-        Dictionary<string, object?> Headers { get; set; }
+    Dictionary<string, object?> Header { get; set; }
 
-        /// <summary>
-        /// A central location for sharing state between components during the invoking process.
-        /// </summary>
-        Dictionary<object, object?> Properties { get; set; }
+    /// <summary>
+    /// A central location for sharing state between components during the invoking process.
+    /// </summary>
+    Dictionary<object, object?> Properties { get; set; }
 
-        InstanceMethod InstanceMethod { get; }
+    InstanceMethod InstanceMethod { get; }
 
-        ContractMethod ContractMethod { get; }
+    ContractMethod ContractMethod { get; }
 
-        ContractInfo Contract { get; }
+    ContractInfo Contract { get; }
 
-        Func<object?, Task>? Callback { get; }
+    Func<object?, Task>? Callback { get; }
 
-        CancellationToken CancellationToken { get; }
+    CancellationToken CancellationToken { get; }
 
-        ProxyStream? Stream { get; }
+    ProxyStream? Stream { get; }
 
-        /// <summary>
-        /// Args of invoked action without stream and action.
-        /// </summary>
-        object?[] PureArgs { get; }
-    }
+    /// <summary>
+    /// Args of invoked action without stream and action.
+    /// </summary>
+    object?[] PureArgs { get; }
 }

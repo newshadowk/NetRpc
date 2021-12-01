@@ -1,14 +1,13 @@
 ﻿using System;
 
-namespace NetRpc
-{
-    public sealed class EventArgsT<T> : EventArgs
-    {
-        public EventArgsT(T value)
-        {
-            Value = value;
-        }
+namespace NetRpc;
 
-        public T Value { get; }
+public sealed class EventArgsT<T> : EventArgs
+{
+    public EventArgsT(T value)
+    {
+        Value = value;
     }
+
+    public T Value { get; }
 }

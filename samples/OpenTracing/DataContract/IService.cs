@@ -5,61 +5,60 @@ using System.Threading;
 using System.Threading.Tasks;
 using NetRpc.Contract;
 
-namespace DataContract
+namespace DataContract;
+
+[Serializable]
+public class SendObj
 {
-    [Serializable]
-    public class SendObj
-    {
-        public string P1 { get; set; }
+    public string P1 { get; set; }
 
-        public int I1 { get; set; }
+    public int I1 { get; set; }
 
-        public bool B1 { get; set; }
+    public bool B1 { get; set; }
 
-        public DateTime D1 { get; set; }
+    public DateTime D1 { get; set; }
 
-        public InnerObj InnerObj { get; set; }
+    public InnerObj InnerObj { get; set; }
 
-        public List<InnerObj> BigList { get; set; }
-    }
+    public List<InnerObj> BigList { get; set; }
+}
 
-    [Serializable]
-    public class InnerObj
-    {
-        public string IP1 { get; set; }
-    }
+[Serializable]
+public class InnerObj
+{
+    public string IP1 { get; set; }
+}
 
-    [Serializable]
-    public class Result
-    {
-        public string P1 { get; set; } = "p1 value;";
+[Serializable]
+public class Result
+{
+    public string P1 { get; set; } = "p1 value;";
 
-        public string P2 { get; set; } = "p2 value;";
-    }
+    public string P2 { get; set; } = "p2 value;";
+}
 
-    public interface IService
-    {
-        Task<Result> Call(string s);
+public interface IService
+{
+    Task<Result> Call(string s);
 
-        Task<Stream> Echo(Stream stream);
-    }
+    Task<Stream> Echo(Stream stream);
+}
 
-    [HttpRoute("ReService")]
-    public interface IService_1
-    {
-        //[TracerIgnore]
-        Task<Result> Call_1(SendObj s, int i1, bool b1, Func<int, Task> cb, CancellationToken token);
+[HttpRoute("ReService")]
+public interface IService_1
+{
+    //[TracerIgnore]
+    Task<Result> Call_1(SendObj s, int i1, bool b1, Func<int, Task> cb, CancellationToken token);
 
-        Task<Stream> Echo_1(Stream stream);
-    }
+    Task<Stream> Echo_1(Stream stream);
+}
 
-    public interface IService_1_1
-    {
-        Task<Result> Call_1_1(int i1, Func<int, Task> cb, CancellationToken token);
-    }
+public interface IService_1_1
+{
+    Task<Result> Call_1_1(int i1, Func<int, Task> cb, CancellationToken token);
+}
 
-    public interface IService_2
-    {
-        Task<Result> Call_2(bool b);
-    }
+public interface IService_2
+{
+    Task<Result> Call_2(bool b);
 }

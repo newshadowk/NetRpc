@@ -1,15 +1,14 @@
 ﻿using System;
 
-namespace NetRpc.Contract
-{
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
-    public sealed class ResponseTextAttribute : Attribute
-    {
-        public ResponseTextAttribute(int statusCode)
-        {
-            StatusCode = statusCode;
-        }
+namespace NetRpc.Contract;
 
-        public int StatusCode { get; }
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
+public sealed class ResponseTextAttribute : Attribute
+{
+    public ResponseTextAttribute(int statusCode)
+    {
+        StatusCode = statusCode;
     }
+
+    public int StatusCode { get; }
 }

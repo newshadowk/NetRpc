@@ -1,33 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace NetRpc
+namespace NetRpc;
+
+[Serializable]
+public sealed class ServiceOnceCallParam
 {
-    [Serializable]
-    public sealed class ServiceOnceCallParam
+    public ActionInfo Action { get; set; }
+
+    public object?[] PureArgs { get; set; }
+
+    public long StreamLength { get; set; }
+
+    public ProxyStream? Stream { get; set; }
+
+    public Dictionary<string, object?> Header { get; set; }
+
+    public ServiceOnceCallParam(ActionInfo action, object?[] pureArgs, long streamLength, ProxyStream? stream, Dictionary<string, object?> header)
     {
-        public ActionInfo Action { get; set; }
+        Action = action;
+        PureArgs = pureArgs;
+        StreamLength = streamLength;
+        Stream = stream;
+        Header = header;
+    }
 
-        public object?[] PureArgs { get; set; }
-
-        public long StreamLength { get; set; }
-
-        public ProxyStream? Stream { get; set; }
-
-        public Dictionary<string, object?> Header { get; set; }
-
-        public ServiceOnceCallParam(ActionInfo action, object?[] pureArgs, long streamLength, ProxyStream? stream, Dictionary<string, object?> header)
-        {
-            Action = action;
-            PureArgs = pureArgs;
-            StreamLength = streamLength;
-            Stream = stream;
-            Header = header;
-        }
-
-        public override string ToString()
-        {
-            return $"{Action}({PureArgs.ListToString(", ")})";
-        }
+    public override string ToString()
+    {
+        return $"{Action}({PureArgs.ListToString(", ")})";
     }
 }

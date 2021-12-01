@@ -2,53 +2,52 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NetRpc.Contract
+namespace NetRpc.Contract;
+
+internal static class Helper
 {
-    internal static class Helper
+    public static string ExceptionToString(Exception? e)
     {
-        public static string ExceptionToString(Exception? e)
+        if (e == null)
+            return "";
+
+        var msgContent = new StringBuilder("\r\n");
+        msgContent.Append(GetMsgContent(e));
+
+        var lastE = new List<Exception?>();
+        var currE = e.InnerException;
+        lastE.Add(e);
+        lastE.Add(currE);
+        while (currE != null && !lastE.Contains(currE))
         {
-            if (e == null)
-                return "";
-
-            var msgContent = new StringBuilder("\r\n");
-            msgContent.Append(GetMsgContent(e));
-
-            var lastE = new List<Exception?>();
-            var currE = e.InnerException;
-            lastE.Add(e);
+            msgContent.Append("\r\n[InnerException]\r\n");
+            msgContent.Append(GetMsgContent(e.InnerException!));
+            currE = currE.InnerException;
             lastE.Add(currE);
-            while (currE != null && !lastE.Contains(currE))
-            {
-                msgContent.Append("\r\n[InnerException]\r\n");
-                msgContent.Append(GetMsgContent(e.InnerException!));
-                currE = currE.InnerException;
-                lastE.Add(currE);
-            }
-
-            return msgContent.ToString();
         }
 
-        public static string? FormatTemplate(this string? template)
-        {
-            if (template == null)
-                return null;
+        return msgContent.ToString();
+    }
 
-            template = template.Replace('\\', '/');
+    public static string? FormatTemplate(this string? template)
+    {
+        if (template == null)
+            return null;
 
-            if (template.EndsWith("\\"))
-                template = template.Substring(0, template.Length - 1);
+        template = template.Replace('\\', '/');
 
-            return template;
-        }
+        if (template.EndsWith("\\"))
+            template = template.Substring(0, template.Length - 1);
 
-        private static string GetMsgContent(Exception ee)
-        {
-            var ret = ee.Message;
-            if (!string.IsNullOrEmpty(ee.StackTrace))
-                ret += "\r\n" + ee.StackTrace;
-            ret += "\r\n";
-            return ret;
-        }
+        return template;
+    }
+
+    private static string GetMsgContent(Exception ee)
+    {
+        var ret = ee.Message;
+        if (!string.IsNullOrEmpty(ee.StackTrace))
+            ret += "\r\n" + ee.StackTrace;
+        ret += "\r\n";
+        return ret;
     }
 }

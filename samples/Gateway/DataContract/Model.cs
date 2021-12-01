@@ -3,46 +3,45 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
-namespace DataContract
+namespace DataContract;
+
+[Serializable]
+public class CustomObj
 {
-    [Serializable]
-    public class CustomObj
+    public string Name { get; set; }
+
+    public DateTime Date { get; set; }
+
+    public override string ToString()
     {
-        public string Name { get; set; }
+        return $"{nameof(Name)}: {Name}, {nameof(Date)}: {Date}";
+    }
+}
 
-        public DateTime Date { get; set; }
+[Serializable]
+public class CustomCallbackObj
+{
+    public int Progress { get; set; }
+}
 
-        public override string ToString()
-        {
-            return $"{nameof(Name)}: {Name}, {nameof(Date)}: {Date}";
-        }
+[Serializable]
+public class ComplexStream
+{
+    [field: NonSerialized]
+    [JsonIgnore]
+    public Stream Stream { get; set; }
+
+    public string OtherInfo { get; set; }
+}
+
+[Serializable]
+public class CustomException : Exception
+{
+    public CustomException()
+    {
     }
 
-    [Serializable]
-    public class CustomCallbackObj
+    protected CustomException(SerializationInfo info, StreamingContext context) : base(info, context)
     {
-        public int Progress { get; set; }
-    }
-
-    [Serializable]
-    public class ComplexStream
-    {
-        [field: NonSerialized]
-        [JsonIgnore]
-        public Stream Stream { get; set; }
-
-        public string OtherInfo { get; set; }
-    }
-
-    [Serializable]
-    public class CustomException : Exception
-    {
-        public CustomException()
-        {
-        }
-
-        protected CustomException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
     }
 }

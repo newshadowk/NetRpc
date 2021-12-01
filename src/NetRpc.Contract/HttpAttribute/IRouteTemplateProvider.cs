@@ -1,7 +1,6 @@
-﻿namespace NetRpc.Contract
+﻿namespace NetRpc.Contract;
+
+public interface IRouteTemplateProvider
 {
-    public interface IRouteTemplateProvider
-    {
-        string? Template { get; }
-    }
+    string? Template { get; }
 }

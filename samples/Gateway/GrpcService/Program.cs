@@ -10,7 +10,7 @@ using Microsoft.Extensions.Hosting;
 using NetRpc;
 using Helper = TestHelper.Helper;
 
-namespace Service
+namespace GrpcService
 {
     internal class Program
     {
@@ -47,7 +47,7 @@ namespace Service
     {
         public async Task Call(string s)
         {
-            var h = GlobalActionExecutingContext.Context.Headers;
+            var h = GlobalActionExecutingContext.Context.Header;
             Console.WriteLine($"Receive: {s}, {h["k1"]}");
         }
 

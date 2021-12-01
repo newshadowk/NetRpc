@@ -13,128 +13,127 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NetRpc.Http.Client;
 
-namespace NetRpc.Http
+namespace NetRpc.Http;
+
+internal sealed class HttpConnection : IDisposable
 {
-    internal sealed class HttpConnection : IDisposable
+    private readonly HttpContext _context;
+    private readonly IHubContext<CallbackHub, ICallback> _hub;
+    private readonly ILogger _logger;
+    private readonly RateAction _ra = new(1000);
+    private readonly ProgressEvent _progressEvent = new();
+
+    public HttpConnection(HttpContext context, IHubContext<CallbackHub, ICallback> hub, ILogger logger)
     {
-        private readonly HttpContext _context;
-        private readonly IHubContext<CallbackHub, ICallback> _hub;
-        private readonly ILogger _logger;
-        private readonly RateAction _ra = new(1000);
-        private readonly ProgressEvent _progressEvent = new();
+        _context = context;
+        _hub = hub;
+        _logger = logger;
+    }
 
-        public HttpConnection(HttpContext context, IHubContext<CallbackHub, ICallback> hub, ILogger logger)
+    public string? ConnId { get; set; }
+
+    public string? CallId { get; set; }
+
+    public ProxyStream? Stream
+    {
+        set
         {
-            _context = context;
-            _hub = hub;
-            _logger = logger;
-        }
+            if (value == null)
+                return;
 
-        public string? ConnId { get; set; }
-
-        public string? CallId { get; set; }
-
-        public ProxyStream? Stream
-        {
-            set
+            value.ProgressAsync += (_, e) =>
             {
-                if (value == null)
-                    return;
+                var args = _progressEvent.DownLoaderProgress(e.Value, value.Length);
 
-                value.ProgressAsync += (_, e) =>
+                _ra.Post(() =>
                 {
-                    var args = _progressEvent.DownLoaderProgress(e.Value, value.Length);
-
-                    _ra.Post(() =>
-                    {
 #pragma warning disable 4014
-                        UploadProgress(args);
+                    UploadProgress(args);
 #pragma warning restore 4014
-                    });
+                });
 
-                    return Task.CompletedTask;
-                };
-            }
+                return Task.CompletedTask;
+            };
         }
+    }
 
-        public async Task CallBack(object? callbackObj)
+    public async Task CallBack(object? callbackObj)
+    {
+        try
         {
-            try
-            {
-                if (ConnId != null)
-                    await _hub.Clients.Client(ConnId).Callback(CallId, callbackObj.ToDtoJson());
-            }
-            catch (Exception e)
-            {
-                _logger.LogWarning(e, null);
-            }
+            if (ConnId != null)
+                await _hub.Clients.Client(ConnId).Callback(CallId, callbackObj.ToDtoJson());
         }
-
-        private async Task UploadProgress(ProgressEventArgs args)
+        catch (Exception e)
         {
-            try
-            {
-                if (ConnId != null)
-                    await _hub.Clients.Client(ConnId).UploadProgress(CallId, args.ToDtoJson());
-            }
-            catch (Exception e)
-            {
-                _logger.LogWarning(e, null);
-            }
+            _logger.LogWarning(e, null);
         }
+    }
 
-        public async Task SendWithStreamAsync(CustomResult result, Stream stream, string? streamName)
+    private async Task UploadProgress(ProgressEventArgs args)
+    {
+        try
         {
-            var emptyActionDescriptor = new ActionDescriptor();
-            // ReSharper disable once ConstantNullCoalescingCondition
-            // _context.GetRouteData() may null here.
-            var routeData = _context.GetRouteData() ?? new RouteData();
-            var actionContext = new ActionContext(_context, routeData, emptyActionDescriptor);
+            if (ConnId != null)
+                await _hub.Clients.Client(ConnId).UploadProgress(CallId, args.ToDtoJson());
+        }
+        catch (Exception e)
+        {
+            _logger.LogWarning(e, null);
+        }
+    }
 
-            FileStreamResult fRet;
+    public async Task SendWithStreamAsync(CustomResult result, Stream stream, string? streamName)
+    {
+        var emptyActionDescriptor = new ActionDescriptor();
+        // ReSharper disable once ConstantNullCoalescingCondition
+        // _context.GetRouteData() may null here.
+        var routeData = _context.GetRouteData() ?? new RouteData();
+        var actionContext = new ActionContext(_context, routeData, emptyActionDescriptor);
 
-            if (result.IsImages)
-            {
-                //images no FileDownloadName
-                string ext;
-                if (string.IsNullOrEmpty(streamName))
-                    ext = "image/jpeg";
-                else
-                    ext = MimeTypeMap.GetMimeType(Path.GetExtension(streamName));
-                fRet = new FileStreamResult(stream, ext);
-            }
+        FileStreamResult fRet;
+
+        if (result.IsImages)
+        {
+            //images no FileDownloadName
+            string ext;
+            if (string.IsNullOrEmpty(streamName))
+                ext = "image/jpeg";
             else
-            {
-                fRet = new FileStreamResult(stream, MimeTypeMap.GetMimeType(Path.GetExtension(streamName)))
-                {
-                    FileDownloadName = streamName
-                };
-            }
-
-
-            if (!(result.Result is Stream))
-            {
-                var json = result.Result.ToDtoJson();
-                json = HttpUtility.UrlEncode(json, Encoding.UTF8);
-                _context.Response.Headers.Add(ClientConstValue.CustomResultHeaderKey, json);
-            }
-
-            var executor = new FileStreamResultExecutor(NullLoggerFactory.Instance);
-            await executor.ExecuteAsync(actionContext, fRet);
+                ext = MimeTypeMap.GetMimeType(Path.GetExtension(streamName));
+            fRet = new FileStreamResult(stream, ext);
         }
-
-        public async Task SendAsync(Result result)
+        else
         {
-            _context.Response.ContentType = "application/json; charset=utf-8";
-            _context.Response.StatusCode = result.StatusCode;
-            var s = result.ToJson();
-            await _context.Response.WriteAsync(s ?? "");
+            fRet = new FileStreamResult(stream, MimeTypeMap.GetMimeType(Path.GetExtension(streamName)))
+            {
+                FileDownloadName = streamName
+            };
         }
 
-        public void Dispose()
+
+        if (!(result.Result is Stream))
         {
-            _ra.Dispose();
-            _progressEvent.Dispose();
+            var json = result.Result.ToDtoJson();
+            json = HttpUtility.UrlEncode(json, Encoding.UTF8);
+            _context.Response.Headers.Add(ClientConstValue.CustomResultHeaderKey, json);
         }
+
+        var executor = new FileStreamResultExecutor(NullLoggerFactory.Instance);
+        await executor.ExecuteAsync(actionContext, fRet);
+    }
+
+    public async Task SendAsync(Result result)
+    {
+        _context.Response.ContentType = "application/json; charset=utf-8";
+        _context.Response.StatusCode = result.StatusCode;
+        var s = result.ToJson();
+        await _context.Response.WriteAsync(s ?? "");
+    }
+
+    public void Dispose()
+    {
+        _ra.Dispose();
+        _progressEvent.Dispose();
     }
 }

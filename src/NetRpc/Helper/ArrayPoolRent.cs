@@ -1,25 +1,24 @@
-﻿namespace System.Buffers
+﻿namespace System.Buffers;
+
+public static class ArrayPoolExtensions
 {
-    public static class ArrayPoolExtensions
+    public static ArrayOwner<T> RentOwner<T>(this ArrayPool<T> arrayPool, int minimumLength)
     {
-        public static ArrayOwner<T> RentOwner<T>(this ArrayPool<T> arrayPool, int minimumLength)
-        {
-            return new(arrayPool.Rent(minimumLength));
-        }
+        return new(arrayPool.Rent(minimumLength));
+    }
+}
+
+public class ArrayOwner<T> : IDisposable
+{
+    public ArrayOwner(T[] array)
+    {
+        Array = array;
     }
 
-    public class ArrayOwner<T> : IDisposable
+    public T[] Array { get; }
+
+    public void Dispose()
     {
-        public ArrayOwner(T[] array)
-        {
-            Array = array;
-        }
-
-        public T[] Array { get; }
-
-        public void Dispose()
-        {
-            ArrayPool<T>.Shared.Return(Array);
-        }
+        ArrayPool<T>.Shared.Return(Array);
     }
 }

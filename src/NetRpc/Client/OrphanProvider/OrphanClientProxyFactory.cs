@@ -1,27 +1,26 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace NetRpc
+namespace NetRpc;
+
+public class OrphanClientProxyFactory : IOrphanClientProxyFactory
 {
-    public class OrphanClientProxyFactory : IOrphanClientProxyFactory
+    private readonly List<IOrphanClientProxyProvider> _providers;
+
+    public OrphanClientProxyFactory(IEnumerable<IOrphanClientProxyProvider> providers)
     {
-        private readonly List<IOrphanClientProxyProvider> _providers;
+        _providers = providers.ToList();
+    }
 
-        public OrphanClientProxyFactory(IEnumerable<IOrphanClientProxyProvider> providers)
+    public IClientProxy<TService>? CreateProxy<TService>(string optionsName) where TService : class
+    {
+        foreach (var p in _providers)
         {
-            _providers = providers.ToList();
+            var client = p.CreateProxy<TService>(optionsName);
+            if (client != null)
+                return client;
         }
 
-        public IClientProxy<TService>? CreateProxy<TService>(string optionsName) where TService : class
-        {
-            foreach (var p in _providers)
-            {
-                var client = p.CreateProxy<TService>(optionsName);
-                if (client != null)
-                    return client;
-            }
-
-            return null;
-        }
+        return null;
     }
 }

@@ -1,14 +1,13 @@
 ﻿using System;
 
-namespace RabbitMQ.Base
-{
-    public sealed class EventArgsT<T> : EventArgs
-    {
-        public EventArgsT(T value)
-        {
-            Value = value;
-        }
+namespace RabbitMQ.Base;
 
-        public T Value { get; }
+public sealed class EventArgsT<T> : EventArgs
+{
+    public EventArgsT(T value)
+    {
+        Value = value;
     }
+
+    public T Value { get; }
 }

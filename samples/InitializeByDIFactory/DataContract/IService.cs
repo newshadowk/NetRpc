@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace DataContract
+namespace DataContract;
+
+public interface IService
 {
-    public interface IService
-    {
-        Task CallAsync(string s);
-    }
+    Task CallAsync(string s);
 }

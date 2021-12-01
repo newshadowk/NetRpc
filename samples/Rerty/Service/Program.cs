@@ -8,56 +8,54 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Service
+namespace Service;
+
+internal class Program
 {
-    internal class Program
+    private static async Task Main(string[] args)
     {
-        private static async Task Main(string[] args)
-        {
-            var host = Host.CreateDefaultBuilder()
-                .ConfigureWebHostDefaults(builder =>
-                {
-                    builder.ConfigureKestrel((context, options) =>
-                        {
-                            options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
-                        })
-                        .ConfigureServices((context, services) =>
-                        {
-                            services.AddNGrpcService();
-                            services.AddNServiceContract<IServiceAsync, ServiceAsync>();
-                        })
-                        .Configure(app => { app.UseNGrpc(); })
-                        .ConfigureLogging(loggingBuilder => { loggingBuilder.AddDebug(); });
-                })
-                .Build();
-            await host.RunAsync();
-        }
+        var host = Host.CreateDefaultBuilder()
+            .ConfigureWebHostDefaults(builder =>
+            {
+                builder.ConfigureKestrel((context, options) =>
+                    {
+                        options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+                    })
+                    .ConfigureServices((context, services) =>
+                    {
+                        services.AddNGrpcService();
+                        services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+                    })
+                    .Configure(app => { app.UseNGrpc(); })
+                    .ConfigureLogging(loggingBuilder => { loggingBuilder.AddDebug(); });
+            })
+            .Build();
+        await host.RunAsync();
+    }
+}
+
+public class ServiceAsync : IServiceAsync
+{
+    private readonly ILogger<ServiceAsync> _logger;
+
+    public ServiceAsync(ILogger<ServiceAsync> logger)
+    {
+        _logger = logger;
     }
 
-    public class ServiceAsync : IServiceAsync
+    public async Task CallAsync(string s)
     {
-        private readonly ILogger<ServiceAsync> _logger;
+        _logger.LogInformation($"Receive: {s}");
+        Console.WriteLine($"Receive: {s}");
+        throw new ArgumentException();
+        //throw new ArgumentNullException();
+    }
 
-        public ServiceAsync(ILogger<ServiceAsync> logger)
-        {
-            _logger = logger;
-        }
-
-        public async Task CallAsync(string s)
-        {
-            _logger.LogInformation($"Receive: {s}");
-            Console.WriteLine($"Receive: {s}");
-            //throw new ArgumentException();
-            throw new ArgumentNullException();
-        }
-
-        public async Task Call2Async(Stream s)
-        {
-            MemoryStream ms = new MemoryStream();
-            await s.CopyToAsync(ms);
-            var array = ms.ToArray();
-
-            throw new Exception();
-        }
+    public async Task Call2Async(Stream s)
+    {
+        MemoryStream ms = new MemoryStream();
+        await s.CopyToAsync(ms);
+        var array = ms.ToArray();
+        throw new Exception();
     }
 }

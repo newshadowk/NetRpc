@@ -1,18 +1,17 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace NetRpc.OpenTracing
+namespace NetRpc.OpenTracing;
+
+public class SpanLoggerProvider : ILoggerProvider
 {
-    public class SpanLoggerProvider : ILoggerProvider
+    private readonly SpanLogger _logger = new();
+
+    public void Dispose()
     {
-        private readonly SpanLogger _logger = new();
+    }
 
-        public void Dispose()
-        {
-        }
-
-        public ILogger CreateLogger(string categoryName)
-        {
-            return _logger;
-        }
+    public ILogger CreateLogger(string categoryName)
+    {
+        return _logger;
     }
 }

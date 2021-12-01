@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace NetRpc
+namespace NetRpc;
+
+public interface IClientConnectionFactory : IDisposable
 {
-    public interface IClientConnectionFactory : IDisposable
-    {
-        IClientConnection Create(bool isRetry);
-    }
+    IClientConnection Create(bool isRetry);
 }

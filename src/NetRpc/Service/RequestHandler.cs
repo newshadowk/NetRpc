@@ -5,53 +5,52 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NetRpc.Contract;
 
-namespace NetRpc
+namespace NetRpc;
+
+public sealed class RequestHandler
 {
-    public sealed class RequestHandler
+    private readonly ILogger _logger;
+    private readonly MiddlewareBuilder _middlewareBuilder;
+    private readonly IServiceProvider _serviceProvider;
+
+    public RequestHandler(IServiceProvider serviceProvider, ILoggerFactory factory, IOptions<MiddlewareOptions> middlewareOptions)
     {
-        private readonly ILogger _logger;
-        private readonly MiddlewareBuilder _middlewareBuilder;
-        private readonly IServiceProvider _serviceProvider;
+        _serviceProvider = serviceProvider;
+        _logger = factory.CreateLogger("NetRpc");
+        _middlewareBuilder = new MiddlewareBuilder(middlewareOptions.Value, serviceProvider);
+    }
 
-        public RequestHandler(IServiceProvider serviceProvider, ILoggerFactory factory, IOptions<MiddlewareOptions> middlewareOptions)
+    public async Task HandleAsync(IServiceConnection connection, ChannelType channelType)
+    {
+        await using var convert = new BufferServiceOnceApiConvert(connection, _logger);
+        await HandleAsync(convert, channelType);
+    }
+
+    public async Task HandleAsync(IServiceOnceApiConvert convert, ChannelType channelType)
+    {
+        try
         {
-            _serviceProvider = serviceProvider;
-            _logger = factory.CreateLogger("NetRpc");
-            _middlewareBuilder = new MiddlewareBuilder(middlewareOptions.Value, serviceProvider);
+            var contractOptions = _serviceProvider.GetRequiredService<IOptions<ContractOptions>>();
+            var rpcContextAccessor = _serviceProvider.GetRequiredService<IActionExecutingContextAccessor>();
+
+            using IServiceScope scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
+            GlobalServiceProvider.Provider = _serviceProvider;
+            GlobalServiceProvider.ScopeProvider = scope.ServiceProvider;
+            var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
+            var onceTransfer = new ServiceOnceTransfer(instances,
+                scope.ServiceProvider,
+                convert,
+                _middlewareBuilder,
+                rpcContextAccessor,
+                channelType,
+                _logger);
+            await onceTransfer.StartAsync();
+            await onceTransfer.HandleRequestAsync();
         }
-
-        public async Task HandleAsync(IServiceConnection connection, ChannelType channelType)
+        catch (Exception e)
         {
-            await using var convert = new BufferServiceOnceApiConvert(connection, _logger);
-            await HandleAsync(convert, channelType);
-        }
-
-        public async Task HandleAsync(IServiceOnceApiConvert convert, ChannelType channelType)
-        {
-            try
-            {
-                var contractOptions = _serviceProvider.GetRequiredService<IOptions<ContractOptions>>();
-                var rpcContextAccessor = _serviceProvider.GetRequiredService<IActionExecutingContextAccessor>();
-
-                using IServiceScope scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
-                GlobalServiceProvider.Provider = _serviceProvider;
-                GlobalServiceProvider.ScopeProvider = scope.ServiceProvider;
-                var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
-                var onceTransfer = new ServiceOnceTransfer(instances,
-                    scope.ServiceProvider,
-                    convert,
-                    _middlewareBuilder,
-                    rpcContextAccessor,
-                    channelType,
-                    _logger);
-                await onceTransfer.StartAsync();
-                await onceTransfer.HandleRequestAsync();
-            }
-            catch (Exception e)
-            {
-                _logger.LogCritical(e, null);
-                throw;
-            }
+            _logger.LogCritical(e, null);
+            throw;
         }
     }
 }

@@ -2,27 +2,26 @@
 using OpenTracing.Tag;
 using System;
 
-namespace NetRpc.OpenTracing
+namespace NetRpc.OpenTracing;
+
+public interface IErrorTagHandle
 {
-    public interface IErrorTagHandle
+    void Handle(Exception e, ISpan span);
+}
+
+public abstract class BaseErrorTagHandle : IErrorTagHandle
+{
+    public virtual void Handle(Exception e, ISpan span)
     {
-        void Handle(Exception e, ISpan span);
+        SetError(span);
     }
 
-    public abstract class BaseErrorTagHandle : IErrorTagHandle
+    protected static void SetError(ISpan span)
     {
-        public virtual void Handle(Exception e, ISpan span)
-        {
-            SetError(span);
-        }
-
-        protected static void SetError(ISpan span)
-        {
-            Tags.Error.Set(span, true);
-        }
+        Tags.Error.Set(span, true);
     }
+}
 
-    internal class DefaultErrorTagHandle : BaseErrorTagHandle
-    {
-    }
+internal class DefaultErrorTagHandle : BaseErrorTagHandle
+{
 }

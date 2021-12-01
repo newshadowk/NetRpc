@@ -1,13 +1,12 @@
 ﻿using System.Threading.Tasks.Dataflow;
 
-namespace RabbitMQ.Base
+namespace RabbitMQ.Base;
+
+public class CheckWriteOnceBlock<T>
 {
-    public class CheckWriteOnceBlock<T>
-    {
-        public WriteOnceBlock<T> WriteOnceBlock { get; } = new(null);
+    public WriteOnceBlock<T> WriteOnceBlock { get; } = new(null);
 
-        public object SyncRoot { get; } = new();
+    public object SyncRoot { get; } = new();
 
-        public bool IsPosted { get; set; }
-    }
+    public bool IsPosted { get; set; }
 }

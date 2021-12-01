@@ -2,91 +2,90 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace NetRpc.Http.Client
+namespace NetRpc.Http.Client;
+
+public class HttpClientProxyProvider : ClientProxyProviderBase
 {
-    public class HttpClientProxyProvider : ClientProxyProviderBase
+    private readonly IOptionsMonitor<HttpClientOptions> _httpClientOptions;
+    private readonly IOptionsMonitor<NClientOptions> _nClientOption;
+    private readonly IOptions<ClientMiddlewareOptions> _clientMiddlewareOptions;
+    private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILoggerFactory _loggerFactory;
+
+    public HttpClientProxyProvider(IOptionsMonitor<HttpClientOptions> httpClientOptions,
+        IOptionsMonitor<NClientOptions> nClientOption,
+        IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
+        IActionExecutingContextAccessor actionExecutingContextAccessor,
+        IServiceProvider serviceProvider,
+        ILoggerFactory loggerFactory)
     {
-        private readonly IOptionsMonitor<HttpClientOptions> _httpClientOptions;
-        private readonly IOptionsMonitor<NClientOptions> _nClientOption;
-        private readonly IOptions<ClientMiddlewareOptions> _clientMiddlewareOptions;
-        private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly ILoggerFactory _loggerFactory;
-
-        public HttpClientProxyProvider(IOptionsMonitor<HttpClientOptions> httpClientOptions,
-            IOptionsMonitor<NClientOptions> nClientOption,
-            IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
-            IActionExecutingContextAccessor actionExecutingContextAccessor,
-            IServiceProvider serviceProvider,
-            ILoggerFactory loggerFactory)
-        {
-            _httpClientOptions = httpClientOptions;
-            _nClientOption = nClientOption;
-            _clientMiddlewareOptions = clientMiddlewareOptions;
-            _actionExecutingContextAccessor = actionExecutingContextAccessor;
-            _serviceProvider = serviceProvider;
-            _loggerFactory = loggerFactory;
-        }
-
-        protected override ClientProxy<TService>? CreateProxyInner<TService>(string optionsName)
-        {
-            var options = _httpClientOptions.Get(optionsName);
-            if (options.IsPropertiesDefault())
-                return null;
-
-            var f = new HttpOnceCallFactory(new SimpleOptions<HttpClientOptions>(options), _loggerFactory);
-            var clientProxy = new ClientProxy<TService>(
-                f,
-                new SimpleOptions<NClientOptions>(_nClientOption.CurrentValue),
-                _clientMiddlewareOptions,
-                _actionExecutingContextAccessor,
-                _serviceProvider,
-                _loggerFactory,
-                optionsName);
-            return clientProxy;
-        }
+        _httpClientOptions = httpClientOptions;
+        _nClientOption = nClientOption;
+        _clientMiddlewareOptions = clientMiddlewareOptions;
+        _actionExecutingContextAccessor = actionExecutingContextAccessor;
+        _serviceProvider = serviceProvider;
+        _loggerFactory = loggerFactory;
     }
 
-    public class OrphanHttpClientProxyProvider : IOrphanClientProxyProvider
+    protected override ClientProxy<TService>? CreateProxyInner<TService>(string optionsName)
     {
-        private readonly IOptionsMonitor<HttpClientOptions> _httpClientOptions;
-        private readonly IOptionsMonitor<NClientOptions> _nClientOption;
-        private readonly IOptions<ClientMiddlewareOptions> _clientMiddlewareOptions;
-        private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly ILoggerFactory _loggerFactory;
+        var options = _httpClientOptions.Get(optionsName);
+        if (options.IsPropertiesDefault())
+            return null;
 
-        public OrphanHttpClientProxyProvider(IOptionsMonitor<HttpClientOptions> httpClientOptions,
-            IOptionsMonitor<NClientOptions> nClientOption,
-            IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
-            IActionExecutingContextAccessor actionExecutingContextAccessor,
-            IServiceProvider serviceProvider,
-            ILoggerFactory loggerFactory)
-        {
-            _httpClientOptions = httpClientOptions;
-            _nClientOption = nClientOption;
-            _clientMiddlewareOptions = clientMiddlewareOptions;
-            _actionExecutingContextAccessor = actionExecutingContextAccessor;
-            _serviceProvider = serviceProvider;
-            _loggerFactory = loggerFactory;
-        }
+        var f = new HttpOnceCallFactory(new SimpleOptions<HttpClientOptions>(options), _loggerFactory);
+        var clientProxy = new ClientProxy<TService>(
+            f,
+            new SimpleOptions<NClientOptions>(_nClientOption.CurrentValue),
+            _clientMiddlewareOptions,
+            _actionExecutingContextAccessor,
+            _serviceProvider,
+            _loggerFactory,
+            optionsName);
+        return clientProxy;
+    }
+}
 
-        public ClientProxy<TService>? CreateProxy<TService>(string optionsName) where TService : class
-        {
-            var options = _httpClientOptions.Get(optionsName);
-            if (options.IsPropertiesDefault())
-                return null;
+public class OrphanHttpClientProxyProvider : IOrphanClientProxyProvider
+{
+    private readonly IOptionsMonitor<HttpClientOptions> _httpClientOptions;
+    private readonly IOptionsMonitor<NClientOptions> _nClientOption;
+    private readonly IOptions<ClientMiddlewareOptions> _clientMiddlewareOptions;
+    private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILoggerFactory _loggerFactory;
 
-            var f = new HttpOnceCallFactory(new SimpleOptions<HttpClientOptions>(options), _loggerFactory);
-            var clientProxy = new ClientProxy<TService>(
-                f,
-                new SimpleOptions<NClientOptions>(_nClientOption.CurrentValue),
-                _clientMiddlewareOptions,
-                _actionExecutingContextAccessor,
-                _serviceProvider,
-                _loggerFactory,
-                optionsName);
-            return clientProxy;
-        }
+    public OrphanHttpClientProxyProvider(IOptionsMonitor<HttpClientOptions> httpClientOptions,
+        IOptionsMonitor<NClientOptions> nClientOption,
+        IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
+        IActionExecutingContextAccessor actionExecutingContextAccessor,
+        IServiceProvider serviceProvider,
+        ILoggerFactory loggerFactory)
+    {
+        _httpClientOptions = httpClientOptions;
+        _nClientOption = nClientOption;
+        _clientMiddlewareOptions = clientMiddlewareOptions;
+        _actionExecutingContextAccessor = actionExecutingContextAccessor;
+        _serviceProvider = serviceProvider;
+        _loggerFactory = loggerFactory;
+    }
+
+    public ClientProxy<TService>? CreateProxy<TService>(string optionsName) where TService : class
+    {
+        var options = _httpClientOptions.Get(optionsName);
+        if (options.IsPropertiesDefault())
+            return null;
+
+        var f = new HttpOnceCallFactory(new SimpleOptions<HttpClientOptions>(options), _loggerFactory);
+        var clientProxy = new ClientProxy<TService>(
+            f,
+            new SimpleOptions<NClientOptions>(_nClientOption.CurrentValue),
+            _clientMiddlewareOptions,
+            _actionExecutingContextAccessor,
+            _serviceProvider,
+            _loggerFactory,
+            optionsName);
+        return clientProxy;
     }
 }

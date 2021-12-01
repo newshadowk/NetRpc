@@ -1,12 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>C:\G2\NetRpc\samples\Temp\DataContract\DataContract.xml</DocumentationFile>
-  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NetRpc.Contract\NetRpc.Contract.csproj" />

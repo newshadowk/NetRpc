@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace NetRpc
+namespace NetRpc;
+
+public interface IAsyncActionFilter
 {
-    public interface IAsyncActionFilter
-    {
-        Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next);
-    }
+    Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next);
 }

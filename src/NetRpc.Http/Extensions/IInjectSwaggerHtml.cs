@@ -1,7 +1,6 @@
-﻿namespace NetRpc.Http
+﻿namespace NetRpc.Http;
+
+public interface IInjectSwaggerHtml
 {
-    public interface IInjectSwaggerHtml
-    {
-        string InjectHtml(string html);
-    }
+    string InjectHtml(string html);
 }

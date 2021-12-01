@@ -12,44 +12,43 @@ using NetRpc;
 using InParam = DataContract.InParam;
 using Ret = DataContract.Ret;
 
-namespace Service
+namespace Service;
+
+internal class Program
 {
-    internal class Program
+    private static async Task Main(string[] args)
     {
-        private static async Task Main(string[] args)
-        {
-            await RunGrpcAsync();
-        }
-
-        private static async Task RunGrpcAsync()
-        {
-            var host = Host.CreateDefaultBuilder()
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.ConfigureKestrel((context, options) =>
-                        {
-                            options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
-                        })
-                        .ConfigureServices((context, services) =>
-                        {
-                            services.AddNGrpcService();
-                            services.AddNServiceContract<IService, Service>();
-                            services.AddNGrpcClient(i => { i.Url = "http://localhost:50002"; });
-                            services.AddNClientContract<IService1>();
-                        }).Configure(app => { app.UseNGrpc(); });
-                })
-                .Build();
-
-            await host.RunAsync();
-        }
+        await RunGrpcAsync();
     }
 
-    internal class Service : IService
+    private static async Task RunGrpcAsync()
     {
-        [RouteFilter(typeof(IService1))]
-        public async Task<Ret> Call(InParam p, int i, Stream stream, Func<int, Task> progs, CancellationToken token)
-        {
-            throw new NotImplementedException();
-        }
+        var host = Host.CreateDefaultBuilder()
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.ConfigureKestrel((context, options) =>
+                    {
+                        options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+                    })
+                    .ConfigureServices((context, services) =>
+                    {
+                        services.AddNGrpcService();
+                        services.AddNServiceContract<IService, Service>();
+                        services.AddNGrpcClient(i => { i.Url = "http://localhost:50002"; });
+                        services.AddNClientContract<IService1>();
+                    }).Configure(app => { app.UseNGrpc(); });
+            })
+            .Build();
+
+        await host.RunAsync();
+    }
+}
+
+internal class Service : IService
+{
+    [RouteFilter(typeof(IService1))]
+    public async Task<Ret> Call(InParam p, int i, Stream stream, Func<int, Task> progs, CancellationToken token)
+    {
+        throw new NotImplementedException();
     }
 }

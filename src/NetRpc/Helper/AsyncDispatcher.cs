@@ -4,99 +4,98 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-namespace NetRpc
+namespace NetRpc;
+
+internal class InvokeFunc
 {
-    internal class InvokeFunc
+    public Func<object?> Func { get; }
+
+    public WriteOnceBlock<(ExceptionDispatchInfo? exceptionDispatchInfo, object? result)> InvokedFlag { get; } =
+        new(null);
+
+    public InvokeFunc(Func<object?> func)
     {
-        public Func<object?> Func { get; }
+        Func = func;
+    }
+}
 
-        public WriteOnceBlock<(ExceptionDispatchInfo? exceptionDispatchInfo, object? result)> InvokedFlag { get; } =
-            new(null);
+public class AsyncDispatcher : IDisposable
+{
+    private readonly BufferBlock<InvokeFunc> _funcQ = new();
 
-        public InvokeFunc(Func<object?> func)
+    private readonly CancellationTokenSource _cts = new();
+
+    public AsyncDispatcher()
+    {
+#pragma warning disable 4014
+        StartAsync();
+#pragma warning restore 4014
+    }
+
+    private async Task StartAsync()
+    {
+        while (!_cts.IsCancellationRequested)
         {
-            Func = func;
+            var action = await _funcQ.ReceiveAsync(_cts.Token);
+
+            try
+            {
+                var ret = action.Func.Invoke();
+                action.InvokedFlag.Post((null, ret));
+            }
+            catch (Exception e)
+            {
+                action.InvokedFlag.Post((ExceptionDispatchInfo.Capture(e), null));
+            }
         }
     }
 
-    public class AsyncDispatcher : IDisposable
+    public void Invoke(Action action)
     {
-        private readonly BufferBlock<InvokeFunc> _funcQ = new();
-
-        private readonly CancellationTokenSource _cts = new();
-
-        public AsyncDispatcher()
+        var invokeFunc = new InvokeFunc(() =>
         {
-#pragma warning disable 4014
-            StartAsync();
-#pragma warning restore 4014
-        }
+            action.Invoke();
+            return null;
+        });
 
-        private async Task StartAsync()
+        _funcQ.Post(invokeFunc);
+
+        var (exceptionDispatchInfo, _) = invokeFunc.InvokedFlag.Receive();
+        exceptionDispatchInfo?.Throw();
+    }
+
+    public async Task InvokeAsync(Action action)
+    {
+        var invokeFunc = new InvokeFunc(() =>
         {
-            while (!_cts.IsCancellationRequested)
-            {
-                var action = await _funcQ.ReceiveAsync(_cts.Token);
+            action.Invoke();
+            return null;
+        });
 
-                try
-                {
-                    var ret = action.Func.Invoke();
-                    action.InvokedFlag.Post((null, ret));
-                }
-                catch (Exception e)
-                {
-                    action.InvokedFlag.Post((ExceptionDispatchInfo.Capture(e), null));
-                }
-            }
-        }
+        _funcQ.Post(invokeFunc);
+        var (exceptionDispatchInfo, _) = await invokeFunc.InvokedFlag.ReceiveAsync();
+        exceptionDispatchInfo?.Throw();
+    }
 
-        public void Invoke(Action action)
-        {
-            var invokeFunc = new InvokeFunc(() =>
-            {
-                action.Invoke();
-                return null;
-            });
+    public async Task<TResult> InvokeAsync<TResult>(Func<TResult> callback)
+    {
+        if (_cts.IsCancellationRequested)
+            throw new ObjectDisposedException("AsyncDispatcher");
 
-            _funcQ.Post(invokeFunc);
+        var invokeFunc = new InvokeFunc(() => callback.Invoke());
+        _funcQ.Post(invokeFunc);
+        var (exceptionDispatchInfo, result) = await invokeFunc.InvokedFlag.ReceiveAsync(_cts.Token);
+        exceptionDispatchInfo?.Throw();
+        return (TResult) result!;
+    }
 
-            var (exceptionDispatchInfo, _) = invokeFunc.InvokedFlag.Receive();
-            exceptionDispatchInfo?.Throw();
-        }
+    public Task BeginInvoke(Action action)
+    {
+        return InvokeAsync(action);
+    }
 
-        public async Task InvokeAsync(Action action)
-        {
-            var invokeFunc = new InvokeFunc(() =>
-            {
-                action.Invoke();
-                return null;
-            });
-
-            _funcQ.Post(invokeFunc);
-            var (exceptionDispatchInfo, _) = await invokeFunc.InvokedFlag.ReceiveAsync();
-            exceptionDispatchInfo?.Throw();
-        }
-
-        public async Task<TResult> InvokeAsync<TResult>(Func<TResult> callback)
-        {
-            if (_cts.IsCancellationRequested)
-                throw new ObjectDisposedException("AsyncDispatcher");
-
-            var invokeFunc = new InvokeFunc(() => callback.Invoke());
-            _funcQ.Post(invokeFunc);
-            var (exceptionDispatchInfo, result) = await invokeFunc.InvokedFlag.ReceiveAsync(_cts.Token);
-            exceptionDispatchInfo?.Throw();
-            return (TResult) result!;
-        }
-
-        public Task BeginInvoke(Action action)
-        {
-            return InvokeAsync(action);
-        }
-
-        public void Dispose()
-        {
-            _cts.Cancel();
-        }
+    public void Dispose()
+    {
+        _cts.Cancel();
     }
 }

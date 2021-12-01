@@ -2,56 +2,55 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace NetRpc
+namespace NetRpc;
+
+public abstract class EventStream : Stream
 {
-    public abstract class EventStream : Stream
+    protected volatile bool IsStarted;
+    protected volatile bool IsFinished;
+    public event AsyncEventHandler<SizeEventArgs>? FinishedAsync;
+    public event AsyncEventHandler? StartedAsync;
+    public event AsyncEventHandler<SizeEventArgs>? ProgressAsync;
+
+    public virtual void Reset()
     {
-        protected volatile bool IsStarted;
-        protected volatile bool IsFinished;
-        public event AsyncEventHandler<SizeEventArgs>? FinishedAsync;
-        public event AsyncEventHandler? StartedAsync;
-        public event AsyncEventHandler<SizeEventArgs>? ProgressAsync;
+        IsStarted = false;
+        IsFinished = false;
+    }
 
-        public virtual void Reset()
+    protected async Task InvokeFinishAsync(SizeEventArgs e)
+    {
+        if (!IsStarted)
+            return;
+
+        if (!IsFinished)
         {
-            IsStarted = false;
-            IsFinished = false;
+            IsFinished = true;
+            await OnFinishedAsync(e);
         }
+    }
 
-        protected async Task InvokeFinishAsync(SizeEventArgs e)
+    protected async Task InvokeStartAsync()
+    {
+        if (!IsStarted)
         {
-            if (!IsStarted)
-                return;
-
-            if (!IsFinished)
-            {
-                IsFinished = true;
-                await OnFinishedAsync(e);
-            }
+            IsStarted = true;
+            await OnStartedAsync();
         }
+    }
 
-        protected async Task InvokeStartAsync()
-        {
-            if (!IsStarted)
-            {
-                IsStarted = true;
-                await OnStartedAsync();
-            }
-        }
+    protected virtual Task OnStartedAsync()
+    {
+        return StartedAsync.InvokeAsync(this, EventArgs.Empty);
+    }
 
-        protected virtual Task OnStartedAsync()
-        {
-            return StartedAsync.InvokeAsync(this, EventArgs.Empty);
-        }
+    protected virtual Task OnFinishedAsync(SizeEventArgs e)
+    {
+        return FinishedAsync.InvokeAsync(this, e);
+    }
 
-        protected virtual Task OnFinishedAsync(SizeEventArgs e)
-        {
-            return FinishedAsync.InvokeAsync(this, e);
-        }
-
-        protected virtual Task OnProgressAsync(SizeEventArgs e)
-        {
-            return ProgressAsync.InvokeAsync(this, e);
-        }
+    protected virtual Task OnProgressAsync(SizeEventArgs e)
+    {
+        return ProgressAsync.InvokeAsync(this, e);
     }
 }

@@ -10,198 +10,196 @@ using Microsoft.Extensions.Logging;
 using NetRpc.Contract;
 using Polly;
 
-namespace NetRpc
+namespace NetRpc;
+
+internal sealed class ClientMethodRetryInvoker : IMethodInvoker
 {
-    internal sealed class ClientMethodRetryInvoker : IMethodInvoker
+    private readonly CallFactory _callFactory;
+    private readonly ClientRetryAttribute? _parentRetryAttribute;
+    private readonly ClientNotRetryAttribute? _clientNotRetryAttribute;
+    private readonly ILogger _logger;
+    private static readonly ConcurrentDictionary<MethodInfo, ClientRetryAttribute?> ClientRetryAttributes = new();
+    private static readonly ConcurrentDictionary<MethodInfo, ClientNotRetryAttribute?> ClientNotRetryAttributes = new();
+
+    public ClientMethodRetryInvoker(CallFactory callFactory, ClientRetryAttribute? parentRetryAttribute, ClientNotRetryAttribute? clientNotRetryAttribute, ILogger logger)
     {
-        private readonly CallFactory _callFactory;
-        private readonly ClientRetryAttribute? _parentRetryAttribute;
-        private readonly ClientNotRetryAttribute? _clientNotRetryAttribute;
-        private readonly ILogger _logger;
-        private static readonly ConcurrentDictionary<MethodInfo, ClientRetryAttribute?> ClientRetryAttributes = new();
-        private static readonly ConcurrentDictionary<MethodInfo, ClientNotRetryAttribute?> ClientNotRetryAttributes = new();
+        _callFactory = callFactory;
+        _parentRetryAttribute = parentRetryAttribute;
+        _clientNotRetryAttribute = clientNotRetryAttribute;
+        _logger = logger;
+    }
 
-        public ClientMethodRetryInvoker(CallFactory callFactory, ClientRetryAttribute? parentRetryAttribute, ClientNotRetryAttribute? clientNotRetryAttribute, ILogger logger)
+    public object? Invoke(MethodInfo targetMethod, object?[] args)
+    {
+        try
         {
-            _callFactory = callFactory;
-            _parentRetryAttribute = parentRetryAttribute;
-            _clientNotRetryAttribute = clientNotRetryAttribute;
-            _logger = logger;
+            return CallAsync(targetMethod, args).Result;
         }
-
-        public object? Invoke(MethodInfo targetMethod, object?[] args)
+        catch (AggregateException e)
         {
-            try
+            if (e.InnerException != null)
             {
-                return CallAsync(targetMethod, args).Result;
-            }
-            catch (AggregateException e)
-            {
-                if (e.InnerException != null)
-                {
-                    var edi = ExceptionDispatchInfo.Capture(e.InnerException);
-                    edi.Throw();
-                }
-
-                throw;
-            }
-        }
-
-        public async Task InvokeAsync(MethodInfo targetMethod, object?[] args)
-        {
-            await CallAsync(targetMethod, args);
-        }
-
-        public async Task<T> InvokeAsyncT<T>(MethodInfo targetMethod, object?[] args)
-        {
-            var ret = await CallAsync(targetMethod, args);
-            if (ret == null)
-                return default!;
-            return (T) ret;
-        }
-
-        private async Task<object?> CallAsync(MethodInfo targetMethod, object?[] args)
-        {
-            var (callback, token, stream, otherArgs) = GetArgs(args);
-            token.ThrowIfCancellationRequested();
-
-            var retryInfo = GetRetryInfo(targetMethod);
-
-            //single call
-            if (retryInfo == null)
-            {
-                var call = _callFactory.Create();
-                return await call.CallAsync(targetMethod, false, callback, token, stream, otherArgs);
+                var edi = ExceptionDispatchInfo.Capture(e.InnerException);
+                edi.Throw();
             }
 
-            var proxyStream = WrapProxyStream(stream);
+            throw;
+        }
+    }
 
-            //retry call
-            var p = Policy
-                .Handle<Exception>(e => retryInfo.NeedRetry(e))
-                .WaitAndRetryAsync(retryInfo.Durations,
-                    (exception, span, context) => 
-                        _logger.LogWarning(exception, $"{context["name"]}, retry count:{context["count"]}, wait ms:{span.TotalMilliseconds}"));
+    public async Task InvokeAsync(MethodInfo targetMethod, object?[] args)
+    {
+        await CallAsync(targetMethod, args);
+    }
 
-            return await p.ExecuteAsync(async (context, t) =>
-            {
-                context["name"] = targetMethod.ToFullMethodName();
-                bool isRetry = AddCount(context);
-                if (isRetry) 
-                    proxyStream?.Reset();
-                var call = _callFactory.Create();
-                return await call.CallAsync(targetMethod, isRetry, callback, t, proxyStream, otherArgs);
-            }, new Context("call"), token);
+    public async Task<T> InvokeAsyncT<T>(MethodInfo targetMethod, object?[] args)
+    {
+        var ret = await CallAsync(targetMethod, args);
+        if (ret == null)
+            return default!;
+        return (T) ret;
+    }
+
+    private async Task<object?> CallAsync(MethodInfo targetMethod, object?[] args)
+    {
+        var (callback, token, stream, otherArgs) = GetArgs(args);
+        token.ThrowIfCancellationRequested();
+
+        var retryInfo = GetRetryInfo(targetMethod);
+
+        //single call
+        if (retryInfo == null)
+        {
+            var call = _callFactory.Create();
+            return await call.CallAsync(targetMethod, false, callback, token, stream, otherArgs);
         }
 
-        private static bool AddCount(Context c)
+        var proxyStream = WrapProxyStream(stream);
+
+        //retry call
+        var p = Policy
+            .Handle<Exception>(e => retryInfo.NeedRetry(e))
+            .WaitAndRetryAsync(retryInfo.Durations,
+                (exception, span, context) => 
+                    _logger.LogWarning(exception, $"{context["name"]}, retry count:{context["count"]}, wait ms:{span.TotalMilliseconds}"));
+
+        return await p.ExecuteAsync(async (context, t) =>
         {
-            if (!c.Contains("count"))
-                c["count"] = 1;
-            else
-                c["count"] = (int) c["count"] + 1;
+            context["name"] = targetMethod.ToFullMethodName();
+            bool isRetry = AddCount(context);
+            if (isRetry) 
+                proxyStream?.Reset();
+            var call = _callFactory.Create();
+            return await call.CallAsync(targetMethod, isRetry, callback, t, proxyStream, otherArgs);
+        }, new Context("call"), token);
+    }
+
+    private static bool AddCount(Context c)
+    {
+        if (!c.Contains("count"))
+            c["count"] = 1;
+        else
+            c["count"] = (int) c["count"] + 1;
             
-            return (int)c["count"] > 1;
+        return (int)c["count"] > 1;
+    }
+
+    private RetryInfo? GetRetryInfo(MethodInfo targetMethod)
+    {
+        var retry = ClientRetryAttributes.GetOrAdd(targetMethod, t => t.GetCustomAttribute<ClientRetryAttribute>());
+        var notRetry = ClientNotRetryAttributes.GetOrAdd(targetMethod, t => t.GetCustomAttribute<ClientNotRetryAttribute>());
+        if (retry != null)
+        {
+            return GetRetryInfo(retry, notRetry);
         }
 
-        private RetryInfo? GetRetryInfo(MethodInfo targetMethod)
+        if (_parentRetryAttribute != null)
+            return GetRetryInfo(_parentRetryAttribute, notRetry ?? _clientNotRetryAttribute);
+
+        return default;
+    }
+
+    private static RetryInfo GetRetryInfo(ClientRetryAttribute attribute,ClientNotRetryAttribute? notRetryAttribute)
+    {
+        var durations = attribute.SleepDurations.ToList().ConvertAll(i => TimeSpan.FromMilliseconds(i)).ToArray();
+        var notRetryExceptionTypes = notRetryAttribute?.ExceptionTypes;
+        return new RetryInfo
         {
-            var retry = ClientRetryAttributes.GetOrAdd(targetMethod, t => t.GetCustomAttribute<ClientRetryAttribute>());
-            var notRetry = ClientNotRetryAttributes.GetOrAdd(targetMethod, t => t.GetCustomAttribute<ClientNotRetryAttribute>());
-            if (retry != null)
-            {
-                return GetRetryInfo(retry, notRetry);
-            }
+            ExceptionTypes = attribute.ExceptionTypes, ExcludeExceptionTypes = notRetryExceptionTypes,
+            Durations = durations
+        };
+    }
 
-            if (_parentRetryAttribute != null)
-                return GetRetryInfo(_parentRetryAttribute, notRetry ?? _clientNotRetryAttribute);
+    private static (Func<object?, Task>? callback, CancellationToken token, Stream? stream, object?[] otherArgs) GetArgs(object?[] args)
+    {
+        var objs = args.ToList();
 
-            return default;
+        //callback
+        Func<object?, Task>? retCallback = null;
+        var found = objs.FirstOrDefault(i =>
+            i != null &&
+            i.GetType().IsFuncT());
+        if (found != null)
+        {
+            retCallback = FuncHelper.ConvertFunc(found);
+            objs.Remove(found);
         }
 
-        private static RetryInfo GetRetryInfo(ClientRetryAttribute attribute,ClientNotRetryAttribute? notRetryAttribute)
+        //token
+        var retToken = CancellationToken.None;
+        found = objs.FirstOrDefault(i => i is CancellationToken);
+        if (found != null)
         {
-            var durations = attribute.SleepDurations.ToList().ConvertAll(i => TimeSpan.FromMilliseconds(i)).ToArray();
-            var notRetryExceptionTypes = notRetryAttribute?.ExceptionTypes;
-            return new RetryInfo
-            {
-                ExceptionTypes = attribute.ExceptionTypes, ExcludeExceptionTypes = notRetryExceptionTypes,
-                Durations = durations
-            };
+            retToken = (CancellationToken) found;
+            objs.Remove(found);
         }
 
-        private static (Func<object?, Task>? callback, CancellationToken token, Stream? stream, object?[] otherArgs) GetArgs(object?[] args)
+        //stream
+        Stream? retStream = null;
+        found = objs.FirstOrDefault(i => i is Stream);
+        if (found != null)
         {
-            var objs = args.ToList();
-
-            //callback
-            Func<object?, Task>? retCallback = null;
-            var found = objs.FirstOrDefault(i =>
-                i != null &&
-                i.GetType().IsFuncT());
-            if (found != null)
-            {
-                retCallback = FuncHelper.ConvertFunc(found);
-                objs.Remove(found);
-            }
-
-            //token
-            var retToken = CancellationToken.None;
-            found = objs.FirstOrDefault(i => i is CancellationToken);
-            if (found != null)
-            {
-                retToken = (CancellationToken) found;
-                objs.Remove(found);
-            }
-
-            //stream
-            Stream? retStream = null;
-            found = objs.FirstOrDefault(i => i is Stream);
-            if (found != null)
-            {
-                retStream = (Stream) found;
-                objs.Remove(found);
-            }
-
-            //otherArgs
-            return (retCallback, retToken, retStream, objs.ToArray());
+            retStream = (Stream) found;
+            objs.Remove(found);
         }
 
-        private static ProxyStream? WrapProxyStream(Stream? stream)
+        //otherArgs
+        return (retCallback, retToken, retStream, objs.ToArray());
+    }
+
+    private static ProxyStream? WrapProxyStream(Stream? stream)
+    {
+        if (stream == null)
+            return null;
+
+        if (stream is ProxyStream ps)
         {
-            if (stream == null)
-                return null;
-
-            if (stream is ProxyStream ps)
-            {
-                ps.TryAttachCache();
-                return ps;
-            }
-
-            ProxyStream proxyStream = new (stream);
-            proxyStream.TryAttachCache();
-            return proxyStream;
+            ps.TryAttachCache();
+            return ps;
         }
 
-        private class RetryInfo
+        ProxyStream proxyStream = new (stream);
+        proxyStream.TryAttachCache();
+        return proxyStream;
+    }
+
+    private class RetryInfo
+    {
+        public TimeSpan[] Durations { get; init; } = null!;
+
+        public Type[] ExceptionTypes { get; init; } = null!;
+        public Type[]? ExcludeExceptionTypes { get; init; }
+
+        public bool NeedRetry(Exception e)
         {
-            public TimeSpan[] Durations { get; init; } = null!;
-
-            public Type[] ExceptionTypes { get; init; } = null!;
-            public Type[]? ExcludeExceptionTypes { get; init; }
-
-            public bool NeedRetry(Exception e)
+            if (ExcludeExceptionTypes?.Length > 0)
             {
-                if (ExcludeExceptionTypes?.Length > 0)
-                {
-                    var notRetry = ExcludeExceptionTypes.Any(i => i.IsInstanceOfType(e));
-                    if (notRetry)
-                        return false;
-                }
-                var ret = ExceptionTypes.Any(i => i.IsInstanceOfType(e));
-                return ret;
+                var notRetry = ExcludeExceptionTypes.Any(i => i.IsInstanceOfType(e));
+                if (notRetry)
+                    return false;
             }
-
+            var ret = ExceptionTypes.Any(i => i.IsInstanceOfType(e));
+            return ret;
         }
     }
 }

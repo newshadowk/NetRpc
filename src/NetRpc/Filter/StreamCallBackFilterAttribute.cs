@@ -1,18 +1,17 @@
-﻿namespace NetRpc
+﻿namespace NetRpc;
+
+public class StreamCallBackFilterAttribute : ActionFilterAttribute
 {
-    public class StreamCallBackFilterAttribute : ActionFilterAttribute
+    private readonly int _progressCount;
+
+    public StreamCallBackFilterAttribute(int progressCount)
     {
-        private readonly int _progressCount;
+        _progressCount = progressCount;
+    }
 
-        public StreamCallBackFilterAttribute(int progressCount)
-        {
-            _progressCount = progressCount;
-        }
-
-        public override void OnActionExecuting(ActionExecutingContext context)
-        {
-            Helper.ConvertStreamProgress(context, _progressCount);
-            base.OnActionExecuting(context);
-        }
+    public override void OnActionExecuting(ActionExecutingContext context)
+    {
+        Helper.ConvertStreamProgress(context, _progressCount);
+        base.OnActionExecuting(context);
     }
 }
