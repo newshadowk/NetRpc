@@ -81,7 +81,7 @@ internal sealed class ClientMethodRetryInvoker : IMethodInvoker
             .Handle<Exception>(e => retryInfo.NeedRetry(e))
             .WaitAndRetryAsync(retryInfo.Durations,
                 (exception, span, context) => 
-                    _logger.LogWarning(exception, $"{context["name"]}, retry count:{context["count"]}, wait ms:{span.TotalMilliseconds}"));
+                    _logger.LogWarning(exception, $"{context["name"]}, retry count:{context["count"]}, wait ms:{span.TotalMilliseconds}\r\n{Environment.StackTrace}"));
 
         return await p.ExecuteAsync(async (context, t) =>
         {
@@ -178,8 +178,11 @@ internal sealed class ClientMethodRetryInvoker : IMethodInvoker
             return ps;
         }
 
+        //client retry 
         ProxyStream proxyStream = new (stream);
-        proxyStream.TryAttachCache();
+        if (!stream.CanSeek) 
+            proxyStream.TryAttachCache();
+
         return proxyStream;
     }
 
