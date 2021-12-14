@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using NetRpc.Contract;
@@ -24,7 +25,7 @@ public sealed class MessageCallImpl : MessageCall.MessageCallBase
     {
         _busyFlag.Increment();
 
-        await using var connection = new GrpcServiceConnection(requestStream, responseStream, _logger);
+        await using var connection = new GrpcServiceConnection(requestStream, responseStream, _logger, context.CancellationToken);
         try
         {
             await _requestHandler.HandleAsync(connection, ChannelType.Grpc);

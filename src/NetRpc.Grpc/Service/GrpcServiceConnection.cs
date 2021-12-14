@@ -16,20 +16,26 @@ internal sealed class GrpcServiceConnection : IServiceConnection
     private readonly IServerStreamWriter<StreamBuffer> _responseStream;
     private readonly ILogger _logger;
     private readonly WriteOnceBlock<bool> _end = new(i => i);
+    private readonly CancellationTokenRegistration _grpcTokenReg;
 
-    public GrpcServiceConnection(IAsyncStreamReader<StreamBuffer> requestStream, IServerStreamWriter<StreamBuffer> responseStream, ILogger logger)
+    public GrpcServiceConnection(IAsyncStreamReader<StreamBuffer> requestStream, IServerStreamWriter<StreamBuffer> responseStream, ILogger logger, CancellationToken grpcToken)
     {
         _requestStream = requestStream;
         _responseStream = responseStream;
         _logger = logger;
+        _grpcTokenReg = grpcToken.Register(() => OnDisconnectedAsync(EventArgs.Empty));
     }
 
     public async ValueTask DisposeAsync()
     {
+        await _grpcTokenReg.DisposeAsync();
+
         //before dispose requestStream need to
         //wait 60 second to receive 'completed' from client side.
-        await Task.WhenAny(Task.Delay(1000 * 60),
-            _end.ReceiveAsync());
+
+        // ReSharper disable MethodSupportsCancellation
+        await Task.WhenAny(Task.Delay(1000 * 60), _end.ReceiveAsync());
+        // ReSharper restore MethodSupportsCancellation
     }
 
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
@@ -58,10 +64,21 @@ internal sealed class GrpcServiceConnection : IServiceConnection
         Task.Run(async () =>
         {
             //MoveNext will have a Exception when client is disconnected.
+
             try
             {
                 while (await _requestStream.MoveNext(CancellationToken.None))
-                    await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(_requestStream.Current.Body.ToByteArray()));
+                {
+                    try
+                    {
+                        await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(_requestStream.Current.Body.ToByteArray()));
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogWarning(e, "Service OnReceivedAsync error. ");
+                        throw;
+                    }
+                }
             }
             catch (Exception e)
             {
