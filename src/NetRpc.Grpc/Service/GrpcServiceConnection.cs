@@ -33,6 +33,7 @@ internal sealed class GrpcServiceConnection : IServiceConnection
     }
 
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
+    public event AsyncEventHandler? DisconnectedAsync;
 
     public async Task SendAsync(ReadOnlyMemory<byte> buffer)
     {
@@ -46,6 +47,7 @@ internal sealed class GrpcServiceConnection : IServiceConnection
             catch (Exception e)
             {
                 _logger.LogWarning(e, "Service WriteAsync error. ");
+                await OnDisconnectedAsync(EventArgs.Empty);
                 throw;
             }
         }
@@ -64,6 +66,7 @@ internal sealed class GrpcServiceConnection : IServiceConnection
             catch (Exception e)
             {
                 _logger.LogWarning(e, "Service MoveNext error. ");
+                await OnDisconnectedAsync(EventArgs.Empty);
             }
             finally
             {
@@ -77,5 +80,10 @@ internal sealed class GrpcServiceConnection : IServiceConnection
     private Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>> e)
     {
         return ReceivedAsync.InvokeAsync(this, e);
+    }
+
+    private Task OnDisconnectedAsync(EventArgs e)
+    {
+        return DisconnectedAsync.InvokeAsync(this, e);
     }
 }

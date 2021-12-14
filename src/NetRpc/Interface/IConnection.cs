@@ -21,6 +21,8 @@ public interface IServiceConnection : IAsyncDisposable
 {
     event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>> ReceivedAsync;
 
+    event AsyncEventHandler? DisconnectedAsync;
+
     Task SendAsync(ReadOnlyMemory<byte> buffer);
 
     Task StartAsync();

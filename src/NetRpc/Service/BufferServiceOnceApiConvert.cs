@@ -29,7 +29,14 @@ internal sealed class BufferServiceOnceApiConvert : IServiceOnceApiConvert
     {
         _cts = cts;
         _connection.ReceivedAsync += ConnectionReceivedAsync;
+        _connection.DisconnectedAsync += ConnectionDisconnectedAsync;
         await _connection.StartAsync();
+    }
+
+    private async Task ConnectionDisconnectedAsync(object? sender, EventArgs e)
+    {
+        await _streamPipe.Output.CompleteAsync();
+        _cts.Cancel();
     }
 
     private async Task ConnectionReceivedAsync(object sender, EventArgsT<ReadOnlyMemory<byte>> e)
