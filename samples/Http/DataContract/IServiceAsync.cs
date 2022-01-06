@@ -131,14 +131,13 @@ public interface IService2Async
     //Task<string> Call5Async(string p1, int p2, Func<double, Task> cb, CancellationToken token);
 }
 
+[FaultExceptionDefine(typeof(CustomException), 300, "1", "errorCode1 error description")]
+//[FaultExceptionDefine(typeof(CustomException2), 400, "2", "errorCode2 error description")]
 public interface IService4Async
 {
     //[HttpPatch("call/{TaskId}")]
     //Task<string> Call(Obj5 obj5);
-
-    /// <summary>
-    /// 验证邀请码
-    /// </summary>
+    [FaultException(typeof(CustomException))]
     [HttpGet("ValidateInviteCode/{code}?lang={lang}")]
     Task<object> ValidateInviteCodeAsync(string code, string lang);
 

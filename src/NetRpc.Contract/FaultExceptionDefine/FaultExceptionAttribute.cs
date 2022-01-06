@@ -35,15 +35,14 @@ public sealed class FaultExceptionAttribute : Attribute
         ErrorCode = errorCode;
     }
 
-    public string? ErrorCode { get; }
+    public string? ErrorCode { get; set; }
 
-    public Type DetailType { get; }
+    public Type DetailType { get; set;}
 
-    public string? Description { get; }
+    public string? Description { get; set;}
 
-    public int StatusCode { get; }
+    public int StatusCode { get; set;}
 }
-
 
 [AttributeUsage(AttributeTargets.Interface, AllowMultiple = true)]
 public sealed class FaultExceptionDefineAttribute : Attribute
