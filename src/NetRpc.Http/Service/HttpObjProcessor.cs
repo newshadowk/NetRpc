@@ -74,6 +74,11 @@ internal sealed class FormDataHttpObjProcessor : IHttpObjProcessor
             return null;
 
         //Content-Disposition: form-data; name="stream"; filename="t1.docx"
+        //Content-Disposition: form-data; name="stream"; filename*=utf-8''t1.docx
+
+        var i = contentDisposition.IndexOf("*=utf-8''", StringComparison.Ordinal);
+        if (i != -1)
+            return contentDisposition.Substring(contentDisposition.IndexOf("*=utf-8''", StringComparison.Ordinal) + 9);
         return Match(contentDisposition, "filename=\"", "\"");
     }
 

@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using NetRpc.Contract;
-using RestSharp;
 
 namespace NetRpc.Http.Client;
 
@@ -83,38 +85,40 @@ internal sealed class HttpClientOnceApiConvert : IClientOnceApiConvert
         return Task.CompletedTask;
     }
 
-    public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, byte mqPriority, CancellationToken token)
+    public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, byte mqPriority,
+        CancellationToken token)
     {
         _callbackAction = methodContext.ContractMethod.Route.DefaultRout.MergeArgType.CallbackAction;
         var postObj = methodContext.ContractMethod.CreateMergeArgTypeObj(_callId, _connId, stream?.Length ?? 0, callParam.PureArgs);
         var actionPath = methodContext.ContractMethod.Route.DefaultRout.Path;
         var reqUrl = $"{_apiUrl}/{actionPath}";
-
-        var client = new RestClient(reqUrl);
-        client.Encoding = Encoding.UTF8;
-        client.Timeout = _timeoutInterval;
-        var req = new RestRequest(Method.POST);
+        
+        var client = new HttpClient();
+        client.Timeout = TimeSpan.FromMilliseconds(_timeoutInterval);
 
         //header
         foreach (var pair in callParam.Header)
-            req.AddHeader(pair.Key, pair.Value?.ToString()!);
+            client.DefaultRequestHeaders.Add(pair.Key, pair.Value?.ToString()!);
+
+        HttpContent content;
 
         //request
-        if (methodContext.ContractMethod.Route.DefaultRout.MergeArgType.StreamPropName != null)
+        var streamPropName = methodContext.ContractMethod.Route.DefaultRout.MergeArgType.StreamPropName;
+        if (streamPropName != null)
         {
-            req.AddParameter("data", postObj.ToDtoJson()!, ParameterType.RequestBody);
-            // ReSharper disable once PossibleNullReferenceException
-            req.AddFile(methodContext.ContractMethod.Route.DefaultRout.MergeArgType.StreamPropName!, stream!.CopyTo,
-                methodContext.ContractMethod.Route.DefaultRout.MergeArgType.StreamPropName!,
-                stream!.Length);
+            var mc = new MultipartFormDataContent("----WebKitFormBoundaryXQABsuJCc0RB2mEJ");
+            //client.DefaultRequestHeaders.Add("Content-Type", "multipart/form-data");
+            mc.Add(new StringContent(postObj.ToDtoJson()!), "data");
+            mc.Add(new StreamContent(stream!), streamPropName, "testfilename");
+            content = mc;
         }
         else
         {
-            req.AddJsonBody(postObj!);
+            if (postObj == null)
+                content = JsonContent.Create("");
+            else
+                content = JsonContent.Create(postObj);
         }
-
-        //send request
-        var realRetT = methodContext.ContractMethod.MethodInfo.ReturnType.GetTypeFromReturnTypeDefinition();
 
         //cancel
 #pragma warning disable 4014
@@ -122,38 +126,39 @@ internal sealed class HttpClientOnceApiConvert : IClientOnceApiConvert
         Task.Run(async () =>
 #pragma warning restore 4014
         {
-            token.Register(async () => { await _notifier!.CancelAsync(_callId); });
+            token.Register(() => { _notifier!.CancelAsync(_callId); });
 
             if (token.IsCancellationRequested)
                 await _notifier!.CancelAsync(_callId);
         });
 
-        //ReSharper disable once MethodSupportsCancellation
-        var res = await client.ExecuteAsync(req);
+        //send request
+        var res = await client.PostAsync(reqUrl, content, token);
+        var contentStr = await res.Content.ReadAsStringAsync(token);
 
         //fault
-        TryThrowFault(methodContext, res);
+        TryThrowFault(methodContext, contentStr, (int)res.StatusCode);
 
         //return stream
+        var realRetT = methodContext.ContractMethod.MethodInfo.ReturnType.GetTypeFromReturnTypeDefinition();
         if (realRetT.HasStream())
         {
-            var ms = new MemoryStream(res.RawBytes);
+            var s = await res.Content.ReadAsStreamAsync(token);
             if (methodContext.ContractMethod.MethodInfo.ReturnType.GetTypeFromReturnTypeDefinition().IsStream())
-                OnResultStream(new EventArgsT<object>(ms));
+                OnResultStream(new EventArgsT<object>(s));
             else
             {
-                var resultH = res.Headers.First(i => i.Name == ClientConstValue.CustomResultHeaderKey);
-                // ReSharper disable once PossibleNullReferenceException
-                var hStr = HttpUtility.UrlDecode(resultH.Value?.ToString(), Encoding.UTF8);
+                var resultH = res.Headers.First(i => i.Key == ClientConstValue.CustomResultHeaderKey);
+                var hStr = HttpUtility.UrlDecode(resultH.Value.First(), Encoding.UTF8);
                 var retInstance = hStr.ToDtoObject(realRetT)!;
-                retInstance.SetStream(ms);
+                retInstance.SetStream(s);
                 OnResultStream(new EventArgsT<object>(retInstance));
             }
         }
         //return object
         else
         {
-            var value = res.Content.ToDtoObject(realRetT)!;
+            var value = contentStr.ToDtoObject(realRetT)!;
             await OnResultAsync(new EventArgsT<object?>(value));
         }
 
@@ -170,34 +175,34 @@ internal sealed class HttpClientOnceApiConvert : IClientOnceApiConvert
         return new ValueTask();
     }
 
-    private static void TryThrowFault(MethodContext methodContext, IRestResponse res)
+    private static void TryThrowFault(MethodContext methodContext, string content, int statusCode)
     {
         //OperationCanceledException
-        if ((int) res.StatusCode == ClientConstValue.CancelStatusCode)
+        if (statusCode == ClientConstValue.CancelStatusCode)
             throw new OperationCanceledException();
 
         //ResponseTextException
         var textAttrs = methodContext.ContractMethod.ResponseTextAttributes;
-        var found2 = textAttrs.FirstOrDefault(i => i.StatusCode == (int) res.StatusCode);
+        var found2 = textAttrs.FirstOrDefault(i => i.StatusCode == statusCode);
         if (found2 != null)
-            throw new ResponseTextException(res.Content, (int) res.StatusCode);
+            throw new ResponseTextException(content, statusCode);
 
         //FaultException
         var attrs = methodContext.ContractMethod.FaultExceptionAttributes;
         foreach (var grouping in attrs.GroupBy(i => i.StatusCode))
         {
-            if (grouping.Key == (int) res.StatusCode)
+            if (grouping.Key == statusCode)
             {
-                var fObj = (FaultExceptionJsonObj) res.Content.ToDtoObject(typeof(FaultExceptionJsonObj))!;
+                var fObj = (FaultExceptionJsonObj)content.ToDtoObject(typeof(FaultExceptionJsonObj))!;
                 var found = grouping.FirstOrDefault(i => i.ErrorCode == fObj.ErrorCode);
                 if (found != null)
-                    throw CreateException(found.DetailType, res.Content);
+                    throw CreateException(found.DetailType, content);
             }
         }
 
         //DefaultException
-        if ((int) res.StatusCode == ClientConstValue.DefaultExceptionStatusCode)
-            throw CreateException(typeof(Exception), res.Content);
+        if (statusCode == ClientConstValue.DefaultExceptionStatusCode)
+            throw CreateException(typeof(Exception), content);
     }
 
     private Task OnResultAsync(EventArgsT<object?> e)
@@ -220,13 +225,43 @@ internal sealed class HttpClientOnceApiConvert : IClientOnceApiConvert
         Exception ex;
         try
         {
-            ex = (Exception) Activator.CreateInstance(exType, msg)!;
+            ex = (Exception)Activator.CreateInstance(exType, msg)!;
         }
         catch
         {
-            ex = (Exception) Activator.CreateInstance(exType)!;
+            ex = (Exception)Activator.CreateInstance(exType)!;
         }
 
         return Helper.WarpException(ex);
+    }
+}
+
+public class Hp
+{
+    public async Task GetResponse2(string url, string data, Stream stream, string streamName, int timeout)
+    {
+        using (var formContent = new MultipartFormDataContent("NKdKd9Yk"))
+        {
+            formContent.Headers.ContentType!.MediaType = "multipart/form-data";
+            formContent.Add(new StringContent(data, Encoding.UTF8), "data");
+            formContent.Add(new StreamContent(stream), streamName, streamName);
+
+        }
+    }
+
+
+    public (string headerKey, Stream resStream) GetResponse(string url, int timeout)
+    {
+        HttpClient c = new HttpClient();
+        
+        var r = (HttpWebRequest)WebRequest.Create(url);
+        r.Method = "POST";
+        r.ContentType = "multipart/form-data";
+        r.Timeout = timeout;
+     
+        var res = (HttpWebResponse)r.GetResponse();
+        var k = res.GetResponseHeader(ClientConstValue.CustomResultHeaderKey);
+        Stream s = res.GetResponseStream();
+        return (k, s);
     }
 }
