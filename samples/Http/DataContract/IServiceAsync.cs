@@ -25,13 +25,13 @@ public sealed class FaultExceptionDefineGroupAttribute : Attribute, IFaultExcept
 [HttpHeader("h1", "h1 des.")]
 [SecurityApiKeyDefine("tokenKey", "t1", "t1 des")]
 [SecurityApiKeyDefine("tokenKey2", "t2", "t2 des")]
-[Role("RAll")]
+[SwaggerRole("RAll")]
 public interface IServiceAsync
 {
     [Example("s1", "s1value")]
     [Example("s2", "s2value")]
-    [Role("R1")]
-    [Role("R3")]
+    [SwaggerRole("R1")]
+    [SwaggerRole("R3")]
     Task<CustomObj> Call2Async(CObj obj, string s1, string s2);
 
     /// <summary>
@@ -41,10 +41,10 @@ public interface IServiceAsync
     [HttpRoute("Service1/Call2")]
     [HttpHeader("h2", "h2 des.")]
     [SecurityApiKey("tokenKey")]
-    [Role("R1,!RAll")]
+    [SwaggerRole("R1,!RAll")]
     Task<CustomObj> CallAsync(string p1, int p2);
 
-    [Role("R2,R3")]
+    [SwaggerRole("R2,R3")]
     Task Call3Async(SimObj obj);
 
     //[HttpRoute("Service1/{p1}/Call4")]

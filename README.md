@@ -852,14 +852,14 @@ services.AddNSwagger(i =>
 [Role("RAll")]
 public interface IService3Async
 {
-    [Role("R1,!RAll")]    //!RALL mean exclude RALL
+    [SwaggerRole("R1,!RAll")]    //!RALL mean exclude RALL
     Task CallAsync();
 
-    [Role("R1")]
-    [Role("R3")]
+    [SwaggerRole("R1")]
+    [SwaggerRole("R3")]
     Task Call2Async();
 
-    [Role("R2,R3")]
+    [SwaggerRole("R2,R3")]
     Task Call3Async();
 
     Task Call4Async();
@@ -870,10 +870,10 @@ Defalut role don't have to set the key:
 http://localhost:5000/swagger/index.html would use the default role.
 
 ```c#
-//[Role("default")] this line can be omitted.
+//[SwaggerRole("default")] this line can be omitted.
 public interface IService4Async
 {
-    [Role("!default")]    //hide in swagger, but still avaliable to call
+    [SwaggerRole("!default")]    //hide in swagger, but still avaliable to call
     Task Call(string id);
 } 
 ```
