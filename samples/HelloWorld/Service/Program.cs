@@ -62,10 +62,4 @@ public class ServiceAsync : IServiceAsync
         Console.WriteLine($"Receive: {s}");
         return s;
     }
-
-    public async Task<string> Call2(P p, Stream stream, Func<double, Task> cb, CancellationToken token)
-    {
-        Console.WriteLine($"Receive 123");
-        throw new NotImplementedException();
-    }
 }
