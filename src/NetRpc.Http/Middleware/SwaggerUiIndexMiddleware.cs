@@ -14,8 +14,9 @@ public class SwaggerUiIndexMiddleware
 {
     private readonly Microsoft.AspNetCore.Http.RequestDelegate _next;
     private readonly IEnumerable<IInjectSwaggerHtml> _injectSwaggerHtmlList;
-    private volatile string _json = null!;
     private volatile string _html = null!;
+    private readonly Dictionary<string, string> _docJson = new();
+    private readonly object _lockDocJson = new();
 
     public SwaggerUiIndexMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, IEnumerable<IInjectSwaggerHtml> injectSwaggerHtmlList)
     {
@@ -36,8 +37,11 @@ public class SwaggerUiIndexMiddleware
         var apiRootApi = httpServiceOptions.Value.ApiRootPath;
         var swaggerRootPath = httpServiceOptions.Value.ApiRootPath + "/swagger";
         var swaggerFilePath = $"{swaggerRootPath}/swagger.json";
-
         var requestPath = context.Request.Path;
+
+        string? key = null;
+        if (context.Request.Query.TryGetValue("k", out var kValue))
+            key = kValue.ToString();
 
         // api/swagger
         if (IsUrl(requestPath, swaggerRootPath))
@@ -47,20 +51,21 @@ public class SwaggerUiIndexMiddleware
         // api/swagger/index.html
         else if (IsUrl(requestPath, $"{swaggerRootPath}/index.html"))
         {
-#if !DEBUG
-                if (_html == null)
-#endif
+            _html = await ReadStringAsync(".index.html");
+            if (key == null)
+                _html = _html.Replace("{url}", $"{swaggerFilePath}");
+            else
+                _html = _html.Replace("{url}", $"{swaggerFilePath}?k={key}");
+            _html = InjectHtml(_html);
+
+            lock (_lockDocJson)
             {
-                _html = await ReadStringAsync(".index.html");
-                _html = _html.Replace("{url}", swaggerFilePath);
-                _html = InjectHtml(_html);
-
-                string? key = null;
-                if (context.Request.Query.TryGetValue("k", out var kValue))
-                    key = kValue.ToString();
-
-                var doc = nSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.Contracts, key);
-                _json = ToJson(doc);
+                if (!_docJson.ContainsKey(key ?? ""))
+                {
+                    var doc = nSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.Contracts, key);
+                    var js = ToJson(doc);
+                    _docJson.Add(key ?? "", js);
+                }
             }
 
             context.Response.Headers["Content-Type"] = "text/html; charset=utf-8";
@@ -70,8 +75,10 @@ public class SwaggerUiIndexMiddleware
         // api/swagger/swagger.json
         else if (IsUrl(requestPath, swaggerFilePath))
         {
-            //_json = File.ReadAllText(@"d:\7\test.json");
-            await context.Response.WriteAsync(_json);
+            string js;
+            lock (_lockDocJson)
+                js = _docJson[key ?? ""];
+            await context.Response.WriteAsync(js);
         }
         //api/swagger/dialog/session.js
         else if (IsUrl(requestPath, $"{swaggerRootPath}/dialog/session.js"))
@@ -88,8 +95,7 @@ public class SwaggerUiIndexMiddleware
 
     private static bool IsUrl(PathString path, string url)
     {
-        return path.HasValue &&
-               string.Equals(path.Value!.Trim('/'), url.Trim('/'), StringComparison.OrdinalIgnoreCase);
+        return path.HasValue && string.Equals(path.Value!.Trim('/'), url.Trim('/'), StringComparison.OrdinalIgnoreCase);
     }
 
     private static async Task<string> ReadStringAsync(string resourcePath)

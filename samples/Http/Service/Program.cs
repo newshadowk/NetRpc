@@ -54,7 +54,7 @@ internal class Program
                         services.AddNServiceContract<IService4Async, Service4Async>();
                         services.AddLogging(i => i.AddConsole());
                         //services.AddNServiceContract<IService2Async, Service2Async>();
-                        //services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+                        services.AddNServiceContract<IServiceAsync, ServiceAsync>();
                     })
                     .Configure(app =>
                     {

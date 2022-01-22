@@ -304,6 +304,11 @@ internal class PathProcessor
         if (type == typeof(Task))
             return null;
 
+        if (type.Name.StartsWith("SimObj"))
+        {
+
+        }
+
         return _schemaGenerator.GenerateSchema(type, SchemaRepository);
     }
 
