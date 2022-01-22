@@ -1,7 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <Authors>ShadowK</Authors>
-    <Version>6.0.6</Version>
+    <Version>6.0.7</Version>
     <PackageProjectUrl>https://github.com/newshadowk/NetRpc</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>

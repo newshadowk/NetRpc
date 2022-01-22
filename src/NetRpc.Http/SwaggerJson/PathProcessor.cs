@@ -193,8 +193,9 @@ internal class PathProcessor
             if (streamName != null)
             {
                 GenerateRequestBodyByForm(body,
-                    new TypeName(streamName, typeof(IFormFile)),
-                    new TypeName("data", argType));
+                    new TypeName("data", argType),
+                    new TypeName(streamName, typeof(IFormFile))
+                    );
             }
             else
                 GenerateRequestBodyByBody(body, argType);

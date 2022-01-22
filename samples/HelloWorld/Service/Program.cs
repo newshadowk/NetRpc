@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
 using Microsoft.AspNetCore.Builder;
@@ -59,5 +61,11 @@ public class ServiceAsync : IServiceAsync
     {
         Console.WriteLine($"Receive: {s}");
         return s;
+    }
+
+    public async Task<string> Call2(P p, Stream stream, Func<double, Task> cb, CancellationToken token)
+    {
+        Console.WriteLine($"Receive 123");
+        throw new NotImplementedException();
     }
 }
