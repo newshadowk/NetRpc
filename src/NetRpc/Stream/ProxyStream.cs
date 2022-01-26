@@ -62,6 +62,8 @@ public sealed class ProxyStream : CacheStream
         _readFromCache = true;
         _manualPosition = 0;
         base.Reset();
+        if (CanSeek)
+            Seek(0, SeekOrigin.Begin);
     }
 
     public override int Read(byte[] buffer, int offset, int count)
