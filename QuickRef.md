@@ -19,7 +19,7 @@ clientProxy.HeartbeatAsync += (s, e) =>
 };
 clientProxy.StartHeartbeat(true);
 
-var proxy = _clientProxy.Proxy;
+var proxy = clientProxy.Proxy;
 var proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
 ```
 ```c#
@@ -30,7 +30,7 @@ services.AddNClientContract<IService>();
 services.AddNGrpcClient(o => o.Url = "http://localhost:50001");
 var sp = services.BuildServiceProvider();
 var clientProxy = sp.GetService<IClientProxy<IService>>();
-var proxy = _clientProxy.Proxy;
+var proxy = clientProxy.Proxy;
 var proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
 ```
 ```c#
@@ -44,7 +44,7 @@ services.AddNHttpClient(o =>
 });
 var sp = services.BuildServiceProvider();
 var clientProxy = sp.GetService<IClientProxy<IService>>();
-var proxy = _clientProxy.Proxy;
+var proxy = clientProxy.Proxy;
 var proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
 ```
 
