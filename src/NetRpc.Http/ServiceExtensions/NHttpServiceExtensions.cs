@@ -57,6 +57,16 @@ public static class NHttpServiceExtensions
         return services;
     }
 
+    public static IServiceCollection AddNHttpShortConn(this IServiceCollection services)
+    {
+        services.TryAddSingleton<CancelWatcher>();
+        services.TryAddSingleton<ShortConnCache>();
+        services.TryAddSingleton<ShortConnStreamCache>();
+        services.TryAddSingleton<ShortConnRedis>();
+        services.TryAddSingleton<ShortConnCacheHandler>();
+        return services;
+    }
+
     public static IServiceCollection AddNHttpGateway<TService>(this IServiceCollection services,
         Action<HttpClientOptions>? httpClientConfigureOptions = null,
         Action<NClientOptions>? clientConfigureOptions = null,

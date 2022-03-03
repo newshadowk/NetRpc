@@ -13,11 +13,11 @@ public sealed class RequestHandler
     private readonly MiddlewareBuilder _middlewareBuilder;
     private readonly IServiceProvider _serviceProvider;
 
-    public RequestHandler(IServiceProvider serviceProvider, ILoggerFactory factory, IOptions<MiddlewareOptions> middlewareOptions)
+    public RequestHandler(IServiceProvider serviceProvider, ILoggerFactory factory, MiddlewareBuilder middlewareBuilder)
     {
         _serviceProvider = serviceProvider;
         _logger = factory.CreateLogger("NetRpc");
-        _middlewareBuilder = new MiddlewareBuilder(middlewareOptions.Value, serviceProvider);
+        _middlewareBuilder = middlewareBuilder;
     }
 
     public async Task HandleAsync(IServiceConnection connection, ChannelType channelType)
@@ -31,7 +31,7 @@ public sealed class RequestHandler
         try
         {
             var contractOptions = _serviceProvider.GetRequiredService<IOptions<ContractOptions>>();
-            var rpcContextAccessor = _serviceProvider.GetRequiredService<IActionExecutingContextAccessor>();
+            var contextAccessor = _serviceProvider.GetRequiredService<IActionExecutingContextAccessor>();
 
             using IServiceScope scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
             GlobalServiceProvider.Provider = _serviceProvider;
@@ -41,7 +41,7 @@ public sealed class RequestHandler
                 scope.ServiceProvider,
                 convert,
                 _middlewareBuilder,
-                rpcContextAccessor,
+                contextAccessor,
                 channelType,
                 _logger);
             await onceTransfer.StartAsync();

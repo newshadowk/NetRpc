@@ -12,6 +12,7 @@
     <None Remove="SwaggerUi3\swagger-ui-es-bundle.js.map" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CSRedisCore" Version="3.6.9" />
     <PackageReference Include="Microsoft.OpenApi" Version="1.2.3" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.2.3" />
   </ItemGroup>

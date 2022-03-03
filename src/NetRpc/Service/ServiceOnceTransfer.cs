@@ -44,7 +44,7 @@ internal sealed class ServiceOnceTransfer
         try
         {
             //get context
-            context = await GetContext();
+            context = await GetContextAsync();
 
             //set Accessor
             _actionExecutingContextAccessor.Context = context;
@@ -86,7 +86,7 @@ internal sealed class ServiceOnceTransfer
         }
     }
 
-    private async Task<ActionExecutingContext> GetContext()
+    private async Task<ActionExecutingContext> GetContextAsync()
     {
         var onceCallParam = await _convert.GetServiceOnceCallParamAsync();
         var (instanceMethodInfo, contractMethod, instance) = ApiWrapper.GetMethodInfo(onceCallParam.Action, _instances);

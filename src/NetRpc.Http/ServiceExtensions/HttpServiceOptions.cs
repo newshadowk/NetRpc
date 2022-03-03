@@ -16,6 +16,10 @@ public sealed class HttpServiceOptions
     /// Set true will pass to next middleware when not match the method, default value is false.
     /// </summary>
     public bool IgnoreWhenNotMatched { get; set; }
+
+    public string? ShortConnRedisConnStr { get; set; }
+
+    public string? ShortConnTempDir { get; set; }
 }
 
 public class KeyRole

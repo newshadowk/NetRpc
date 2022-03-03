@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace NetRpc;
 
@@ -21,10 +22,10 @@ public class MiddlewareBuilder
     private readonly object _lockRequestDelegate = new();
     private readonly IList<Func<RequestDelegate, RequestDelegate>> _components = new List<Func<RequestDelegate, RequestDelegate>>();
 
-    public MiddlewareBuilder(MiddlewareOptions options, IServiceProvider serviceProvider)
+    public MiddlewareBuilder(IOptions<MiddlewareOptions> options, IServiceProvider serviceProvider)
     {
         _components.Add(CreateMiddleware(serviceProvider, typeof(IgnoreMiddleware), new object[] { }));
-        options.GetItems().ForEach(i => _components.Add(CreateMiddleware(serviceProvider, i.Type, i.args)));
+        options.Value.GetItems().ForEach(i => _components.Add(CreateMiddleware(serviceProvider, i.Type, i.args)));
         _components.Add(CreateMiddleware(serviceProvider, typeof(MethodInvokeMiddleware), new object[] { }));
     }
 

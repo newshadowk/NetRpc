@@ -14,6 +14,7 @@ public static class NServiceExtensions
         Helper.CheckBinSer();
         services.TryAddSingleton<BusyFlag>();
         services.TryAddSingleton<RequestHandler>();
+        services.TryAddSingleton<MiddlewareBuilder>();
         services.TryAddSingleton<IActionExecutingContextAccessor, ActionExecutingContextAccessor>();
         return services;
     }
@@ -85,7 +86,7 @@ public static class NServiceExtensions
         return services;
     }
 
-    internal static List<Instance> GetContractInstances(this IServiceProvider serviceProvider, ContractOptions options)
+    public static List<Instance> GetContractInstances(this IServiceProvider serviceProvider, ContractOptions options)
     {
         return options.Contracts.ConvertAll(i =>
         {
