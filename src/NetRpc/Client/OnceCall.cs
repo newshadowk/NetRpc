@@ -29,7 +29,7 @@ public sealed class OnceCall : IOnceCall
     }
 
     public event EventHandler? SendRequestStreamStarted;
-    public event EventHandler? SendRequestStreamFinished;
+    public event EventHandler? SendRequestStreamEndOrFault;
 
     public ConnectionInfo ConnectionInfo => _convert.ConnectionInfo;
 
@@ -102,8 +102,7 @@ public sealed class OnceCall : IOnceCall
                 }, _timeOutCts.Token);
 
                 //send stream
-                await Helper.SendStreamAsync(_convert.SendBufferAsync, _convert.SendBufferEndAsync, stream, token, OnSendRequestStreamStarted);
-                OnSendRequestStreamFinished();
+                await Helper.SendStreamAsync(_convert.SendBufferAsync, _convert.SendBufferEndAsync, stream, token, OnSendRequestStreamStarted, OnSendRequestStreamEndOrFault);
             }
             catch (Exception e)
             {
@@ -160,8 +159,8 @@ public sealed class OnceCall : IOnceCall
         SendRequestStreamStarted?.Invoke(this, EventArgs.Empty);
     }
 
-    private void OnSendRequestStreamFinished()
+    private void OnSendRequestStreamEndOrFault()
     {
-        SendRequestStreamFinished?.Invoke(this, EventArgs.Empty);
+        SendRequestStreamEndOrFault?.Invoke(this, EventArgs.Empty);
     }
 }

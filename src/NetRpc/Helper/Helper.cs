@@ -94,25 +94,31 @@ public static class Helper
     }
 
     public static async Task SendStreamAsync(Func<ReadOnlyMemory<byte>, Task> publishBuffer, Func<Task> publishBufferEnd, Stream stream,
-        CancellationToken token, Action? started = null)
+        CancellationToken token, Action started, Action endOrFault)
     {
         using var bo = ArrayPool<byte>.Shared.RentOwner(StreamBufferSize);
         var readCount = await stream.GreedReadAsync(bo.Array, 0, StreamBufferSize, token);
-        started?.Invoke();
-        while (readCount > 0)
+        started();
+        try
         {
-            if (readCount < StreamBufferSize)
+            while (readCount > 0)
             {
+                if (readCount < StreamBufferSize)
+                {
+                    await publishBuffer(bo.Array.AsMemory()[..readCount]);
+                    break;
+                }
                 await publishBuffer(bo.Array.AsMemory()[..readCount]);
-                await publishBufferEnd();
-                return;
+                readCount = await stream.GreedReadAsync(bo.Array, 0, StreamBufferSize, token);
             }
-
-            await publishBuffer(bo.Array.AsMemory()[..readCount]);
-            readCount = await stream.GreedReadAsync(bo.Array, 0, StreamBufferSize, token);
+            await publishBufferEnd();
         }
-
-        await publishBufferEnd();
+        catch
+        {
+            endOrFault();
+            throw;
+        }
+        endOrFault();
     }
 
     [return: NotNullIfNotNull("list")]

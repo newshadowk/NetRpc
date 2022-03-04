@@ -18,5 +18,5 @@ public interface IOnceCall
 
     event EventHandler? SendRequestStreamStarted;
 
-    event EventHandler? SendRequestStreamFinished;
+    event EventHandler? SendRequestStreamEndOrFault;
 }

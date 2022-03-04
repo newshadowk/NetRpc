@@ -8,5 +8,5 @@ public class InnerContextData
 {
     public ContextData Data { get; } = new();
 
-    public object? ResultWithOutStream { get; set; }
+    public object? Result { get; set; }
 }

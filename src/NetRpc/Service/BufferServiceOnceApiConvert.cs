@@ -83,12 +83,13 @@ internal sealed class BufferServiceOnceApiConvert : IServiceOnceApiConvert
         return new ServiceOnceCallParam(ocp.Action, ocp.PureArgs, ocp.StreamLength, rs, ocp.Header);
     }
 
-    public async Task<bool> SendResultAsync(CustomResult result, Stream? stream, string? streamName, ActionExecutingContext context)
+    public async Task SendResultAsync(CustomResult result, Stream? stream, string? streamName, ActionExecutingContext context)
     {
         if (result.Result is Stream s)
         {
             await SendAsync(Reply.FromResultStream(s.GetLength()));
-            return true;
+            await SendStreamAsync(context, stream);
+            return;
         }
 
         Reply reply;
@@ -99,11 +100,11 @@ internal sealed class BufferServiceOnceApiConvert : IServiceOnceApiConvert
         catch (Exception e)
         {
             await SendFaultAsync(e, context);
-            return true;
+            return;
         }
 
         await SendAsync(reply);
-        return true;
+        await SendStreamAsync(context, stream);
     }
 
     public Task SendFaultAsync(Exception body, ActionExecutingContext? context)
@@ -159,14 +160,42 @@ internal sealed class BufferServiceOnceApiConvert : IServiceOnceApiConvert
         return SendAsync(reply);
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        await _streamPipe.DisposeAsync();
+        _cts.Dispose();
+    }
+
     private async Task SendAsync(Message reply)
     {
         await _connection.SendAsync(reply.All);
     }
 
-    public async ValueTask DisposeAsync()
+    private async Task SendStreamAsync(ActionExecutingContext context, Stream? retStream)
     {
-        await _streamPipe.DisposeAsync();
-        _cts.Dispose();
+        if (retStream != null)
+        {
+            try
+            {
+                await using (retStream)
+                {
+                    await Helper.SendStreamAsync(
+                        SendBufferAsync,
+                        SendBufferEndAsync,
+                        retStream,
+                        context.CancellationToken,
+                        context.OnSendResultStreamStarted,
+                        context.OnSendResultStreamEndOrFault);
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                await SendBufferCancelAsync();
+            }
+            catch
+            {
+                await SendBufferFaultAsync();
+            }
+        }
     }
 }

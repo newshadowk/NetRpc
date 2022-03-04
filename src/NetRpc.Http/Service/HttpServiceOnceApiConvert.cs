@@ -79,13 +79,12 @@ internal sealed class HttpServiceOnceApiConvert : IServiceOnceApiConvert
         return new ServiceOnceCallParam(actionInfo, pureArgs, httpObj.HttpDataObj.StreamLength, httpObj.ProxyStream, header);
     }
 
-    public async Task<bool> SendResultAsync(CustomResult result, Stream? stream, string? streamName, ActionExecutingContext context)
+    public async Task SendResultAsync(CustomResult result, Stream? stream, string? streamName, ActionExecutingContext context)
     {
         if (!result.HasStream)
             await _connection.SendAsync(new Result(result.Result));
         else
-            await _connection.SendWithStreamAsync(result, stream!, streamName);
-        return false;
+            await _connection.SendWithStreamAsync(context, result, stream!, streamName);
     }
 
     public Task SendFaultAsync(Exception body, ActionExecutingContext? context)

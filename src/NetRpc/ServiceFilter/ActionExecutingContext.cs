@@ -14,14 +14,13 @@ public class ActionExecutingContext : IActionExecutingContext
 
     public event EventHandler? SendResultStreamStarted;
 
-    public event EventHandler? SendResultStreamFinished;
+    public event EventHandler? SendResultStreamEndOrFault;
 
     public ChannelType ChannelType { get; }
 
     public DateTimeOffset StartTime { get; }
 
     public IServiceProvider ServiceProvider { get; }
-
     public Dictionary<string, object?> Header { get; set; }
 
     public InstanceMethod InstanceMethod { get; }
@@ -172,9 +171,9 @@ public class ActionExecutingContext : IActionExecutingContext
         return s;
     }
 
-    public virtual void OnSendResultStreamFinished()
+    public virtual void OnSendResultStreamEndOrFault()
     {
-        SendResultStreamFinished?.Invoke(this, EventArgs.Empty);
+        SendResultStreamEndOrFault?.Invoke(this, EventArgs.Empty);
     }
 
     public virtual void OnSendResultStreamStarted()

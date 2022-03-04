@@ -117,11 +117,11 @@ NetRpc provide **RabbitMQ**/**Grpc**/**Http** Channels to connect, each one has 
 
 All channels use uniform contract, so easily to switch channel without modify service implementation.
 
-![Alt text](images/all1.png)
+![](images/all1.png)
 
 ## RabbitMQ/Grpc
 There is message channel for RabbitMQ and Grpc, Http pls see topic blow.
-![Alt text](images/nrpc.png)
+![](images/nrpc.png)
 
 ## Initialize by DI
 There has two ways to initialize service and client, See DI sample below:
@@ -589,7 +589,7 @@ Gateway has many advantages:
 * Provide access authority.
 * ...
 
-![Alt text](images/all2.png)
+![](images/all2.png)
 
 The code blow show how to Receive message from RabbitMQ channel client and send to Grpc channel service.
 ```c#
@@ -608,7 +608,7 @@ Set the tags relate to method, it contains:
 * Exception
 
 For more details pls go to [samples/OpenTracing](samples/OpenTracing)
-![Alt text](images/tracer.png)
+![](images/tracer.png)
 
 ## Get HttpContext
 Use IHttpContextAccessor by services.AddHttpContextAccessor();
@@ -623,7 +623,7 @@ Note:
 * **Swagger** is not necessary.
 * **Mvc** is not necessary.
 
-![Alt text](images/nrpc_http.png)
+![](images/nrpc_http.png)
 
 ## [Http] Create Host
 Use DI to create NHttp service, also could create NHttp service base on exist MVC servcie.
@@ -655,12 +655,12 @@ services.AddNRpcSwagger();   // add Swgger service
 app.UseNRpcSwagger();        // use NRpcSwagger middleware
 ```
 The demo show how to call a method with callback and cancel:
-![Alt text](images/swagger.png)
+![](images/swagger.png)
 
 If define Callback Func\<T, Task> and CancelToken supported, need set **\_connId** and **_callId** when request.
 OperationCanceledException will receive respones with statuscode 600.  
 
-![Alt text](images/callback.png)
+![](images/callback.png)
 
 Also support summary on model or method.
 ## HttpServiceOptions
@@ -668,14 +668,22 @@ Also support summary on model or method.
 /// <summary>
 /// Api root path, like '/api', default value is null.
 /// </summary>
-public string ApiRootPath { get; set; }
-
+public string? ApiRootPath { get; set; }
 
 /// <summary>
 /// Set true will pass to next middleware when not match the method, default value is false.
 /// </summary>
 public bool IgnoreWhenNotMatched { get; set; }
 
+/// <summary>
+/// ShortConn redis connection string.
+/// </summary>
+public string? ShortConnRedisConnStr { get; set; }
+
+/// <summary>
+/// ShortConn task stream file temp dir.
+/// </summary>
+public string? ShortConnTempDir { get; set; }
 ```
 ## [Http] Callback and Cancel
 Contract define the **Func\<T, Task>** and **CancellationToken** to enable this feature.
@@ -711,6 +719,13 @@ document.getElementById("cancelBtn").addEventListener("click", function (event) 
     event.preventDefault();
 });
 ```
+## [Http] Short Connection
+Convert long running call to short call with **start** **prog** **cancel** **replace** interface.  
+**ref:** [samples/ShortConn](samples/ShortConn)
+![](images/shortconn.png)
+
+
+
 ## [Http] FaultExceptionAttribute
 If contract has **Exception** defined, should use **FaultExceptionAttribute** to define **statuscode**, 
 use **response code** to define summary(will display in Swagger), 
@@ -998,3 +1013,4 @@ CreateClientProxy<TService>(Channel channel, int timeoutInterval = 1200000)
 * [samples/Gateway](samples/Gateway) Gateway for NetRpc.
 * [samples/OpenTracing](samples/OpenTracing) OpenTracing for NetRpc.
 * [samples/Retry](samples/Retry) Retry for NetRpc.
+* [samples/Retry](samples/ShortConn) ShortConn for NetRpc.

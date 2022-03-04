@@ -54,7 +54,7 @@ public class StreamTracingMiddleware
                 .AsChildOf(GlobalTracer.Instance.ActiveSpan);
             ISpan? span = null;
             context.SendResultStreamStarted += (_, _) => span = spanBuilder.Start();
-            context.SendResultStreamFinished += (_, _) => span?.Finish();
+            context.SendResultStreamEndOrFault += (_, _) => span?.Finish();
         }
     }
 }

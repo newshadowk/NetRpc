@@ -20,7 +20,7 @@ public interface IServiceOnceApiConvert : IAsyncDisposable
     Task<ServiceOnceCallParam> GetServiceOnceCallParamAsync();
 
     /// <returns>True need send stream next, otherwise false.</returns>
-    Task<bool> SendResultAsync(CustomResult result, Stream? stream, string? streamName, ActionExecutingContext context);
+    Task SendResultAsync(CustomResult result, Stream? stream, string? streamName, ActionExecutingContext context);
 
     Task SendFaultAsync(Exception body, ActionExecutingContext? context);
 

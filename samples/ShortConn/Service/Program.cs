@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using DataContract;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NetRpc;
-using NetRpc.Contract;
 using NetRpc.Http;
+using NetRpc.Http.ShortConn;
 
 namespace Service;
 
@@ -18,17 +18,14 @@ internal class Program
 {
     private static async Task Main(string[] args)
     {
-        int port = 5000;
+        var port = 5000;
         if (args.Length == 1)
             port = int.Parse(args[0]);
 
         var host = Host.CreateDefaultBuilder()
             .ConfigureWebHostDefaults(webBuilder =>
             {
-                webBuilder.ConfigureKestrel((_, options) =>
-                    {
-                        options.ListenAnyIP(port);
-                    })
+                webBuilder.ConfigureKestrel((_, options) => { options.ListenAnyIP(port); })
                     .ConfigureServices((_, services) =>
                     {
                         services.AddCors();
@@ -59,7 +56,7 @@ internal class Program
                         app.UseEndpoints(endpoints => { endpoints.MapHub<CallbackHub>("/callback"); });
                         app.UseNSwagger();
                         app.UseNHttp();
-                    });
+                    }).ConfigureLogging(builder => builder.AddConsole());
             }).Build();
 
         await host.RunAsync();
@@ -82,36 +79,25 @@ public class ServiceAsync : IServiceAsync
 
         ms.Seek(0, SeekOrigin.Begin);
 
-        return new CallResult { P1 = "ret", Steam = ms, StreamName = p.StreamName};
+        return new CallResult { P1 = "ret", Steam = ms, StreamName = p.StreamName };
     }
 }
 
 public class IService : IService_
 {
-    private readonly ShortConnCacheHandler _cacheHandler;
+    private readonly CacheHandler _cacheHandler;
 
-    public IService(ShortConnCacheHandler cacheHandler)
+    public IService(CacheHandler cacheHandler)
     {
         _cacheHandler = cacheHandler;
     }
 
-    public async Task<string> CallAsync(CallParam p, Stream stream)
+    public Task<string> CallAsync(CallParam p, Stream stream)
     {
-        var id = Guid.NewGuid().ToString();
-        _cacheHandler.Start(id, typeof(IServiceAsync).GetMethod("CallAsync")!.ToActionInfo(), (ProxyStream)stream, new[] { p },
-            GlobalActionExecutingContext.Context!.Header);
-        return id;
-    } 
-
-    public async Task<ContextData> CallProgressAsync(string id)
-    {
-        return await _cacheHandler.GetProgressAsync(id);
-    }
-
-    public Task CallCancel(string id)
-    {
-        _cacheHandler.Cancel(id);
-        return Task.CompletedTask;
+        return Task.FromResult(_cacheHandler.Start(
+            typeof(IServiceAsync).GetMethod("CallAsync")!.ToActionInfo(), 
+            (ProxyStream)stream, new object[] { p },
+            GlobalActionExecutingContext.Context!.Header));
     }
 
     public async Task<CallResult?> CallResultAsync(string id)

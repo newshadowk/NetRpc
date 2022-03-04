@@ -36,7 +36,7 @@ public class ClientStreamTracingMiddleware
             .AsChildOf(GlobalTracer.Instance.ActiveSpan);
         ISpan? span = null;
         context.OnceCall.SendRequestStreamStarted += (_, _) => span = spanBuilder.Start();
-        context.OnceCall.SendRequestStreamFinished += (_, _) => span?.Finish();
+        context.OnceCall.SendRequestStreamEndOrFault += (_, _) => span?.Finish();
     }
 
     private static void SetTracingAfter(ClientActionExecutingContext context)

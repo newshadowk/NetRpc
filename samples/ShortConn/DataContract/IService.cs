@@ -34,20 +34,3 @@ public class CallResult
 }
 
 //-----------------------------
-
-[Tag("service")]
-[HttpRoute("service")]
-public interface IService_
-{
-    [HttpPost("call/start")]
-    Task<string> CallAsync(CallParam p, Stream stream);
-
-    [HttpGet("call/prog/{id}")]
-    Task<ContextData> CallProgressAsync(string id);
-
-    [HttpGet("call/cancel/{id}")]
-    Task CallCancel(string id);
-
-    [HttpGet("call/result/{id}")]
-    Task<CallResult> CallResultAsync(string id);
-}

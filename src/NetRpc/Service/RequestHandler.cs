@@ -33,7 +33,7 @@ public sealed class RequestHandler
             var contractOptions = _serviceProvider.GetRequiredService<IOptions<ContractOptions>>();
             var contextAccessor = _serviceProvider.GetRequiredService<IActionExecutingContextAccessor>();
 
-            using IServiceScope scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
+            using var scope = _serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
             GlobalServiceProvider.Provider = _serviceProvider;
             GlobalServiceProvider.ScopeProvider = scope.ServiceProvider;
             var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);

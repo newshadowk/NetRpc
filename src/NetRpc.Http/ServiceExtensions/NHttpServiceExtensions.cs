@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using NetRpc;
 using NetRpc.Http;
 using NetRpc.Http.Client;
+using NetRpc.Http.ShortConn;
 using Helper = NetRpc.Http.Helper;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -59,11 +60,13 @@ public static class NHttpServiceExtensions
 
     public static IServiceCollection AddNHttpShortConn(this IServiceCollection services)
     {
+        services.AddNServiceContract<IProgCancelService, ProgCancelService>();
         services.TryAddSingleton<CancelWatcher>();
-        services.TryAddSingleton<ShortConnCache>();
-        services.TryAddSingleton<ShortConnStreamCache>();
+        services.TryAddSingleton<Cache>();
+        services.TryAddSingleton<FileCache>();
+        services.TryAddSingleton<FilePrune>();
         services.TryAddSingleton<ShortConnRedis>();
-        services.TryAddSingleton<ShortConnCacheHandler>();
+        services.TryAddSingleton<CacheHandler>();
         return services;
     }
 

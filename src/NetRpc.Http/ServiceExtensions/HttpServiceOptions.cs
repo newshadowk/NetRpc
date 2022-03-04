@@ -17,8 +17,14 @@ public sealed class HttpServiceOptions
     /// </summary>
     public bool IgnoreWhenNotMatched { get; set; }
 
+    /// <summary>
+    /// ShortConn redis connection string.
+    /// </summary>
     public string? ShortConnRedisConnStr { get; set; }
 
+    /// <summary>
+    /// ShortConn task stream file temp dir.
+    /// </summary>
     public string? ShortConnTempDir { get; set; }
 }
 

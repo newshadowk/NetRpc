@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>net6.0</TargetFrameworks>
     <SignAssembly>true</SignAssembly>
@@ -12,5 +11,4 @@
     <ProjectReference Include="..\NetRpc\NetRpc.csproj" />
     <ProjectReference Include="..\Proxy.Grpc\Proxy.Grpc.csproj" />
   </ItemGroup>
-
 </Project>

@@ -69,7 +69,7 @@ internal sealed class HttpConnection : IDisposable
             _logger.LogWarning(e, null);
         }
     }
-
+    
     private async Task UploadProgress(ProgressEventArgs args)
     {
         try
@@ -83,12 +83,10 @@ internal sealed class HttpConnection : IDisposable
         }
     }
 
-    public async Task SendWithStreamAsync(CustomResult result, Stream stream, string? streamName)
+    public async Task SendWithStreamAsync(ActionExecutingContext aec, CustomResult result, Stream stream, string? streamName)
     {
         var emptyActionDescriptor = new ActionDescriptor();
-        // ReSharper disable once ConstantNullCoalescingCondition
-        // _context.GetRouteData() may null here.
-        var routeData = _context.GetRouteData() ?? new RouteData();
+        var routeData = _context.GetRouteData();
         var actionContext = new ActionContext(_context, routeData, emptyActionDescriptor);
 
         FileStreamResult fRet;
@@ -111,8 +109,7 @@ internal sealed class HttpConnection : IDisposable
             };
         }
 
-
-        if (!(result.Result is Stream))
+        if (result.Result is not System.IO.Stream)
         {
             var json = result.Result.ToDtoJson();
             json = HttpUtility.UrlEncode(json, Encoding.UTF8);
@@ -120,7 +117,19 @@ internal sealed class HttpConnection : IDisposable
         }
 
         var executor = new FileStreamResultExecutor(NullLoggerFactory.Instance);
-        await executor.ExecuteAsync(actionContext, fRet);
+
+        //handle stream
+        aec.OnSendResultStreamStarted();
+        try
+        {
+            await executor.ExecuteAsync(actionContext, fRet);
+        }
+        catch
+        {
+            aec.OnSendResultStreamEndOrFault();
+            throw;
+        }
+        aec.OnSendResultStreamEndOrFault();
     }
 
     public async Task SendAsync(Result result)

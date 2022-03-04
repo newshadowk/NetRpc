@@ -59,14 +59,7 @@ internal sealed class ServiceOnceTransfer
             var hasStream = ret.TryGetStream(out var retStream, out var retStreamName);
 
             //send result
-            var sendStreamNext = await _convert.SendResultAsync(new CustomResult(ret, hasStream, context.ContractMethod.IsImages, retStream.GetLength()), retStream, retStreamName, context);
-            if (!sendStreamNext)
-                return;
-
-            //send stream
-            await SendStreamAsync(context, hasStream, retStream);
-
-            context.OnSendResultStreamFinished();
+            await _convert.SendResultAsync(new CustomResult(ret, hasStream, context.ContractMethod.IsImages, retStream.GetLength()), retStream, retStreamName, context);
         }
         catch (Exception e)
         {
@@ -136,32 +129,5 @@ internal sealed class ServiceOnceTransfer
             _channelType,
             Callback,
             _serviceCts.Token);
-    }
-
-    private async Task SendStreamAsync(ActionExecutingContext context, bool hasStream, Stream? retStream)
-    {
-        if (hasStream)
-        {
-            try
-            {
-                await using (retStream)
-                {
-                    await Helper.SendStreamAsync(
-                        i => _convert.SendBufferAsync(i),
-                        () => _convert.SendBufferEndAsync(),
-                        retStream!,
-                        context.CancellationToken,
-                        context.OnSendResultStreamStarted);
-                }
-            }
-            catch (TaskCanceledException)
-            {
-                await _convert.SendBufferCancelAsync();
-            }
-            catch
-            {
-                await _convert.SendBufferFaultAsync();
-            }
-        }
     }
 }

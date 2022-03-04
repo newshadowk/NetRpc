@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using CSRedis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -11,21 +12,22 @@ using Microsoft.Extensions.Options;
 using NetRpc.Contract;
 using NetRpc.Http.Client;
 
-namespace NetRpc.Http;
+namespace NetRpc.Http.ShortConn;
 
-public class ShortConnCacheHandler
+public class CacheHandler
 {
-    private readonly ShortConnCache _cache;
+    private readonly Cache _cache;
     private readonly CancelWatcher _cancelWatcher;
     private readonly MiddlewareBuilder _middlewareBuilder;
-    private readonly ILogger<ShortConnCacheHandler> _log;
+    private readonly ILogger<CacheHandler> _log;
 
-    public ShortConnCacheHandler(ShortConnCache cache, CancelWatcher cancelWatcher, MiddlewareBuilder middlewareBuilder, ILoggerFactory factory)
+    public CacheHandler(Cache cache, CancelWatcher cancelWatcher, MiddlewareBuilder middlewareBuilder, FilePrune filePrune, ILoggerFactory factory)
     {
         _cache = cache;
         _cancelWatcher = cancelWatcher;
         _middlewareBuilder = middlewareBuilder;
-        _log = factory.CreateLogger<ShortConnCacheHandler>();
+        _log = factory.CreateLogger<CacheHandler>();
+        filePrune.Start();
     }
 
     private static ActionExecutingContext GetContext(List<Instance> instances, IServiceProvider serviceProvider, ActionInfo action, Func<object?, Task> cb,
@@ -55,7 +57,14 @@ public class ShortConnCacheHandler
             token);
     }
 
-    public async void Start(string id, ActionInfo action, ProxyStream stream, object[] pureArgs, Dictionary<string, object?> header)
+    public string Start(ActionInfo action, ProxyStream stream, object[] pureArgs, Dictionary<string, object?> header)
+    {
+        var id = Guid.NewGuid().ToString("N");
+        InnerStart(id, action, stream, pureArgs, header);
+        return id;
+    }
+
+    private async void InnerStart(string id, ActionInfo action, ProxyStream stream, object[] pureArgs, Dictionary<string, object?> header)
     {
         await _cache.CreateAsync(id);
 
@@ -81,7 +90,7 @@ public class ShortConnCacheHandler
             await _cache.SetFaultAsync(id, e, context);
         }
     }
-    
+
     public async Task<ContextData> GetProgressAsync(string id)
     {
         return (await _cache.GetAsync(id)).Data;
@@ -90,8 +99,16 @@ public class ShortConnCacheHandler
     public async Task<object?> GetResultAsync(string id)
     {
         var c = await _cache.GetWithSteamAsync(id);
-        await _cache.DelAsync(id);
-        return c.ResultWithOutStream;
+
+        //DelAsync
+        if (c.Data.HasStream)
+        {
+            GlobalActionExecutingContext.Context!.SendResultStreamEndOrFault += (s, e) => { _cache.DelAsync(id); };
+        }
+        else
+            await _cache.DelAsync(id);
+
+        return c.Result;
     }
 
     public void Cancel(string id)
@@ -141,9 +158,12 @@ public class CancelWatcher
 
 public class ShortConnRedis
 {
+    // ReSharper disable MemberCanBeMadeStatic.Global
     private readonly ILogger _log;
     private const int ExpireSeconds = 3600;
     private const string ChannelName = "task-cancel";
+    private const string IdPrefixKey = "task_";
+    private const string PruneLastTimeKey = "task_prune_last_time";
 
     public ShortConnRedis(IOptions<HttpServiceOptions> options, ILoggerFactory loggerFactory)
     {
@@ -155,47 +175,63 @@ public class ShortConnRedis
         RedisHelper.Initialization(c);
     }
 
-    // ReSharper disable once MemberCanBeMadeStatic.Global
     public void Subscribe(Action<CSRedisClient.SubscribeMessageEventArgs> action)
     {
         RedisHelper.Subscribe((ChannelName, action));
     }
 
-    // ReSharper disable once MemberCanBeMadeStatic.Global
     public void Publish(string id)
     {
         RedisHelper.Publish(ChannelName, id);
     }
 
+    public async Task SetPruneLastTimeAsync(DateTimeOffset dt)
+    {
+        await RedisHelper.SetAsync(PruneLastTimeKey, dt.ToUniversalTime().ToString("O"));
+    }
+
+    public async Task<DateTimeOffset> GetPruneLastTimeAsync()
+    {
+        if (!await RedisHelper.ExistsAsync(PruneLastTimeKey))
+            await SetPruneLastTimeAsync(DateTimeOffset.Now);
+
+        var s = await RedisHelper.GetAsync(PruneLastTimeKey);
+        return DateTimeOffset.Parse(s);
+    }
+
     public async Task SetAsync(string id, InnerContextData obj)
     {
-        var ok = await RedisHelper.SetAsync(id, obj, ExpireSeconds);
+        var ok = await RedisHelper.SetAsync($"{IdPrefixKey}{id}", obj, ExpireSeconds);
         if (!ok)
             _log.LogError($"SetAsync err, id:{id}, value:\r\n{obj.ToDtoJson()}");
     }
 
-    // ReSharper disable once MemberCanBeMadeStatic.Global
     public Task<InnerContextData> GetAsync(string id)
     {
-        return RedisHelper.GetAsync<InnerContextData>(id);
+        return RedisHelper.GetAsync<InnerContextData>($"{IdPrefixKey}{id}");
     }
 
-    // ReSharper disable once MemberCanBeMadeStatic.Global
     public Task DelAsync(string id)
     {
         return RedisHelper.DelAsync(id);
     }
+
+    public Task<bool> ExistsAsync(string id)
+    {
+        return RedisHelper.ExistsAsync($"{IdPrefixKey}{id}");
+    }
+    // ReSharper restore MemberCanBeMadeStatic.Global
 }
 
-public class ShortConnCache
+public class Cache
 {
     private readonly ShortConnRedis _redis;
-    private readonly ShortConnStreamCache _streamCache;
+    private readonly FileCache _fileCache;
 
-    public ShortConnCache(ShortConnRedis redis, ShortConnStreamCache streamCache)
+    public Cache(ShortConnRedis redis, FileCache fileCache)
     {
         _redis = redis;
-        _streamCache = streamCache;
+        _fileCache = fileCache;
     }
 
     public Task CreateAsync(string id)
@@ -211,8 +247,8 @@ public class ShortConnCache
     public async Task<InnerContextData> GetWithSteamAsync(string id)
     {
         var c = await _redis.GetAsync(id);
-        if (c.Data.HasStream) 
-            c.ResultWithOutStream.SetStream(_streamCache.OpenRead(id));
+        if (c.Data.HasStream)
+            c.Result.SetStream(_fileCache.OpenRead(id));
         return c;
     }
 
@@ -230,11 +266,10 @@ public class ShortConnCache
         {
             d.Data.HasStream = true;
             d.Data.StreamName = retStreamName;
-
-            await _streamCache.WriteAsync(id, retStream);
+            await _fileCache.WriteAsync(id, retStream);
         }
 
-        d.ResultWithOutStream = result;
+        d.Result = result;
         d.Data.StatusCode = 200;
         d.Data.Status = ContextStatus.End;
         await _redis.SetAsync(id, d);
@@ -242,6 +277,7 @@ public class ShortConnCache
 
     public Task DelAsync(string id)
     {
+        _fileCache.Del(id);
         return _redis.DelAsync(id);
     }
 
@@ -286,25 +322,46 @@ public class ShortConnCache
     }
 }
 
-public class ShortConnStreamCache
+public class FileCache
 {
     private readonly string _shortConnTempDir;
+    private readonly ILogger<FileCache> _log;
 
-    public ShortConnStreamCache(IOptions<HttpServiceOptions> options)
+    public FileCache(IOptions<HttpServiceOptions> options, ILoggerFactory factory)
     {
         if (options.Value.ShortConnTempDir is null)
             throw new ArgumentNullException(nameof(options.Value.ShortConnTempDir));
 
         _shortConnTempDir = options.Value.ShortConnTempDir;
+        _log = factory.CreateLogger<FileCache>();
+    }
+
+    public string[] GetFiles()
+    {
+        return Directory.GetFiles(_shortConnTempDir);
     }
 
     public async Task WriteAsync(string id, Stream stream)
     {
         var path = GetPath(id);
         var dir = Path.GetDirectoryName(path)!;
-        Directory.CreateDirectory(dir);
+        if (!Directory.Exists(dir))
+            Directory.CreateDirectory(dir);
         await using var fw = File.OpenWrite(path);
         await stream.CopyToAsync(fw);
+    }
+
+    public void Del(string id)
+    {
+        var path = GetPath(id);
+        try
+        {
+            File.Delete(GetPath(id));
+        }
+        catch (Exception e)
+        {
+            _log.LogError(e, $"Del err. path:{path}");
+        }
     }
 
     public Stream OpenRead(string id)
@@ -315,12 +372,53 @@ public class ShortConnStreamCache
 
     private string GetPath(string id)
     {
-        string path1 = _shortConnTempDir;
-        DateTime today = DateTime.Today;
-        string path2 = today.ToString("yyyyMM");
-        today = DateTime.Today;
-        string path3 = today.ToString("dd");
-        string path = Path.Combine(path1, path2, path3, id);
-        return path;
+        return Path.Combine(_shortConnTempDir, id);
+    }
+}
+
+public class FilePrune
+{
+    private readonly TimeSpan _checkTimeSpan = TimeSpan.FromMinutes(10);
+    private readonly ShortConnRedis _redis;
+    private readonly FileCache _fileCache;
+    private readonly BusyTimer _t;
+    private readonly ILogger<FilePrune> _log;
+
+    public FilePrune(ShortConnRedis redis, FileCache fileCache, ILoggerFactory factory)
+    {
+        _log = factory.CreateLogger<FilePrune>();
+        _redis = redis;
+        _fileCache = fileCache;
+        _t = new BusyTimer(_checkTimeSpan.TotalMilliseconds);
+        _t.ElapsedAsync += TElapsedAsync;
+    }
+
+    private async Task TElapsedAsync(object sender, ElapsedEventArgs e)
+    {
+        if (DateTimeOffset.Now - await _redis.GetPruneLastTimeAsync() > _checkTimeSpan)
+        {
+            _log.LogInformation("Prune start.");
+            await PruneAsync();
+            _log.LogInformation("Prune end.");
+            await _redis.SetPruneLastTimeAsync(DateTimeOffset.Now);
+        }
+    }
+
+    public void Start()
+    {
+        _t.Start();
+    }
+
+    public async Task PruneAsync()
+    {
+        foreach (var file in _fileCache.GetFiles())
+        {
+            if (!await _redis.ExistsAsync(Path.GetFileName(file)))
+            {
+                _log.LogInformation($"del start, {file}");
+                _fileCache.Del(file);
+                _log.LogInformation("del end.");
+            }
+        }
     }
 }
