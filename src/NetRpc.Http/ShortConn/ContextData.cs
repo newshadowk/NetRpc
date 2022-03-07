@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NetRpc.Contract;
+namespace NetRpc.Http;
 
 [Serializable]
 public class ContextData

@@ -13,7 +13,7 @@ public sealed class Client : IDisposable
     public Client(GrpcChannelOptions options, string url, string? headerHost, string connectionDescription)
     {
         Uri uri = new (url);
-        _channel = GrpcChannel.ForAddress(url!, options);
+        _channel = GrpcChannel.ForAddress(url, options);
         Host = uri.Host;
         Port = uri.Port;
         HeaderHost = headerHost;
