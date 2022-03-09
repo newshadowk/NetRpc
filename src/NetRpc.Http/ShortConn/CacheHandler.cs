@@ -64,6 +64,7 @@ public class CacheHandler
         {
             var ms = new MemoryStream();
             await stream.CopyToAsync(ms);
+            ms.Seek(0, SeekOrigin.Begin);
             ps = new ProxyStream(ms);
         }
 
