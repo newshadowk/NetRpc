@@ -79,8 +79,10 @@ public class CacheHandler
         }
 
         var contractOptions = GlobalServiceProvider.Provider!.GetRequiredService<IOptions<ContractOptions>>();
-        var instances = GlobalServiceProvider.ScopeProvider!.GetContractInstances(contractOptions.Value);
-        var context = GetContext(instances, GlobalServiceProvider.ScopeProvider!, action, Cb, stream, pureArgs, header, _cancelWatcher.Create(id).Token);
+        using var scope = GlobalServiceProvider.Provider!.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        GlobalServiceProvider.ScopeProvider = scope.ServiceProvider;
+        var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
+        var context = GetContext(instances, scope.ServiceProvider, action, Cb, stream, pureArgs, header, _cancelWatcher.Create(id).Token);
 
         try
         {
