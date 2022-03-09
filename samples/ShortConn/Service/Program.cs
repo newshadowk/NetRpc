@@ -70,12 +70,12 @@ public class ServiceAsync : IServiceAsync
         var ms = new MemoryStream();
         await stream.CopyToAsync(ms, token);
 
-        for (var i = 0; i < 1000; i++)
-        {
-            Console.WriteLine($"-> prog {i}");
-            await Task.Delay(2000, token);
-            await cb(i);
-        }
+        //for (var i = 0; i < 1000; i++)
+        //{
+        //    Console.WriteLine($"-> prog {i}");
+        //    await Task.Delay(2000, token);
+        //    await cb(i);
+        //}
 
         ms.Seek(0, SeekOrigin.Begin);
 
@@ -86,7 +86,6 @@ public class ServiceAsync : IServiceAsync
 public class IService : IService_
 {
     private readonly CacheHandler _cacheHandler;
-
     public IService(CacheHandler cacheHandler)
     {
         _cacheHandler = cacheHandler;
@@ -94,10 +93,7 @@ public class IService : IService_
 
     public Task<string> CallAsync(CallParam p, Stream stream)
     {
-        return Task.FromResult(_cacheHandler.Start(
-            typeof(IServiceAsync).GetMethod("CallAsync")!.ToActionInfo(), 
-            (ProxyStream)stream, new object[] { p },
-            GlobalActionExecutingContext.Context!.Header));
+        return _cacheHandler.Start<IService>("CallAsync", stream, p);
     }
 
     public async Task<CallResult?> CallResultAsync(string id)

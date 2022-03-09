@@ -31,7 +31,7 @@ public class CacheHandler
     }
 
     private static ActionExecutingContext GetContext(List<Instance> instances, IServiceProvider serviceProvider, ActionInfo action, Func<object?, Task> cb,
-        ProxyStream stream, object[] pureArgs, Dictionary<string, object?> header, CancellationToken token)
+        ProxyStream? stream, object[] pureArgs, Dictionary<string, object?> header, CancellationToken token)
     {
         var (instanceMethodInfo, contractMethod, instance) = ApiWrapper.GetMethodInfo(action, instances);
 
@@ -57,14 +57,19 @@ public class CacheHandler
             token);
     }
 
-    public string Start(ActionInfo action, ProxyStream stream, object[] pureArgs, Dictionary<string, object?> header)
+    public Task<string> Start<T>(string methodName, Stream? stream, params object[] pureArgs)
+    {
+        return Task.FromResult(InnerStart(typeof(T).GetMethod(methodName)!.ToActionInfo(), (ProxyStream?)stream, pureArgs, GlobalActionExecutingContext.Context!.Header));
+    }
+
+    private string InnerStart(ActionInfo action, ProxyStream? stream, object[] pureArgs, Dictionary<string, object?> header)
     {
         var id = Guid.NewGuid().ToString("N");
         InnerStart(id, action, stream, pureArgs, header);
         return id;
     }
 
-    private async void InnerStart(string id, ActionInfo action, ProxyStream stream, object[] pureArgs, Dictionary<string, object?> header)
+    private async void InnerStart(string id, ActionInfo action, ProxyStream? stream, object[] pureArgs, Dictionary<string, object?> header)
     {
         await _cache.CreateAsync(id);
 

@@ -1,6 +1,4 @@
-﻿using System;
-using Grpc.Net.Client;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Proxy.Grpc;
 
@@ -56,7 +54,7 @@ public sealed class GrpcClientConnectionScope
 
     public IClientConnection Create()
     {
-        var connection = new GrpcClientConnection(_client!, _logger);
+        var connection = new GrpcClientConnection(_client, _logger);
         connection.Finished += (s, _) => _connections.Remove((GrpcClientConnection)s!);
         _connections.Add(connection);
         return connection;
