@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using NetRpc;
 using NetRpc.Http;
 using NetRpc.Http.ShortConn;
 
@@ -93,7 +92,7 @@ public class IService : IService_
 
     public Task<string> CallAsync(CallParam p, Stream stream)
     {
-        return _cacheHandler.Start<IService>("CallAsync", stream, p);
+        return Task.FromResult(_cacheHandler.Start<IService>("CallAsync", stream, p));
     }
 
     public async Task<CallResult?> CallResultAsync(string id)

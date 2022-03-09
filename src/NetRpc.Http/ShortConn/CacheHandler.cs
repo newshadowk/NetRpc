@@ -57,9 +57,9 @@ public class CacheHandler
             token);
     }
 
-    public Task<string> Start<T>(string methodName, Stream? stream, params object[] pureArgs)
+    public string Start<T>(string methodName, Stream? stream, params object[] pureArgs)
     {
-        return Task.FromResult(InnerStart(typeof(T).GetMethod(methodName)!.ToActionInfo(), (ProxyStream?)stream, pureArgs, GlobalActionExecutingContext.Context!.Header));
+        return InnerStart(typeof(T).GetMethod(methodName)!.ToActionInfo(), (ProxyStream?)stream, pureArgs, GlobalActionExecutingContext.Context!.Header);
     }
 
     private string InnerStart(ActionInfo action, ProxyStream? stream, object[] pureArgs, Dictionary<string, object?> header)
