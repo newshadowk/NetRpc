@@ -15,6 +15,11 @@ public interface IServiceAsync
     Task<CallResult> CallAsync(CallParam p, Stream stream, Func<double, Task> cb, CancellationToken token);
 }
 
+public interface IService1Async
+{
+    Task<string> Call1Async(string s);
+}
+
 [Serializable]
 public class CallParam
 {

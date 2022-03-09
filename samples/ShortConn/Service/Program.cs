@@ -38,6 +38,8 @@ internal class Program
                                 "192.168.0.50:6379,password=111,defaultDatabase=0,poolsize=50,ssl=false,writeBuffer=10240";
                             o.ShortConnTempDir = @"d:\1";
                         });
+                        services.AddNGrpcClient(o => o.Url = "http://localhost:50001");
+                        services.AddNClientContract<IService1Async>();
                         services.AddNHttpShortConn();
                         services.AddNServiceContract<IServiceAsync, ServiceAsync>();
                         services.AddNServiceContract<IService_, IService>();
@@ -64,6 +66,13 @@ internal class Program
 
 public class ServiceAsync : IServiceAsync
 {
+    private readonly IService1Async _p;
+
+    public ServiceAsync(IService1Async p)
+    {
+        _p = p;
+    }
+
     public async Task<CallResult> CallAsync(CallParam p, Stream stream, Func<double, Task> cb, CancellationToken token)
     {
         var ms = new MemoryStream();
@@ -76,8 +85,11 @@ public class ServiceAsync : IServiceAsync
         //    await cb(i);
         //}
 
-        ms.Seek(0, SeekOrigin.Begin);
+        await Task.Delay(2000);
 
+        var s = await _p.Call1Async("123");
+        Console.WriteLine(s);
+        ms.Seek(0, SeekOrigin.Begin);
         return new CallResult { P1 = "ret", Steam = ms, StreamName = p.StreamName };
     }
 }
@@ -85,6 +97,7 @@ public class ServiceAsync : IServiceAsync
 public class IService : IService_
 {
     private readonly CacheHandler _cacheHandler;
+
     public IService(CacheHandler cacheHandler)
     {
         _cacheHandler = cacheHandler;
@@ -92,7 +105,7 @@ public class IService : IService_
 
     public Task<string> CallAsync(CallParam p, Stream stream)
     {
-        return Task.FromResult(_cacheHandler.Start<IService>("CallAsync", stream, p));
+        return Task.FromResult(_cacheHandler.Start<IServiceAsync>("CallAsync", stream, p));
     }
 
     public async Task<CallResult?> CallResultAsync(string id)
