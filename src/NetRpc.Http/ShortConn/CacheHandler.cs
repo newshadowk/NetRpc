@@ -57,9 +57,17 @@ public class CacheHandler
             token);
     }
 
-    public string Start<T>(string methodName, Stream? stream, params object[] pureArgs)
+    public async Task<string> StartAsync<T>(string methodName, Stream? stream, params object[] pureArgs)
     {
-        return InnerStart(typeof(T).GetMethod(methodName)!.ToActionInfo(), (ProxyStream?)stream, pureArgs, GlobalActionExecutingContext.Context!.Header);
+        ProxyStream? ps = null;
+        if (stream != null)
+        {
+            var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            ps = new ProxyStream(ms);
+        }
+
+        return InnerStart(typeof(T).GetMethod(methodName)!.ToActionInfo(), ps, pureArgs, GlobalActionExecutingContext.Context!.Header);
     }
 
     private string InnerStart(ActionInfo action, ProxyStream? stream, object[] pureArgs, Dictionary<string, object?> header)
@@ -110,7 +118,7 @@ public class CacheHandler
         //DelAsync
         if (c.Data.HasStream)
         {
-            GlobalActionExecutingContext.Context!.SendResultStreamEndOrFault += (s, e) => { _cache.DelAsync(id); };
+            GlobalActionExecutingContext.Context!.SendResultStreamEndOrFault += (_, _) => { _cache.DelAsync(id); };
         }
         else
             await _cache.DelAsync(id);

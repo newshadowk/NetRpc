@@ -105,7 +105,7 @@ public class IService : IService_
 
     public Task<string> CallAsync(CallParam p, Stream stream)
     {
-        return Task.FromResult(_cacheHandler.Start<IServiceAsync>("CallAsync", stream, p));
+        return _cacheHandler.StartAsync<IServiceAsync>("CallAsync", stream, p);
     }
 
     public async Task<CallResult?> CallResultAsync(string id)
