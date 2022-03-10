@@ -12,7 +12,12 @@ public interface IServiceAsync
 {
     [HttpPost("call")]
     [FaultException(typeof(NotImplementedException), 400, "1", "this is a err")]
-    Task<CallResult> CallAsync(CallParam p, Stream stream, Func<double, Task> cb, CancellationToken token);
+    Task<CallResult> CallAsync(CallParam p, Stream stream, Func<CbObj, Task> cb, CancellationToken token);
+}
+
+public class CbObj
+{
+    public string P1 { get; set; }
 }
 
 public interface IService1Async

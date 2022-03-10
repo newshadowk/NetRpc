@@ -15,6 +15,13 @@ public static class ClientHelper
         Converters = {new JsonStringEnumConverter(JsonNamingPolicy.CamelCase), new StreamConverter()}
     };
 
+    private static readonly JsonSerializerOptions JsOptionsNotIndented = new()
+    {
+        WriteIndented = false,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Converters = {new JsonStringEnumConverter(JsonNamingPolicy.CamelCase), new StreamConverter()}
+    };
+
     public static object? ToDtoObject(this string? str, Type t)
     {
         if (string.IsNullOrEmpty(str))
@@ -60,5 +67,13 @@ public static class ClientHelper
         if (obj == null)
             return null;
         return JsonSerializer.Serialize(obj, JsOptions);
+    }
+
+    [return: NotNullIfNotNull("obj")]
+    public static string? ToDtoJsonNotIndented<T>(this T obj)
+    {
+        if (obj == null)
+            return null;
+        return JsonSerializer.Serialize(obj, JsOptionsNotIndented);
     }
 }

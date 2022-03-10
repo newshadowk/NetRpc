@@ -74,18 +74,17 @@ public class ServiceAsync : IServiceAsync
         _p = p;
     }
 
-    public async Task<CallResult> CallAsync(CallParam p, Stream stream, Func<double, Task> cb, CancellationToken token)
+    public async Task<CallResult> CallAsync(CallParam p, Stream stream, Func<CbObj, Task> cb, CancellationToken token)
     {
         var ms = new MemoryStream();
         await stream.CopyToAsync(ms, token);
 
-        //for (var i = 0; i < 1000; i++)
-        //{
-        //    Console.WriteLine($"-> prog {i}");
-        //    await Task.Delay(2000, token);
-        //    await cb(i);
-        //}
-
+        for (var i = 0; i < 1000; i++)
+        {
+            Console.WriteLine($"-> prog {i}");
+            await Task.Delay(1000, token);
+            await cb(new CbObj{P1 = i.ToString()});
+        }
 
         //await Task.Delay(2000);
         //var s = await _p.Call1Async("123");

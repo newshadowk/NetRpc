@@ -277,7 +277,7 @@ public class Cache
     public async Task SetProgAsync(string id, object? prog)
     {
         var d = await _redis.GetAsync(id);
-        d.Data.Prog = prog.ToDtoJson();
+        d.Data.Prog = prog.ToDtoJsonNotIndented();
         await _redis.SetAsync(id, d);
     }
 
