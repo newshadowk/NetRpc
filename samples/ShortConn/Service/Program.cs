@@ -37,6 +37,7 @@ internal class Program
                             o.ShortConnRedisConnStr =
                                 "192.168.0.50:6379,password=111,defaultDatabase=0,poolsize=50,ssl=false,writeBuffer=10240";
                             o.ShortConnTempDir = @"d:\1";
+                            o.RemainShortConnCacheIn30MinutesWhenFinished = true;
                         });
                         services.AddNGrpcClient(o => o.Url = "http://localhost:50001");
                         services.AddNClientContract<IService1Async>();
@@ -85,10 +86,11 @@ public class ServiceAsync : IServiceAsync
         //    await cb(i);
         //}
 
-        await Task.Delay(2000);
 
-        var s = await _p.Call1Async("123");
-        Console.WriteLine(s);
+        //await Task.Delay(2000);
+        //var s = await _p.Call1Async("123");
+        //Console.WriteLine(s);
+
         ms.Seek(0, SeekOrigin.Begin);
         return new CallResult { P1 = "ret", Steam = ms, StreamName = p.StreamName };
     }

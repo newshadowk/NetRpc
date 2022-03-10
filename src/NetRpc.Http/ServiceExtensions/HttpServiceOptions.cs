@@ -26,6 +26,11 @@ public sealed class HttpServiceOptions
     /// ShortConn task stream file temp dir.
     /// </summary>
     public string? ShortConnTempDir { get; set; }
+
+    /// <summary>
+    /// Default is false.
+    /// </summary>
+    public bool RemainShortConnCacheIn30MinutesWhenFinished { get; set; }
 }
 
 public class KeyRole

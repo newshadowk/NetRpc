@@ -19,13 +19,16 @@ public class CacheHandler
     private readonly Cache _cache;
     private readonly CancelWatcher _cancelWatcher;
     private readonly MiddlewareBuilder _middlewareBuilder;
+    private readonly HttpServiceOptions _options;
     private readonly ILogger<CacheHandler> _log;
 
-    public CacheHandler(Cache cache, CancelWatcher cancelWatcher, MiddlewareBuilder middlewareBuilder, FilePrune filePrune, ILoggerFactory factory)
+    public CacheHandler(Cache cache, CancelWatcher cancelWatcher, MiddlewareBuilder middlewareBuilder, FilePrune filePrune, ILoggerFactory factory,
+        IOptions<HttpServiceOptions> options)
     {
         _cache = cache;
         _cancelWatcher = cancelWatcher;
         _middlewareBuilder = middlewareBuilder;
+        _options = options.Value;
         _log = factory.CreateLogger<CacheHandler>();
         filePrune.Start();
     }
@@ -116,13 +119,16 @@ public class CacheHandler
     {
         var c = await _cache.GetWithSteamAsync(id);
 
-        //DelAsync
-        if (c.Data.HasStream)
+        if (!_options.RemainShortConnCacheIn30MinutesWhenFinished)
         {
-            GlobalActionExecutingContext.Context!.SendResultStreamEndOrFault += (_, _) => { _cache.DelAsync(id); };
+            //DelAsync
+            if (c.Data.HasStream)
+            {
+                GlobalActionExecutingContext.Context!.SendResultStreamEndOrFault += (_, _) => { _cache.DelAsync(id); };
+            }
+            else
+                await _cache.DelAsync(id);
         }
-        else
-            await _cache.DelAsync(id);
 
         return c.Result;
     }
@@ -176,7 +182,7 @@ public class ShortConnRedis
 {
     // ReSharper disable MemberCanBeMadeStatic.Global
     private readonly ILogger _log;
-    private const int ExpireSeconds = 3600;
+    private const int ExpireSeconds = 1800;
     private const string ChannelName = "task-cancel";
     private const string IdPrefixKey = "task_";
     private const string PruneLastTimeKey = "task_prune_last_time";
@@ -413,9 +419,7 @@ public class FilePrune
     {
         if (DateTimeOffset.Now - await _redis.GetPruneLastTimeAsync() > _checkTimeSpan)
         {
-            _log.LogInformation("Prune start.");
             await PruneAsync();
-            _log.LogInformation("Prune end.");
             await _redis.SetPruneLastTimeAsync(DateTimeOffset.Now);
         }
     }
