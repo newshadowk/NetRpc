@@ -100,11 +100,6 @@ internal static class Helper
         return pi.Name;
     }
 
-    public static bool IsEqualsOrSubclassOf(this Type t, Type c)
-    {
-        return t == c || t.IsSubclassOf(c);
-    }
-
     private static (string? connectionId, string? callId, long streamLength) GetAdditionData(object? dataObj)
     {
         if (dataObj == null)

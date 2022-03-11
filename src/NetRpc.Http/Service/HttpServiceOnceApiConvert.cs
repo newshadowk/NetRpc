@@ -101,18 +101,19 @@ internal sealed class HttpServiceOnceApiConvert : IServiceOnceApiConvert
         body = NetRpc.Helper.UnWarpException(body);
 
         // Cancel
-        if (body is OperationCanceledException)
+        if (body.GetExceptionFrom<OperationCanceledException>(true) != null)
             return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(), ClientConstValue.CancelStatusCode));
 
         // ResponseTextException
-        if (body is ResponseTextException textEx)
+        var textEx = body.GetExceptionFrom<ResponseTextException>();
+        if (textEx != null)
             return _connection.SendAsync(Result.FromPainText(textEx.Text, textEx.StatusCode));
 
         // customs Exception
         // ReSharper disable once UseNullPropagation
         if (context != null)
         {
-            var t = context.ContractMethod.FaultExceptionAttributes.FirstOrDefault(i => body.GetType() == i.DetailType);
+            var t = context.ContractMethod.FaultExceptionAttributes.FirstOrDefault(i => body.GetExceptionFrom(i.DetailType) != null);
             if (t != null)
                 return _connection.SendAsync(Result.FromFaultException(
                     new FaultExceptionJsonObj(t.ErrorCode, t.Description ?? body.Message), t.StatusCode));

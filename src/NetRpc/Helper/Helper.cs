@@ -216,6 +216,7 @@ public static class Helper
             return null;
 
         var bytes = new byte[stream.Length];
+        // ReSharper disable once MustUseReturnValue
         stream.Read(bytes, 0, bytes.Length);
         return bytes;
     }
@@ -225,7 +226,7 @@ public static class Helper
         var bodyFe = ex as FaultException;
 
         //normally Exception
-        if (bodyFe == null && !(ex is OperationCanceledException))
+        if (bodyFe == null && ex is not OperationCanceledException)
         {
             var gt = typeof(FaultException<>).MakeGenericType(ex.GetType());
             var fe = (FaultException) Activator.CreateInstance(gt, ex)!;
@@ -244,6 +245,34 @@ public static class Helper
 
         //OperationCanceledException
         return ex;
+    }
+
+    public static bool IsEqualsOrSubclassOf(this Type t0, Type t1)
+    {
+        return t0 == t1 || t0.IsSubclassOf(t1);
+    }
+
+    public static T? GetExceptionFrom<T>(this Exception ex, bool isSubclassOf = false) where T : Exception
+    {
+        return (T?)ex.GetExceptionFrom(typeof(T), isSubclassOf);
+    }
+
+    public static object? GetExceptionFrom(this Exception ex, Type t, bool isSubclassOf = false)
+    {
+        if (isSubclassOf)
+        {
+            if (ex.GetType().IsEqualsOrSubclassOf(t))
+                return ex;
+        }
+        else
+        {
+            if (ex.GetType() == t)
+                return ex;
+        }
+
+        if (ex is AggregateException ae)
+            return ae.InnerExceptions.FirstOrDefault(i => i.GetType().IsEqualsOrSubclassOf(t));
+        return null;
     }
 
     public static Exception UnWarpException(Exception ex)

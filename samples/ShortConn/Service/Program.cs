@@ -79,6 +79,8 @@ public class ServiceAsync : IServiceAsync
         var ms = new MemoryStream();
         await stream.CopyToAsync(ms, token);
 
+        throw new TaskCanceledException();
+
         for (var i = 0; i < 1000; i++)
         {
             Console.WriteLine($"-> prog {i}");

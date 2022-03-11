@@ -311,8 +311,7 @@ public class Cache
         e = NetRpc.Helper.UnWarpException(e);
 
         d.Data.Status = ContextStatus.Err;
-
-        if (e is OperationCanceledException)
+        if (e.GetExceptionFrom<OperationCanceledException>(true) != null)
         {
             d.Data.StatusCode = ClientConstValue.CancelStatusCode;
             d.Data.ErrMsg = e.Message;
@@ -320,7 +319,8 @@ public class Cache
             return;
         }
 
-        if (e is ResponseTextException textEx)
+        var textEx = e.GetExceptionFrom<ResponseTextException>();
+        if (textEx != null)
         {
             d.Data.StatusCode = textEx.StatusCode;
             d.Data.ErrMsg = textEx.Text;
@@ -328,7 +328,7 @@ public class Cache
             return;
         }
 
-        var t = context?.ContractMethod.FaultExceptionAttributes.FirstOrDefault(i => e.GetType() == i.DetailType);
+        var t = context?.ContractMethod.FaultExceptionAttributes.FirstOrDefault(i => e.GetExceptionFrom(i.DetailType) != null);
         if (t != null)
         {
             d.Data.ErrCode = t.ErrorCode;
