@@ -2,7 +2,6 @@
 
 namespace NetRpc.Http;
 
-[Serializable]
 public class ContextData
 {
     public string? Prog { get; set; }

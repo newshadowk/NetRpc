@@ -2,7 +2,6 @@
 
 namespace NetRpc.Http;
 
-[Serializable]
 public class InnerContextData<T> where T : class
 {
     public ContextData Data { get; } = new();
