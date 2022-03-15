@@ -1,12 +1,11 @@
 ﻿using System;
-using NetRpc.Contract;
 
 namespace NetRpc.Http;
 
 [Serializable]
-public class InnerContextData
+public class InnerContextData<T> where T : class
 {
     public ContextData Data { get; } = new();
 
-    public object? Result { get; set; }
+    public T? Result { get; set; }
 }

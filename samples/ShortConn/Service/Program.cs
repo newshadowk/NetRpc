@@ -79,14 +79,14 @@ public class ServiceAsync : IServiceAsync
         var ms = new MemoryStream();
         await stream.CopyToAsync(ms, token);
 
-        throw new TaskCanceledException();
+        //throw new TaskCanceledException();
 
-        for (var i = 0; i < 1000; i++)
-        {
-            Console.WriteLine($"-> prog {i}");
-            await Task.Delay(1000, token);
-            await cb(new CbObj{P1 = i.ToString()});
-        }
+        //for (var i = 0; i < 1000; i++)
+        //{
+        //    Console.WriteLine($"-> prog {i}");
+        //    await Task.Delay(1000, token);
+        //    await cb(new CbObj{P1 = i.ToString()});
+        //}
 
         //await Task.Delay(2000);
         //var s = await _p.Call1Async("123");
@@ -108,11 +108,11 @@ public class IService : IService_
 
     public Task<string> CallAsync(CallParam p, Stream stream)
     {
-        return _cacheHandler.StartAsync<IServiceAsync>("CallAsync", stream, p);
+        return _cacheHandler.StartAsync<IServiceAsync, CallResult>("CallAsync", stream, p);
     }
 
     public async Task<CallResult?> CallResultAsync(string id)
     {
-        return (CallResult?)await _cacheHandler.GetResultAsync(id);
+        return await _cacheHandler.GetResultAsync<CallResult>(id);
     }
 }

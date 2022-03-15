@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 using DataContract;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -31,5 +32,10 @@ public class Service1Async : IService1Async
     public Task<string> Call1Async(string s)
     {
         return Task.FromResult(s);
+    }
+
+    public Task<Stream> Call2Async(string s)
+    {
+        throw new System.NotImplementedException();
     }
 }

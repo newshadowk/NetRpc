@@ -60,7 +60,7 @@ public class CacheHandler
             token);
     }
 
-    public async Task<string> StartAsync<T>(string methodName, Stream? stream, params object[] pureArgs)
+    public async Task<string> StartAsync<TServcie, TResult>(string methodName, Stream? stream, params object[] pureArgs) where TResult: class
     {
         ProxyStream? ps = null;
         if (stream != null)
@@ -71,23 +71,23 @@ public class CacheHandler
             ps = new ProxyStream(ms);
         }
 
-        return InnerStart(typeof(T).GetMethod(methodName)!.ToActionInfo(), ps, pureArgs, GlobalActionExecutingContext.Context!.Header);
+        return InnerStart<TResult>(typeof(TServcie).GetMethod(methodName)!.ToActionInfo(), ps, pureArgs, GlobalActionExecutingContext.Context!.Header);
     }
 
-    private string InnerStart(ActionInfo action, ProxyStream? stream, object[] pureArgs, Dictionary<string, object?> header)
+    private string InnerStart<T>(ActionInfo action, ProxyStream? stream, object[] pureArgs, Dictionary<string, object?> header) where T: class
     {
         var id = Guid.NewGuid().ToString("N");
-        InnerStart(id, action, stream, pureArgs, header);
+        InnerStart<T>(id, action, stream, pureArgs, header);
         return id;
     }
 
-    private async void InnerStart(string id, ActionInfo action, ProxyStream? stream, object[] pureArgs, Dictionary<string, object?> header)
+    private async void InnerStart<T>(string id, ActionInfo action, ProxyStream? stream, object[] pureArgs, Dictionary<string, object?> header) where T : class
     {
-        await _cache.CreateAsync(id);
+        await _cache.CreateAsync<T>(id);
 
         async Task Cb(object? i)
         {
-            await _cache.SetProgAsync(id, i);
+            await _cache.SetProgAsync<T>(id, i);
         }
 
         var contractOptions = GlobalServiceProvider.Provider!.GetRequiredService<IOptions<ContractOptions>>();
@@ -106,18 +106,18 @@ public class CacheHandler
         {
             _log.LogError(e, $"start err, id:{id}");
             _cancelWatcher.Remove(id);
-            await _cache.SetFaultAsync(id, e, context);
+            await _cache.SetFaultAsync<T>(id, e, context);
         }
     }
 
     public async Task<ContextData> GetProgressAsync(string id)
     {
-        return (await _cache.GetAsync(id)).Data;
+        return (await _cache.GetAsync<object>(id)).Data;
     }
 
-    public async Task<object?> GetResultAsync(string id)
+    public async Task<T?> GetResultAsync<T>(string id) where T : class
     {
-        var c = await _cache.GetWithSteamAsync(id);
+        var c = await _cache.GetWithSteamAsync<T>(id);
 
         if (!_options.RemainShortConnCacheIn30MinutesWhenFinished)
         {
@@ -191,9 +191,9 @@ public class ShortConnRedis
     {
         _log = loggerFactory.CreateLogger<ShortConnRedis>();
         var c = new CSRedisClient(options.Value.ShortConnRedisConnStr);
-        var serializer = new BinaryCacheSerializer();
-        c.CurrentSerialize = o => serializer.Serialize(o);
-        c.CurrentDeserialize = (s, type) => serializer.Deserialize(s, type);
+        //var serializer = new BinaryCacheSerializer();
+        //c.CurrentSerialize = o => serializer.Serialize(o);
+        //c.CurrentDeserialize = (s, type) => serializer.Deserialize(s, type);
         RedisHelper.Initialization(c);
     }
 
@@ -221,16 +221,16 @@ public class ShortConnRedis
         return DateTimeOffset.Parse(s);
     }
 
-    public async Task SetAsync(string id, InnerContextData obj)
+    public async Task SetAsync<T>(string id, InnerContextData<T> obj) where T : class
     {
         var ok = await RedisHelper.SetAsync($"{IdPrefixKey}{id}", obj, ExpireSeconds);
         if (!ok)
             _log.LogError($"SetAsync err, id:{id}, value:\r\n{obj.ToDtoJson()}");
     }
 
-    public Task<InnerContextData> GetAsync(string id)
+    public Task<InnerContextData<T>> GetAsync<T>(string id) where T : class
     {
-        return RedisHelper.GetAsync<InnerContextData>($"{IdPrefixKey}{id}");
+        return RedisHelper.GetAsync<InnerContextData<T>>($"{IdPrefixKey}{id}");
     }
 
     public Task DelAsync(string id)
@@ -256,34 +256,34 @@ public class Cache
         _fileCache = fileCache;
     }
 
-    public Task CreateAsync(string id)
+    public Task CreateAsync<T>(string id) where T : class
     {
-        return _redis.SetAsync(id, new InnerContextData());
+        return _redis.SetAsync(id, new InnerContextData<T>());
     }
 
-    public Task<InnerContextData> GetAsync(string id)
+    public Task<InnerContextData<T>> GetAsync<T>(string id) where T : class
     {
-        return _redis.GetAsync(id);
+        return _redis.GetAsync<T>(id);
     }
 
-    public async Task<InnerContextData> GetWithSteamAsync(string id)
+    public async Task<InnerContextData<T>> GetWithSteamAsync<T>(string id) where T : class
     {
-        var c = await _redis.GetAsync(id);
+        var c = await _redis.GetAsync<T>(id);
         if (c.Data.HasStream)
             c.Result.SetStream(_fileCache.OpenRead(id));
         return c;
     }
 
-    public async Task SetProgAsync(string id, object? prog)
+    public async Task SetProgAsync<T>(string id, object? prog) where T : class
     {
-        var d = await _redis.GetAsync(id);
+        var d = await _redis.GetAsync<T>(id);
         d.Data.Prog = prog.ToDtoJsonNotIndented();
         await _redis.SetAsync(id, d);
     }
 
-    public async Task SetResultAsync(string id, object? result)
+    public async Task SetResultAsync<T>(string id, T? result) where T : class
     {
-        var d = await _redis.GetAsync(id);
+        var d = await _redis.GetAsync<T>(id);
         if (result.TryGetStream(out var retStream, out var retStreamName))
         {
             d.Data.HasStream = true;
@@ -303,9 +303,9 @@ public class Cache
         return _redis.DelAsync(id);
     }
 
-    public async Task SetFaultAsync(string id, Exception e, ActionExecutingContext? context)
+    public async Task SetFaultAsync<T>(string id, Exception e, ActionExecutingContext? context) where T : class
     {
-        var d = await GetAsync(id);
+        var d = await GetAsync<T>(id);
 
         // UnWarp FaultException
         e = NetRpc.Helper.UnWarpException(e);

@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NetRpc.Contract;
+using Newtonsoft.Json;
 
 namespace DataContract;
 
@@ -23,6 +24,8 @@ public class CbObj
 public interface IService1Async
 {
     Task<string> Call1Async(string s);
+
+    Task<Stream> Call2Async(string s);
 }
 
 [Serializable]
@@ -40,6 +43,7 @@ public class CallResult
     public string StreamName { get; set; }
 
     [field: NonSerialized]
+    [JsonIgnore]
     public Stream Steam { get; set; }
 }
 
