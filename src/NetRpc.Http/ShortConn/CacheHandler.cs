@@ -178,7 +178,7 @@ public class CancelWatcher
     }
 }
 
-public class ShortConnRedis
+public class ShortConnRedis : IDisposable
 {
     // ReSharper disable MemberCanBeMadeStatic.Global
     private readonly ILogger _log;
@@ -186,20 +186,18 @@ public class ShortConnRedis
     private const string ChannelName = "task-cancel";
     private const string IdPrefixKey = "task_";
     private const string PruneLastTimeKey = "task_prune_last_time";
+    private CSRedisClient.SubscribeObject? _subObj;
 
     public ShortConnRedis(IOptions<HttpServiceOptions> options, ILoggerFactory loggerFactory)
     {
         _log = loggerFactory.CreateLogger<ShortConnRedis>();
         var c = new CSRedisClient(options.Value.ShortConnRedisConnStr);
-        //var serializer = new BinaryCacheSerializer();
-        //c.CurrentSerialize = o => serializer.Serialize(o);
-        //c.CurrentDeserialize = (s, type) => serializer.Deserialize(s, type);
         RedisHelper.Initialization(c);
     }
 
     public void Subscribe(Action<CSRedisClient.SubscribeMessageEventArgs> action)
     {
-        RedisHelper.Subscribe((ChannelName, action));
+        _subObj = RedisHelper.Subscribe((ChannelName, action));
     }
 
     public void Publish(string id)
@@ -243,6 +241,11 @@ public class ShortConnRedis
         return RedisHelper.ExistsAsync($"{IdPrefixKey}{id}");
     }
     // ReSharper restore MemberCanBeMadeStatic.Global
+
+    public void Dispose()
+    {
+        _subObj?.Dispose();
+    }
 }
 
 public class Cache
