@@ -37,7 +37,7 @@ public sealed class RabbitMQHostedService : IHostedService
         }
 
         _service = new Service(opt.CreateConnectionFactory(), opt.RpcQueue, opt.PrefetchCount, opt.MaxPriority, opt.Durable,
-            opt.AutoDelete, opt.RetryCount, _logger);
+            opt.AutoDelete, _logger);
         _service.ReceivedAsync += ServiceReceivedAsync;
     }
 

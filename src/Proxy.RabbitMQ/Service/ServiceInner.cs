@@ -39,9 +39,9 @@ public sealed class ServiceInner : IDisposable
             args.Add("x-max-priority", _maxPriority);
         _mainModel.QueueDeclare(_rpcQueue, _durable, false, _autoDelete, args);
         var consumer = new AsyncEventingBasicConsumer(_mainModel);
-        _mainModel.BasicQos(0, (ushort) _prefetchCount, true);
+        _mainModel.BasicQos(0, (ushort)_prefetchCount, true);
         _mainModel.BasicConsume(_rpcQueue, false, consumer);
-        consumer.Received +=  (_, e) => OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_connect, _mainModel, e, _logger)));
+        consumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_connect, _mainModel, e, _logger)));
     }
 
     public void Dispose()
