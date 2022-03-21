@@ -987,11 +987,15 @@ public interface IServiceAsync
     Task<ComplexStream> CallAsync();
 ```
 
-## [Http] DefaultValue
-Set DefaultValue to contract, will effect to swagger.
+## [Http] Example
+Set Example to contract, will effect to swagger.
 ```c#
-[DefaultValue("This defalut value of P1")]
-public string P1 { get; set; }
+[Example("s1", "s1value")]
+[Example("s2", "s2value")]
+Task<CustomObj> Call2Async(CObj obj, string s1, string s2);
+
+[Example(null)]
+public int? I1 { get; set; }
 ```
 ## Others
 * An contract args can only contains one **Func<T, Task>**, one **Stream**, same as return value.
