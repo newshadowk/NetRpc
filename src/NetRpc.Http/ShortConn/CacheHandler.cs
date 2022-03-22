@@ -14,6 +14,8 @@ using NetRpc.Http.Client;
 
 namespace NetRpc.Http.ShortConn;
 
+public abstract class SCRedisHelper : RedisHelper<SCRedisHelper> {}
+
 public class CacheHandler
 {
     private readonly Cache _cache;
@@ -192,53 +194,53 @@ public class ShortConnRedis : IDisposable
     {
         _log = loggerFactory.CreateLogger<ShortConnRedis>();
         var c = new CSRedisClient(options.Value.ShortConnRedisConnStr);
-        RedisHelper.Initialization(c);
+        SCRedisHelper.Initialization(c);
     }
 
     public void Subscribe(Action<CSRedisClient.SubscribeMessageEventArgs> action)
     {
-        _subObj = RedisHelper.Subscribe((ChannelName, action));
+        _subObj = SCRedisHelper.Subscribe((ChannelName, action));
     }
 
     public void Publish(string id)
     {
-        RedisHelper.Publish(ChannelName, id);
+        SCRedisHelper.Publish(ChannelName, id);
     }
 
     public async Task SetPruneLastTimeAsync(DateTimeOffset dt)
     {
-        await RedisHelper.SetAsync(PruneLastTimeKey, dt.ToUniversalTime().ToString("O"));
+        await SCRedisHelper.SetAsync(PruneLastTimeKey, dt.ToUniversalTime().ToString("O"));
     }
 
     public async Task<DateTimeOffset> GetPruneLastTimeAsync()
     {
-        if (!await RedisHelper.ExistsAsync(PruneLastTimeKey))
+        if (!await SCRedisHelper.ExistsAsync(PruneLastTimeKey))
             await SetPruneLastTimeAsync(DateTimeOffset.Now);
 
-        var s = await RedisHelper.GetAsync(PruneLastTimeKey);
+        var s = await SCRedisHelper.GetAsync(PruneLastTimeKey);
         return DateTimeOffset.Parse(s);
     }
 
     public async Task SetAsync<T>(string id, InnerContextData<T> obj) where T : class
     {
-        var ok = await RedisHelper.SetAsync($"{IdPrefixKey}{id}", obj, ExpireSeconds);
+        var ok = await SCRedisHelper.SetAsync($"{IdPrefixKey}{id}", obj, ExpireSeconds);
         if (!ok)
             _log.LogError($"SetAsync err, id:{id}, value:\r\n{obj.ToDtoJson()}");
     }
 
     public Task<InnerContextData<T>> GetAsync<T>(string id) where T : class
     {
-        return RedisHelper.GetAsync<InnerContextData<T>>($"{IdPrefixKey}{id}");
+        return SCRedisHelper.GetAsync<InnerContextData<T>>($"{IdPrefixKey}{id}");
     }
 
     public Task DelAsync(string id)
     {
-        return RedisHelper.DelAsync(id);
+        return SCRedisHelper.DelAsync(id);
     }
 
     public Task<bool> ExistsAsync(string id)
     {
-        return RedisHelper.ExistsAsync($"{IdPrefixKey}{id}");
+        return SCRedisHelper.ExistsAsync($"{IdPrefixKey}{id}");
     }
     // ReSharper restore MemberCanBeMadeStatic.Global
 
