@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using NetRpc.Contract;
@@ -55,7 +56,7 @@ public static class MergeArgTypeFactory
 
         //cis
         var cis = new List<CustomsPropertyInfo>();
-        var attributeData = CustomAttributeData.GetCustomAttributes(method).Where(i => i.AttributeType == typeof(ExampleAttribute)).ToList();
+        var exampleCAD = CustomAttributeData.GetCustomAttributes(method).Where(i => i.AttributeType == typeof(ExampleAttribute)).ToList();
         var addedCallId = false;
         var addedStream = false;
         foreach (var p in firstLevelParams)
@@ -86,8 +87,8 @@ public static class MergeArgTypeFactory
 
             //Custom Type
             //ExampleAttribute
-            var found = FindCustomAttributeData(attributeData, p);
-            cis.Add(new CustomsPropertyInfo(p.Type, p.Name!, found, p.JsonCustomAttributeBuilder));
+            var found = FindExampleCAD(exampleCAD, p);
+            cis.Add(new CustomsPropertyInfo(p.Type, p.Name, found, p.JsonCustomAttributeBuilder));
         }
 
         //connectionId callId
@@ -114,7 +115,7 @@ public static class MergeArgTypeFactory
         return new MergeArgType(t, t2, streamName, action, cancelToken, isEmpty, isSingleValue, singleValue, method);
     }
 
-    private static CustomAttributeData? FindCustomAttributeData(List<CustomAttributeData> methodsAd, PPInfo p)
+    private static CustomAttributeData? FindExampleCAD(List<CustomAttributeData> methodsAd, PPInfo p)
     {
         var found = methodsAd.Find(i => (string) i.ConstructorArguments[0].Value! == p.Name);
         if (found != null)
