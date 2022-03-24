@@ -22,7 +22,7 @@ namespace RabbitMQ.Base
         private readonly int _maxPriority;
         private string _serviceToClientQueue = null!;
         private bool isFirstSend = true;
-        private string? _consumerTag;
+        private volatile string? _consumerTag;
 
         public RabbitMQOnceCall(IConnection connect, string rpcQueue, int maxPriority, ILogger logger)
         {
@@ -62,13 +62,13 @@ namespace RabbitMQ.Base
             {
                 _channel = _connect.CreateModel();
                 _channel.QueueDeclare(_rpcQueue, false, false, false,
-                (_maxPriority > 0 ? new Dictionary<string, object> { { "x-max-priority", _maxPriority } } : null)!);
+                    (_maxPriority > 0 ? new Dictionary<string, object> { { "x-max-priority", _maxPriority } } : null)!);
             });
 
             _serviceToClientQueue = _channel!.QueueDeclare().QueueName;
             var consumer = new AsyncEventingBasicConsumer(_channel!);
             consumer.Received += ConsumerReceivedAsync;
-            _channel!.BasicConsume(_serviceToClientQueue, true, consumer);
+            _consumerTag = _channel!.BasicConsume(_serviceToClientQueue, true, consumer);
         }
 
         public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isPost, int mqPriority = 0)
@@ -117,7 +117,6 @@ namespace RabbitMQ.Base
 
         private async Task ConsumerReceivedAsync(object s, BasicDeliverEventArgs e)
         {
-            Interlocked.CompareExchange(ref _consumerTag, e.ConsumerTag, null);
             if (!_clientToServiceQueueOnceBlock.IsPosted)
                 lock (_clientToServiceQueueOnceBlock.SyncRoot)
                 {

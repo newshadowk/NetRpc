@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
 namespace RabbitMQ.Base;
-
 
 public sealed class CallSession : IDisposable
 {
@@ -20,7 +18,7 @@ public sealed class CallSession : IDisposable
     private string? _clientToServiceQueue;
     private bool _disposed;
     private readonly bool _isPost;
-    private volatile string _consumerTag = null!;
+    private volatile string? _consumerTag;
 
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
 
@@ -43,7 +41,6 @@ public sealed class CallSession : IDisposable
             var clientToServiceConsumer = new AsyncEventingBasicConsumer(_clientToServiceChannel);
             clientToServiceConsumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Body));
             _consumerTag = _clientToServiceChannel.BasicConsume(_clientToServiceQueue, true, clientToServiceConsumer);
-
             Send(Encoding.UTF8.GetBytes(_clientToServiceQueue));
         }
 
@@ -66,7 +63,8 @@ public sealed class CallSession : IDisposable
             _mainChannel.BasicAck(_e.DeliveryTag, false);
             if (_clientToServiceChannel != null)
             {
-                _clientToServiceChannel.BasicCancel(_consumerTag);
+                if (_consumerTag != null)
+                    _clientToServiceChannel.BasicCancel(_consumerTag);
                 _clientToServiceChannel.Close();
             }
         }

@@ -13,6 +13,7 @@ internal class ServiceAsync : IServiceAsync
     {
         //Console.Write($"[ComplexCallAsync]...Received length:{data.Length}, {Helper.ReadStr(data)}, ");
         Console.Write($"[ComplexCallAsync]...Received length:{data.Length}");
+        throw new Exception("123");
         for (var i = 1; i <= 3; i++)
         {
             Console.Write($"{i}, ");
