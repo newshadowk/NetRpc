@@ -39,4 +39,9 @@ internal sealed class RabbitMQServiceConnection : IServiceConnection
     {
         return ReceivedAsync.InvokeAsync(this, e);
     }
+
+    private Task OnDisconnectedAsync()
+    {
+        return DisconnectedAsync.InvokeAsync(this, EventArgs.Empty);
+    }
 }

@@ -16,21 +16,18 @@ namespace RabbitMQ.Base
         private readonly IConnection _connect;
         private readonly ILogger _logger;
         private readonly string _rpcQueue;
-        private readonly bool _durable;
-        private readonly bool _autoDelete;
         private string _clientToServiceQueue = null!;
         private volatile bool _disposed;
-        private volatile IModel? _model;
+        private volatile IModel? _channel;
         private readonly int _maxPriority;
         private string _serviceToClientQueue = null!;
         private bool isFirstSend = true;
+        private string? _consumerTag;
 
-        public RabbitMQOnceCall(IConnection connect, string rpcQueue, bool durable, bool autoDelete, int maxPriority, ILogger logger)
+        public RabbitMQOnceCall(IConnection connect, string rpcQueue, int maxPriority, ILogger logger)
         {
             _connect = connect;
             _rpcQueue = rpcQueue;
-            _durable = durable;
-            _autoDelete = autoDelete;
             _maxPriority = maxPriority;
             _logger = logger;
         }
@@ -43,8 +40,12 @@ namespace RabbitMQ.Base
 
             try
             {
-                _model?.Close();
-                _model?.Dispose();
+                if (_channel != null)
+                {
+                    if (_consumerTag != null)
+                        _channel.BasicCancel(_consumerTag);
+                    _channel.Close();
+                }
             }
             catch (Exception e)
             {
@@ -59,15 +60,15 @@ namespace RabbitMQ.Base
             //bug:block issue, need start a task.
             await Task.Run(() =>
             {
-                _model = _connect.CreateModel();
-                _model.QueueDeclare(_rpcQueue, _durable, false, _autoDelete,
-                    _maxPriority > 0 ? new Dictionary<string, object> { { "x-max-priority", _maxPriority } } : null);
+                _channel = _connect.CreateModel();
+                _channel.QueueDeclare(_rpcQueue, false, false, false,
+                (_maxPriority > 0 ? new Dictionary<string, object> { { "x-max-priority", _maxPriority } } : null)!);
             });
 
-            _serviceToClientQueue = _model.QueueDeclare().QueueName;
-            var consumer = new AsyncEventingBasicConsumer(_model);
-            _model.BasicConsume(_serviceToClientQueue, true, consumer);
-            consumer.Received += ConsumerReceived;
+            _serviceToClientQueue = _channel!.QueueDeclare().QueueName;
+            var consumer = new AsyncEventingBasicConsumer(_channel!);
+            consumer.Received += ConsumerReceivedAsync;
+            _channel!.BasicConsume(_serviceToClientQueue, true, consumer);
         }
 
         public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isPost, int mqPriority = 0)
@@ -75,7 +76,7 @@ namespace RabbitMQ.Base
             if (isPost)
             {
                 var p = CreateProp(mqPriority);
-                _model.BasicPublish("", _rpcQueue, p, buffer);
+                _channel!.BasicPublish("", _rpcQueue, p, buffer);
                 await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>?>(null));
                 return;
             }
@@ -89,13 +90,13 @@ namespace RabbitMQ.Base
 
                 var cts = new CancellationTokenSource();
 
-                _model!.BasicReturn += (_, args) =>
+                _channel!.BasicReturn += (_, args) =>
                 {
                     if (args.BasicProperties.CorrelationId == cid)
                         cts.Cancel();
                 };
 
-                _model.BasicPublish("", _rpcQueue, true, p, buffer);
+                _channel.BasicPublish("", _rpcQueue, true, p, buffer);
 
                 try
                 {
@@ -108,14 +109,15 @@ namespace RabbitMQ.Base
                 }
             }
             else
-                _model.BasicPublish("", _clientToServiceQueue, null, buffer);
+                _channel!.BasicPublish("", _clientToServiceQueue, null!, buffer);
 
             //bug: after invoke 'BasicPublish' need an other thread to publish for real send? (sometimes happened.)
             //blocking thread in OnceCall row 96:Task.Delay(_timeoutInterval, _timeOutCts.Token).ContinueWith(i =>
         }
 
-        private async Task ConsumerReceived(object s, BasicDeliverEventArgs e)
+        private async Task ConsumerReceivedAsync(object s, BasicDeliverEventArgs e)
         {
+            Interlocked.CompareExchange(ref _consumerTag, e.ConsumerTag, null);
             if (!_clientToServiceQueueOnceBlock.IsPosted)
                 lock (_clientToServiceQueueOnceBlock.SyncRoot)
                 {
@@ -136,9 +138,7 @@ namespace RabbitMQ.Base
 
         private IBasicProperties CreateProp(int mqPriority)
         {
-            var p = _model!.CreateBasicProperties();
-            if (_durable)
-                p.DeliveryMode = 2;
+            var p = _channel!.CreateBasicProperties();
             if (mqPriority != 0)
                 p.Priority = (byte)mqPriority;
             return p;

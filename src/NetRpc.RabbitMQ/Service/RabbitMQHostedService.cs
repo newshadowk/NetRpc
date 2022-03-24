@@ -9,10 +9,6 @@ using RabbitMQ.Base;
 
 namespace NetRpc.RabbitMQ;
 
-/// <summary>
-/// for not .net3.1;
-/// .net 3.1 have not implemented yet.
-/// </summary>
 public sealed class RabbitMQHostedService : IHostedService
 {
     private readonly BusyFlag _busyFlag;
@@ -36,8 +32,7 @@ public sealed class RabbitMQHostedService : IHostedService
             _service.ReceivedAsync -= ServiceReceivedAsync;
         }
 
-        _service = new Service(opt.CreateConnectionFactory(), opt.RpcQueue, opt.PrefetchCount, opt.MaxPriority, opt.Durable,
-            opt.AutoDelete, _logger);
+        _service = new Service(opt.CreateConnectionFactory(), opt.RpcQueue, opt.PrefetchCount, opt.MaxPriority, _logger);
         _service.ReceivedAsync += ServiceReceivedAsync;
     }
 

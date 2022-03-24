@@ -45,7 +45,7 @@ internal sealed class ProgressCounter : IDisposable
         _tSpeed.Elapsed += TSpeedElapsed;
     }
 
-    private void TSpeedElapsed(object sender, ElapsedEventArgs e)
+    private void TSpeedElapsed(object? sender, ElapsedEventArgs e)
     {
         lock (_lockObj)
         {

@@ -39,7 +39,7 @@ public sealed class BusyTimer : IDisposable
         return ElapsedAsync.InvokeAsync(this, e);
     }
 
-    private async void T_Elapsed(object sender, ElapsedEventArgs e)
+    private async void T_Elapsed(object? sender, ElapsedEventArgs e)
     {
         if ((DateTime.Now - _lastTime).TotalMilliseconds < Interval)
             return;

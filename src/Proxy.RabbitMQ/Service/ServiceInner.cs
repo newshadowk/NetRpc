@@ -12,36 +12,32 @@ public sealed class ServiceInner : IDisposable
     public event AsyncEventHandler<EventArgsT<CallSession>>? ReceivedAsync;
     private readonly string _rpcQueue;
     private readonly int _prefetchCount;
-    private readonly bool _durable;
-    private readonly bool _autoDelete;
     private readonly ILogger _logger;
     private readonly IConnection _connect;
-    private volatile IModel? _mainModel;
+    private volatile IModel? _mainChannel;
     private volatile bool _disposed;
     private readonly int _maxPriority;
 
-    public ServiceInner(IConnection connect, string rpcQueue, int prefetchCount, int maxPriority, bool durable, bool autoDelete, ILogger logger)
+    public ServiceInner(IConnection connect, string rpcQueue, int prefetchCount, int maxPriority, ILogger logger)
     {
         _connect = connect;
         _rpcQueue = rpcQueue;
         _prefetchCount = prefetchCount;
-        _durable = durable;
-        _autoDelete = autoDelete;
         _logger = logger;
         _maxPriority = maxPriority;
     }
 
     public void CreateChannel()
     {
-        _mainModel = _connect.CreateModel();
+        _mainChannel = _connect.CreateModel();
         var args = new Dictionary<string, object>();
         if (_maxPriority > 0)
             args.Add("x-max-priority", _maxPriority);
-        _mainModel.QueueDeclare(_rpcQueue, _durable, false, _autoDelete, args);
-        var consumer = new AsyncEventingBasicConsumer(_mainModel);
-        _mainModel.BasicQos(0, (ushort)_prefetchCount, true);
-        _mainModel.BasicConsume(_rpcQueue, false, consumer);
-        consumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_connect, _mainModel, e, _logger)));
+        _mainChannel.QueueDeclare(_rpcQueue, false, false, false, args);
+        var consumer = new AsyncEventingBasicConsumer(_mainChannel);
+        _mainChannel.BasicQos(0, (ushort)_prefetchCount, true);
+        _mainChannel.BasicConsume(_rpcQueue, false, consumer);
+        consumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_connect, _mainChannel, e, _logger)));
     }
 
     public void Dispose()
@@ -52,8 +48,8 @@ public sealed class ServiceInner : IDisposable
 
         try
         {
-            _mainModel?.Close();
-            _mainModel?.Dispose();
+            _mainChannel?.Close();
+            _mainChannel?.Dispose();
         }
         catch (Exception e)
         {

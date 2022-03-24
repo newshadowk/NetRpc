@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using NetRpc.Http.Client;
 
 namespace NetRpc.Http;
@@ -54,7 +55,7 @@ internal class Result
         return JsonSerializer.Serialize(Ret, new JsonSerializerOptions
         {
             WriteIndented = true,
-            IgnoreNullValues = true
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         });
     }
 }

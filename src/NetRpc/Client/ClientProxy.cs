@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Timers;
@@ -24,8 +23,9 @@ public class ClientProxy<TService> : IClientProxy<TService> where TService : cla
     private readonly ILogger _logger;
     private bool _isConnected;
     private readonly Timer _tHearbeat;
-    private static readonly ConcurrentDictionary<Type, ClientRetryAttribute?>? ClientRetryAttributes = new();
-    private static readonly ConcurrentDictionary<Type, ClientNotRetryAttribute?>? ClientNotRetryAttributes = new();
+    private readonly ConcurrentDictionary<Type, ClientRetryAttribute?> _clientRetryAttributes = new();
+    private readonly ConcurrentDictionary<Type, ClientNotRetryAttribute?> _clientNotRetryAttributes = new();
+
     public Guid Id { get; } = Guid.NewGuid();
 
     public Dictionary<string, object?> AdditionContextHeader
@@ -61,7 +61,7 @@ public class ClientProxy<TService> : IClientProxy<TService> where TService : cla
         Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
         ((SimpleDispatchProxyAsync) (object) Proxy).ExceptionInvoked += ProxyExceptionInvoked;
         _tHearbeat = new Timer(nClientOptions.Value.HearbeatInterval);
-        _tHearbeat.Elapsed += THearbeatElapsed;
+        _tHearbeat.Elapsed += THearbeatElapsed!;
     }
 
     public ClientProxy(IClientConnectionFactory factory,
@@ -81,17 +81,17 @@ public class ClientProxy<TService> : IClientProxy<TService> where TService : cla
     {
     }
 
-    private static ClientRetryAttribute? GetServiceTypeSleepDurations()
+    private ClientRetryAttribute? GetServiceTypeSleepDurations()
     {
-        var ret = ClientRetryAttributes.GetOrAdd(typeof(TService),
+        var ret = _clientRetryAttributes.GetOrAdd(typeof(TService),
             t => t.GetCustomAttribute<ClientRetryAttribute>(true));
         return ret;
         //return typeof(TService).GetCustomAttribute<ClientRetryAttribute>(true);
     }
 
-    private static ClientNotRetryAttribute? GetServiceTypeNotRetryAttribute()
+    private ClientNotRetryAttribute? GetServiceTypeNotRetryAttribute()
     {
-        var ret = ClientNotRetryAttributes.GetOrAdd(typeof(TService),
+        var ret = _clientNotRetryAttributes.GetOrAdd(typeof(TService),
             t => t.GetCustomAttribute<ClientNotRetryAttribute>(true));
         return ret;
     }

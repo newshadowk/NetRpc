@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
@@ -26,6 +25,7 @@ internal sealed class HttpClientOnceApiConvert : IClientOnceApiConvert
     public event AsyncEventHandler<EventArgsT<object?>>? ResultAsync;
     public event AsyncEventHandler<EventArgsT<object>>? CallbackAsync;
     public event AsyncEventHandler<EventArgsT<object>>? FaultAsync;
+    public event AsyncEventHandler? DisposingAsync;
 
     public HttpClientOnceApiConvert(string apiUrl, string connectionId, HubCallBackNotifier? notifier, int timeoutInterval)
     {
@@ -168,11 +168,11 @@ internal sealed class HttpClientOnceApiConvert : IClientOnceApiConvert
         return false;
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
+        await OnDisposingAsync(EventArgs.Empty);
         if (_notifier != null)
             _notifier.Callback -= Notifier_Callback;
-        return new ValueTask();
     }
 
     private static void TryThrowFault(MethodContext methodContext, string content, int statusCode)
@@ -215,6 +215,16 @@ internal sealed class HttpClientOnceApiConvert : IClientOnceApiConvert
         ResultStream?.Invoke(this, e);
     }
 
+    private void OnFaultAsync(EventArgsT<object> e)
+    {
+        FaultAsync?.Invoke(this, e);
+    }
+
+    private Task OnDisposingAsync(EventArgs e)
+    {
+        return DisposingAsync.InvokeAsync(this, e);
+    }
+
     private Task OnCallbackAsync(EventArgsT<object> e)
     {
         return CallbackAsync.InvokeAsync(this, e);
@@ -233,35 +243,5 @@ internal sealed class HttpClientOnceApiConvert : IClientOnceApiConvert
         }
 
         return Helper.WarpException(ex);
-    }
-}
-
-public class Hp
-{
-    public async Task GetResponse2(string url, string data, Stream stream, string streamName, int timeout)
-    {
-        using (var formContent = new MultipartFormDataContent("NKdKd9Yk"))
-        {
-            formContent.Headers.ContentType!.MediaType = "multipart/form-data";
-            formContent.Add(new StringContent(data, Encoding.UTF8), "data");
-            formContent.Add(new StreamContent(stream), streamName, streamName);
-
-        }
-    }
-
-
-    public (string headerKey, Stream resStream) GetResponse(string url, int timeout)
-    {
-        HttpClient c = new HttpClient();
-        
-        var r = (HttpWebRequest)WebRequest.Create(url);
-        r.Method = "POST";
-        r.ContentType = "multipart/form-data";
-        r.Timeout = timeout;
-     
-        var res = (HttpWebResponse)r.GetResponse();
-        var k = res.GetResponseHeader(ClientConstValue.CustomResultHeaderKey);
-        Stream s = res.GetResponseStream();
-        return (k, s);
     }
 }

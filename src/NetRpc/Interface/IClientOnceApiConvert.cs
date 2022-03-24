@@ -25,4 +25,5 @@ public interface IClientOnceApiConvert : IAsyncDisposable
     event AsyncEventHandler<EventArgsT<object?>>? ResultAsync;
     event AsyncEventHandler<EventArgsT<object>>? CallbackAsync;
     event AsyncEventHandler<EventArgsT<object>>? FaultAsync;
+    event AsyncEventHandler? DisposingAsync;
 }

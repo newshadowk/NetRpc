@@ -26,7 +26,7 @@ internal static class ActivatorUtilities
         var bestLength = -1;
         var seenPreferred = false;
 
-        ConstructorMatcher bestMatcher = null;
+        ConstructorMatcher? bestMatcher = null;
 
         if (!instanceType.GetTypeInfo().IsAbstract)
         {
@@ -90,13 +90,13 @@ internal static class ActivatorUtilities
 
         var provider = Expression.Parameter(typeof(IServiceProvider), "provider");
         var argumentArray = Expression.Parameter(typeof(object[]), "argumentArray");
-        var factoryExpressionBody = BuildFactoryExpression(constructor, parameterMap, provider, argumentArray);
+        var factoryExpressionBody = BuildFactoryExpression(constructor!, parameterMap!, provider, argumentArray);
 
         var factoryLamda = Expression.Lambda<Func<IServiceProvider, object[], object>>(
             factoryExpressionBody, provider, argumentArray);
 
         var result = factoryLamda.Compile();
-        return result.Invoke;
+        return result.Invoke!;
     }
 
     /// <summary>
@@ -148,7 +148,7 @@ internal static class ActivatorUtilities
             throw new InvalidOperationException(message);
         }
 
-        return service;
+        return service!;
     }
 
     private static Expression BuildFactoryExpression(
@@ -199,13 +199,13 @@ internal static class ActivatorUtilities
     private static void FindApplicableConstructor(
         Type instanceType,
         Type[] argumentTypes,
-        out ConstructorInfo matchingConstructor,
-        out int?[] parameterMap)
+        out ConstructorInfo? matchingConstructor,
+        out int?[]? parameterMap)
     {
         matchingConstructor = null;
         parameterMap = null;
 
-        if (!TryFindPreferredConstructor(instanceType, argumentTypes, ref matchingConstructor, ref parameterMap) &&
+        if (!TryFindPreferredConstructor(instanceType, argumentTypes, ref matchingConstructor!, ref parameterMap!) &&
             !TryFindMatchingConstructor(instanceType, argumentTypes, ref matchingConstructor, ref parameterMap))
         {
             var message =
@@ -383,7 +383,7 @@ internal static class ActivatorUtilities
                                 $"Unable to resolve service for type '{_parameters[index].ParameterType}' while attempting to activate '{_constructor.DeclaringType}'.");
                         }
 
-                        _parameterValues[index] = defaultValue;
+                        _parameterValues[index] = defaultValue!;
                     }
                     else
                     {

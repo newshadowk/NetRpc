@@ -45,6 +45,7 @@ public sealed class OnceCall : IOnceCall
         {
             _convert.ResultStream += (_, e) => { SetStreamResult(tcs, e.Value); };
             _convert.ResultAsync += async (_, e) => await SetResultAsync(tcs, e.Value);
+            _convert.FaultAsync += async (_, e) => await SetFaultAsync(tcs, e.Value);
 
             if (callback != null)
                 _convert.CallbackAsync += async (_, e) =>
@@ -58,8 +59,6 @@ public sealed class OnceCall : IOnceCall
                         _logger.LogWarning(ex, "client callback");
                     }
                 };
-
-            _convert.FaultAsync += async (_, e) => await SetFaultAsync(tcs, e.Value);
 
             try
             {
@@ -95,7 +94,7 @@ public sealed class OnceCall : IOnceCall
 
                 //timeout
 #pragma warning disable 4014
-                Task.Delay(_timeoutInterval, _timeOutCts.Token).ContinueWith(async _ =>
+                Task.Delay(TimeSpan.FromSeconds(60 * 20), _timeOutCts.Token).ContinueWith(async _ =>
 #pragma warning restore 4014
                 {
                     await SetFaultAsync(tcs, new TimeoutException($"Service is not response over {_timeoutInterval} ms, time out."));
@@ -121,13 +120,20 @@ public sealed class OnceCall : IOnceCall
         //current thread is receive thread by lower layer (rabbitMQ or Grpc), can not be block.
         //run a thread to handle Stream result, avoid sync read stream by user.
         _callbackDispatcher?.Dispose();
+
+        _convert.DisposingAsync += (_, _) =>
+        {
+            _timeOutCts.Cancel();
+            return Task.CompletedTask;
+        };
+
         Task.Run(() => { tcs.SetResult(result); });
     }
 
     private async Task SetCancelAsync(TaskCompletionSource<object?> tcs)
     {
-        // ReSharper disable once MethodHasAsyncOverload
-        _reg?.Dispose();
+        if (_reg != null)
+            await _reg.Value.DisposeAsync();
         _timeOutCts.Cancel();
         _callbackDispatcher?.Dispose();
         await _convert.DisposeAsync();
@@ -136,8 +142,8 @@ public sealed class OnceCall : IOnceCall
 
     private async Task SetFaultAsync(TaskCompletionSource<object?> tcs, object result)
     {
-        // ReSharper disable once MethodHasAsyncOverload
-        _reg?.Dispose();
+        if (_reg != null)
+            await _reg.Value.DisposeAsync();
         _timeOutCts.Cancel();
         _callbackDispatcher?.Dispose();
         await _convert.DisposeAsync();
@@ -146,8 +152,8 @@ public sealed class OnceCall : IOnceCall
 
     private async Task SetResultAsync(TaskCompletionSource<object?> tcs, object? result)
     {
-        // ReSharper disable once MethodHasAsyncOverload
-        _reg?.Dispose();
+        if (_reg != null)
+            await _reg.Value.DisposeAsync();
         _timeOutCts.Cancel();
         _callbackDispatcher?.Dispose();
         await _convert.DisposeAsync();

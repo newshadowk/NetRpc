@@ -6,7 +6,7 @@ namespace NetRpc.OpenTracing;
 
 public class SpanLogger : ILogger
 {
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception, string> formatter)
     {
         var span = GlobalTracer.Instance.ActiveSpan;
         if (span != null)
@@ -16,7 +16,7 @@ public class SpanLogger : ILogger
         }
     }
 
-    private static string Format<TState>(TState state, Exception e)
+    private static string Format<TState>(TState state, Exception? e)
     {
         return $"{state}{e.ExceptionToString()}";
     }
@@ -26,8 +26,21 @@ public class SpanLogger : ILogger
         return true;
     }
 
-    public IDisposable? BeginScope<TState>(TState state)
+    public IDisposable BeginScope<TState>(TState state)
     {
-        return null;
+        return NullScope.Instance;
+    }
+}
+
+internal sealed class NullScope : IDisposable
+{
+    public static NullScope Instance { get; } = new ();
+
+    private NullScope()
+    {
+    }
+
+    public void Dispose()
+    {
     }
 }

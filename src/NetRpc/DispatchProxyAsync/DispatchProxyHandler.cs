@@ -74,9 +74,9 @@ internal static class AsyncDispatchProxyGenerator
         new();
 
     private static readonly ProxyAssembly s_proxyAssembly = new();
-    private static readonly MethodInfo s_dispatchProxyInvokeMethod = typeof(DispatchProxyAsync).GetTypeInfo().GetDeclaredMethod("Invoke");
-    private static readonly MethodInfo s_dispatchProxyInvokeAsyncMethod = typeof(DispatchProxyAsync).GetTypeInfo().GetDeclaredMethod("InvokeAsync");
-    private static readonly MethodInfo s_dispatchProxyInvokeAsyncTMethod = typeof(DispatchProxyAsync).GetTypeInfo().GetDeclaredMethod("InvokeAsyncT");
+    private static readonly MethodInfo s_dispatchProxyInvokeMethod = typeof(DispatchProxyAsync).GetTypeInfo().GetDeclaredMethod("Invoke")!;
+    private static readonly MethodInfo s_dispatchProxyInvokeAsyncMethod = typeof(DispatchProxyAsync).GetTypeInfo().GetDeclaredMethod("InvokeAsync")!;
+    private static readonly MethodInfo s_dispatchProxyInvokeAsyncTMethod = typeof(DispatchProxyAsync).GetTypeInfo().GetDeclaredMethod("InvokeAsyncT")!;
 
     // Returns a new instance of a proxy the derives from 'baseType' and implements 'interfaceType'
     internal static object CreateProxyInstance(Type baseType, Type interfaceType)
@@ -85,22 +85,20 @@ internal static class AsyncDispatchProxyGenerator
         Debug.Assert(interfaceType != null);
 
         var proxiedType = GetProxyType(baseType, interfaceType);
-        return Activator.CreateInstance(proxiedType, new DispatchProxyHandler());
+        return Activator.CreateInstance(proxiedType, new DispatchProxyHandler())!;
     }
 
     private static Type GetProxyType(Type baseType, Type interfaceType)
     {
         lock (s_baseTypeAndInterfaceToGeneratedProxyType)
         {
-            Dictionary<Type, Type> interfaceToProxy = null;
-            if (!s_baseTypeAndInterfaceToGeneratedProxyType.TryGetValue(baseType, out interfaceToProxy))
+            if (!s_baseTypeAndInterfaceToGeneratedProxyType.TryGetValue(baseType, out var interfaceToProxy))
             {
                 interfaceToProxy = new Dictionary<Type, Type>();
                 s_baseTypeAndInterfaceToGeneratedProxyType[baseType] = interfaceToProxy;
             }
 
-            Type generatedProxy = null;
-            if (!interfaceToProxy.TryGetValue(interfaceType, out generatedProxy))
+            if (!interfaceToProxy.TryGetValue(interfaceType, out var generatedProxy))
             {
                 generatedProxy = GenerateProxyType(baseType, interfaceType);
                 interfaceToProxy[interfaceType] = generatedProxy;
@@ -182,19 +180,18 @@ internal static class AsyncDispatchProxyGenerator
         var context = Resolve(args);
 
         // Call (protected method) DispatchProxyAsync.Invoke()
-        object returnValue = null;
+        object? returnValue = null;
         try
         {
             Debug.Assert(s_dispatchProxyInvokeMethod != null);
             returnValue = s_dispatchProxyInvokeMethod.Invoke(context.Packed.DispatchProxy,
-                new object[] {context.Method, context.Packed.Args});
+                new object[] {context.Method, context.Packed.Args})!;
             context.Packed.ReturnValue = returnValue;
         }
         catch (TargetInvocationException tie)
         {
-            ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
+            ExceptionDispatchInfo.Capture(tie.InnerException!).Throw();
         }
-
         return returnValue;
     }
 
@@ -207,11 +204,11 @@ internal static class AsyncDispatchProxyGenerator
         {
             Debug.Assert(s_dispatchProxyInvokeAsyncMethod != null);
             await (Task) s_dispatchProxyInvokeAsyncMethod.Invoke(context.Packed.DispatchProxy,
-                new object[] {context.Method, context.Packed.Args});
+                new object[] {context.Method, context.Packed.Args})!;
         }
         catch (TargetInvocationException tie)
         {
-            ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
+            ExceptionDispatchInfo.Capture(tie.InnerException!).Throw();
         }
     }
 
@@ -220,18 +217,18 @@ internal static class AsyncDispatchProxyGenerator
         var context = Resolve(args);
 
         // Call (protected Task<T> method) NetCoreStackDispatchProxy.InvokeAsync<T>()
-        T returnValue = default;
+        T returnValue = default!;
         try
         {
             Debug.Assert(s_dispatchProxyInvokeAsyncTMethod != null);
-            var genericmethod = s_dispatchProxyInvokeAsyncTMethod.MakeGenericMethod(typeof(T));
-            returnValue = await (Task<T>) genericmethod.Invoke(context.Packed.DispatchProxy,
-                new object[] {context.Method, context.Packed.Args});
-            context.Packed.ReturnValue = returnValue;
+            var genericMethod = s_dispatchProxyInvokeAsyncTMethod.MakeGenericMethod(typeof(T));
+            returnValue = await (Task<T>) genericMethod.Invoke(context.Packed.DispatchProxy,
+                new object[] {context.Method, context.Packed.Args})!;
+            context.Packed.ReturnValue = returnValue!;
         }
         catch (TargetInvocationException tie)
         {
-            ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
+            ExceptionDispatchInfo.Capture(tie.InnerException!).Throw();
         }
 
         return returnValue;
@@ -278,7 +275,7 @@ internal static class AsyncDispatchProxyGenerator
 
     private class ProxyAssembly
     {
-        public readonly AssemblyBuilder _ab;
+        private readonly AssemblyBuilder _ab;
         private readonly ModuleBuilder _mb;
         private int _typeId;
 
@@ -287,7 +284,7 @@ internal static class AsyncDispatchProxyGenerator
         private readonly Dictionary<MethodBase, int> _methodToToken = new();
         private readonly List<MethodBase> _methodsByToken = new();
         private readonly HashSet<string> _ignoresAccessAssemblyNames = new();
-        private ConstructorInfo _ignoresAccessChecksToAttributeConstructor;
+        private ConstructorInfo? _ignoresAccessChecksToAttributeConstructor;
 
         public ProxyAssembly()
         {
@@ -407,7 +404,7 @@ internal static class AsyncDispatchProxyGenerator
             attributeTypeBuilder.SetCustomAttribute(customAttributeBuilder);
 
             // Make the TypeInfo real so the constructor can be used.
-            return attributeTypeBuilder.CreateTypeInfo();
+            return attributeTypeBuilder.CreateTypeInfo()!;
         }
 
         // Generates an instance of the IgnoresAccessChecksToAttribute to
@@ -432,17 +429,17 @@ internal static class AsyncDispatchProxyGenerator
             if (!typeInfo.IsVisible)
             {
                 var assemblyName = typeInfo.Assembly.GetName().Name;
-                if (!_ignoresAccessAssemblyNames.Contains(assemblyName))
+                if (!_ignoresAccessAssemblyNames.Contains(assemblyName!))
                 {
-                    GenerateInstanceOfIgnoresAccessChecksToAttribute(assemblyName);
-                    _ignoresAccessAssemblyNames.Add(assemblyName);
+                    GenerateInstanceOfIgnoresAccessChecksToAttribute(assemblyName!);
+                    _ignoresAccessAssemblyNames.Add(assemblyName!);
                 }
             }
         }
 
         internal void GetTokenForMethod(MethodBase method, out Type type, out int token)
         {
-            type = method.DeclaringType;
+            type = method.DeclaringType!;
             token = 0;
             if (!_methodToToken.TryGetValue(method, out token))
             {
@@ -461,9 +458,9 @@ internal static class AsyncDispatchProxyGenerator
 
     private class ProxyBuilder
     {
-        private static readonly MethodInfo s_delegateInvoke = typeof(DispatchProxyHandler).GetMethod("InvokeHandle");
-        private static readonly MethodInfo s_delegateInvokeAsync = typeof(DispatchProxyHandler).GetMethod("InvokeAsyncHandle");
-        private static readonly MethodInfo s_delegateinvokeAsyncT = typeof(DispatchProxyHandler).GetMethod("InvokeAsyncHandleT");
+        private static readonly MethodInfo s_delegateInvoke = typeof(DispatchProxyHandler).GetMethod("InvokeHandle")!;
+        private static readonly MethodInfo s_delegateInvokeAsync = typeof(DispatchProxyHandler).GetMethod("InvokeAsyncHandle")!;
+        private static readonly MethodInfo s_delegateinvokeAsyncT = typeof(DispatchProxyHandler).GetMethod("InvokeAsyncHandleT")!;
 
         private readonly ProxyAssembly _assembly;
         private readonly TypeBuilder _tb;
@@ -525,7 +522,7 @@ internal static class AsyncDispatchProxyGenerator
         internal Type CreateType()
         {
             Complete();
-            return _tb.CreateTypeInfo().AsType();
+            return _tb.CreateTypeInfo()!.AsType();
         }
 
         internal void AddInterfaceImpl(Type iface)
@@ -540,7 +537,7 @@ internal static class AsyncDispatchProxyGenerator
             var propertyMap = new Dictionary<MethodInfo, PropertyAccessorInfo>(MethodInfoEqualityComparer.Instance);
             foreach (var pi in iface.GetRuntimeProperties())
             {
-                var ai = new PropertyAccessorInfo(pi.GetMethod, pi.SetMethod);
+                var ai = new PropertyAccessorInfo(pi.GetMethod!, pi.SetMethod!);
                 if (pi.GetMethod != null)
                     propertyMap[pi.GetMethod] = ai;
                 if (pi.SetMethod != null)
@@ -550,7 +547,7 @@ internal static class AsyncDispatchProxyGenerator
             var eventMap = new Dictionary<MethodInfo, EventAccessorInfo>(MethodInfoEqualityComparer.Instance);
             foreach (var ei in iface.GetRuntimeEvents())
             {
-                var ai = new EventAccessorInfo(ei.AddMethod, ei.RemoveMethod, ei.RaiseMethod);
+                var ai = new EventAccessorInfo(ei.AddMethod!, ei.RemoveMethod!, ei.RaiseMethod!);
                 if (ei.AddMethod != null)
                     eventMap[ei.AddMethod] = ai;
                 if (ei.RemoveMethod != null)
@@ -562,8 +559,7 @@ internal static class AsyncDispatchProxyGenerator
             foreach (var mi in iface.GetRuntimeMethods())
             {
                 var mdb = AddMethodImpl(mi);
-                PropertyAccessorInfo associatedProperty;
-                if (propertyMap.TryGetValue(mi, out associatedProperty))
+                if (propertyMap.TryGetValue(mi, out var associatedProperty))
                 {
                     if (MethodInfoEqualityComparer.Instance.Equals(associatedProperty.InterfaceGetMethod, mi))
                         associatedProperty.GetMethodBuilder = mdb;
@@ -571,8 +567,7 @@ internal static class AsyncDispatchProxyGenerator
                         associatedProperty.SetMethodBuilder = mdb;
                 }
 
-                EventAccessorInfo associatedEvent;
-                if (eventMap.TryGetValue(mi, out associatedEvent))
+                if (eventMap.TryGetValue(mi, out var associatedEvent))
                 {
                     if (MethodInfoEqualityComparer.Instance.Equals(associatedEvent.InterfaceAddMethod, mi))
                         associatedEvent.AddMethodBuilder = mdb;
@@ -585,7 +580,7 @@ internal static class AsyncDispatchProxyGenerator
 
             foreach (var pi in iface.GetRuntimeProperties())
             {
-                var ai = propertyMap[pi.GetMethod ?? pi.SetMethod];
+                var ai = propertyMap[(pi.GetMethod ?? pi.SetMethod)!];
                 var pb = _tb.DefineProperty(pi.Name, pi.Attributes, pi.PropertyType, pi.GetIndexParameters().Select(p => p.ParameterType).ToArray());
                 if (ai.GetMethodBuilder != null)
                     pb.SetGetMethod(ai.GetMethodBuilder);
@@ -595,8 +590,8 @@ internal static class AsyncDispatchProxyGenerator
 
             foreach (var ei in iface.GetRuntimeEvents())
             {
-                var ai = eventMap[ei.AddMethod ?? ei.RemoveMethod];
-                var eb = _tb.DefineEvent(ei.Name, ei.Attributes, ei.EventHandlerType);
+                var ai = eventMap[(ei.AddMethod ?? ei.RemoveMethod)!];
+                var eb = _tb.DefineEvent(ei.Name, ei.Attributes, ei.EventHandlerType!);
                 if (ai.AddMethodBuilder != null)
                     eb.SetAddOnMethod(ai.AddMethodBuilder);
                 if (ai.RemoveMethodBuilder != null)
@@ -662,7 +657,7 @@ internal static class AsyncDispatchProxyGenerator
             _assembly.GetTokenForMethod(mi, out declaringType, out methodToken);
             packedArr.BeginSet(PackedArgs.DeclaringTypePosition);
             il.Emit(OpCodes.Ldtoken, declaringType);
-            il.Emit(OpCodes.Call, Type_GetTypeFromHandle);
+            il.Emit(OpCodes.Call, Type_GetTypeFromHandle!);
             packedArr.EndSet(typeof(object));
 
             // packed[PackedArgs.MethodTokenPosition] = iface method token;
@@ -685,7 +680,7 @@ internal static class AsyncDispatchProxyGenerator
                 {
                     typeArr.BeginSet(i);
                     il.Emit(OpCodes.Ldtoken, genericTypes[i]);
-                    il.Emit(OpCodes.Call, Type_GetTypeFromHandle);
+                    il.Emit(OpCodes.Call, Type_GetTypeFromHandle!);
                     typeArr.EndSet(typeof(Type));
                 }
 
@@ -742,7 +737,7 @@ internal static class AsyncDispatchProxyGenerator
             {
                 types[i] = parms[i].ParameterType;
                 if (noByRef && types[i].IsByRef)
-                    types[i] = types[i].GetElementType();
+                    types[i] = types[i].GetElementType()!;
             }
 
             return types;
@@ -889,8 +884,8 @@ internal static class AsyncDispatchProxyGenerator
             {
                 Debug.Assert(!isAddress);
                 var argType = source.GetElementType();
-                Ldind(il, argType);
-                Convert(il, argType, target, isAddress);
+                Ldind(il, argType!);
+                Convert(il, argType!, target, isAddress);
                 return;
             }
 
@@ -984,8 +979,8 @@ internal static class AsyncDispatchProxyGenerator
             {
                 Debug.Assert(_paramTypes[i].IsByRef);
                 var argType = _paramTypes[i].GetElementType();
-                Convert(_il, stackType, argType, false);
-                Stind(_il, argType);
+                Convert(_il, stackType, argType!, false);
+                Stind(_il, argType!);
             }
         }
 
@@ -1033,8 +1028,8 @@ internal static class AsyncDispatchProxyGenerator
         {
             public MethodInfo InterfaceGetMethod { get; }
             public MethodInfo InterfaceSetMethod { get; }
-            public MethodBuilder GetMethodBuilder { get; set; }
-            public MethodBuilder SetMethodBuilder { get; set; }
+            public MethodBuilder GetMethodBuilder { get; set; } = null!;
+            public MethodBuilder SetMethodBuilder { get; set; } = null!;
 
             public PropertyAccessorInfo(MethodInfo interfaceGetMethod, MethodInfo interfaceSetMethod)
             {
@@ -1048,9 +1043,9 @@ internal static class AsyncDispatchProxyGenerator
             public MethodInfo InterfaceAddMethod { get; }
             public MethodInfo InterfaceRemoveMethod { get; }
             public MethodInfo InterfaceRaiseMethod { get; }
-            public MethodBuilder AddMethodBuilder { get; set; }
-            public MethodBuilder RemoveMethodBuilder { get; set; }
-            public MethodBuilder RaiseMethodBuilder { get; set; }
+            public MethodBuilder AddMethodBuilder { get; set; } = null!;
+            public MethodBuilder RemoveMethodBuilder { get; set; } = null!;
+            public MethodBuilder RaiseMethodBuilder { get; set; } = null!;
 
             public EventAccessorInfo(MethodInfo interfaceAddMethod, MethodInfo interfaceRemoveMethod, MethodInfo interfaceRaiseMethod)
             {
@@ -1068,7 +1063,7 @@ internal static class AsyncDispatchProxyGenerator
             {
             }
 
-            public override bool Equals(MethodInfo left, MethodInfo right)
+            public override bool Equals(MethodInfo? left, MethodInfo? right)
             {
                 if (ReferenceEquals(left, right))
                     return true;
@@ -1126,7 +1121,7 @@ internal static class AsyncDispatchProxyGenerator
                 if (obj == null)
                     return 0;
 
-                var hashCode = obj.DeclaringType.GetHashCode();
+                var hashCode = obj.DeclaringType!.GetHashCode();
                 hashCode ^= obj.Name.GetHashCode();
                 foreach (var parameter in obj.GetParameters())
                 {

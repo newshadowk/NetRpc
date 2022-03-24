@@ -21,7 +21,7 @@ internal sealed class RateAction : IDisposable
         _t.Start();
     }
 
-    private void TElapsed(object sender, ElapsedEventArgs e)
+    private void TElapsed(object? sender, ElapsedEventArgs e)
     {
         Invoke();
     }

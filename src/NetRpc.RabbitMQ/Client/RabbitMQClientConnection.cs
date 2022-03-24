@@ -16,7 +16,7 @@ public class RabbitMQClientConnection : IClientConnection
     public RabbitMQClientConnection(IConnection connect, MQOptions opt, ILogger logger)
     {
         _opt = opt;
-        _call = new RabbitMQOnceCall(connect, opt.RpcQueue, opt.Durable, opt.AutoDelete, opt.MaxPriority, logger);
+        _call = new RabbitMQOnceCall(connect, opt.RpcQueue, opt.MaxPriority, logger);
         _call.ReceivedAsync += CallReceived;
     }
 
@@ -59,5 +59,10 @@ public class RabbitMQClientConnection : IClientConnection
     private Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>> e)
     {
         return ReceivedAsync.InvokeAsync(this, e);
+    }
+
+    private void OnReceiveDisconnected(EventArgsT<Exception> e)
+    {
+        ReceiveDisconnected?.Invoke(this, e);
     }
 }

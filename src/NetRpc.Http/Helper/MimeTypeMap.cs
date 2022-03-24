@@ -741,9 +741,7 @@ public static class MimeTypeMap
             throw new ArgumentException("Requested mime type is not valid: " + mimeType);
         }
 
-        string extension;
-
-        if (_mappings.Value.TryGetValue(mimeType, out extension))
+        if (_mappings.Value.TryGetValue(mimeType, out var extension))
         {
             return extension;
         }

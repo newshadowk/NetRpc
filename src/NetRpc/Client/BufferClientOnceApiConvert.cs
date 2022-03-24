@@ -28,6 +28,7 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
     public event AsyncEventHandler<EventArgsT<object?>>? ResultAsync;
     public event AsyncEventHandler<EventArgsT<object>>? CallbackAsync;
     public event AsyncEventHandler<EventArgsT<object>>? FaultAsync;
+    public event AsyncEventHandler? DisposingAsync;
 
     public ConnectionInfo ConnectionInfo => _connection.ConnectionInfo;
 
@@ -68,6 +69,7 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
 
     public async ValueTask DisposeAsync()
     {
+        await OnDisposingAsync(EventArgs.Empty);
         await _connection.DisposeAsync();
     }
 
@@ -180,6 +182,11 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
     private Task OnFaultAsync(EventArgsT<object> e)
     {
         return FaultAsync.InvokeAsync(this, e);
+    }
+
+    private Task OnDisposingAsync(EventArgs e)
+    {
+        return DisposingAsync.InvokeAsync(this, e);
     }
 
     private void OnResultStream(EventArgsT<object> e)

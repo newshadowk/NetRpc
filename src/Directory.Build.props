@@ -8,6 +8,7 @@
     <RepositoryUrl>https://github.com/newshadowk/NetRpc</RepositoryUrl>
     <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AssemblyOriginatorKeyFile>../NetRpc.snk</AssemblyOriginatorKeyFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>

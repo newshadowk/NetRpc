@@ -10,8 +10,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NetRpc.Contract;
-#pragma warning disable 618
-
 namespace NetRpc;
 
 public static class Helper
@@ -185,7 +183,9 @@ public static class Helper
 
         using var stream = new MemoryStream();
         var formatter = new BinaryFormatter();
+#pragma warning disable SYSLIB0011
         formatter.Serialize(stream, obj);
+#pragma warning restore SYSLIB0011
         stream.Flush();
         return stream.ToArray();
     }
@@ -204,7 +204,9 @@ public static class Helper
 
         using var stream = new MemoryStream(bytes, 0, bytes.Length, false);
         var formatter = new BinaryFormatter();
+#pragma warning disable SYSLIB0011
         var data = formatter.Deserialize(stream);
+#pragma warning restore SYSLIB0011
         stream.Flush();
         return data;
     }
@@ -277,11 +279,8 @@ public static class Helper
 
     public static Exception UnWarpException(Exception ex)
     {
-        if (ex is FaultException fe)
-        {
-            if (fe.Detail != null)
-                return fe.Detail;
-        }
+        if (ex is FaultException { Detail: { } } fe) 
+            return fe.Detail;
 
         return ex;
     }

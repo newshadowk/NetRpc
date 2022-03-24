@@ -105,7 +105,7 @@ internal sealed class GrpcClientConnection : IClientConnection
             sendHeaders.Add("Host", _client.HeaderHost);
 
         foreach (var p in headers) 
-            sendHeaders.Add(p.Key, p.Value?.ToString());
+            sendHeaders.Add(p.Key, p.Value?.ToString()!);
 
         //create connection.
         if (sendHeaders.Count == 0)

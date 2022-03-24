@@ -11,15 +11,14 @@ public static class Helper
     public static MQOptions GetMQOptions()
     {
         //config your RabbitMQ parameters before run
-        var user = "testuser";
-        var password = "1";
-        var host = "m.k8s.yx.com";
-        //var host = "localhost";
+        var user = "guest";
+        var password = "guest";
+        var host = "192.168.0.50";
         var virtualHost = "testvh";
-        var port = 35672;
+        var port = 5672;
         var rpcQueue = "rpc_test";
         var prefetchCount = 1;
-        var p = new MQOptions(host, virtualHost, rpcQueue, port, user, password, prefetchCount, true, false);
+        var p = new MQOptions(host, virtualHost, rpcQueue, port, user, password, prefetchCount);
         return p;
     }
 

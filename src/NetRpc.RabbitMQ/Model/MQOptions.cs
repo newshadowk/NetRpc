@@ -15,22 +15,12 @@ public class MQOptions
     public int PrefetchCount { get; set; } = 1;
 
     /// <summary>
-    /// Default value is false.
-    /// </summary>
-    public bool Durable { get; set; }
-
-    /// <summary>
-    /// Default value is true.
-    /// </summary>
-    public bool AutoDelete { get; set; } = true;
-
-    /// <summary>
     /// Default value is 0 (disabled priority), max priority, 1-255, 1-10.
     /// </summary>
     public int MaxPriority { get; set; }
 
     public MQOptions(string host, string virtualHost, string rpcQueue, int port, string user, string password,
-        int prefetchCount = 1, bool durable = false, bool autoDelete = true, int maxPriority = 0)
+        int prefetchCount = 1, int maxPriority = 0)
     {
         User = user;
         Password = password;
@@ -39,8 +29,6 @@ public class MQOptions
         Port = port;
         RpcQueue = rpcQueue;
         PrefetchCount = prefetchCount;
-        Durable = durable;
-        AutoDelete = autoDelete;
         MaxPriority = maxPriority;
     }
 
@@ -50,7 +38,6 @@ public class MQOptions
 
     public override string ToString()
     {
-        return
-            $"{nameof(User)}:{User}, {Host}://{VirtualHost}/{RpcQueue}:{Port}, {nameof(PrefetchCount)}:{PrefetchCount}, {nameof(Durable)}:{Durable}, {nameof(AutoDelete)}:{AutoDelete}";
+        return $"{nameof(User)}:{User}, {Host}://{VirtualHost}/{RpcQueue}:{Port}, {nameof(PrefetchCount)}:{PrefetchCount}";
     }
 }
