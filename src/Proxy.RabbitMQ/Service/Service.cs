@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Proxy.RabbitMQ;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -9,7 +10,6 @@ namespace RabbitMQ.Base
     public sealed class Service : IDisposable
     {
         public event AsyncEventHandler<EventArgsT<CallSession>>? ReceivedAsync;
-        public event EventHandler<ShutdownEventArgs>? ConnectionShutdown;
         private IConnection? _connection;
         private readonly ConnectionFactory _factory;
         private readonly string _rpcQueue;
@@ -31,16 +31,10 @@ namespace RabbitMQ.Base
 
         public void Open()
         {
-            _connection = _factory.CreateConnection();
-            _connection.ConnectionShutdown += ConnectionConnectionShutdown;
+            _connection = _factory.CreateConnectionLoop(_logger);
             Inner = new ServiceInner(_connection, _rpcQueue, _prefetchCount, _maxPriority, _logger);
             Inner.CreateChannel();
             Inner.ReceivedAsync += (_, e) => OnReceivedAsync(e);
-        }
-
-        private void ConnectionConnectionShutdown(object? sender, ShutdownEventArgs e)
-        {
-            OnConnectionShutdown(e);
         }
 
         public void Dispose()
@@ -58,11 +52,6 @@ namespace RabbitMQ.Base
             {
                 _logger.LogWarning(e, null);
             }
-        }
-
-        private void OnConnectionShutdown(ShutdownEventArgs e)
-        {
-            ConnectionShutdown?.Invoke(this, e);
         }
 
         private Task OnReceivedAsync(EventArgsT<CallSession> e)

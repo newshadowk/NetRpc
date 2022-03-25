@@ -17,6 +17,7 @@ public sealed class ServiceInner : IDisposable
     private volatile IModel? _mainChannel;
     private volatile bool _disposed;
     private readonly int _maxPriority;
+    private volatile string? _consumerTag;
 
     public ServiceInner(IConnection connect, string rpcQueue, int prefetchCount, int maxPriority, ILogger logger)
     {
@@ -36,7 +37,7 @@ public sealed class ServiceInner : IDisposable
         _mainChannel.QueueDeclare(_rpcQueue, false, false, false, args);
         var consumer = new AsyncEventingBasicConsumer(_mainChannel);
         _mainChannel.BasicQos(0, (ushort)_prefetchCount, true);
-        _mainChannel.BasicConsume(_rpcQueue, false, consumer);
+        _consumerTag = _mainChannel.BasicConsume(_rpcQueue, false, consumer);
         consumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_connect, _mainChannel, e, _logger)));
     }
 
@@ -48,6 +49,8 @@ public sealed class ServiceInner : IDisposable
 
         try
         {
+            if (_consumerTag != null)
+                _mainChannel?.BasicCancel(_consumerTag);
             _mainChannel?.Close();
             _mainChannel?.Dispose();
         }

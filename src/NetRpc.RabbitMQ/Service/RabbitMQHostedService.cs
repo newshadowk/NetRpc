@@ -13,26 +13,15 @@ public sealed class RabbitMQHostedService : IHostedService
 {
     private readonly BusyFlag _busyFlag;
     private readonly RequestHandler _requestHandler;
-    private Service? _service;
-    private readonly ILogger _logger;
+    private readonly Service? _service;
 
-    public RabbitMQHostedService(IOptions<RabbitMQServiceOptions> mqOptions, BusyFlag busyFlag, RequestHandler requestHandler, ILoggerFactory factory)
+    public RabbitMQHostedService(IOptions<RabbitMQServiceOptions> opt, BusyFlag busyFlag, RequestHandler requestHandler, ILoggerFactory factory)
     {
         _busyFlag = busyFlag;
-        _logger = factory.CreateLogger("NetRpc");
+        var logger = factory.CreateLogger("NetRpc");
         _requestHandler = requestHandler;
-        Reset(mqOptions.Value);
-    }
 
-    private void Reset(MQOptions opt)
-    {
-        if (_service != null)
-        {
-            _service.Dispose();
-            _service.ReceivedAsync -= ServiceReceivedAsync;
-        }
-
-        _service = new Service(opt.CreateConnectionFactory(), opt.RpcQueue, opt.PrefetchCount, opt.MaxPriority, _logger);
+        _service = new Service(opt.Value.CreateConnectionFactory(), opt.Value.RpcQueue, opt.Value.PrefetchCount, opt.Value.MaxPriority, logger);
         _service.ReceivedAsync += ServiceReceivedAsync;
     }
 

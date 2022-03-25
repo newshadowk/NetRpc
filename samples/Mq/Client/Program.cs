@@ -22,17 +22,10 @@ internal class Program
         var sp = services.BuildServiceProvider();
         _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
         //var r = await _proxyAsync.Call2("123");
-        try
-        {
-            await Test_ComplexCallAsync();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+
         //await Test_ComplexCallAsync();
 
-        //DoT();
+        DoT();
 
         Console.WriteLine("\r\n--------------- End ---------------");
         Console.Read();
@@ -40,19 +33,31 @@ internal class Program
 
     private static async Task DoT()
     {
+        int i = 0;
         while (true)
         {
-            await Test_ComplexCallAsync();
-            //await Test_Call2();
+            await Task.Delay(1000);
+
+            try
+            {
+                //await Test_ComplexCallAsync();
+                await Test_Call2(i++);
+                
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+          
             GC.Collect();
         }
     }
 
-    private static async Task Test_Call2()
+    private static async Task Test_Call2(int i)
     {
-        Console.WriteLine("call2 start");
-        await _proxyAsync.Call2("123");
-        Console.WriteLine("call2 end");
+        Console.Write($"send {i}");
+        await _proxyAsync.Call2(i.ToString());
+        Console.WriteLine("end");
     }
 
     private static async Task Test_ComplexCallAsync()

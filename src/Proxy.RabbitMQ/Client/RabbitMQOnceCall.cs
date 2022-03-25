@@ -57,14 +57,13 @@ namespace RabbitMQ.Base
 
         public async Task CreateChannelAsync()
         {
-            //bug:block issue, need start a task.
+            //bug:block issue, need start a task. a thread context per channel.
             await Task.Run(() =>
             {
                 _channel = _connect.CreateModel();
                 _channel.QueueDeclare(_rpcQueue, false, false, false,
                     (_maxPriority > 0 ? new Dictionary<string, object> { { "x-max-priority", _maxPriority } } : null)!);
             });
-
             _serviceToClientQueue = _channel!.QueueDeclare().QueueName;
             var consumer = new AsyncEventingBasicConsumer(_channel!);
             consumer.Received += ConsumerReceivedAsync;

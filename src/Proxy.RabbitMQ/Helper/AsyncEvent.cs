@@ -3,7 +3,7 @@ using RabbitMQ.Client.Events;
 
 namespace System;
 
-public static class AsyncEventHandlerExtensions
+internal static class AsyncEventHandlerExtensions
 {
     public static async Task InvokeAsync<TEventArgs>(this AsyncEventHandler<TEventArgs>? eventHandler, object sender, TEventArgs eventArgs)
         where TEventArgs : EventArgs

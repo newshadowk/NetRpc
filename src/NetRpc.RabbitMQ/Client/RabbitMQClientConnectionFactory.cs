@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Proxy.RabbitMQ;
 using RabbitMQ.Client;
 
 namespace NetRpc.RabbitMQ;
@@ -17,7 +18,7 @@ public class RabbitMQClientConnectionFactory : IClientConnectionFactory
     {
         _logger = factory.CreateLogger("NetRpc");
         _options = options.Value;
-        _connection = _options.CreateConnectionFactory().CreateConnection();
+        _connection = _options.CreateConnectionFactory().CreateConnectionLoop(_logger);
     }
 
     public IClientConnection Create(bool isRetry)
