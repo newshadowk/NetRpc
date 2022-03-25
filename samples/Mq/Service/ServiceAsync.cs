@@ -13,11 +13,11 @@ internal class ServiceAsync : IServiceAsync
     {
         //Console.Write($"[ComplexCallAsync]...Received length:{data.Length}, {Helper.ReadStr(data)}, ");
         Console.Write($"[ComplexCallAsync]...Received length:{data.Length}");
-        for (var i = 1; i <= 3; i++)
+        for (var i = 1; i <= 300; i++)
         {
             Console.Write($"{i}, ");
             await cb(new CustomCallbackObj {Progress = i});
-            //await Task.Delay(100, token);
+            await Task.Delay(1000, token);
         }
 
         Console.WriteLine("...Send TestFile.txt");

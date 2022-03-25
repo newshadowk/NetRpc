@@ -65,6 +65,7 @@ namespace RabbitMQ.Base
                     (_maxPriority > 0 ? new Dictionary<string, object> { { "x-max-priority", _maxPriority } } : null)!);
             });
             _serviceToClientQueue = _channel!.QueueDeclare().QueueName;
+            Console.WriteLine(_serviceToClientQueue);
             var consumer = new AsyncEventingBasicConsumer(_channel!);
             consumer.Received += ConsumerReceivedAsync;
             _consumerTag = _channel!.BasicConsume(_serviceToClientQueue, true, consumer);

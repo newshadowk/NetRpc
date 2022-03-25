@@ -36,7 +36,7 @@ public sealed class ServiceInner : IDisposable
             args.Add("x-max-priority", _maxPriority);
         _mainChannel.QueueDeclare(_rpcQueue, false, false, false, args);
         var consumer = new AsyncEventingBasicConsumer(_mainChannel);
-        _mainChannel.BasicQos(0, (ushort)_prefetchCount, true);
+        _mainChannel.BasicQos(0, (ushort)_prefetchCount, false);
         _consumerTag = _mainChannel.BasicConsume(_rpcQueue, false, consumer);
         consumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_connect, _mainChannel, e, _logger)));
     }
