@@ -16,7 +16,7 @@ internal class Program
 {
     private static async Task Main(string[] args)
     {
-        await T1();
+        await T0();
         Console.Read();
     }
 
@@ -42,12 +42,12 @@ internal class Program
         var c = Helper.GetMQOptions().CreateConnectionFactory().CreateConnection();
         var ch = c.CreateModel();
         ch.QueueDeclare("rpc_test2", false, false, false, null);
-        ch.BasicQos(0, 2, false);
+        ch.BasicQos(0, 1, false);
         var consumer = new AsyncEventingBasicConsumer(ch);
         consumer.Received += async (_, e) =>
         {
             Console.WriteLine($"{Encoding.UTF8.GetString(e.Body.Span)} start.");
-            await Task.Delay(5000);
+            await Task.Delay(1000);
             Console.WriteLine($"{Encoding.UTF8.GetString(e.Body.Span)} end.");
             ch.BasicAck(e.DeliveryTag, false);
         };

@@ -19,7 +19,7 @@ internal class Program
 
     private static async Task Main(string[] args)
     {
-        await T1();
+        await T0();
         Console.WriteLine("\r\n--------------- End ---------------");
         Console.Read();
     }
@@ -39,7 +39,9 @@ internal class Program
 
     private static async Task T0()
     {
-        var c = TestHelper.Helper.GetMQOptions().CreateConnectionFactory().CreateConnection();
+        var f = Helper.GetMQOptions().CreateConnectionFactory();
+
+        var c = f.CreateConnection();
         c.CallbackException += C_CallbackException;
         c.ConnectionBlocked += C_ConnectionBlocked;
         c.ConnectionShutdown += C_ConnectionShutdown;
@@ -54,11 +56,12 @@ internal class Program
         ch.FlowControl += Ch_FlowControl;
         ch.ModelShutdown += Ch_ModelShutdown;
         var q = ch.QueueDeclare("rpc_test2", false, false, false, null);
+        //var q = ch.QueueDeclare();
 
         int i = 0;
         while (true)
         {
-            Console.ReadLine();
+            //Console.ReadLine();
 
             i++;
             Console.WriteLine($"{q.QueueName} {i}");
@@ -71,7 +74,7 @@ internal class Program
                 Console.WriteLine($"send err {i}");
             }
 
-            //await Task.Delay(2000);
+            await Task.Delay(2000);
         }
     }
 

@@ -15,6 +15,7 @@ public static class Helper
             HostName = options.Host,
             Port = options.Port,
             AutomaticRecoveryEnabled = true,
+            //TopologyRecoveryEnabled = false,
             NetworkRecoveryInterval = TimeSpan.FromSeconds(5),
             DispatchConsumersAsync = true,
             ConsumerDispatchConcurrency =  options.PrefetchCount
