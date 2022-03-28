@@ -87,9 +87,9 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
         return stream;
     }
 
-    private async void ConnectionReceiveDisconnected(object? sender, EventArgsT<Exception> e)
+    private async void ConnectionReceiveDisconnected(object? sender, EventArgsT<string> e)
     {
-        await OnFaultAsync(new EventArgsT<object>(new DisconnectedException(e.Value.Message)));
+        await OnFaultAsync(new EventArgsT<object>(new DisconnectedException(e.Value)));
         await DisposeAsync();
     }
 

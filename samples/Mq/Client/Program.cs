@@ -19,7 +19,7 @@ internal class Program
 
     private static async Task Main(string[] args)
     {
-        await T0();
+        await T1();
         Console.WriteLine("\r\n--------------- End ---------------");
         Console.Read();
     }
@@ -33,7 +33,15 @@ internal class Program
         var sp = services.BuildServiceProvider();
         _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
         //var r = await _proxyAsync.Call2("123");
-        //await Test_ComplexCallAsync();
+        //try
+        //{
+        //    await Test_ComplexCallAsync();
+        //}
+        //catch (Exception e)
+        //{
+        //    Console.WriteLine(e);
+        //}
+
         DoT();
     }
 

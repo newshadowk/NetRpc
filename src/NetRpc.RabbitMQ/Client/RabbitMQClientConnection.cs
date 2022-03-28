@@ -13,11 +13,17 @@ public class RabbitMQClientConnection : IClientConnection
     private readonly MQOptions _opt;
     private readonly RabbitMQOnceCall _call;
 
-    public RabbitMQClientConnection(IConnection connect, MQOptions opt, ILogger logger)
+    public RabbitMQClientConnection(IConnection cmdConnection, IModel cmdChannel, IModel tmpChannel, MQOptions opt, ILogger logger)
     {
         _opt = opt;
-        _call = new RabbitMQOnceCall(connect, opt.RpcQueue, opt.MaxPriority, logger);
+        _call = new RabbitMQOnceCall(cmdChannel, tmpChannel, opt.RpcQueue, logger);
         _call.ReceivedAsync += CallReceived;
+        cmdConnection.ConnectionShutdown += CmdConnection_ConnectionShutdown;
+    }
+
+    private void CmdConnection_ConnectionShutdown(object? sender, ShutdownEventArgs e)
+    {
+        OnReceiveDisconnected(new EventArgsT<string>($"cmdConn shutdown, ReplyCode:{e.ReplyCode}, ReplyText:{e.ReplyText}, ClassId:{e.ClassId}, MethodId:{e.MethodId}"));
     }
 
     private async Task CallReceived(object sender, global::RabbitMQ.Base.EventArgsT<ReadOnlyMemory<byte>?> e)
@@ -44,16 +50,17 @@ public class RabbitMQClientConnection : IClientConnection
 
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
 
-    public event EventHandler<EventArgsT<Exception>>? ReceiveDisconnected;
+    public event EventHandler<EventArgsT<string>>? ReceiveDisconnected;
 
     public Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false, byte mqPriority = 0)
     {
         return _call.SendAsync(buffer, isPost, mqPriority);
     }
 
-    public async Task StartAsync(Dictionary<string, object?> headers)
+    public Task StartAsync(Dictionary<string, object?> headers)
     {
-        await _call.CreateChannelAsync();
+        _call.CreateChannel();
+        return Task.CompletedTask;
     }
 
     private Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>> e)
@@ -61,7 +68,7 @@ public class RabbitMQClientConnection : IClientConnection
         return ReceivedAsync.InvokeAsync(this, e);
     }
 
-    private void OnReceiveDisconnected(EventArgsT<Exception> e)
+    private void OnReceiveDisconnected(EventArgsT<string> e)
     {
         ReceiveDisconnected?.Invoke(this, e);
     }

@@ -117,8 +117,6 @@ public sealed class OnceCall : IOnceCall
 
     private void SetStreamResult(TaskCompletionSource<object?> tcs, object result)
     {
-        //current thread is receive thread by lower layer (rabbitMQ or Grpc), can not be block.
-        //run a thread to handle Stream result, avoid sync read stream by user.
         _callbackDispatcher?.Dispose();
 
         _convert.DisposingAsync += (_, _) =>
@@ -127,6 +125,8 @@ public sealed class OnceCall : IOnceCall
             return Task.CompletedTask;
         };
 
+        //current thread is receive thread by lower layer (rabbitMQ or Grpc), can not be block.
+        //run a thread to handle Stream result, avoid sync read stream by user.
         Task.Run(() => { tcs.SetResult(result); });
     }
 

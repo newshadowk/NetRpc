@@ -16,7 +16,7 @@ internal class Program
 {
     private static async Task Main(string[] args)
     {
-        await T0();
+        await T1();
         Console.Read();
     }
 

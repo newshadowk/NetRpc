@@ -27,7 +27,7 @@ internal sealed class GrpcClientConnection : IClientConnection
 
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
 
-    public event EventHandler<EventArgsT<Exception>>? ReceiveDisconnected;
+    public event EventHandler<EventArgsT<string>>? ReceiveDisconnected;
 
     public event EventHandler? Finished;
 
@@ -127,7 +127,7 @@ internal sealed class GrpcClientConnection : IClientConnection
             catch (Exception e)
             {
                 _logger.LogWarning(e, $"Client MoveNext error. {_client.ConnectionDescription}");
-                OnReceiveDisconnected(new EventArgsT<Exception>(e));
+                OnReceiveDisconnected(new EventArgsT<string>(e.ExceptionToString()));
             }
             finally
             {
@@ -142,7 +142,7 @@ internal sealed class GrpcClientConnection : IClientConnection
         return ReceivedAsync.InvokeAsync(this, e);
     }
 
-    private void OnReceiveDisconnected(EventArgsT<Exception> e)
+    private void OnReceiveDisconnected(EventArgsT<string> e)
     {
         ReceiveDisconnected?.Invoke(this, e);
     }

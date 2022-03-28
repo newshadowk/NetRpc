@@ -10,7 +10,7 @@ public interface IClientConnection : IAsyncDisposable
 
     event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
 
-    event EventHandler<EventArgsT<Exception>>? ReceiveDisconnected;
+    event EventHandler<EventArgsT<string>>? ReceiveDisconnected;
 
     Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false,byte mqPriority = 0);
 
