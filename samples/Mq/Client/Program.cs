@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using System.Text.Unicode;
 using System.Threading.Tasks;
 using DataContract;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +18,7 @@ internal class Program
 
     private static async Task Main(string[] args)
     {
-        await T1();
+        await T0();
         Console.WriteLine("\r\n--------------- End ---------------");
         Console.Read();
     }
@@ -63,22 +62,29 @@ internal class Program
         ch.BasicReturn += Ch_BasicReturn;
         ch.FlowControl += Ch_FlowControl;
         ch.ModelShutdown += Ch_ModelShutdown;
-        var q = ch.QueueDeclare("rpc_test2", false, false, false, null);
+        string qName = "rpc_test2";
+        //var q = ch.QueueDeclare(qName, false, false, false, null);
         //var q = ch.QueueDeclare();
+
+        int ii = 0;
+        while (true)
+        {
+            ii++;
+            Console.WriteLine(ii);
+            ch.QueueDeclarePassive(qName);
+        }
 
         int i = 0;
         while (true)
         {
             //Console.ReadLine();
-
             i++;
-            Console.WriteLine($"{q.QueueName} {i}");
+            Console.WriteLine($"{qName} {i}");
             try
             {
-                ch.BasicPublish("", q.QueueName, null, Encoding.UTF8.GetBytes(i.ToString()));
+                ch.BasicPublish("", qName, null, Encoding.UTF8.GetBytes(i.ToString()));
             }
-            catch
-            {
+            catch {
                 Console.WriteLine($"send err {i}");
             }
 
@@ -146,7 +152,7 @@ internal class Program
         int i = 0;
         while (true)
         {
-            await Task.Delay(1000);
+            //await Task.Delay(1000);
 
             try
             {

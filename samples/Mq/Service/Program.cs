@@ -16,7 +16,7 @@ internal class Program
 {
     private static async Task Main(string[] args)
     {
-        await T1();
+        await T0();
         Console.Read();
     }
 
@@ -41,7 +41,7 @@ internal class Program
 
         var c = Helper.GetMQOptions().CreateConnectionFactory().CreateConnection();
         var ch = c.CreateModel();
-        ch.QueueDeclare("rpc_test2", false, false, false, null);
+        ch.QueueDeclare("rpc_test2", false, false, true, null);
         ch.BasicQos(0, 1, false);
         var consumer = new AsyncEventingBasicConsumer(ch);
         consumer.Received += async (_, e) =>
