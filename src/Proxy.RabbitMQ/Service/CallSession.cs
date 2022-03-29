@@ -2,6 +2,7 @@
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Proxy.RabbitMQ;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -9,34 +10,33 @@ namespace RabbitMQ.Base;
 
 public sealed class CallSession : IDisposable
 {
-    private readonly IConnection _connection;
     private readonly IModel _mainChannel;
     private readonly BasicDeliverEventArgs _e;
     private readonly ILogger _logger;
-    private IModel? _clientToServiceChannel;
+    private readonly IModel _clientToServiceChannel;
     private readonly string _serviceToClientQueue;
     private string? _clientToServiceQueue;
     private bool _disposed;
     private readonly bool _isPost;
     private volatile string? _consumerTag;
+    private readonly AsyncLock _lock_Receive = new();
 
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
 
-    public CallSession(IConnection connection, IModel mainChannel, BasicDeliverEventArgs e, ILogger logger)
+    public CallSession(IModel mainChannel, IModel subChannel, BasicDeliverEventArgs e, ILogger logger)
     {
         _isPost = e.BasicProperties.ReplyTo == null;
         _serviceToClientQueue = e.BasicProperties.ReplyTo!;
-        _connection = connection;
         _mainChannel = mainChannel;
+        _clientToServiceChannel = subChannel;
         _e = e;
         _logger = logger;
     }
 
-    public void Start()
+    public async void Start()
     {
         if (!_isPost)
         {
-            _clientToServiceChannel = _connection.CreateModel();
             _clientToServiceQueue = _clientToServiceChannel.QueueDeclare().QueueName;
             var clientToServiceConsumer = new AsyncEventingBasicConsumer(_clientToServiceChannel);
             clientToServiceConsumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Body));
@@ -44,12 +44,12 @@ public sealed class CallSession : IDisposable
             Send(Encoding.UTF8.GetBytes(_clientToServiceQueue));
         }
 
-        OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(_e.Body));
+        await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(_e.Body));
     }
 
     public void Send(ReadOnlyMemory<byte> buffer)
     {
-        _clientToServiceChannel!.BasicPublish("", _serviceToClientQueue, null!, buffer);
+        _clientToServiceChannel.BasicPublish("", _serviceToClientQueue, null!, buffer);
     }
 
     public void Dispose()
@@ -58,24 +58,16 @@ public sealed class CallSession : IDisposable
             return;
         _disposed = true;
 
-        try
-        {
-            _mainChannel.BasicAck(_e.DeliveryTag, false);
-            if (_clientToServiceChannel != null)
-            {
-                if (_consumerTag != null)
-                    _clientToServiceChannel.BasicCancel(_consumerTag);
-                _clientToServiceChannel.Close();
-            }
-        }
-        catch (Exception e)
-        {
-            _logger.LogWarning(e, null);
-        }
+        _mainChannel.TryBasicAck(_e.DeliveryTag, false, _logger);
+        if (_consumerTag != null)
+            _clientToServiceChannel.TryBasicCancel(_consumerTag, _logger);
     }
 
-    private Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>> e)
+    private async Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>> e)
     {
-        return ReceivedAsync.InvokeAsync(this, e);
+        //Consumer will has 2 threads invoke simultaneously.
+        //lock here make sure the msg sequence
+        using (await _lock_Receive.LockAsync())
+            await ReceivedAsync.InvokeAsync(this, e);
     }
 }

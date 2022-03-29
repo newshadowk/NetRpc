@@ -10,10 +10,10 @@ namespace NetRpc.RabbitMQ;
 public class RabbitMQClientConnectionFactory : IClientConnectionFactory
 {
     private readonly ILogger _logger;
-    private readonly IConnection _cmdConn;
-    private readonly IConnection _tmpConn;
-    private readonly IModel _cmdChannel;
-    private readonly IModel _tmpChannel;
+    private readonly IConnection _mainConnection;
+    private readonly IConnection _subConnection;
+    private readonly IModel _mainChannel;
+    private readonly IModel _subChannel;
     private readonly MQOptions _options;
     private readonly object _lockObj = new();
     private volatile bool _disposed;
@@ -23,21 +23,21 @@ public class RabbitMQClientConnectionFactory : IClientConnectionFactory
         _logger = factory.CreateLogger("NetRpc");
         _options = options.Value;
 
-        //cmd
-        _cmdConn = _options.CreateConnectionFactory().CreateConnectionLoop(_logger);
-        _cmdChannel = _cmdConn.CreateModel();
-        _cmdChannel.QueueDeclare(_options.RpcQueue, false, false, false,
+        //main
+        _mainConnection = _options.CreateConnectionFactory().CreateConnectionLoop(_logger);
+        _mainChannel = _mainConnection.CreateModel();
+        _mainChannel.QueueDeclare(_options.RpcQueue, false, false, false,
             (_options.MaxPriority > 0 ? new Dictionary<string, object> { { "x-max-priority", _options.MaxPriority } } : null)!);
 
-        //tmp
-        _tmpConn = _options.CreateConnectionFactory_TopologyRecovery_Disabled().CreateConnectionLoop(_logger);
-        _tmpChannel = _tmpConn.CreateModel();
+        //sub
+        _subConnection = _options.CreateConnectionFactory_TopologyRecovery_Disabled().CreateConnectionLoop(_logger);
+        _subChannel = _subConnection.CreateModel();
     }
 
     public IClientConnection Create(bool isRetry)
     {
         lock (_lockObj)
-            return new RabbitMQClientConnection(_cmdConn, _cmdChannel, _tmpChannel, _options, _logger);
+            return new RabbitMQClientConnection(_mainConnection, _mainChannel, _subChannel, _options, _logger);
     }
 
     public void Dispose()
@@ -46,16 +46,9 @@ public class RabbitMQClientConnectionFactory : IClientConnectionFactory
             return;
         _disposed = true;
 
-        try
-        {
-            _cmdChannel.Close();
-            _tmpChannel.Close();
-            _cmdConn.Close();
-            _tmpConn.Close();
-        }
-        catch (Exception e)
-        {
-            _logger.LogWarning(e, null);
-        }
+        _subChannel.TryClose(_logger);
+        _mainChannel.TryClose(_logger);
+        _subConnection.TryClose(_logger);
+        _mainConnection.TryClose(_logger);
     }
 }

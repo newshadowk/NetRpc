@@ -20,8 +20,8 @@ public sealed class RabbitMQHostedService : IHostedService
         _busyFlag = busyFlag;
         var logger = factory.CreateLogger("NetRpc");
         _requestHandler = requestHandler;
-
-        _service = new Service(opt.Value.CreateConnectionFactory(), opt.Value.RpcQueue, opt.Value.PrefetchCount, opt.Value.MaxPriority, logger);
+        
+        _service = new Service(opt.Value.CreateConnectionFactory(), opt.Value.CreateConnectionFactory_TopologyRecovery_Disabled(), opt.Value.RpcQueue, opt.Value.PrefetchCount, opt.Value.MaxPriority, logger);
         _service.ReceivedAsync += ServiceReceivedAsync;
     }
 

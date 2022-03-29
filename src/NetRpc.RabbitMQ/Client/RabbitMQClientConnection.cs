@@ -13,15 +13,15 @@ public class RabbitMQClientConnection : IClientConnection
     private readonly MQOptions _opt;
     private readonly RabbitMQOnceCall _call;
 
-    public RabbitMQClientConnection(IConnection cmdConnection, IModel cmdChannel, IModel tmpChannel, MQOptions opt, ILogger logger)
+    public RabbitMQClientConnection(IConnection mainConnection, IModel mainChannel, IModel subChannel, MQOptions opt, ILogger logger)
     {
         _opt = opt;
-        _call = new RabbitMQOnceCall(cmdChannel, tmpChannel, opt.RpcQueue, logger);
+        _call = new RabbitMQOnceCall(mainChannel, subChannel, opt.RpcQueue, logger);
         _call.ReceivedAsync += CallReceived;
-        cmdConnection.ConnectionShutdown += CmdConnection_ConnectionShutdown;
+        mainConnection.ConnectionShutdown += mainConnection_ConnectionShutdown;
     }
 
-    private void CmdConnection_ConnectionShutdown(object? sender, ShutdownEventArgs e)
+    private void mainConnection_ConnectionShutdown(object? sender, ShutdownEventArgs e)
     {
         OnReceiveDisconnected(new EventArgsT<string>($"cmdConn shutdown, ReplyCode:{e.ReplyCode}, ReplyText:{e.ReplyText}, ClassId:{e.ClassId}, MethodId:{e.MethodId}"));
     }
