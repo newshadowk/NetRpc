@@ -23,6 +23,9 @@ public sealed class RabbitMQOnceCall : IDisposable
     private bool isFirstSend = true;
     private volatile string? _consumerTag;
     private readonly AsyncLock _lock_Receive = new();
+    private readonly CancellationTokenSource _firstCts = new ();
+    private volatile string? _firstCid;
+    public event Proxy.RabbitMQ.AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>?>>? ReceivedAsync;
 
     public RabbitMQOnceCall(IModel mainChannel, IModel subChannel, string rpcQueue, ILogger logger)
     {
@@ -38,63 +41,65 @@ public sealed class RabbitMQOnceCall : IDisposable
             return;
         _disposed = true;
 
+        _mainChannel.BasicReturn -= BasicReturn;
+
         if (_consumerTag != null && !_subChannel.IsClosed)
             _subChannel.TryBasicCancel(_consumerTag, _logger);
     }
 
-    public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>?>>? ReceivedAsync;
-
-    public void CreateChannel()
+    public void Start()
     {
+        _mainChannel.BasicReturn += BasicReturn;
+        _firstCid = Guid.NewGuid().ToString("N");
         _serviceToClientQueue = _subChannel.QueueDeclare().QueueName;
         var consumer = new AsyncEventingBasicConsumer(_subChannel);
         consumer.Received += ConsumerReceivedAsync;
         _consumerTag = _subChannel.BasicConsume(_serviceToClientQueue, true, consumer);
     }
 
-    public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isPost, int mqPriority = 0)
+    public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isPost, int mqPriority)
     {
         if (isPost)
         {
-            var p = CreateProp(mqPriority);
-            _mainChannel.BasicPublish("", _rpcQueue, p, buffer);
-            await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>?>(null));
+            await SendPostAsync(buffer, mqPriority);
             return;
         }
 
         if (isFirstSend)
         {
-            var p = CreateProp(mqPriority);
-            p.ReplyTo = _serviceToClientQueue;
-            var cid = Guid.NewGuid().ToString();
-            p.CorrelationId = cid;
-
-            var cts = new CancellationTokenSource();
-
-            _mainChannel.BasicReturn += (_, args) =>
-            {
-                _logger.LogInformation($"Cmd send to queue failed, BasicReturn, ReplyCode:{args.ReplyCode} Exchange:{args.Exchange}, RoutingKey:{args.RoutingKey}, ReplyText:{args.ReplyText}");
-                if (args.BasicProperties.CorrelationId == cid)
-                    cts.Cancel();
-            };
-
-            _mainChannel.BasicPublish("", _rpcQueue, true, p, buffer);
-
-            try
-            {
-                _clientToServiceQueue = await _clientToServiceQueueOnceBlock.WriteOnceBlock.ReceiveAsync(cts.Token);
-                isFirstSend = false;
-            }
-            catch (OperationCanceledException)
-            {
-                throw new InvalidOperationException($"Message has not sent to queue, check queue if exist : {_rpcQueue}.");
-            }
+            await SendFirstAsync(buffer, mqPriority);
+            return;
         }
-        else
-            _mainChannel.BasicPublish("", _clientToServiceQueue, null!, buffer);
 
+        //SendAfter
         //bug: after invoke 'BasicPublish' need an other thread to publish for real send? (sometimes happened.)
         //blocking thread in OnceCall row 96:Task.Delay(_timeoutInterval, _timeOutCts.Token).ContinueWith(i =>
+        _mainChannel.BasicPublish("", _clientToServiceQueue, null, buffer);
+    }
+
+    private async Task SendPostAsync(ReadOnlyMemory<byte> buffer, int mqPriority)
+    {
+        var p = CreateProp(mqPriority);
+        _mainChannel.BasicPublish("", _rpcQueue, p, buffer);
+        await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>?>(null));
+    }
+
+    private async Task SendFirstAsync(ReadOnlyMemory<byte> buffer, int mqPriority)
+    {
+        var p = CreateProp(mqPriority);
+        p.ReplyTo = _serviceToClientQueue;
+
+        p.CorrelationId = _firstCid;
+        _mainChannel.BasicPublish("", _rpcQueue, true, p, buffer);
+        try
+        {
+            _clientToServiceQueue = await _clientToServiceQueueOnceBlock.WriteOnceBlock.ReceiveAsync(_firstCts.Token);
+            isFirstSend = false;
+        }
+        catch (OperationCanceledException)
+        {
+            throw new InvalidOperationException($"Message has not sent to queue, check queue if exist : {_rpcQueue}.");
+        }
     }
 
     private async Task ConsumerReceivedAsync(object s, BasicDeliverEventArgs e)
@@ -114,6 +119,15 @@ public sealed class RabbitMQOnceCall : IDisposable
         }
     }
 
+    private void BasicReturn(object? _, BasicReturnEventArgs args)
+    {
+        if (args.BasicProperties.CorrelationId == _firstCid)
+        {
+            _logger.LogInformation($"Cmd send to queue failed, BasicReturn, ReplyCode:{args.ReplyCode} Exchange:{args.Exchange}, RoutingKey:{args.RoutingKey}, ReplyText:{args.ReplyText}");
+            _firstCts.Cancel();
+        }
+    }
+
     private async Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>?> e)
     {
         //Consumer will has 2 threads invoke simultaneously.
@@ -122,9 +136,9 @@ public sealed class RabbitMQOnceCall : IDisposable
             await ReceivedAsync.InvokeAsync(this, e);
     }
 
-    private IBasicProperties CreateProp(int mqPriority)
+    private IBasicProperties CreateProp(int mqPriority = 0)
     {
-        var p = _subChannel!.CreateBasicProperties();
+        var p = _mainChannel.CreateBasicProperties();
         if (mqPriority != 0)
             p.Priority = (byte)mqPriority;
         return p;

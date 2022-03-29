@@ -15,6 +15,7 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
     private readonly IClientConnection _connection;
     private readonly ILogger _logger;
     private readonly DuplexPipe _streamPipe = new(new PipeOptions(pauseWriterThreshold: Helper.StreamBufferCacheCount, resumeWriterThreshold: 1));
+    private int _disconnected = 0;
 
     public BufferClientOnceApiConvert(IClientConnection connection, ILogger logger)
     {
@@ -89,8 +90,11 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
 
     private async void ConnectionReceiveDisconnected(object? sender, EventArgsT<string> e)
     {
-        await OnFaultAsync(new EventArgsT<object>(new DisconnectedException(e.Value)));
-        await DisposeAsync();
+        if (Interlocked.Increment(ref _disconnected) == 1)
+        {
+            await OnFaultAsync(new EventArgsT<object>(new DisconnectedException(e.Value)));
+            await DisposeAsync();
+        }
     }
 
     private async Task ConnectionReceivedAsync(object? sender, EventArgsT<ReadOnlyMemory<byte>> e)

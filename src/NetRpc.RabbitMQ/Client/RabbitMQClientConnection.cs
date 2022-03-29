@@ -10,6 +10,7 @@ namespace NetRpc.RabbitMQ;
 
 public class RabbitMQClientConnection : IClientConnection
 {
+    private readonly IConnection _mainConnection;
     private readonly MQOptions _opt;
     private readonly RabbitMQOnceCall _call;
 
@@ -18,10 +19,11 @@ public class RabbitMQClientConnection : IClientConnection
         _opt = opt;
         _call = new RabbitMQOnceCall(mainChannel, subChannel, opt.RpcQueue, logger);
         _call.ReceivedAsync += CallReceived;
-        mainConnection.ConnectionShutdown += mainConnection_ConnectionShutdown;
+        _mainConnection = mainConnection;
+        _mainConnection.ConnectionShutdown += MainConnectionShutdown;
     }
 
-    private void mainConnection_ConnectionShutdown(object? sender, ShutdownEventArgs e)
+    private void MainConnectionShutdown(object? sender, ShutdownEventArgs e)
     {
         OnReceiveDisconnected(new EventArgsT<string>($"cmdConn shutdown, ReplyCode:{e.ReplyCode}, ReplyText:{e.ReplyText}, ClassId:{e.ClassId}, MethodId:{e.MethodId}"));
     }
@@ -37,6 +39,7 @@ public class RabbitMQClientConnection : IClientConnection
     public ValueTask DisposeAsync()
     {
         _call.Dispose();
+        _mainConnection.ConnectionShutdown -= MainConnectionShutdown;
         return new ValueTask();
     }
 
@@ -59,7 +62,7 @@ public class RabbitMQClientConnection : IClientConnection
 
     public Task StartAsync(Dictionary<string, object?> headers)
     {
-        _call.CreateChannel();
+        _call.Start();
         return Task.CompletedTask;
     }
 

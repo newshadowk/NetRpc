@@ -10,7 +10,7 @@ namespace RabbitMQ.Base
 {
     public sealed class Service : IDisposable
     {
-        public event AsyncEventHandler<EventArgsT<CallSession>>? ReceivedAsync;
+        public event Proxy.RabbitMQ.AsyncEventHandler<EventArgsT<CallSession>>? ReceivedAsync;
         private readonly IConnection _mainConnection;
         private readonly IConnection _subConnection;
         private readonly IModel _mainChannel;
@@ -41,7 +41,7 @@ namespace RabbitMQ.Base
             if (_maxPriority > 0)
                 args.Add("x-max-priority", _maxPriority);
 
-            _mainChannel.QueueDeclare(_rpcQueue, false, false, false, args);
+            _mainChannel.QueueDeclare(_rpcQueue, false, false, true, args);
             var consumer = new AsyncEventingBasicConsumer(_mainChannel);
             _mainChannel.BasicQos(0, (ushort)_prefetchCount, false);
             _consumerTag = _mainChannel.BasicConsume(_rpcQueue, false, consumer);

@@ -18,8 +18,7 @@ internal class Program
 
     private static async Task Main(string[] args)
     {
-        await T0();
-        Console.WriteLine("\r\n--------------- End ---------------");
+        await T1();
         Console.Read();
     }
 
@@ -66,13 +65,13 @@ internal class Program
         //var q = ch.QueueDeclare(qName, false, false, false, null);
         //var q = ch.QueueDeclare();
 
-        int ii = 0;
-        while (true)
-        {
-            ii++;
-            Console.WriteLine(ii);
-            ch.QueueDeclarePassive(qName);
-        }
+        //int ii = 0;
+        //while (true)
+        //{
+        //    ii++;
+        //    Console.WriteLine(ii);
+        //    ch.QueueDeclarePassive(qName);
+        //}
 
         int i = 0;
         while (true)
@@ -82,7 +81,7 @@ internal class Program
             Console.WriteLine($"{qName} {i}");
             try
             {
-                ch.BasicPublish("", qName, null, Encoding.UTF8.GetBytes(i.ToString()));
+                ch.BasicPublish("", qName, true, null, Encoding.UTF8.GetBytes(i.ToString()));
             }
             catch {
                 Console.WriteLine($"send err {i}");
@@ -153,9 +152,9 @@ internal class Program
         while (true)
         {
             //await Task.Delay(1000);
-
             try
             {
+
                 await Test_ComplexCallAsync();
                 //await Test_Call2(i++);
             }

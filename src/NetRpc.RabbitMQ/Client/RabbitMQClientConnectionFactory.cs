@@ -26,8 +26,6 @@ public class RabbitMQClientConnectionFactory : IClientConnectionFactory
         //main
         _mainConnection = _options.CreateConnectionFactory().CreateConnectionLoop(_logger);
         _mainChannel = _mainConnection.CreateModel();
-        _mainChannel.QueueDeclare(_options.RpcQueue, false, false, false,
-            (_options.MaxPriority > 0 ? new Dictionary<string, object> { { "x-max-priority", _options.MaxPriority } } : null)!);
 
         //sub
         _subConnection = _options.CreateConnectionFactory_TopologyRecovery_Disabled().CreateConnectionLoop(_logger);

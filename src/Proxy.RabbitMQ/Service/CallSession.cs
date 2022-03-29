@@ -21,7 +21,7 @@ public sealed class CallSession : IDisposable
     private volatile string? _consumerTag;
     private readonly AsyncLock _lock_Receive = new();
 
-    public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
+    public event Proxy.RabbitMQ.AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
 
     public CallSession(IModel mainChannel, IModel subChannel, BasicDeliverEventArgs e, ILogger logger)
     {

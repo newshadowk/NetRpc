@@ -1,7 +1,11 @@
-﻿using System.Threading.Tasks;
-using RabbitMQ.Client.Events;
+﻿using System;
+using System.Threading.Tasks;
 
-namespace System;
+namespace Proxy.RabbitMQ;
+
+public delegate Task AsyncEventHandler<in TEvent>(object sender, TEvent @event) where TEvent : EventArgs;
+
+public delegate Task AsyncEventHandler(object sender, EventArgs e);
 
 internal static class AsyncEventHandlerExtensions
 {
@@ -13,5 +17,14 @@ internal static class AsyncEventHandlerExtensions
         var delegateArray = eventHandler.GetInvocationList();
         foreach (var t in delegateArray)
             await ((AsyncEventHandler<TEventArgs>) t)(sender, eventArgs).ConfigureAwait(false);
+    }
+
+    public static async Task InvokeAsync(this AsyncEventHandler? eventHandler, object sender, EventArgs eventArgs)
+    {
+        if (eventHandler == null)
+            return;
+        var delegateArray = eventHandler.GetInvocationList();
+        foreach (var t in delegateArray)
+            await ((AsyncEventHandler) t)(sender, eventArgs).ConfigureAwait(false);
     }
 }
