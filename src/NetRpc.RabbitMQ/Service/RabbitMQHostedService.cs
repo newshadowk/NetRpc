@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NetRpc.Contract;
-using RabbitMQ.Base;
+using Proxy.RabbitMQ;
 
 namespace NetRpc.RabbitMQ;
 
@@ -25,9 +25,10 @@ public sealed class RabbitMQHostedService : IHostedService
         _service.ReceivedAsync += ServiceReceivedAsync;
     }
 
-    private async Task ServiceReceivedAsync(object sender, global::RabbitMQ.Base.EventArgsT<CallSession> e)
+    private async Task ServiceReceivedAsync(object sender, global::Proxy.RabbitMQ.EventArgsT<CallSession> e)
     {
-        _busyFlag.Increment();
+        var i = _busyFlag.Increment();
+        Console.WriteLine($"+busyFlag:{i}");
         try
         {
             await using var connection = new RabbitMQServiceConnection(e.Value);
@@ -35,7 +36,8 @@ public sealed class RabbitMQHostedService : IHostedService
         }
         finally
         {
-            _busyFlag.Decrement();
+            i = _busyFlag.Decrement();
+            Console.WriteLine($"-busyFlag:{i}");
         }
     }
 

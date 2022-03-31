@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetRpc.Contract;
-using RabbitMQ.Base;
+using Proxy.RabbitMQ;
 using RabbitMQ.Client;
 
 namespace NetRpc.RabbitMQ;
@@ -14,13 +14,19 @@ public class RabbitMQClientConnection : IClientConnection
     private readonly MQOptions _opt;
     private readonly RabbitMQOnceCall _call;
 
-    public RabbitMQClientConnection(IConnection mainConnection, IModel mainChannel, IModel subChannel, MQOptions opt, ILogger logger)
+    public RabbitMQClientConnection(IConnection mainConnection, IModel mainChannel, IModel subChannel, QueueWatcher queueWatcher, MQOptions opt, ILogger logger)
     {
         _opt = opt;
-        _call = new RabbitMQOnceCall(mainChannel, subChannel, opt.RpcQueue, logger);
+        _call = new RabbitMQOnceCall(mainChannel, subChannel, queueWatcher, opt.RpcQueue, logger);
         _call.ReceivedAsync += CallReceived;
+        _call.Disconnected += CallDisconnected;
         _mainConnection = mainConnection;
         _mainConnection.ConnectionShutdown += MainConnectionShutdown;
+    }
+
+    private void CallDisconnected(object? sender, EventArgs e)
+    {
+        OnReceiveDisconnected(new EventArgsT<string>("Call QueueWatcher Disconnected"));
     }
 
     private void MainConnectionShutdown(object? sender, ShutdownEventArgs e)
@@ -28,7 +34,7 @@ public class RabbitMQClientConnection : IClientConnection
         OnReceiveDisconnected(new EventArgsT<string>($"cmdConn shutdown, ReplyCode:{e.ReplyCode}, ReplyText:{e.ReplyText}, ClassId:{e.ClassId}, MethodId:{e.MethodId}"));
     }
 
-    private async Task CallReceived(object sender, global::RabbitMQ.Base.EventArgsT<ReadOnlyMemory<byte>?> e)
+    private async Task CallReceived(object sender, Proxy.RabbitMQ.EventArgsT<ReadOnlyMemory<byte>?> e)
     {
         if (e.Value == null)
             await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(NullReply.All));
@@ -51,7 +57,7 @@ public class RabbitMQClientConnection : IClientConnection
         ChannelType = ChannelType.RabbitMQ
     };
 
-    public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
+    public event System.AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
 
     public event EventHandler<EventArgsT<string>>? ReceiveDisconnected;
 

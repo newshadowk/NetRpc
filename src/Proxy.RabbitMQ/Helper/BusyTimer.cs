@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using Timer = System.Timers.Timer;
 
-namespace NetRpc;
+namespace Proxy.RabbitMQ;
 
 public sealed class BusyTimer : IDisposable
 {

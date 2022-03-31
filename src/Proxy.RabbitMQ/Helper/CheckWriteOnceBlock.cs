@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks.Dataflow;
 
-namespace RabbitMQ.Base;
+namespace Proxy.RabbitMQ;
 
 public class CheckWriteOnceBlock<T>
 {

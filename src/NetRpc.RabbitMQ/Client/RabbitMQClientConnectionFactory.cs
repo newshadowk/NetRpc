@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Proxy.RabbitMQ;
 using RabbitMQ.Client;
@@ -15,8 +13,8 @@ public class RabbitMQClientConnectionFactory : IClientConnectionFactory
     private readonly IModel _mainChannel;
     private readonly IModel _subChannel;
     private readonly MQOptions _options;
-    private readonly object _lockObj = new();
     private volatile bool _disposed;
+    private readonly QueueWatcher _queueWatcher;
 
     public RabbitMQClientConnectionFactory(IOptions<RabbitMQClientOptions> options, ILoggerFactory factory)
     {
@@ -30,12 +28,13 @@ public class RabbitMQClientConnectionFactory : IClientConnectionFactory
         //sub
         _subConnection = _options.CreateConnectionFactory_TopologyRecovery_Disabled().CreateConnectionLoop(_logger);
         _subChannel = _subConnection.CreateModel();
+
+        _queueWatcher = new QueueWatcher(_subConnection);
     }
 
     public IClientConnection Create(bool isRetry)
     {
-        lock (_lockObj)
-            return new RabbitMQClientConnection(_mainConnection, _mainChannel, _subChannel, _options, _logger);
+        return new RabbitMQClientConnection(_mainConnection, _mainChannel, _subChannel, _queueWatcher, _options, _logger);
     }
 
     public void Dispose()

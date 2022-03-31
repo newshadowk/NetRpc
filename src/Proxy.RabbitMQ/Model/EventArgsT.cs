@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RabbitMQ.Base;
+namespace Proxy.RabbitMQ;
 
 public sealed class EventArgsT<T> : EventArgs
 {

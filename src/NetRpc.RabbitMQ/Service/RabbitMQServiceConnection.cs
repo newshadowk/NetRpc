@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using RabbitMQ.Base;
+using Proxy.RabbitMQ;
+using AsyncEventHandler = System.AsyncEventHandler;
 
 namespace NetRpc.RabbitMQ;
 
@@ -12,6 +13,12 @@ internal sealed class RabbitMQServiceConnection : IServiceConnection
     {
         _callSession = callSession;
         _callSession.ReceivedAsync += (_, e) => OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Value));
+        _callSession.Disconnected += CallSessionDisconnected;
+    }
+
+    private void CallSessionDisconnected(object? sender, EventArgs e)
+    {
+        OnDisconnectedAsync();
     }
 
     public ValueTask DisposeAsync()
@@ -20,9 +27,8 @@ internal sealed class RabbitMQServiceConnection : IServiceConnection
         return new ();
     }
 
-    public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
-
-    public event AsyncEventHandler? DisconnectedAsync; // not implement yet
+    public event System.AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
+    public event AsyncEventHandler? DisconnectedAsync;
 
     public Task SendAsync(ReadOnlyMemory<byte> buffer)
     {
