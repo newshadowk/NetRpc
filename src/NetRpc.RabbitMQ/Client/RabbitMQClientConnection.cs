@@ -14,10 +14,10 @@ public class RabbitMQClientConnection : IClientConnection
     private readonly MQOptions _opt;
     private readonly RabbitMQOnceCall _call;
 
-    public RabbitMQClientConnection(IConnection mainConnection, IModel mainChannel, IModel subChannel, QueueWatcher queueWatcher, MQOptions opt, ILogger logger)
+    public RabbitMQClientConnection(IConnection mainConnection, IModel mainChannel, IModel subChannel, MQOptions opt, ILogger logger)
     {
         _opt = opt;
-        _call = new RabbitMQOnceCall(mainChannel, subChannel, queueWatcher, opt.RpcQueue, logger);
+        _call = new RabbitMQOnceCall(mainChannel, subChannel, opt.RpcQueue, logger);
         _call.ReceivedAsync += CallReceived;
         _call.Disconnected += CallDisconnected;
         _mainConnection = mainConnection;

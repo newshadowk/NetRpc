@@ -20,7 +20,6 @@ public sealed class Service : IDisposable
     private readonly ILogger _logger;
     private volatile bool _disposed;
     private volatile string? _consumerTag;
-    private readonly QueueWatcher _queueWatcher;
 
     public Service(ConnectionFactory mainFactory, ConnectionFactory subFactory, string rpcQueue, int prefetchCount, int maxPriority, ILogger logger)
     {
@@ -29,7 +28,6 @@ public sealed class Service : IDisposable
         _subConnection = subFactory.CreateConnectionLoop(logger);
         _mainChannel = _mainConnection.CreateModel();
         _subChannel = _subConnection.CreateModel();
-        _queueWatcher = new QueueWatcher(_subConnection);
 
         _rpcQueue = rpcQueue;
         _prefetchCount = prefetchCount;
@@ -46,7 +44,7 @@ public sealed class Service : IDisposable
         var consumer = new AsyncEventingBasicConsumer(_mainChannel);
         _mainChannel.BasicQos(0, (ushort)_prefetchCount, false);
         _consumerTag = _mainChannel.BasicConsume(_rpcQueue, false, consumer);
-        consumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_mainChannel, _subChannel, _queueWatcher, e, _logger)));
+        consumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_mainChannel, _subChannel, e, _logger)));
     }
 
     public void Dispose()

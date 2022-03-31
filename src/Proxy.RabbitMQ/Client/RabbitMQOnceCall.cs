@@ -14,10 +14,11 @@ public sealed class RabbitMQOnceCall : IDisposable
     private readonly CheckWriteOnceBlock<string> _clientToServiceQueueOnceBlock = new();
     private readonly IModel _mainChannel;
     private readonly IModel _subChannel;
-    private readonly QueueWatcher _queueWatcher;
+    private volatile SendWatcher? _sendWatcher;
     private readonly ILogger _logger;
     private readonly string _rpcQueue;
     private string _clientToServiceQueue = null!;
+    private string _heartBeatQueue = null!;
     private volatile bool _disposed;
     private string _serviceToClientQueue = null!;
     private bool isFirstSend = true;
@@ -28,21 +29,15 @@ public sealed class RabbitMQOnceCall : IDisposable
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>?>>? ReceivedAsync;
     public event EventHandler? Disconnected;
 
-    public RabbitMQOnceCall(IModel mainChannel, IModel subChannel, QueueWatcher queueWatcher, string rpcQueue, ILogger logger)
+    public RabbitMQOnceCall(IModel mainChannel, IModel subChannel, string rpcQueue, ILogger logger)
     {
         _mainChannel = mainChannel;
         _subChannel = subChannel;
-        _queueWatcher = queueWatcher;
+ 
         _rpcQueue = rpcQueue;
         _logger = logger;
-        _queueWatcher.Disconnected += QueueWatcherDisconnected;
     }
 
-    private void QueueWatcherDisconnected(object? sender, EventArgsT<string> e)
-    {
-        if (e.Value == _clientToServiceQueue) 
-            OnDisconnected();
-    }
 
     public void Dispose()
     {
@@ -50,9 +45,8 @@ public sealed class RabbitMQOnceCall : IDisposable
             return;
         _disposed = true;
 
-        _queueWatcher.Disconnected -= QueueWatcherDisconnected;
         _mainChannel.BasicReturn -= BasicReturn;
-        _queueWatcher.Remove(_clientToServiceQueue);
+        _sendWatcher?.Dispose();
 
         if (_consumerTag != null && !_subChannel.IsClosed)
             _subChannel.TryBasicCancel(_consumerTag, _logger);
@@ -106,14 +100,18 @@ public sealed class RabbitMQOnceCall : IDisposable
 
         try
         {
-            _clientToServiceQueue = await _clientToServiceQueueOnceBlock.WriteOnceBlock.ReceiveAsync(_firstCts.Token);
+            var s = await _clientToServiceQueueOnceBlock.WriteOnceBlock.ReceiveAsync(_firstCts.Token);
+            var ss = s.Split(',');
+            _clientToServiceQueue = ss[0];
+            _heartBeatQueue = ss[1];
         }
         catch (OperationCanceledException)
         {
             throw new InvalidOperationException($"Message has not sent to queue, check queue if exist : {_rpcQueue}.");
         }
 
-        _queueWatcher.Add(_clientToServiceQueue);
+        _sendWatcher = new SendWatcher(_subChannel, _heartBeatQueue);
+        _sendWatcher.Disconnected += (_, _) => OnDisconnected();
         isFirstSend = false;
     }
 
@@ -134,7 +132,7 @@ public sealed class RabbitMQOnceCall : IDisposable
         }
     }
 
-    private void BasicReturn(object? _, BasicReturnEventArgs args)
+    private void BasicReturn(object? sender, BasicReturnEventArgs args)
     {
         if (args.BasicProperties.CorrelationId == _firstCid)
         {

@@ -13,10 +13,9 @@ public sealed class CallSession : IDisposable
     private readonly BasicDeliverEventArgs _e;
     private readonly ILogger _logger;
     private readonly IModel _subChannel;
-    private readonly QueueWatcher _queueWatcher;
+    private readonly ReceiveWatcher _receiveWatcher;
     private readonly string _serviceToClientQueue;
-    private string? _clientToServiceQueue;
-    private bool _disposed;
+    private volatile bool _disposed;
     private readonly bool _isPost;
     private volatile string? _consumerTag;
     private readonly AsyncLock _lock_Receive = new();
@@ -26,40 +25,37 @@ public sealed class CallSession : IDisposable
 
     public event EventHandler? Disconnected;
 
-    public CallSession(IModel mainChannel, IModel subChannel, QueueWatcher queueWatcher, BasicDeliverEventArgs e, ILogger logger)
+    public CallSession(IModel mainChannel, IModel subChannel, BasicDeliverEventArgs e, ILogger logger)
     {
-        _queueWatcher = queueWatcher;
         _isPost = e.BasicProperties.ReplyTo == null;
         _serviceToClientQueue = e.BasicProperties.ReplyTo!;
         _mainChannel = mainChannel;
         _subChannel = subChannel;
-        _queueWatcher = queueWatcher;
         _e = e;
         _logger = logger;
 
-        _queueWatcher.Add(_serviceToClientQueue);
-        _queueWatcher.Disconnected += QueueWatcherDisconnected;
+        _receiveWatcher = new ReceiveWatcher(subChannel);
+        _receiveWatcher.Disconnected += ReceiveWatcherDisconnected;
     }
 
-    private void QueueWatcherDisconnected(object? sender, EventArgsT<string> e)
+    private void ReceiveWatcherDisconnected(object? sender, EventArgs e)
     {
-        if (e.Value == _serviceToClientQueue)
-        {
-            _serviceToClientQueueDisconnected = true;
-            OnDisconnected();
-        }
+        _serviceToClientQueueDisconnected = true;
+        OnDisconnected();
     }
 
     public async void Start()
     {
         if (!_isPost)
         {
-            _clientToServiceQueue = _subChannel.QueueDeclare().QueueName;
-            Console.WriteLine($"service: _clientToServiceQueue: {_clientToServiceQueue}");
+            var heartBeatQueue = _receiveWatcher.Start();
+            var clientToServiceQueue = _subChannel.QueueDeclare().QueueName;
+            Console.WriteLine($"service: _clientToServiceQueue: {clientToServiceQueue}");
+            Console.WriteLine($"service: _heartBeatQueue: {heartBeatQueue}");
             var clientToServiceConsumer = new AsyncEventingBasicConsumer(_subChannel);
             clientToServiceConsumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Body));
-            _consumerTag = _subChannel.BasicConsume(_clientToServiceQueue, true, clientToServiceConsumer);
-            Send(Encoding.UTF8.GetBytes(_clientToServiceQueue));
+            _consumerTag = _subChannel.BasicConsume(clientToServiceQueue, true, clientToServiceConsumer);
+            Send(Encoding.UTF8.GetBytes(clientToServiceQueue + "," + heartBeatQueue));
         }
 
         await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(_e.Body));
@@ -76,8 +72,8 @@ public sealed class CallSession : IDisposable
             return;
         _disposed = true;
 
-        _queueWatcher.Disconnected -= QueueWatcherDisconnected;
-        _queueWatcher.Remove(_serviceToClientQueue);
+        _receiveWatcher.Disconnected -= ReceiveWatcherDisconnected;
+        _receiveWatcher.Dispose();
 
         _mainChannel.TryBasicAck(_e.DeliveryTag, false, _logger);
         if (_consumerTag != null && !_serviceToClientQueueDisconnected)
