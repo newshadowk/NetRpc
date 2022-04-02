@@ -26,7 +26,7 @@ public sealed class QueueWatcher : IDisposable
 
     public QueueWatcher(IModel channel, ILogger logger)
     {
-        _t.Elapsed += Elapsed;       
+        _t.Elapsed += Elapsed;
         _channel = channel;
         _logger = logger;
     }

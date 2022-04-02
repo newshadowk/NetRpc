@@ -99,7 +99,6 @@ public sealed class RabbitMQOnceCall : IDisposable
         p.CorrelationId = _firstCid;
         _mainChannel.BasicPublish("", _rpcQueue, true, p, buffer);
 
-
         string s;
         try
         {

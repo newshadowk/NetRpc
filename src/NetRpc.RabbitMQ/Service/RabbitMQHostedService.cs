@@ -14,15 +14,16 @@ public sealed class RabbitMQHostedService : IHostedService
     private readonly BusyFlag _busyFlag;
     private readonly RequestHandler _requestHandler;
     private readonly Service? _service;
+    private readonly ILogger _logger;
 
     public RabbitMQHostedService(IOptions<RabbitMQServiceOptions> opt, BusyFlag busyFlag, RequestHandler requestHandler, ILoggerFactory factory)
     {
         _busyFlag = busyFlag;
-        var logger = factory.CreateLogger("NetRpc");
+        _logger = factory.CreateLogger("NetRpc");
         _requestHandler = requestHandler;
 
-        _service = new Service(opt.Value.CreateConnectionFactory(), opt.Value.CreateConnectionFactory_TopologyRecovery_Disabled(), opt.Value.RpcQueue,
-            opt.Value.PrefetchCount, opt.Value.MaxPriority, logger);
+        _service = new Service(opt.Value.CreateConnectionFactory_Recovery_Disabled(), opt.Value.RpcQueue,
+            opt.Value.PrefetchCount, opt.Value.MaxPriority, _logger);
         _service.ReceivedAsync += ServiceReceivedAsync;
     }
 
@@ -46,23 +47,36 @@ public sealed class RabbitMQHostedService : IHostedService
         return Task.CompletedTask;
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken)
+    public Task StopAsync(CancellationToken cancellationToken)
     {
-        while (_busyFlag.IsHandling)
-        {
-            if (cancellationToken.IsCancellationRequested)
-                break;
-
-            try
-            {
-                await Task.Delay(10, cancellationToken);
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-        }
-
-        _service?.Dispose();
+        _logger.LogInformation("stop application start.");
+        return Task.CompletedTask;
     }
+
+
+    //public async Task StopAsync(CancellationToken cancellationToken)
+    //{
+    //    _logger.LogInformation("stop application start.");
+    //    while (_busyFlag.IsHandling)
+    //    {
+    //        if (cancellationToken.IsCancellationRequested)
+    //        {
+    //            _logger.LogInformation("stop application, IsCancellationRequested");
+    //            break;
+    //        }
+
+    //        try
+    //        {
+    //            await Task.Delay(1000, cancellationToken);
+    //        }
+    //        catch (OperationCanceledException)
+    //        {
+    //            _logger.LogInformation("stop application, OperationCanceledException");
+    //            break;
+    //        }
+    //    }
+    //    _logger.LogInformation("_service?.Dispose() start.");
+    //    _service?.Dispose();
+    //    _logger.LogInformation("stop application end.");
+    //}
 }
