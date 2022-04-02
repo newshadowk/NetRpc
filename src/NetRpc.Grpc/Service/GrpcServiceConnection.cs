@@ -59,7 +59,7 @@ internal sealed class GrpcServiceConnection : IServiceConnection
         }
     }
 
-    public Task StartAsync()
+    public Task<bool> StartAsync()
     {
         Task.Run(async () =>
         {
@@ -91,7 +91,7 @@ internal sealed class GrpcServiceConnection : IServiceConnection
             }
         });
 
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
     private Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>> e)

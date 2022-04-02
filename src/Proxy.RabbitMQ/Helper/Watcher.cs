@@ -1,107 +1,96 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Timers;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
 namespace Proxy.RabbitMQ;
 
-public sealed class ReceiveWatcher : IDisposable
+public sealed class QueueWatcher : IDisposable
 {
-    private const int CheckIntervalSecs = 2;
+    private const int HeartBeatIntervalSecs = 2;
     private const int HeartBeatIntervalTimeoutSecs = 7;
+    private readonly IModel _channel;
+    private readonly ILogger _logger;
+    private volatile string? _sendQueue;
     private volatile bool _disposed;
-    private volatile IModel _channel;
-    private readonly Timer _t = new(CheckIntervalSecs * 1000);
+    private readonly object _lock_disposed = new();
     private volatile string? _consumerTag;
+    private readonly Timer _t = new(HeartBeatIntervalSecs * 1000);
     private DateTimeOffset _lastTime = DateTimeOffset.Now;
+    private readonly byte[] _buffer =  { 0xFF };
 
     public event EventHandler? Disconnected;
 
-    public ReceiveWatcher(IModel subChannel)
+    public QueueWatcher(IModel channel, ILogger logger)
     {
-        _channel = subChannel;
-    }
-
-    private void Elapsed(object? sender, ElapsedEventArgs e)
-    {
-        if ((DateTimeOffset.Now - _lastTime).TotalSeconds >= HeartBeatIntervalTimeoutSecs)
-        {
-            Dispose();
-            OnDisconnected();
-        }
-    }
-
-    public string Start()
-    {
-        var name = _channel.QueueDeclare().QueueName;
-        var c = new AsyncEventingBasicConsumer(_channel);
-        c.Received += (_, _) =>
-        {
-            _lastTime = DateTimeOffset.Now;
-            return Task.CompletedTask;
-        };
-        _consumerTag = _channel.BasicConsume(name, true, c);
         _t.Elapsed += Elapsed;       
+        _channel = channel;
+        _logger = logger;
+    }
+
+    public string? StartListen()
+    {
+        string name;
+
+        try
+        {
+            name = _channel.QueueDeclare().QueueName;
+            var c = new AsyncEventingBasicConsumer(_channel);
+            c.Received += (_, _) =>
+            {
+                _lastTime = DateTimeOffset.Now;
+                return Task.CompletedTask;
+            };
+            _consumerTag = _channel.BasicConsume(name, true, c);
+        }
+        catch
+        {
+            _logger.LogWarning("StartListen failed.");
+            return null;
+        }
+
         _t.Start();
+
         return name;
     }
 
-    private void OnDisconnected()
+    public void StartSend(string sendQueue)
     {
-        Disconnected?.Invoke(this, EventArgs.Empty);
-    }
-
-    public void Dispose()
-    {
-        if (_disposed)
-            return;
-        _disposed = true;
-
-        _t.Dispose();
-        if (_consumerTag != null)
-            _channel.TryBasicCancel(_consumerTag, NullLogger.Instance);
-    }
-}
-
-public sealed class SendWatcher : IDisposable
-{
-    private const int HeartBeatIntervalSecs = 2;
-    private readonly IModel _channel;
-    private readonly string _queue;
-    private readonly string _cid = Guid.NewGuid().ToString("N");
-    private readonly Timer _t = new(HeartBeatIntervalSecs * 1000);
-    private readonly IBasicProperties _p;
-    public event EventHandler? Disconnected;
-
-    public SendWatcher(IModel subChannel, string queue)
-    {
-        _channel = subChannel;
-        _queue = queue;
-
-        _channel.BasicReturn += BasicReturn;
-        _p = _channel.CreateBasicProperties();
-    }
-
-    private void BasicReturn(object? sender, BasicReturnEventArgs e)
-    {
-        if (e.BasicProperties.CorrelationId == _cid)
+        lock (_lock_disposed)
         {
-            Dispose();
-            OnDisconnected();
-        }
-    }
+            if (_disposed)
+                return;
 
-    public void Start()
-    {
-        _t.Elapsed += Elapsed;
-        _t.Start();
+            _t.Start();
+        }
+    
+        _sendQueue = sendQueue;
     }
 
     private void Elapsed(object? sender, ElapsedEventArgs e)
     {
-        _channel.BasicPublish("", _queue, true, _p);
+        var now = DateTimeOffset.Now;
+        if ((DateTimeOffset.Now - _lastTime).TotalSeconds >= HeartBeatIntervalTimeoutSecs)
+        {
+            Dispose();
+            _logger.LogWarning($"watcher disconnected, now:{now} - lastTime:{_lastTime} = {(DateTimeOffset.Now - _lastTime).TotalSeconds} >= {HeartBeatIntervalTimeoutSecs}");
+            OnDisconnected();
+            return;
+        }
+
+        if (_sendQueue != null)
+        {
+            try
+            {
+                _channel.BasicPublish("", _sendQueue, null, _buffer);
+            }
+            catch
+            {
+            }
+        }
     }
 
     private void OnDisconnected()
@@ -111,6 +100,16 @@ public sealed class SendWatcher : IDisposable
 
     public void Dispose()
     {
-        _t.Dispose();
+        lock (_lock_disposed)
+        {
+            if (_disposed)
+                return;
+            _disposed = true;
+
+            _t.Dispose();
+        }
+
+        if (_consumerTag != null)
+            _channel.TryBasicCancel(_consumerTag, NullLogger.Instance);
     }
 }

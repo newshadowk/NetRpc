@@ -72,4 +72,10 @@ public static class Helper
             log.LogWarning(e, null);
         }
     }
+
+    public static (string q1, string q2) GetQueueNames(string str)
+    {
+        var ss = str.Split(',');
+        return (ss[0], ss[1]);
+    }
 }

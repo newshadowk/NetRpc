@@ -25,12 +25,12 @@ internal sealed class BufferServiceOnceApiConvert : IServiceOnceApiConvert
         _logger = logger;
     }
 
-    public async Task StartAsync(CancellationTokenSource cts)
+    public async Task<bool> StartAsync(CancellationTokenSource cts)
     {
         _cts = cts;
         _connection.ReceivedAsync += ConnectionReceivedAsync;
         _connection.DisconnectedAsync += ConnectionDisconnectedAsync;
-        await _connection.StartAsync();
+        return await _connection.StartAsync();
     }
 
     private async Task ConnectionDisconnectedAsync(object? sender, EventArgs e)

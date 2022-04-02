@@ -32,9 +32,18 @@ internal sealed class ServiceOnceTransfer
         _convert = convert;
     }
 
-    public async Task StartAsync()
+    public async Task<bool> StartAsync()
     {
-        await _convert.StartAsync(_serviceCts);
+        try
+        {
+            await _convert.StartAsync(_serviceCts);
+            return true;
+        }
+        catch (Exception e)
+        {
+            _logger.LogWarning(e, "ServiceOnceTransfer StartAsync failed.");
+            return false;
+        }
     }
 
     public async Task HandleRequestAsync()

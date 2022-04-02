@@ -119,7 +119,9 @@ internal class Program
         //ch.BasicPublish("", "qn", true, null, Encoding.UTF8.GetBytes("123"));
 
 
-        var qn = ch.QueueDeclare().QueueName;
+        var qn = ch.QueueDeclare("rpc_test", false, false, false).QueueName;
+
+
         var consumer = new AsyncEventingBasicConsumer(ch);
         consumer.Received += ConsumerReceivedAsync;
         var _consumerTag = ch.BasicConsume(qn, true, consumer);
@@ -250,7 +252,7 @@ internal class Program
 
     private static async Task Test_Call2(int i)
     {
-        Console.Write($"send {i}");
+        Console.WriteLine($"send {i}");
         await _proxyAsync.Call2(i.ToString());
         Console.WriteLine("end");
     }

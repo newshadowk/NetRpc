@@ -15,7 +15,7 @@ public interface IServiceOnceApiConvert : IAsyncDisposable
 
     Task SendBufferFaultAsync();
 
-    Task StartAsync(CancellationTokenSource cts);
+    Task<bool> StartAsync(CancellationTokenSource cts);
 
     Task<ServiceOnceCallParam> GetServiceOnceCallParamAsync();
 

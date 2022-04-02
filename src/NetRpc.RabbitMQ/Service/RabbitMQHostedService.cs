@@ -20,15 +20,15 @@ public sealed class RabbitMQHostedService : IHostedService
         _busyFlag = busyFlag;
         var logger = factory.CreateLogger("NetRpc");
         _requestHandler = requestHandler;
-        
-        _service = new Service(opt.Value.CreateConnectionFactory(), opt.Value.CreateConnectionFactory_TopologyRecovery_Disabled(), opt.Value.RpcQueue, opt.Value.PrefetchCount, opt.Value.MaxPriority, logger);
+
+        _service = new Service(opt.Value.CreateConnectionFactory(), opt.Value.CreateConnectionFactory_TopologyRecovery_Disabled(), opt.Value.RpcQueue,
+            opt.Value.PrefetchCount, opt.Value.MaxPriority, logger);
         _service.ReceivedAsync += ServiceReceivedAsync;
     }
 
-    private async Task ServiceReceivedAsync(object sender, global::Proxy.RabbitMQ.EventArgsT<CallSession> e)
+    private async Task ServiceReceivedAsync(object sender, Proxy.RabbitMQ.EventArgsT<CallSession> e)
     {
-        var i = _busyFlag.Increment();
-        Console.WriteLine($"+busyFlag:{i}");
+        _busyFlag.Increment();
         try
         {
             await using var connection = new RabbitMQServiceConnection(e.Value);
@@ -36,8 +36,7 @@ public sealed class RabbitMQHostedService : IHostedService
         }
         finally
         {
-            i = _busyFlag.Decrement();
-            Console.WriteLine($"-busyFlag:{i}");
+            _busyFlag.Decrement();
         }
     }
 

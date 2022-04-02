@@ -28,6 +28,7 @@ internal sealed class RabbitMQServiceConnection : IServiceConnection
     }
 
     public event System.AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
+
     public event AsyncEventHandler? DisconnectedAsync;
 
     public Task SendAsync(ReadOnlyMemory<byte> buffer)
@@ -35,10 +36,9 @@ internal sealed class RabbitMQServiceConnection : IServiceConnection
         return Task.Run(() => { _callSession.Send(buffer); });
     }
 
-    public Task StartAsync()
+    public Task<bool> StartAsync()
     {
-        _callSession.Start();
-        return Task.CompletedTask;
+        return Task.FromResult(_callSession.Start());
     }
 
     private Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>> e)

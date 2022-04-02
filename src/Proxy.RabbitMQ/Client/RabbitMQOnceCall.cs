@@ -14,11 +14,10 @@ public sealed class RabbitMQOnceCall : IDisposable
     private readonly CheckWriteOnceBlock<string> _clientToServiceQueueOnceBlock = new();
     private readonly IModel _mainChannel;
     private readonly IModel _subChannel;
-    private volatile SendWatcher? _sendWatcher;
+    private readonly QueueWatcher _queueWatcher;
     private readonly ILogger _logger;
     private readonly string _rpcQueue;
     private string _clientToServiceQueue = null!;
-    private string _heartBeatQueue = null!;
     private volatile bool _disposed;
     private string _serviceToClientQueue = null!;
     private bool isFirstSend = true;
@@ -36,8 +35,10 @@ public sealed class RabbitMQOnceCall : IDisposable
  
         _rpcQueue = rpcQueue;
         _logger = logger;
-    }
 
+        _queueWatcher = new QueueWatcher(_subChannel, logger);
+        _queueWatcher.Disconnected += (_, _) => OnDisconnected();
+    }
 
     public void Dispose()
     {
@@ -46,7 +47,7 @@ public sealed class RabbitMQOnceCall : IDisposable
         _disposed = true;
 
         _mainChannel.BasicReturn -= BasicReturn;
-        _sendWatcher?.Dispose();
+        _queueWatcher.Dispose();
 
         if (_consumerTag != null && !_subChannel.IsClosed)
             _subChannel.TryBasicCancel(_consumerTag, _logger);
@@ -92,26 +93,26 @@ public sealed class RabbitMQOnceCall : IDisposable
 
     private async Task SendFirstAsync(ReadOnlyMemory<byte> buffer, int mqPriority)
     {
+        var serviceToClientHeartBeatQueue = _queueWatcher.StartListen();
         var p = CreateProp(mqPriority);
-        p.ReplyTo = _serviceToClientQueue;
-
+        p.ReplyTo = _serviceToClientQueue + "," + serviceToClientHeartBeatQueue;
         p.CorrelationId = _firstCid;
         _mainChannel.BasicPublish("", _rpcQueue, true, p, buffer);
 
+
+        string s;
         try
         {
-            var s = await _clientToServiceQueueOnceBlock.WriteOnceBlock.ReceiveAsync(_firstCts.Token);
-            var ss = s.Split(',');
-            _clientToServiceQueue = ss[0];
-            _heartBeatQueue = ss[1];
+            s = await _clientToServiceQueueOnceBlock.WriteOnceBlock.ReceiveAsync(_firstCts.Token);
         }
         catch (OperationCanceledException)
         {
             throw new InvalidOperationException($"Message has not sent to queue, check queue if exist : {_rpcQueue}.");
         }
 
-        _sendWatcher = new SendWatcher(_subChannel, _heartBeatQueue);
-        _sendWatcher.Disconnected += (_, _) => OnDisconnected();
+        (string clientToServiceQueue, string clientToServiceHeartBeatQueue) = Helper.GetQueueNames(s);
+        _clientToServiceQueue = clientToServiceQueue;
+        _queueWatcher.StartSend(clientToServiceHeartBeatQueue);
         isFirstSend = false;
     }
 

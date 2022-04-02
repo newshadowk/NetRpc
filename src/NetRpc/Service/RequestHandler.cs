@@ -44,8 +44,8 @@ public sealed class RequestHandler
                 contextAccessor,
                 channelType,
                 _logger);
-            await onceTransfer.StartAsync();
-            await onceTransfer.HandleRequestAsync();
+            if (await onceTransfer.StartAsync())
+                await onceTransfer.HandleRequestAsync();
         }
         catch (Exception e)
         {

@@ -59,10 +59,10 @@ internal sealed class HttpServiceOnceApiConvert : IServiceOnceApiConvert
         return Task.CompletedTask;
     }
 
-    public Task StartAsync(CancellationTokenSource cts)
+    public Task<bool> StartAsync(CancellationTokenSource cts)
     {
         _cts = cts;
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
     public async Task<ServiceOnceCallParam> GetServiceOnceCallParamAsync()

@@ -25,5 +25,5 @@ public interface IServiceConnection : IAsyncDisposable
 
     Task SendAsync(ReadOnlyMemory<byte> buffer);
 
-    Task StartAsync();
+    Task<bool> StartAsync();
 }
