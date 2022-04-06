@@ -13,6 +13,7 @@ public class RabbitMQClientConnectionFactory : IClientConnectionFactory
     private readonly IModel _mainChannel;
     private readonly IModel _subChannel;
     private readonly MQOptions _options;
+    private readonly QueueWatcher _queueWatcher;
     private volatile bool _disposed;
 
     public RabbitMQClientConnectionFactory(IOptions<RabbitMQClientOptions> options, ILoggerFactory factory)
@@ -27,11 +28,13 @@ public class RabbitMQClientConnectionFactory : IClientConnectionFactory
         //sub
         _subConnection = _options.CreateConnectionFactory_TopologyRecovery_Disabled().CreateConnectionLoop(_logger);
         _subChannel = _subConnection.CreateModel();
+
+        _queueWatcher = new (_subConnection, _logger);
     }
 
     public IClientConnection Create(bool isRetry)
     {
-        return new RabbitMQClientConnection(_mainConnection, _mainChannel, _subChannel, _options, _logger);
+        return new RabbitMQClientConnection(_mainConnection, _mainChannel, _subChannel, _queueWatcher, _options, _logger);
     }
 
     public void Dispose()

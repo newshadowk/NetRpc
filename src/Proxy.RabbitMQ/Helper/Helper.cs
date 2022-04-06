@@ -49,11 +49,12 @@ public static class Helper
         }
     }
 
-    public static void TryBasicCancel(this IModel model, string consumerTag, ILogger log)
+    public static void TryBasicCancel(this IModel model, string? consumerTag, ILogger log)
     {
         try
         {
-            model.BasicCancel(consumerTag);
+            if (consumerTag != null && model.IsOpen)
+                model.BasicCancel(consumerTag);
         }
         catch (Exception e)
         {
@@ -71,11 +72,5 @@ public static class Helper
         {
             log.LogWarning(e, null);
         }
-    }
-
-    public static (string q1, string q2) GetQueueNames(string str)
-    {
-        var ss = str.Split(',');
-        return (ss[0], ss[1]);
     }
 }

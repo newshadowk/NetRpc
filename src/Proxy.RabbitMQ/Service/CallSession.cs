@@ -18,29 +18,29 @@ public sealed class CallSession : IDisposable
     private readonly bool _isPost;
     private volatile string? _consumerTag;
     private readonly AsyncLock _lock_Receive = new();
-    private volatile bool _serviceToClientQueueDisconnected;
 
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
 
     public event EventHandler? Disconnected;
 
-    public CallSession(IModel mainChannel, BasicDeliverEventArgs e, ILogger logger)
+    public CallSession(IModel mainChannel, QueueWatcher queueWatcher, BasicDeliverEventArgs e, ILogger logger)
     {
         _isPost = e.BasicProperties.ReplyTo == null;
-        (string serviceToClientQueue, string serviceToClientHeartBeatQueue) = Helper.GetQueueNames(e.BasicProperties.ReplyTo!);
-        _serviceToClientQueue = serviceToClientQueue;
+        _serviceToClientQueue = e.BasicProperties.ReplyTo!;
         _mainChannel = mainChannel;
         _e = e;
         _logger = logger;
 
-        _queueWatcher = new QueueWatcher(mainChannel, logger);
-        _queueWatcher.StartSend(serviceToClientHeartBeatQueue);
+        _queueWatcher = queueWatcher;
         _queueWatcher.Disconnected += WatcherDisconnected;
+        _queueWatcher.Add(_serviceToClientQueue);
     }
 
-    private void WatcherDisconnected(object? sender, EventArgs e)
+    private void WatcherDisconnected(object? sender, EventArgsT<string> e)
     {
-        _serviceToClientQueueDisconnected = true;
+        if (e.Value != _serviceToClientQueue)
+            return;
+
         OnDisconnected();
     }
 
@@ -67,10 +67,6 @@ public sealed class CallSession : IDisposable
 
     private bool DeclareCallBack()
     {
-        var clientToServcieHeartBeatQueue = _queueWatcher.StartListen();
-        if (clientToServcieHeartBeatQueue == null)
-            return false;
-
         try
         {
             var clientToServiceQueue = _mainChannel.QueueDeclare().QueueName;
@@ -78,7 +74,7 @@ public sealed class CallSession : IDisposable
             var clientToServiceConsumer = new AsyncEventingBasicConsumer(_mainChannel);
             clientToServiceConsumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Body));
             _consumerTag = _mainChannel.BasicConsume(clientToServiceQueue, true, clientToServiceConsumer);
-            Send(Encoding.UTF8.GetBytes(clientToServiceQueue + "," + clientToServcieHeartBeatQueue));
+            Send(Encoding.UTF8.GetBytes(clientToServiceQueue));
             return true;
         }
         catch
@@ -107,10 +103,10 @@ public sealed class CallSession : IDisposable
             return;
         _disposed = true;
 
-        _queueWatcher.Dispose();
+        _queueWatcher.Disconnected -= WatcherDisconnected;
+        _queueWatcher.Remove(_serviceToClientQueue);
 
         _mainChannel.TryBasicAck(_e.DeliveryTag, false, _logger);
-        if (_consumerTag != null && !_serviceToClientQueueDisconnected)
-            _mainChannel.TryBasicCancel(_consumerTag, _logger);
+        _mainChannel.TryBasicCancel(_consumerTag, _logger);
     }
 }

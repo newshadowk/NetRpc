@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
@@ -19,6 +18,7 @@ public sealed class Service : IDisposable
     private readonly ILogger _logger;
     private volatile bool _disposed;
     private volatile string? _consumerTag;
+    private readonly QueueWatcher _queueWatcher;
 
     public Service(ConnectionFactory mainFactory, string rpcQueue, int prefetchCount, int maxPriority, ILogger logger)
     {
@@ -27,6 +27,7 @@ public sealed class Service : IDisposable
         _mainChannel = _mainConnection.CreateModel();
         _mainConnection.ConnectionShutdown += OnConnectionShutdown;
 
+        _queueWatcher = new QueueWatcher(_mainConnection, logger);
         _rpcQueue = rpcQueue;
         _prefetchCount = prefetchCount;
         _maxPriority = maxPriority;
@@ -48,8 +49,8 @@ public sealed class Service : IDisposable
         var consumer = new AsyncEventingBasicConsumer(_mainChannel);
         _mainChannel.BasicQos(0, (ushort)_prefetchCount, false);
         _consumerTag = _mainChannel.BasicConsume(_rpcQueue, false, consumer);
-        consumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<CallSession>(new 
-            CallSession(_mainChannel, e, _logger)));
+        consumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<CallSession>(new
+            CallSession(_mainChannel, _queueWatcher, e, _logger)));
     }
 
     public void Dispose()
@@ -58,9 +59,7 @@ public sealed class Service : IDisposable
             return;
         _disposed = true;
 
-        if (_consumerTag != null)
-            _mainChannel.TryBasicCancel(_consumerTag, _logger);
-
+        _mainChannel.TryBasicCancel(_consumerTag, _logger);
         _mainChannel.TryClose(_logger);
         _mainConnection.TryClose(_logger);
     }

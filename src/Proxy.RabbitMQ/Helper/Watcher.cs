@@ -1,115 +1,89 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using System.Timers;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
+using RabbitMQ.Client.Exceptions;
 
 namespace Proxy.RabbitMQ;
 
-public sealed class QueueWatcher : IDisposable
+public class QueueWatcher
 {
-    private const int HeartBeatIntervalSecs = 2;
-    private const int HeartBeatIntervalTimeoutSecs = 7;
-    private readonly IModel _channel;
+    private readonly IConnection _subConnection;
     private readonly ILogger _logger;
-    private volatile string? _sendQueue;
-    private volatile bool _disposed;
-    private readonly object _lock_disposed = new();
-    private volatile string? _consumerTag;
-    private readonly Timer _t = new(HeartBeatIntervalSecs * 1000);
-    private DateTimeOffset _lastTime = DateTimeOffset.Now;
-    private readonly byte[] _buffer =  { 0xFF };
+    private readonly BusyTimer _t = new(2000);
+    private readonly SyncList<string> _list = new();
+    private readonly object _lockCheck = new();
 
-    public event EventHandler? Disconnected;
+    public event EventHandler<EventArgsT<string>>? Disconnected;
 
-    public QueueWatcher(IModel channel, ILogger logger)
+    public QueueWatcher(IConnection subConnection, ILogger logger)
     {
-        _t.Elapsed += Elapsed;
-        _channel = channel;
+        _subConnection = subConnection;
         _logger = logger;
+        _t.ElapsedAsync += ElapsedAsync;
+        _t.Start();
     }
 
-    public string? StartListen()
+    private Task ElapsedAsync(object sender, System.Timers.ElapsedEventArgs @event)
     {
-        string name;
+        List<string> list;
+        lock (_list.SyncRoot) 
+            list = _list.ToList();
 
+        
+        lock (_lockCheck)
+        {
+            foreach (var s in list)
+            {
+                IModel ch;
+                try
+                {
+                    ch = _subConnection.CreateModel();
+                }
+                catch
+                {
+                    _logger.LogWarning("QueueWatcher, create model err");
+                    return Task.CompletedTask;
+                }
+
+                if (!CheckExclusive(ch, s)) 
+                    OnDisconnected(new EventArgsT<string>(s));
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public void Add(string queue)
+    {
+        _list.Add(queue);
+    }
+
+    public void Remove(string queue)
+    {
+        _list.Remove(queue);
+    }
+
+    private static bool CheckExclusive(IModel channel, string queue)
+    {
         try
         {
-            name = _channel.QueueDeclare().QueueName;
-            var c = new AsyncEventingBasicConsumer(_channel);
-            c.Received += (_, _) =>
-            {
-                _lastTime = DateTimeOffset.Now;
-                return Task.CompletedTask;
-            };
-            _consumerTag = _channel.BasicConsume(name, true, c);
+            using (channel) 
+                channel.QueueDeclarePassive(queue);
         }
-        catch
+        catch (OperationInterruptedException e)
         {
-            _logger.LogWarning("StartListen failed.");
-            return null;
+            if (e.ShutdownReason.ReplyCode == 405)
+                return true;
         }
 
-        _t.Start();
-
-        return name;
+        return false;
     }
 
-    public void StartSend(string sendQueue)
+    private void OnDisconnected(EventArgsT<string> e)
     {
-        lock (_lock_disposed)
-        {
-            if (_disposed)
-                return;
-
-            _t.Start();
-        }
-    
-        _sendQueue = sendQueue;
-    }
-
-    private void Elapsed(object? sender, ElapsedEventArgs e)
-    {
-        var now = DateTimeOffset.Now;
-        if ((DateTimeOffset.Now - _lastTime).TotalSeconds >= HeartBeatIntervalTimeoutSecs)
-        {
-            Dispose();
-            _logger.LogWarning($"watcher disconnected, now:{now} - lastTime:{_lastTime} = {(DateTimeOffset.Now - _lastTime).TotalSeconds} >= {HeartBeatIntervalTimeoutSecs}");
-            OnDisconnected();
-            return;
-        }
-
-        if (_sendQueue != null)
-        {
-            try
-            {
-                _channel.BasicPublish("", _sendQueue, null, _buffer);
-            }
-            catch
-            {
-            }
-        }
-    }
-
-    private void OnDisconnected()
-    {
-        Disconnected?.Invoke(this, EventArgs.Empty);
-    }
-
-    public void Dispose()
-    {
-        lock (_lock_disposed)
-        {
-            if (_disposed)
-                return;
-            _disposed = true;
-
-            _t.Dispose();
-        }
-
-        if (_consumerTag != null)
-            _channel.TryBasicCancel(_consumerTag, NullLogger.Instance);
+        Disconnected?.Invoke(this, e);
     }
 }

@@ -17,7 +17,15 @@ internal class ServiceAsync : IServiceAsync
         {
             Console.Write($"{i}, ");
             await cb(new CustomCallbackObj {Progress = i});
-            await Task.Delay(2000, token);
+            try
+            {
+                await Task.Delay(2000, token);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("cancel");
+                throw;
+            }
         }
 
         Console.WriteLine("...Send TestFile.txt");
