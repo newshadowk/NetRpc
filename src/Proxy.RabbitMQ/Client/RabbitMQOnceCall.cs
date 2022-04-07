@@ -131,7 +131,7 @@ public sealed class RabbitMQOnceCall : IDisposable
         }
         catch (TimeoutException)
         {
-            throw new TimeoutException($"wait first reply timeout, ms:{_firstReplyTimeOut.TotalSeconds}");
+            throw new TimeoutException($"wait first reply timeout, {_firstReplyTimeOut.TotalSeconds} seconds.");
         }
 
         _subWatcher.Add(_clientToServiceQueue);

@@ -61,9 +61,16 @@ public class RabbitMQClientConnection : IClientConnection
 
     public event EventHandler<EventArgsT<string>>? ReceiveDisconnected;
 
-    public Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false, byte mqPriority = 0)
+    public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false, byte mqPriority = 0)
     {
-        return _call.SendAsync(buffer, isPost, mqPriority);
+        try
+        {
+            await _call.SendAsync(buffer, isPost, mqPriority);
+        }
+        catch (TimeoutException e)
+        {
+            throw new MqHandshakeException(e.Message);
+        }
     }
 
     public Task StartAsync(Dictionary<string, object?> headers, bool isPost)

@@ -57,7 +57,12 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
     {
         try
         {
-            await _connection.SendAsync(new Request(RequestType.Cmd, callParam.ToBytes()).All, stream == null && token == CancellationToken.None, isPost, mqPriority);
+            await _connection.SendAsync(new Request(RequestType.Cmd, callParam.ToBytes()).All, stream == null && token == CancellationToken.None, isPost,
+                mqPriority);
+        }
+        catch (MqHandshakeException)
+        {
+            throw;
         }
         catch (Exception e)
         {

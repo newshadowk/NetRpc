@@ -9,7 +9,6 @@ using NetRpc;
 using NetRpc.RabbitMQ;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using RabbitMQ.Client.Exceptions;
 using Helper = TestHelper.Helper;
 
 namespace Client;
@@ -41,7 +40,6 @@ internal class Program
         catch (Exception e)
         {
             Console.WriteLine(e);
-            throw;
         }
 
         //try
@@ -58,6 +56,7 @@ internal class Program
 
         //Console.WriteLine("ReadLine");
         //Console.ReadLine();
+
         DoT();
     }
 
