@@ -18,6 +18,7 @@ public sealed class RabbitMQOnceCall : IDisposable
     private readonly SubWatcher _subWatcher;
     private readonly ILogger _logger;
     private readonly string _rpcQueue;
+    private readonly TimeSpan _firstReplyTimeOut;
     private string _clientToServiceQueue = null!;
     private volatile bool _disposed;
     private string _serviceToClientQueue = null!;
@@ -29,11 +30,12 @@ public sealed class RabbitMQOnceCall : IDisposable
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>?>>? ReceivedAsync;
     public event EventHandler? Disconnected;
 
-    public RabbitMQOnceCall(IModel mainChannel, IModel subChannel, MainWatcher mainWatcher, SubWatcher subWatcher, string rpcQueue, ILogger logger)
+    public RabbitMQOnceCall(IModel mainChannel, IModel subChannel, MainWatcher mainWatcher, SubWatcher subWatcher, string rpcQueue, TimeSpan firstReplyTimeOut, ILogger logger)
     {
         _mainChannel = mainChannel;
         _subChannel = subChannel;
         _rpcQueue = rpcQueue;
+        _firstReplyTimeOut = firstReplyTimeOut;
         _logger = logger;
 
         _subWatcher = subWatcher;
@@ -115,11 +117,15 @@ public sealed class RabbitMQOnceCall : IDisposable
 
         try
         {
-            _clientToServiceQueue = await _clientToServiceQueueOnceBlock.WriteOnceBlock.ReceiveAsync(_firstCts.Token);
+            _clientToServiceQueue = await _clientToServiceQueueOnceBlock.WriteOnceBlock.ReceiveAsync(_firstReplyTimeOut, _firstCts.Token);
         }
         catch (OperationCanceledException)
         {
             throw new InvalidOperationException($"Message has not sent to queue, check queue if exist : {_rpcQueue}.");
+        }
+        catch (TimeoutException)
+        {
+            throw new TimeoutException($"wait first reply timeout, ms:{_firstReplyTimeOut.TotalSeconds}");
         }
 
         _subWatcher.Add(_clientToServiceQueue);

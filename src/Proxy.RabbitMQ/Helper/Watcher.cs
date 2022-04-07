@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
@@ -10,45 +11,31 @@ namespace Proxy.RabbitMQ;
 
 public class SubWatcher
 {
-    private readonly IConnection _subConnection;
-    private readonly ILogger _logger;
+    private readonly ExclusiveChecker _checker;
     private readonly BusyTimer _t = new(5000);
     private readonly SyncList<string> _list = new();
     private readonly object _lockCheck = new();
 
     public event EventHandler<EventArgsT<string>>? Disconnected;
 
-    public SubWatcher(IConnection subConnection, ILogger logger)
+    public SubWatcher(ExclusiveChecker checker)
     {
-        _subConnection = subConnection;
-        _logger = logger;
+        _checker = checker;
         _t.ElapsedAsync += ElapsedAsync;
         _t.Start();
     }
 
-    private Task ElapsedAsync(object sender, System.Timers.ElapsedEventArgs e)
+    private Task ElapsedAsync(object sender, ElapsedEventArgs e)
     {
         List<string> list;
-        lock (_list.SyncRoot) 
+        lock (_list.SyncRoot)
             list = _list.ToList();
 
-        
         lock (_lockCheck)
         {
             foreach (var s in list)
             {
-                IModel ch;
-                try
-                {
-                    ch = _subConnection.CreateModel();
-                }
-                catch
-                {
-                    _logger.LogWarning("QueueWatcher, create model err");
-                    return Task.CompletedTask;
-                }
-
-                if (!CheckExclusive(ch, s)) 
+                if (!_checker.Check(s))
                     OnDisconnected(new EventArgsT<string>(s));
             }
         }
@@ -64,22 +51,6 @@ public class SubWatcher
     public void Remove(string queue)
     {
         _list.Remove(queue);
-    }
-
-    private static bool CheckExclusive(IModel channel, string queue)
-    {
-        try
-        {
-            using (channel) 
-                channel.QueueDeclarePassive(queue);
-        }
-        catch (OperationInterruptedException e)
-        {
-            if (e.ShutdownReason.ReplyCode == 405)
-                return true;
-        }
-
-        return false;
     }
 
     private void OnDisconnected(EventArgsT<string> e)
@@ -104,9 +75,9 @@ public class MainWatcher
         _t.Start();
     }
 
-    private Task ElapsedAsync(object sender, System.Timers.ElapsedEventArgs @event)
+    private Task ElapsedAsync(object sender, ElapsedEventArgs e)
     {
-        if (!Check(_mainChannel, _queue)) 
+        if (!Check(_mainChannel, _queue))
             OnDisconnected();
         return Task.CompletedTask;
     }
@@ -127,5 +98,44 @@ public class MainWatcher
     private void OnDisconnected()
     {
         Disconnected?.Invoke(this, EventArgs.Empty);
+    }
+}
+
+public class ExclusiveChecker
+{
+    private readonly IConnection _subConnection;
+    private readonly ILogger _logger;
+
+    public ExclusiveChecker(IConnection subConnection, ILogger logger)
+    {
+        _subConnection = subConnection;
+        _logger = logger;
+    }
+
+    public bool Check(string queue)
+    {
+        IModel ch;
+        try
+        {
+            ch = _subConnection.CreateModel();
+        }
+        catch
+        {
+            _logger.LogWarning("ExclusiveChecker, create model err");
+            return false;
+        }
+
+        try
+        {
+            using (ch)
+                ch.QueueDeclarePassive(queue);
+        }
+        catch (OperationInterruptedException e)
+        {
+            if (e.ShutdownReason.ReplyCode == 405)
+                return true;
+        }
+
+        return false;
     }
 }

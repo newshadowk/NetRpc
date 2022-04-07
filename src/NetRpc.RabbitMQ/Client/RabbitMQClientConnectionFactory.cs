@@ -30,7 +30,7 @@ public class RabbitMQClientConnectionFactory : IClientConnectionFactory
         _subConnection = _options.CreateConnectionFactory_TopologyRecovery_Disabled().CreateConnectionLoop(_logger);
         _subChannel = _subConnection.CreateModel();
 
-        _subWatcher = new (_subConnection, _logger);
+        _subWatcher = new SubWatcher(new ExclusiveChecker(_subConnection, _logger));
         _mainWatcher = new(_mainChannel, options.Value.RpcQueue);
     }
 

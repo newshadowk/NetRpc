@@ -127,7 +127,6 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
                 }
                 else
                     await OnFaultSerializationExceptionAsync();
-
                 break;
             }
             case ReplyType.Callback:

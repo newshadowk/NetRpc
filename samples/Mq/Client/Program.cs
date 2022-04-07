@@ -33,10 +33,20 @@ internal class Program
         var sp = services.BuildServiceProvider();
         _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
 
+        try
+        {
+            var s  = await _proxyAsync.Call2("123");
+            Console.WriteLine($"ret:{s}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
         //try
         //{
-        //    await _proxyAsync.Call2("123");
-        //    await _proxyAsync.Call2("123");
+        //    await _proxyAsync.Call2("456");
         //}
         //catch (Exception e)
         //{
@@ -44,16 +54,22 @@ internal class Program
         //    throw;
         //}
 
-        //try
-        //{
-        //    await Test_ComplexCallAsync();
-        //}
-        //catch (Exception e)
-        //{
-        //    Console.WriteLine(e);
-        //}
+        //await Task.Delay(1000);
+        Task.Run(async () =>
+        {
+            try
+            {
+                await Test_ComplexCallAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        });
 
-        DoT();
+        Console.WriteLine("ReadLine");
+        Console.ReadLine();
+        //DoT();
     }
 
     private static async Task T0()
@@ -105,63 +121,46 @@ internal class Program
         //}
     }
 
-    private static async Task T2()
+    private static void T21(IConnection c)
     {
-             
-        var f2 = Helper.GetMQOptions().CreateConnectionFactory();
-        var c2 = f2.CreateConnection();
-        var ch2 = c2.CreateModel();
-        var qn = ch2.QueueDeclare().QueueName;
-        var qn2 = ch2.QueueDeclare().QueueName;
-
-
-        var f = Helper.GetMQOptions().CreateConnectionFactory_TopologyRecovery_Disabled();
-        var c = f.CreateConnection();
-        var ch = c.CreateModel();
-
         try
         {
-            var q11 = ch.QueueDeclarePassive(qn);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-
-        try
-        {
-            var q11 = ch.QueueDeclarePassive(qn2);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-
-        try
-        {
-            var queueDeclare = ch.QueueDeclare("sdf");
+            var ch = c.CreateModel();
+            var qn = ch.QueueDeclare().QueueName;
+            Console.WriteLine(qn);
+            ch.Dispose();
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
             throw;
         }
+    }
 
+    private static async Task T2()
+    {
+        var f2 = Helper.GetMQOptions().CreateConnectionFactory();
+        var c2 = f2.CreateConnection();
 
-        while (true)
+        Task.Run(() =>
         {
-            try
+            while (true)
             {
-                var queueDeclareOk = ch.QueueDeclarePassive(qn);
-                Console.WriteLine(queueDeclareOk.QueueName);
+                T21(c2);
             }
-            catch (Exception e)
-            {
-                Console.WriteLine("error");
-            }
+        });
 
-            await Task.Delay(1000);
-        }
+        Task.Run(() =>
+        {
+            while (true)
+            {
+                T21(c2);
+            }
+        });
+
+        //var ch2 = c2.CreateModel();
+
+
 
         //ch.BasicReturn += (sender, args) =>
         //{
@@ -198,7 +197,7 @@ internal class Program
         //        Console.WriteLine(e.ShutdownReason.ReplyCode);
         //    }
         //}
-     
+
 
         //ch2.QueueDeclare("test2", false, false, true);
         //ch2.BasicQos(0, (ushort)1, false);

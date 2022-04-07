@@ -20,6 +20,7 @@ public sealed class Service : IDisposable
     private volatile string? _consumerTag;
     private readonly SubWatcher _subWatcher;
     private readonly IModel _subChannel;
+    private readonly ExclusiveChecker _checker;
 
     public Service(ConnectionFactory mainFactory, ConnectionFactory subFactory, string rpcQueue, int prefetchCount, int maxPriority, ILogger logger)
     {
@@ -32,8 +33,9 @@ public sealed class Service : IDisposable
         _mainChannel = _mainConnection.CreateModel();
 
         var subConnection = subFactory.CreateConnectionLoop(logger);
+        _checker = new ExclusiveChecker(subConnection, logger);
         _subChannel = subConnection.CreateModel();
-        _subWatcher = new SubWatcher(subConnection, logger);
+        _subWatcher = new SubWatcher(new ExclusiveChecker(subConnection, logger));
         _rpcQueue = rpcQueue;
         _prefetchCount = prefetchCount;
         _maxPriority = maxPriority;
@@ -50,11 +52,19 @@ public sealed class Service : IDisposable
         if (_maxPriority > 0)
             args.Add("x-max-priority", _maxPriority);
 
-        _mainChannel.QueueDeclare(_rpcQueue, false, false, true, args);
+        _mainChannel.QueueDeclare(_rpcQueue, false, false, false, args);
         var consumer = new AsyncEventingBasicConsumer(_mainChannel);
         _mainChannel.BasicQos(0, (ushort)_prefetchCount, false);
         _consumerTag = _mainChannel.BasicConsume(_rpcQueue, true, consumer);
-        consumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_subChannel, _subWatcher, e, _logger)));
+        consumer.Received += (_, e) =>
+        {
+            if (!_checker.Check(e.BasicProperties.ReplyTo))
+            {
+                _logger.LogWarning($"request ignore, {e.BasicProperties.ReplyTo} is not found.");
+                return Task.CompletedTask;
+            }
+            return OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_subChannel, _subWatcher, e, _logger)));
+        };
     }
 
     public void Dispose()

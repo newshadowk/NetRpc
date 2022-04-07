@@ -13,7 +13,7 @@ internal class ServiceAsync : IServiceAsync
     {
         //Console.Write($"[ComplexCallAsync]...Received length:{data.Length}, {Helper.ReadStr(data)}, ");
         Console.Write($"[ComplexCallAsync]...Received length:{data.Length}");
-        for (var i = 1; i <= 5; i++)
+        for (var i = 1; i <= 5000; i++)
         {
             Console.Write($"{i}, ");
             await cb(new CustomCallbackObj {Progress = i});

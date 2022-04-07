@@ -1,4 +1,6 @@
-﻿namespace NetRpc.RabbitMQ;
+﻿using System;
+
+namespace NetRpc.RabbitMQ;
 
 public class MQOptions
 {
@@ -18,6 +20,12 @@ public class MQOptions
     /// Default value is 0 (disabled priority), max priority, 1-255, 1-10.
     /// </summary>
     public int MaxPriority { get; set; }
+
+    /// <summary>
+    /// Default value is 1 minutes.
+    /// </summary>
+    //public TimeSpan FirstReplyTimeOut { get; set; } = TimeSpan.FromMinutes(1);
+    public TimeSpan FirstReplyTimeOut { get; set; } = TimeSpan.FromSeconds(10000);
 
     public MQOptions(string host, string virtualHost, string rpcQueue, int port, string user, string password,
         int prefetchCount = 1, int maxPriority = 0)

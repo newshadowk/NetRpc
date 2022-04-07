@@ -68,6 +68,7 @@ public sealed class CallSession : IDisposable
 
     public void Send(ReadOnlyMemory<byte> buffer)
     {
+        Console.WriteLine($"send, {_serviceToClientQueue}, {buffer.Length}");
         _subChannel.BasicPublish("", _serviceToClientQueue, null!, buffer);
     }
 

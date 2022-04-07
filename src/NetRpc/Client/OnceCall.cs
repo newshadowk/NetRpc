@@ -112,7 +112,9 @@ public sealed class OnceCall : IOnceCall
         if (t.IsCanceled)
             await SetCancelAsync(tcs);
 
-        return await tcs.Task;
+        var t32 = await tcs.Task;
+        
+        return t32;
     }
 
     private void SetStreamResult(TaskCompletionSource<object?> tcs, object result)
@@ -147,7 +149,11 @@ public sealed class OnceCall : IOnceCall
         _timeOutCts.Cancel();
         _callbackDispatcher?.Dispose();
         await _convert.DisposeAsync();
-        tcs.TrySetException((Exception) result);
+
+        //current thread is receive thread by lower layer (rabbitMQ or Grpc), can not be block.
+#pragma warning disable CS4014
+        Task.Run(() => { tcs.TrySetException((Exception)result); });
+#pragma warning restore CS4014
     }
 
     private async Task SetResultAsync(TaskCompletionSource<object?> tcs, object? result)
@@ -157,7 +163,11 @@ public sealed class OnceCall : IOnceCall
         _timeOutCts.Cancel();
         _callbackDispatcher?.Dispose();
         await _convert.DisposeAsync();
-        tcs.TrySetResult(result);
+
+        //current thread is receive thread by lower layer (rabbitMQ or Grpc), can not be block.
+#pragma warning disable CS4014
+        Task.Run(() => { tcs.TrySetResult(result); });
+#pragma warning restore CS4014
     }
 
     private void OnSendRequestStreamStarted()
