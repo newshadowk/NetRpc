@@ -14,10 +14,10 @@ public class RabbitMQClientConnection : IClientConnection
     private readonly MQOptions _opt;
     private readonly RabbitMQOnceCall _call;
 
-    public RabbitMQClientConnection(IConnection mainConnection, IModel mainChannel, IModel subChannel, MainWatcher mainWatcher, SubWatcher subWatcher, MQOptions opt, ILogger logger)
+    public RabbitMQClientConnection(IConnection mainConnection, IConnection subConnection, IModel mainChannel, MainWatcher mainWatcher, SubWatcher subWatcher, MQOptions opt, ILogger logger)
     {
         _opt = opt;
-        _call = new RabbitMQOnceCall(mainChannel, subChannel, mainWatcher, subWatcher, opt.RpcQueue, opt.FirstReplyTimeOut, logger);
+        _call = new RabbitMQOnceCall(subConnection, mainChannel, mainWatcher, subWatcher, opt.RpcQueue, opt.FirstReplyTimeOut, logger);
         _call.ReceivedAsync += CallReceived;
         _call.Disconnected += CallDisconnected;
         _mainConnection = mainConnection;
@@ -66,9 +66,9 @@ public class RabbitMQClientConnection : IClientConnection
         return _call.SendAsync(buffer, isPost, mqPriority);
     }
 
-    public Task StartAsync(Dictionary<string, object?> headers)
+    public Task StartAsync(Dictionary<string, object?> headers, bool isPost)
     {
-        _call.Start();
+        _call.Start(isPost);
         return Task.CompletedTask;
     }
 

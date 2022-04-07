@@ -33,9 +33,9 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
 
     public ConnectionInfo ConnectionInfo => _connection.ConnectionInfo;
 
-    public async Task StartAsync(Dictionary<string, object?> headers)
+    public async Task StartAsync(Dictionary<string, object?> headers, bool isPost)
     {
-        await _connection.StartAsync(headers);
+        await _connection.StartAsync(headers, isPost);
     }
 
     public Task SendCancelAsync()

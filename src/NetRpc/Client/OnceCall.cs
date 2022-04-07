@@ -23,9 +23,9 @@ public sealed class OnceCall : IOnceCall
         _convert = convert;
     }
 
-    public async Task StartAsync(Dictionary<string, object?> headers)
+    public async Task StartAsync(Dictionary<string, object?> headers, bool isPost)
     {
-        await _convert.StartAsync(headers);
+        await _convert.StartAsync(headers, isPost);
     }
 
     public event EventHandler? SendRequestStreamStarted;

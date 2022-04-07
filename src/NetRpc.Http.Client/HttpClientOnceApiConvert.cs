@@ -65,7 +65,7 @@ internal sealed class HttpClientOnceApiConvert : IClientOnceApiConvert
         }
     }
 
-    public Task StartAsync(Dictionary<string, object?> headers)
+    public Task StartAsync(Dictionary<string, object?> headers, bool isPost)
     {
         return Task.CompletedTask;
     }

@@ -12,6 +12,7 @@ public sealed class Service : IDisposable
     public event AsyncEventHandler<EventArgsT<CallSession>>? ReceivedAsync;
     private readonly IAutorecoveringConnection _mainConnection;
     private readonly IModel _mainChannel;
+    private readonly IConnection _subConnection;
     private readonly string _rpcQueue;
     private readonly int _prefetchCount;
     private readonly int _maxPriority;
@@ -19,7 +20,6 @@ public sealed class Service : IDisposable
     private volatile bool _disposed;
     private volatile string? _consumerTag;
     private readonly SubWatcher _subWatcher;
-    private readonly IModel _subChannel;
     private readonly ExclusiveChecker _checker;
 
     public Service(ConnectionFactory mainFactory, ConnectionFactory subFactory, string rpcQueue, int prefetchCount, int maxPriority, ILogger logger)
@@ -32,18 +32,12 @@ public sealed class Service : IDisposable
 
         _mainChannel = _mainConnection.CreateModel();
 
-        var subConnection = subFactory.CreateConnectionLoop(logger);
-        _checker = new ExclusiveChecker(subConnection, logger);
-        _subChannel = subConnection.CreateModel();
-        _subWatcher = new SubWatcher(new ExclusiveChecker(subConnection, logger));
+        _subConnection = subFactory.CreateConnectionLoop(logger);
+        _checker = new ExclusiveChecker(_subConnection, logger);
+        _subWatcher = new SubWatcher(_checker);
         _rpcQueue = rpcQueue;
         _prefetchCount = prefetchCount;
         _maxPriority = maxPriority;
-    }
-
-    private static string LogStr(string s)
-    {
-        return $"====================\r\n{s}\r\n====================";
     }
 
     public void Open()
@@ -63,7 +57,7 @@ public sealed class Service : IDisposable
                 _logger.LogWarning($"request ignore, {e.BasicProperties.ReplyTo} is not found.");
                 return Task.CompletedTask;
             }
-            return OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_subChannel, _subWatcher, e, _logger)));
+            return OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_subConnection, _subWatcher, e, _logger)));
         };
     }
 
@@ -81,5 +75,10 @@ public sealed class Service : IDisposable
     private Task OnReceivedAsync(EventArgsT<CallSession> e)
     {
          return ReceivedAsync.InvokeAsync(this, e);
+    }
+
+    private static string LogStr(string s)
+    {
+        return $"====================\r\n{s}\r\n====================";
     }
 }

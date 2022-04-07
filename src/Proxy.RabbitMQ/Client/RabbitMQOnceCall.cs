@@ -13,7 +13,8 @@ public sealed class RabbitMQOnceCall : IDisposable
 {
     private readonly CheckWriteOnceBlock<string> _clientToServiceQueueOnceBlock = new();
     private readonly IModel _mainChannel;
-    private readonly IModel _subChannel;
+    private readonly IConnection _subConnection;
+    private volatile IModel? _subChannel;
     private readonly MainWatcher _mainWatcher;
     private readonly SubWatcher _subWatcher;
     private readonly ILogger _logger;
@@ -30,10 +31,10 @@ public sealed class RabbitMQOnceCall : IDisposable
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>?>>? ReceivedAsync;
     public event EventHandler? Disconnected;
 
-    public RabbitMQOnceCall(IModel mainChannel, IModel subChannel, MainWatcher mainWatcher, SubWatcher subWatcher, string rpcQueue, TimeSpan firstReplyTimeOut, ILogger logger)
+    public RabbitMQOnceCall(IConnection subConnection, IModel mainChannel, MainWatcher mainWatcher, SubWatcher subWatcher, string rpcQueue, TimeSpan firstReplyTimeOut, ILogger logger)
     {
         _mainChannel = mainChannel;
-        _subChannel = subChannel;
+        _subConnection = subConnection;
         _rpcQueue = rpcQueue;
         _firstReplyTimeOut = firstReplyTimeOut;
         _logger = logger;
@@ -67,18 +68,23 @@ public sealed class RabbitMQOnceCall : IDisposable
         _subWatcher.Disconnected -= SubWatcherDisconnected;
         _mainChannel.BasicReturn -= BasicReturn;
         _subWatcher.Remove(_clientToServiceQueue);
-        _subChannel.TryBasicCancel(_consumerTag, _logger);
+        _subChannel?.TryBasicCancel(_consumerTag, _logger);
+        _subChannel?.Close();
     }
 
-    public void Start()
+    public void Start(bool isPost)
     {
-        _mainChannel.BasicReturn += BasicReturn;
-        _firstCid = Guid.NewGuid().ToString("N");
-        _serviceToClientQueue = _subChannel.QueueDeclare().QueueName;
-        Console.WriteLine($"client: _serviceToClientQueue: {_serviceToClientQueue}");
-        var consumer = new AsyncEventingBasicConsumer(_subChannel);
-        consumer.Received += ConsumerReceivedAsync;
-        _consumerTag = _subChannel.BasicConsume(_serviceToClientQueue, true, consumer);
+        if (!isPost)
+        {
+            _mainChannel.BasicReturn += BasicReturn;
+            _firstCid = Guid.NewGuid().ToString("N");
+            _subChannel = _subConnection.CreateModel();
+            _serviceToClientQueue = _subChannel.QueueDeclare().QueueName;
+            Console.WriteLine($"client: _serviceToClientQueue: {_serviceToClientQueue}");
+            var consumer = new AsyncEventingBasicConsumer(_subChannel);
+            consumer.Received += ConsumerReceivedAsync;
+            _consumerTag = _subChannel.BasicConsume(_serviceToClientQueue, true, consumer);
+        }
     }
 
     public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isPost, int mqPriority)
@@ -98,7 +104,7 @@ public sealed class RabbitMQOnceCall : IDisposable
         //SendAfter
         //bug: after invoke 'BasicPublish' need an other thread to publish for real send? (sometimes happened.)
         //blocking thread in OnceCall row 96:Task.Delay(_timeoutInterval, _timeOutCts.Token).ContinueWith(i =>
-        _mainChannel.BasicPublish("", _clientToServiceQueue, null, buffer);
+        _subChannel.BasicPublish("", _clientToServiceQueue, null, buffer);
     }
 
     private async Task SendPostAsync(ReadOnlyMemory<byte> buffer, int mqPriority)

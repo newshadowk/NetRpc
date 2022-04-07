@@ -14,7 +14,7 @@ public interface IOnceCall
         Stream? stream,
         params object?[] pureArgs);
 
-    Task StartAsync(Dictionary<string, object?> headers);
+    Task StartAsync(Dictionary<string, object?> headers, bool isPost);
 
     event EventHandler? SendRequestStreamStarted;
 

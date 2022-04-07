@@ -10,7 +10,7 @@ public interface IClientOnceApiConvert : IAsyncDisposable
 {
     ConnectionInfo ConnectionInfo { get; }
 
-    Task StartAsync(Dictionary<string, object?> headers);
+    Task StartAsync(Dictionary<string, object?> headers, bool isPost);
 
     Task SendCancelAsync();
 

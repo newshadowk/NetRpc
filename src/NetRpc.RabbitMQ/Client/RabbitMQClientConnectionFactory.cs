@@ -36,7 +36,7 @@ public class RabbitMQClientConnectionFactory : IClientConnectionFactory
 
     public IClientConnection Create(bool isRetry)
     {
-        return new RabbitMQClientConnection(_mainConnection, _mainChannel, _subChannel, _mainWatcher, _subWatcher, _options, _logger);
+        return new RabbitMQClientConnection(_mainConnection, _subConnection, _mainChannel, _mainWatcher, _subWatcher, _options, _logger);
     }
 
     public void Dispose()

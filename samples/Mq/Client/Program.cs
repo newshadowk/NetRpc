@@ -55,21 +55,10 @@ internal class Program
         //}
 
         //await Task.Delay(1000);
-        Task.Run(async () =>
-        {
-            try
-            {
-                await Test_ComplexCallAsync();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-        });
 
-        Console.WriteLine("ReadLine");
-        Console.ReadLine();
-        //DoT();
+        //Console.WriteLine("ReadLine");
+        //Console.ReadLine();
+        DoT();
     }
 
     private static async Task T0()
@@ -287,7 +276,7 @@ internal class Program
         var i = 0;
         while (true)
         {
-            await Task.Delay(1000);
+            //await Task.Delay(1000);
             try
             {
                 await Test_ComplexCallAsync();

@@ -66,12 +66,13 @@ internal sealed class Call : ICall
         //merge header
         var mergeHeader = MergeHeader();
 
+        var contractMethod = _contract.Methods.First(i => i.MethodInfo == methodInfo);
+
         //start
         var call = await _factory.CreateAsync(_timeoutInterval, isRetry);
-        await call.StartAsync(mergeHeader);
+        await call.StartAsync(mergeHeader, contractMethod.IsMQPost);
 
         //stream
-        var contractMethod = _contract.Methods.First(i => i.MethodInfo == methodInfo);
         var instanceMethod = new InstanceMethod(methodInfo);
         var readStream = GetReadStream(stream);
         var clientContext = new ClientActionExecutingContext(_clientProxyId, _serviceProvider, _optionsName, call, instanceMethod, callback, token,

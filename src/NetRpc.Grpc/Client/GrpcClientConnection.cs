@@ -95,7 +95,7 @@ internal sealed class GrpcClientConnection : IClientConnection
     }
 
 #pragma warning disable 1998
-    public async Task StartAsync(Dictionary<string, object?> headers)
+    public async Task StartAsync(Dictionary<string, object?> headers, bool isPost)
 #pragma warning restore 1998
     {
         //create header

@@ -14,7 +14,7 @@ public interface IClientConnection : IAsyncDisposable
 
     Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false,byte mqPriority = 0);
 
-    Task StartAsync(Dictionary<string, object?> headers);
+    Task StartAsync(Dictionary<string, object?> headers, bool isPost);
 }
 
 public interface IServiceConnection : IAsyncDisposable

@@ -9,7 +9,8 @@ namespace Proxy.RabbitMQ;
 
 public sealed class CallSession : IDisposable
 {
-    private readonly IModel _subChannel;
+    private volatile IModel? _subChannel;
+    private readonly IConnection _subConnection;
     private readonly BasicDeliverEventArgs _e;
     private readonly ILogger _logger;
     private readonly SubWatcher _subWatcher;
@@ -21,20 +22,20 @@ public sealed class CallSession : IDisposable
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
     public event EventHandler? Disconnected;
 
-    public CallSession(IModel subChannel, SubWatcher subWatcher, BasicDeliverEventArgs e, ILogger logger)
+    public CallSession(IConnection subConnection, SubWatcher subWatcher, BasicDeliverEventArgs e, ILogger logger)
     {
         _isPost = e.BasicProperties.ReplyTo == null;
         _serviceToClientQueue = e.BasicProperties.ReplyTo!;
-        _subChannel = subChannel;
+        _subConnection = subConnection;
         _e = e;
         _logger = logger;
-        _subChannel.ModelShutdown += MainChannelShutdown;
+        _subConnection.ConnectionShutdown += ConnectionShutdown;
         _subWatcher = subWatcher;
         _subWatcher.Disconnected += SubWatcherDisconnected;
         _subWatcher.Add(_serviceToClientQueue);
     }
 
-    private void MainChannelShutdown(object? sender, ShutdownEventArgs e)
+    private void ConnectionShutdown(object? sender, ShutdownEventArgs e)
     {
         _logger.LogWarning($"======================\r\nMainChannel shutdown, {e.ReplyCode}, {e.ReplyText}.\r\n======================");
         OnDisconnected();
@@ -76,6 +77,7 @@ public sealed class CallSession : IDisposable
     {
         try
         {
+            _subChannel = _subConnection.CreateModel();
             var clientToServiceQueue = _subChannel.QueueDeclare().QueueName;
             Console.WriteLine($"service: _clientToServiceQueue: {clientToServiceQueue}");
             var clientToServiceConsumer = new AsyncEventingBasicConsumer(_subChannel);
@@ -110,8 +112,10 @@ public sealed class CallSession : IDisposable
             return;
         _disposed = true;
 
+        _subConnection.ConnectionShutdown -= ConnectionShutdown;
         _subWatcher.Disconnected -= SubWatcherDisconnected;
         _subWatcher.Remove(_serviceToClientQueue);
-        _subChannel.TryBasicCancel(_consumerTag, _logger);
+        _subChannel?.TryBasicCancel(_consumerTag, _logger);
+        _subChannel?.Close();
     }
 }
