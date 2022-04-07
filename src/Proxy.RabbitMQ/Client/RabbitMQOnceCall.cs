@@ -14,7 +14,8 @@ public sealed class RabbitMQOnceCall : IDisposable
     private readonly CheckWriteOnceBlock<string> _clientToServiceQueueOnceBlock = new();
     private readonly IModel _mainChannel;
     private readonly IModel _subChannel;
-    private readonly QueueWatcher _queueWatcher;
+    private readonly MainWatcher _mainWatcher;
+    private readonly SubWatcher _subWatcher;
     private readonly ILogger _logger;
     private readonly string _rpcQueue;
     private string _clientToServiceQueue = null!;
@@ -28,20 +29,29 @@ public sealed class RabbitMQOnceCall : IDisposable
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>?>>? ReceivedAsync;
     public event EventHandler? Disconnected;
 
-    public RabbitMQOnceCall(IModel mainChannel, IModel subChannel, QueueWatcher queueWatcher, string rpcQueue, ILogger logger)
+    public RabbitMQOnceCall(IModel mainChannel, IModel subChannel, MainWatcher mainWatcher, SubWatcher subWatcher, string rpcQueue, ILogger logger)
     {
         _mainChannel = mainChannel;
         _subChannel = subChannel;
- 
         _rpcQueue = rpcQueue;
         _logger = logger;
 
-        _queueWatcher = queueWatcher;
-        _queueWatcher.Disconnected += WatcherDisconnected;
+        _subWatcher = subWatcher;
+        _subWatcher.Disconnected += SubWatcherDisconnected;
+
+        _mainWatcher = mainWatcher;
+        _mainWatcher.Disconnected += MainWatcherDisconnected;
     }
 
-    private void WatcherDisconnected(object? sender, EventArgsT<string> e)
+    private void MainWatcherDisconnected(object? sender, EventArgs e)
     {
+        _logger.LogWarning("client MainWatcherDisconnected");
+        OnDisconnected();
+    }
+
+    private void SubWatcherDisconnected(object? sender, EventArgsT<string> e)
+    {
+        _logger.LogWarning($"client SubWatcherDisconnected, {e.Value}");
         OnDisconnected();
     }
 
@@ -51,9 +61,10 @@ public sealed class RabbitMQOnceCall : IDisposable
             return;
         _disposed = true;
 
-        _queueWatcher.Disconnected -= WatcherDisconnected;
+        _mainWatcher.Disconnected -= MainWatcherDisconnected;
+        _subWatcher.Disconnected -= SubWatcherDisconnected;
         _mainChannel.BasicReturn -= BasicReturn;
-        _queueWatcher.Remove(_clientToServiceQueue);
+        _subWatcher.Remove(_clientToServiceQueue);
         _subChannel.TryBasicCancel(_consumerTag, _logger);
     }
 
@@ -111,7 +122,7 @@ public sealed class RabbitMQOnceCall : IDisposable
             throw new InvalidOperationException($"Message has not sent to queue, check queue if exist : {_rpcQueue}.");
         }
 
-        _queueWatcher.Add(_clientToServiceQueue);
+        _subWatcher.Add(_clientToServiceQueue);
         isFirstSend = false;
     }
 

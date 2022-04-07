@@ -10,7 +10,7 @@ namespace Proxy.RabbitMQ;
 public sealed class Service : IDisposable
 {
     public event AsyncEventHandler<EventArgsT<CallSession>>? ReceivedAsync;
-    private readonly IConnection _mainConnection;
+    private readonly IAutorecoveringConnection _mainConnection;
     private readonly IModel _mainChannel;
     private readonly string _rpcQueue;
     private readonly int _prefetchCount;
@@ -18,25 +18,30 @@ public sealed class Service : IDisposable
     private readonly ILogger _logger;
     private volatile bool _disposed;
     private volatile string? _consumerTag;
-    private readonly QueueWatcher _queueWatcher;
+    private readonly SubWatcher _subWatcher;
+    private readonly IModel _subChannel;
 
-    public Service(ConnectionFactory mainFactory, string rpcQueue, int prefetchCount, int maxPriority, ILogger logger)
+    public Service(ConnectionFactory mainFactory, ConnectionFactory subFactory, string rpcQueue, int prefetchCount, int maxPriority, ILogger logger)
     {
         _logger = logger;
-        _mainConnection = mainFactory.CreateConnectionLoop(logger);
-        _mainChannel = _mainConnection.CreateModel();
-        _mainConnection.ConnectionShutdown += OnConnectionShutdown;
+        _mainConnection = (IAutorecoveringConnection)mainFactory.CreateConnectionLoop(logger);
+        _mainConnection.ConnectionShutdown += (_, e) => _logger.LogInformation(LogStr($"ConnectionShutdown, {e.ReplyCode}, {e.ReplyText}"));
+        _mainConnection.ConnectionRecoveryError += (_, e) => _logger.LogInformation(LogStr($"ConnectionRecoveryError, {e.Exception.Message}"));
+        _mainConnection.RecoverySucceeded += (_, _) => _logger.LogInformation(LogStr("RecoverySucceeded"));
 
-        _queueWatcher = new QueueWatcher(_mainConnection, logger);
+        _mainChannel = _mainConnection.CreateModel();
+
+        var subConnection = subFactory.CreateConnectionLoop(logger);
+        _subChannel = subConnection.CreateModel();
+        _subWatcher = new SubWatcher(subConnection, logger);
         _rpcQueue = rpcQueue;
         _prefetchCount = prefetchCount;
         _maxPriority = maxPriority;
     }
 
-    private void OnConnectionShutdown(object? sender, ShutdownEventArgs e)
+    private static string LogStr(string s)
     {
-        _logger.LogInformation($"OnConnectionShutdown, {e.ReplyCode}, {e.ReplyText}, {e.ClassId}, {e.MethodId}");
-        Environment.Exit(0);
+        return $"====================\r\n{s}\r\n====================";
     }
 
     public void Open()
@@ -48,9 +53,8 @@ public sealed class Service : IDisposable
         _mainChannel.QueueDeclare(_rpcQueue, false, false, true, args);
         var consumer = new AsyncEventingBasicConsumer(_mainChannel);
         _mainChannel.BasicQos(0, (ushort)_prefetchCount, false);
-        _consumerTag = _mainChannel.BasicConsume(_rpcQueue, false, consumer);
-        consumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<CallSession>(new
-            CallSession(_mainChannel, _queueWatcher, e, _logger)));
+        _consumerTag = _mainChannel.BasicConsume(_rpcQueue, true, consumer);
+        consumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_subChannel, _subWatcher, e, _logger)));
     }
 
     public void Dispose()
@@ -66,6 +70,6 @@ public sealed class Service : IDisposable
 
     private Task OnReceivedAsync(EventArgsT<CallSession> e)
     {
-        return ReceivedAsync.InvokeAsync(this, e);
+         return ReceivedAsync.InvokeAsync(this, e);
     }
 }

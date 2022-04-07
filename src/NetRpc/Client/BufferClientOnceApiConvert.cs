@@ -15,7 +15,7 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
     private readonly IClientConnection _connection;
     private readonly ILogger _logger;
     private readonly DuplexPipe _streamPipe = new(new PipeOptions(pauseWriterThreshold: Helper.StreamBufferCacheCount, resumeWriterThreshold: 1));
-    private int _disconnected = 0;
+    private int _disconnected;
 
     public BufferClientOnceApiConvert(IClientConnection connection, ILogger logger)
     {

@@ -61,16 +61,4 @@ public static class Helper
             log.LogWarning(e, null);
         }
     }
-
-    public static void TryBasicAck(this IModel model, ulong deliveryTag, bool multiple, ILogger log)
-    {
-        try
-        {
-            model.BasicAck(deliveryTag, multiple);
-        }
-        catch (Exception e)
-        {
-            log.LogWarning(e, null);
-        }
-    }
 }

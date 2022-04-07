@@ -107,9 +107,62 @@ internal class Program
 
     private static async Task T2()
     {
-        var f = Helper.GetMQOptions().CreateConnectionFactory();
+             
+        var f2 = Helper.GetMQOptions().CreateConnectionFactory();
+        var c2 = f2.CreateConnection();
+        var ch2 = c2.CreateModel();
+        var qn = ch2.QueueDeclare().QueueName;
+        var qn2 = ch2.QueueDeclare().QueueName;
+
+
+        var f = Helper.GetMQOptions().CreateConnectionFactory_TopologyRecovery_Disabled();
         var c = f.CreateConnection();
         var ch = c.CreateModel();
+
+        try
+        {
+            var q11 = ch.QueueDeclarePassive(qn);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+
+        try
+        {
+            var q11 = ch.QueueDeclarePassive(qn2);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+
+        try
+        {
+            var queueDeclare = ch.QueueDeclare("sdf");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
+
+        while (true)
+        {
+            try
+            {
+                var queueDeclareOk = ch.QueueDeclarePassive(qn);
+                Console.WriteLine(queueDeclareOk.QueueName);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("error");
+            }
+
+            await Task.Delay(1000);
+        }
+
         //ch.BasicReturn += (sender, args) =>
         //{
         //    var dd = sender;
@@ -119,32 +172,32 @@ internal class Program
         //ch.BasicPublish("", "qn", true, null, Encoding.UTF8.GetBytes("123"));
 
 
-        var qn = ch.QueueDeclare("rpc_test", false, false, false).QueueName;
+        //var qn = ch.QueueDeclare("rpc_test", false, false, false).QueueName;
 
 
-        var consumer = new AsyncEventingBasicConsumer(ch);
-        consumer.Received += ConsumerReceivedAsync;
-        var _consumerTag = ch.BasicConsume(qn, true, consumer);
+        //var consumer = new AsyncEventingBasicConsumer(ch);
+        //consumer.Received += ConsumerReceivedAsync;
+        //var _consumerTag = ch.BasicConsume(qn, true, consumer);
 
         //ch.BasicCancel(_consumerTag);
         //ch.Close();
         //c.Close();
 
-        var f2 = Helper.GetMQOptions().CreateConnectionFactory();
-        var c2 = f2.CreateConnection();
-        var ch2 = c2.CreateModel();
+        //var f2 = Helper.GetMQOptions().CreateConnectionFactory();
+        //var c2 = f2.CreateConnection();
+        //var ch2 = c2.CreateModel();
 
-        while (true)
-        {
-            try
-            {
-                ch2.QueueDeclarePassive(qn);
-            }
-            catch (OperationInterruptedException e)
-            {
-                Console.WriteLine(e.ShutdownReason.ReplyCode);
-            }
-        }
+        //while (true)
+        //{
+        //    try
+        //    {
+        //        ch2.QueueDeclarePassive(qn);
+        //    }
+        //    catch (OperationInterruptedException e)
+        //    {
+        //        Console.WriteLine(e.ShutdownReason.ReplyCode);
+        //    }
+        //}
      
 
         //ch2.QueueDeclare("test2", false, false, true);

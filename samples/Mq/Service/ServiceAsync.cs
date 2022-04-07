@@ -13,7 +13,7 @@ internal class ServiceAsync : IServiceAsync
     {
         //Console.Write($"[ComplexCallAsync]...Received length:{data.Length}, {Helper.ReadStr(data)}, ");
         Console.Write($"[ComplexCallAsync]...Received length:{data.Length}");
-        for (var i = 1; i <= 1000000; i++)
+        for (var i = 1; i <= 5; i++)
         {
             Console.Write($"{i}, ");
             await cb(new CustomCallbackObj {Progress = i});
@@ -23,7 +23,7 @@ internal class ServiceAsync : IServiceAsync
             }
             catch (Exception e)
             {
-                Console.WriteLine("cancel");
+                Console.WriteLine("cancel!!!");
                 throw;
             }
         }

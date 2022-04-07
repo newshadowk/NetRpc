@@ -22,8 +22,8 @@ public sealed class RabbitMQHostedService : IHostedService
         _logger = factory.CreateLogger("NetRpc");
         _requestHandler = requestHandler;
 
-        _service = new Service(opt.Value.CreateConnectionFactory_Recovery_Disabled(), opt.Value.RpcQueue,
-            opt.Value.PrefetchCount, opt.Value.MaxPriority, _logger);
+        _service = new Service(opt.Value.CreateConnectionFactory(), opt.Value.CreateConnectionFactory_TopologyRecovery_Disabled(), 
+            opt.Value.RpcQueue, opt.Value.PrefetchCount, opt.Value.MaxPriority, _logger);
         _service.ReceivedAsync += ServiceReceivedAsync;
     }
 
@@ -52,7 +52,6 @@ public sealed class RabbitMQHostedService : IHostedService
         _logger.LogInformation("stop application start.");
         return Task.CompletedTask;
     }
-
 
     //public async Task StopAsync(CancellationToken cancellationToken)
     //{

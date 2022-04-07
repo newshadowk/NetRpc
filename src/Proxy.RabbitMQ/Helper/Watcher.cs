@@ -8,17 +8,17 @@ using RabbitMQ.Client.Exceptions;
 
 namespace Proxy.RabbitMQ;
 
-public class QueueWatcher
+public class SubWatcher
 {
     private readonly IConnection _subConnection;
     private readonly ILogger _logger;
-    private readonly BusyTimer _t = new(2000);
+    private readonly BusyTimer _t = new(5000);
     private readonly SyncList<string> _list = new();
     private readonly object _lockCheck = new();
 
     public event EventHandler<EventArgsT<string>>? Disconnected;
 
-    public QueueWatcher(IConnection subConnection, ILogger logger)
+    public SubWatcher(IConnection subConnection, ILogger logger)
     {
         _subConnection = subConnection;
         _logger = logger;
@@ -26,7 +26,7 @@ public class QueueWatcher
         _t.Start();
     }
 
-    private Task ElapsedAsync(object sender, System.Timers.ElapsedEventArgs @event)
+    private Task ElapsedAsync(object sender, System.Timers.ElapsedEventArgs e)
     {
         List<string> list;
         lock (_list.SyncRoot) 
@@ -85,5 +85,47 @@ public class QueueWatcher
     private void OnDisconnected(EventArgsT<string> e)
     {
         Disconnected?.Invoke(this, e);
+    }
+}
+
+public class MainWatcher
+{
+    private readonly IModel _mainChannel;
+    private readonly string _queue;
+    private readonly BusyTimer _t = new(5000);
+
+    public event EventHandler? Disconnected;
+
+    public MainWatcher(IModel mainChannel, string queue)
+    {
+        _mainChannel = mainChannel;
+        _queue = queue;
+        _t.ElapsedAsync += ElapsedAsync;
+        _t.Start();
+    }
+
+    private Task ElapsedAsync(object sender, System.Timers.ElapsedEventArgs @event)
+    {
+        if (!Check(_mainChannel, _queue)) 
+            OnDisconnected();
+        return Task.CompletedTask;
+    }
+
+    private static bool Check(IModel channel, string queue)
+    {
+        try
+        {
+            channel.QueueDeclarePassive(queue);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private void OnDisconnected()
+    {
+        Disconnected?.Invoke(this, EventArgs.Empty);
     }
 }

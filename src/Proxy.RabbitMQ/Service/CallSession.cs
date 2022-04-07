@@ -9,39 +9,45 @@ namespace Proxy.RabbitMQ;
 
 public sealed class CallSession : IDisposable
 {
-    private readonly IModel _mainChannel;
+    private readonly IModel _subChannel;
     private readonly BasicDeliverEventArgs _e;
     private readonly ILogger _logger;
-    private readonly QueueWatcher _queueWatcher;
+    private readonly SubWatcher _subWatcher;
     private readonly string _serviceToClientQueue;
     private volatile bool _disposed;
     private readonly bool _isPost;
     private volatile string? _consumerTag;
     private readonly AsyncLock _lock_Receive = new();
-
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
-
     public event EventHandler? Disconnected;
 
-    public CallSession(IModel mainChannel, QueueWatcher queueWatcher, BasicDeliverEventArgs e, ILogger logger)
+    public CallSession(IModel subChannel, SubWatcher subWatcher, BasicDeliverEventArgs e, ILogger logger)
     {
         _isPost = e.BasicProperties.ReplyTo == null;
         _serviceToClientQueue = e.BasicProperties.ReplyTo!;
-        _mainChannel = mainChannel;
+        _subChannel = subChannel;
         _e = e;
         _logger = logger;
-
-        _queueWatcher = queueWatcher;
-        _queueWatcher.Disconnected += WatcherDisconnected;
-        _queueWatcher.Add(_serviceToClientQueue);
+        _subChannel.ModelShutdown += MainChannelShutdown;
+        _subWatcher = subWatcher;
+        _subWatcher.Disconnected += SubWatcherDisconnected;
+        _subWatcher.Add(_serviceToClientQueue);
     }
 
-    private void WatcherDisconnected(object? sender, EventArgsT<string> e)
+    private void MainChannelShutdown(object? sender, ShutdownEventArgs e)
+    {
+        _logger.LogWarning($"======================\r\nMainChannel shutdown, {e.ReplyCode}, {e.ReplyText}.\r\n======================");
+        OnDisconnected();
+        Dispose();
+    }
+
+    private void SubWatcherDisconnected(object? sender, EventArgsT<string> e)
     {
         if (e.Value != _serviceToClientQueue)
             return;
 
         OnDisconnected();
+        Dispose();
     }
 
     public bool Start()
@@ -62,18 +68,18 @@ public sealed class CallSession : IDisposable
 
     public void Send(ReadOnlyMemory<byte> buffer)
     {
-        _mainChannel.BasicPublish("", _serviceToClientQueue, null!, buffer);
+        _subChannel.BasicPublish("", _serviceToClientQueue, null!, buffer);
     }
 
     private bool DeclareCallBack()
     {
         try
         {
-            var clientToServiceQueue = _mainChannel.QueueDeclare().QueueName;
+            var clientToServiceQueue = _subChannel.QueueDeclare().QueueName;
             Console.WriteLine($"service: _clientToServiceQueue: {clientToServiceQueue}");
-            var clientToServiceConsumer = new AsyncEventingBasicConsumer(_mainChannel);
+            var clientToServiceConsumer = new AsyncEventingBasicConsumer(_subChannel);
             clientToServiceConsumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Body));
-            _consumerTag = _mainChannel.BasicConsume(clientToServiceQueue, true, clientToServiceConsumer);
+            _consumerTag = _subChannel.BasicConsume(clientToServiceQueue, true, clientToServiceConsumer);
             Send(Encoding.UTF8.GetBytes(clientToServiceQueue));
             return true;
         }
@@ -103,10 +109,8 @@ public sealed class CallSession : IDisposable
             return;
         _disposed = true;
 
-        _queueWatcher.Disconnected -= WatcherDisconnected;
-        _queueWatcher.Remove(_serviceToClientQueue);
-
-        _mainChannel.TryBasicAck(_e.DeliveryTag, false, _logger);
-        _mainChannel.TryBasicCancel(_consumerTag, _logger);
+        _subWatcher.Disconnected -= SubWatcherDisconnected;
+        _subWatcher.Remove(_serviceToClientQueue);
+        _subChannel.TryBasicCancel(_consumerTag, _logger);
     }
 }
