@@ -16,6 +16,7 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
     private readonly ILogger _logger;
     private readonly DuplexPipe _streamPipe = new(new PipeOptions(pauseWriterThreshold: Helper.StreamBufferCacheCount, resumeWriterThreshold: 1));
     private int _disconnected;
+    private volatile bool _streamResultReceived;
 
     public BufferClientOnceApiConvert(IClientConnection connection, ILogger logger)
     {
@@ -97,7 +98,14 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
     {
         if (Interlocked.Increment(ref _disconnected) == 1)
         {
-            await OnFaultAsync(new EventArgsT<object>(new DisconnectedException(e.Value)));
+            if (!_streamResultReceived)
+            {
+                await OnFaultAsync(new EventArgsT<object>(new DisconnectedException(e.Value)));
+                await DisposeAsync();
+                return;
+            }
+
+            await _streamPipe.Output.CompleteAsync(new DisconnectedException(e.Value));
             await DisposeAsync();
         }
     }
@@ -109,6 +117,7 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
         {
             case ReplyType.ResultStream:
             {
+                _streamResultReceived = true;
                 if (TryToObject(r.Body, out long length))
                     OnResultStream(new EventArgsT<object>(GetReplyStream(length)));
                 else
@@ -121,6 +130,7 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
                 {
                     if (body.HasStream)
                     {
+                        _streamResultReceived = true;
                         var obj = body.Result.SetStream(GetReplyStream(body.StreamLength));
                         OnResultStream(new EventArgsT<object>(obj));
                     }
@@ -151,7 +161,6 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
                 }
                 else
                     await OnFaultSerializationExceptionAsync();
-
                 break;
             }
             case ReplyType.Buffer:

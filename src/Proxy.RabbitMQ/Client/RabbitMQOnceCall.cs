@@ -49,12 +49,27 @@ public sealed class RabbitMQOnceCall : IDisposable
 
     private void MainWatcherDisconnected(object? sender, EventArgs e)
     {
+        if (_disposed)
+            return;
+        
         _logger.LogWarning("client MainWatcherDisconnected");
         OnDisconnected();
     }
 
-    private void SubWatcherDisconnected(object? sender, EventArgsT<string> e)
+    private async void SubWatcherDisconnected(object? sender, EventArgsT<string> e)
     {
+        if (e.Value != _clientToServiceQueue)
+            return;
+
+        if (_disposed)
+            return;
+
+        //make sure queue msg received. -- todo hack
+        await Task.Delay(5000);
+
+        if (_disposed)
+            return;
+
         _logger.LogWarning($"client SubWatcherDisconnected, {e.Value}");
         OnDisconnected();
     }

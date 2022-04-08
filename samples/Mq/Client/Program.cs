@@ -44,7 +44,15 @@ internal class Program
         //    Console.WriteLine(e);
         //}
 
-        //await Test_ComplexCallAsync();
+        //try
+        //{
+        //    await Test_ComplexCallAsync();
+        //}
+        //catch (Exception e)
+        //{
+        //    Console.WriteLine(e);
+        //    throw;
+        //}
 
         //await Task.Delay(1000);
 
@@ -269,12 +277,12 @@ internal class Program
         var i = 0;
         while (true)
         {
-            await Task.Delay(1000);
+            //await Task.Delay(1000);
             try
             {
-                //await Test_ComplexCallAsync();
+                await Test_ComplexCallAsync();
                 //await Test_Call2(i++);
-                await Test_P(i++);
+                //await Test_P(i++);
             }
             catch (Exception e)
             {
@@ -309,8 +317,20 @@ internal class Program
                 async i => Console.Write(", " + i.Progress),
                 default);
 
-            using (var stream2 = complexStream.Stream)
+            using (complexStream.Stream)
+            {
                 Console.Write($", receive length:{stream.Length}");
+                MemoryStream ms = new();
+                try
+                {
+                    await complexStream.Stream.CopyToAsync(ms);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+            }
             Console.WriteLine($", otherInfo:{complexStream.OtherInfo}");
         }
     }

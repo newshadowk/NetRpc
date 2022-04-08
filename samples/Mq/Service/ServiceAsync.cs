@@ -13,19 +13,22 @@ internal class ServiceAsync : IServiceAsync
     {
         //Console.Write($"[ComplexCallAsync]...Received length:{data.Length}, {Helper.ReadStr(data)}, ");
         Console.Write($"[ComplexCallAsync]...Received length:{data.Length}");
-        for (var i = 1; i <= 10000; i++)
+        MemoryStream ms = new();
+        await data.CopyToAsync(ms);
+
+        for (var i = 1; i <= 3; i++)
         {
             Console.Write($"{i}, ");
             await cb(new CustomCallbackObj {Progress = i});
-            try
-            {
-                await Task.Delay(2000, token);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("cancel!!!");
-                throw;
-            }
+            //try
+            //{
+            //    await Task.Delay(2000, token);
+            //}
+            //catch (Exception e)
+            //{
+            //    Console.WriteLine("cancel!!!");
+            //    throw;
+            //}
         }
 
         Console.WriteLine("...Send TestFile.txt");

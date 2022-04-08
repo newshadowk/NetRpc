@@ -24,6 +24,7 @@ public static class Helper
 
     public static string GetTestFilePath()
     {
+        //return @"D:\TestFile\termSrc.pdf";
         var assemblyPath = Assembly.GetExecutingAssembly().CodeBase;
         assemblyPath = assemblyPath.Substring(8, assemblyPath.Length - 8);
         assemblyPath = Path.GetDirectoryName(assemblyPath);

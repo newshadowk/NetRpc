@@ -38,6 +38,9 @@ public sealed class CallSession : IDisposable
 
     private void ConnectionShutdown(object? sender, ShutdownEventArgs e)
     {
+        if (_isPost)
+            return;
+
         _logger.LogWarning($"MainChannel shutdown, {e.ReplyCode}, {e.ReplyText}.");
         OnDisconnected();
         Dispose();
@@ -45,6 +48,9 @@ public sealed class CallSession : IDisposable
 
     private void SubWatcherDisconnected(object? sender, EventArgsT<string> e)
     {
+        if (_isPost)
+            return;
+
         if (e.Value != _serviceToClientQueue)
             return;
 

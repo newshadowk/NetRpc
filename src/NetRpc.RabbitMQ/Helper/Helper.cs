@@ -18,7 +18,7 @@ public static class Helper
             NetworkRecoveryInterval = TimeSpan.FromSeconds(5),
             DispatchConsumersAsync = true,
             ConsumerDispatchConcurrency =  options.PrefetchCount,
-            RequestedHeartbeat = TimeSpan.FromSeconds(5)
+            RequestedHeartbeat = TimeSpan.FromSeconds(10)
         };
     }
 
@@ -36,7 +36,7 @@ public static class Helper
             NetworkRecoveryInterval = TimeSpan.FromSeconds(5),
             DispatchConsumersAsync = true,
             ConsumerDispatchConcurrency =  options.PrefetchCount,
-            RequestedHeartbeat = TimeSpan.FromSeconds(5)
+            RequestedHeartbeat = TimeSpan.FromSeconds(10)
         };
     } 
 }
