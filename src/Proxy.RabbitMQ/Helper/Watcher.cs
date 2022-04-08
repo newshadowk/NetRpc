@@ -61,15 +61,15 @@ public class SubWatcher
 
 public class MainWatcher
 {
-    private readonly IModel _mainChannel;
+    private readonly IConnection _subConnection;
     private readonly string _queue;
     private readonly BusyTimer _t = new(5000);
 
     public event EventHandler? Disconnected;
 
-    public MainWatcher(IModel mainChannel, string queue)
+    public MainWatcher(IConnection subConnection, string queue)
     {
-        _mainChannel = mainChannel;
+        _subConnection = subConnection;
         _queue = queue;
         _t.ElapsedAsync += ElapsedAsync;
         _t.Start();
@@ -77,22 +77,35 @@ public class MainWatcher
 
     private Task ElapsedAsync(object sender, ElapsedEventArgs e)
     {
-        if (!Check(_mainChannel, _queue))
+        
+        if (!Check(_queue))
             OnDisconnected();
         return Task.CompletedTask;
     }
 
-    private static bool Check(IModel channel, string queue)
+    private bool Check(string queue)
     {
+        IModel ch;
         try
         {
-            channel.QueueDeclarePassive(queue);
-            return true;
+            ch = _subConnection.CreateModel();
         }
         catch
         {
             return false;
         }
+
+        try
+        {
+            using (ch)
+                ch.QueueDeclarePassive(queue);
+        }
+        catch
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private void OnDisconnected()
@@ -104,12 +117,10 @@ public class MainWatcher
 public class ExclusiveChecker
 {
     private readonly IConnection _subConnection;
-    private readonly ILogger _logger;
 
-    public ExclusiveChecker(IConnection subConnection, ILogger logger)
+    public ExclusiveChecker(IConnection subConnection)
     {
         _subConnection = subConnection;
-        _logger = logger;
     }
 
     public bool Check(string queue)
@@ -121,7 +132,6 @@ public class ExclusiveChecker
         }
         catch
         {
-            _logger.LogWarning("ExclusiveChecker, create model err");
             return false;
         }
 

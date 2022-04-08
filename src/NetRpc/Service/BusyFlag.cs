@@ -8,6 +8,11 @@ public sealed class BusyFlag
 
     public bool IsHandling => _handlingCount > 0;
 
+    public int GetCount()
+    {
+        return _handlingCount;
+    }
+
     public int Increment()
     {
         return Interlocked.Increment(ref _handlingCount);

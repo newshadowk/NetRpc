@@ -47,35 +47,17 @@ public sealed class RabbitMQHostedService : IHostedService
         return Task.CompletedTask;
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public async Task StopAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("stop application start.");
-        return Task.CompletedTask;
+        _service?.Stop();
+        while (_busyFlag.IsHandling)
+        {
+            Console.WriteLine($"busyFlag count:{_busyFlag.GetCount()}");
+            // ReSharper disable once MethodSupportsCancellation
+            await Task.Delay(1000);
+        }
+        _service?.Dispose();
+        _logger.LogInformation("stop application end.");
     }
-
-    //public async Task StopAsync(CancellationToken cancellationToken)
-    //{
-    //    _logger.LogInformation("stop application start.");
-    //    while (_busyFlag.IsHandling)
-    //    {
-    //        if (cancellationToken.IsCancellationRequested)
-    //        {
-    //            _logger.LogInformation("stop application, IsCancellationRequested");
-    //            break;
-    //        }
-
-    //        try
-    //        {
-    //            await Task.Delay(1000, cancellationToken);
-    //        }
-    //        catch (OperationCanceledException)
-    //        {
-    //            _logger.LogInformation("stop application, OperationCanceledException");
-    //            break;
-    //        }
-    //    }
-    //    _logger.LogInformation("_service?.Dispose() start.");
-    //    _service?.Dispose();
-    //    _logger.LogInformation("stop application end.");
-    //}
 }

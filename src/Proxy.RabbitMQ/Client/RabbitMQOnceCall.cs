@@ -128,11 +128,15 @@ public sealed class RabbitMQOnceCall : IDisposable
         }
         catch (OperationCanceledException)
         {
-            throw new InvalidOperationException($"Message has not sent to queue, check queue if exist : {_rpcQueue}.");
+            var msg = $"message has not sent to queue, check queue if exist : {_rpcQueue}.";
+            _logger.LogWarning(msg);
+            throw new InvalidOperationException(msg);
         }
         catch (TimeoutException)
         {
-            throw new TimeoutException($"wait first reply timeout, {_firstReplyTimeOut.TotalSeconds} seconds.");
+            var msg = $"wait first reply timeout, {_firstReplyTimeOut.TotalSeconds} seconds.";
+            _logger.LogWarning(msg);
+            throw new TimeoutException(msg);
         }
 
         _subWatcher.Add(_clientToServiceQueue);
@@ -161,7 +165,7 @@ public sealed class RabbitMQOnceCall : IDisposable
         if (args.BasicProperties.CorrelationId == _firstCid)
         {
             _logger.LogInformation(
-                $"Cmd send to queue failed, BasicReturn, ReplyCode:{args.ReplyCode} Exchange:{args.Exchange}, RoutingKey:{args.RoutingKey}, ReplyText:{args.ReplyText}");
+                $"cmd send to queue failed, BasicReturn, ReplyCode:{args.ReplyCode} Exchange:{args.Exchange}, RoutingKey:{args.RoutingKey}, ReplyText:{args.ReplyText}");
             _firstCts.Cancel();
         }
     }

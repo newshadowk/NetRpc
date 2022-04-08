@@ -18,22 +18,24 @@ public sealed class Service : IDisposable
     private readonly int _maxPriority;
     private readonly ILogger _logger;
     private volatile bool _disposed;
+    private volatile bool _stoped;
     private volatile string? _consumerTag;
     private readonly SubWatcher _subWatcher;
     private readonly ExclusiveChecker _checker;
+    private readonly object _lockDispose = new ();
 
     public Service(ConnectionFactory mainFactory, ConnectionFactory subFactory, string rpcQueue, int prefetchCount, int maxPriority, ILogger logger)
     {
         _logger = logger;
         _mainConnection = (IAutorecoveringConnection)mainFactory.CreateConnectionLoop(logger);
-        _mainConnection.ConnectionShutdown += (_, e) => _logger.LogInformation($"ConnectionShutdown, {e.ReplyCode}, {e.ReplyText}");
-        _mainConnection.ConnectionRecoveryError += (_, e) => _logger.LogInformation($"ConnectionRecoveryError, {e.Exception.Message}");
-        _mainConnection.RecoverySucceeded += (_, _) => _logger.LogInformation("RecoverySucceeded");
+        _mainConnection.ConnectionShutdown += (_, e) => _logger.LogInformation($"Service ConnectionShutdown, {e.ReplyCode}, {e.ReplyText}");
+        _mainConnection.ConnectionRecoveryError += (_, e) => _logger.LogInformation($"Service ConnectionRecoveryError, {e.Exception.Message}");
+        _mainConnection.RecoverySucceeded += (_, _) => _logger.LogInformation("Service RecoverySucceeded");
 
         _mainChannel = _mainConnection.CreateModel();
 
         _subConnection = subFactory.CreateConnectionLoop(logger);
-        _checker = new ExclusiveChecker(_subConnection, logger);
+        _checker = new ExclusiveChecker(_subConnection);
         _subWatcher = new SubWatcher(_checker);
         _rpcQueue = rpcQueue;
         _prefetchCount = prefetchCount;
@@ -46,7 +48,7 @@ public sealed class Service : IDisposable
         if (_maxPriority > 0)
             args.Add("x-max-priority", _maxPriority);
 
-        _mainChannel.QueueDeclare(_rpcQueue, false, false, false, args);
+        _mainChannel.QueueDeclare(_rpcQueue, false, false, true, args);
         var consumer = new AsyncEventingBasicConsumer(_mainChannel);
         _mainChannel.BasicQos(0, (ushort)_prefetchCount, false);
         _consumerTag = _mainChannel.BasicConsume(_rpcQueue, true, consumer);
@@ -61,15 +63,36 @@ public sealed class Service : IDisposable
         };
     }
 
+    public void Stop()
+    {
+        lock (_lockDispose)
+        {
+            if (_stoped)
+                return;
+            _stoped = true;
+
+            _logger.LogInformation("Service Stop start.");
+            _mainChannel.TryBasicCancel(_consumerTag, _logger);
+            _mainChannel.TryClose(_logger);
+            _logger.LogInformation("Service Stop ok.");
+        }
+    }
+
     public void Dispose()
     {
-        if (_disposed)
-            return;
-        _disposed = true;
+        lock (_lockDispose)
+        {
+            if (_disposed)
+                return;
+            _disposed = true;
+            _logger.LogInformation("Service Dispose start.");
 
-        _mainChannel.TryBasicCancel(_consumerTag, _logger);
-        _mainChannel.TryClose(_logger);
-        _mainConnection.TryClose(_logger);
+            Stop();
+
+            _subConnection.TryClose(_logger);
+            _mainConnection.TryClose(_logger);
+            _logger.LogInformation("Service Dispose ok.");
+        }
     }
 
     private Task OnReceivedAsync(EventArgsT<CallSession> e)

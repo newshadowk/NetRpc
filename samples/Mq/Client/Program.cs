@@ -34,7 +34,7 @@ internal class Program
 
         //try
         //{
-        //    var s  = await _proxyAsync.Call2("123");
+        //    var s = await _proxyAsync.Call2("123");
         //    Console.WriteLine($"ret:{s}");
         //}
         //catch (Exception e)
@@ -42,15 +42,7 @@ internal class Program
         //    Console.WriteLine(e);
         //}
 
-        //try
-        //{
-        //    await _proxyAsync.Call2("456");
-        //}
-        //catch (Exception e)
-        //{
-        //    Console.WriteLine(e);
-        //    throw;
-        //}
+        //await Test_ComplexCallAsync();
 
         //await Task.Delay(1000);
 
@@ -275,7 +267,7 @@ internal class Program
         var i = 0;
         while (true)
         {
-            //await Task.Delay(1000);
+            await Task.Delay(1000);
             try
             {
                 await Test_ComplexCallAsync();
@@ -283,7 +275,7 @@ internal class Program
             }
             catch (Exception e)
             {
-                Console.WriteLine("error ");
+                Console.WriteLine($"error, {e.Message}");
             }
 
             GC.Collect();

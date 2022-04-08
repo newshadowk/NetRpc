@@ -31,7 +31,7 @@ public class RabbitMQClientConnection : IClientConnection
 
     private void MainConnectionShutdown(object? sender, ShutdownEventArgs e)
     {
-        OnReceiveDisconnected(new EventArgsT<string>($"cmdConn shutdown, ReplyCode:{e.ReplyCode}, ReplyText:{e.ReplyText}, ClassId:{e.ClassId}, MethodId:{e.MethodId}"));
+        OnReceiveDisconnected(new EventArgsT<string>($"MainConnection Shutdown, ReplyCode:{e.ReplyCode}, ReplyText:{e.ReplyText}"));
     }
 
     private async Task CallReceived(object sender, Proxy.RabbitMQ.EventArgsT<ReadOnlyMemory<byte>?> e)

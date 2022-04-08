@@ -8,7 +8,7 @@ namespace NetRpc.RabbitMQ;
 public class RabbitMQClientConnectionFactory : IClientConnectionFactory
 {
     private readonly ILogger _logger;
-    private readonly IConnection _mainConnection;
+    private readonly IAutorecoveringConnection _mainConnection;
     private readonly IConnection _subConnection;
     private readonly IModel _mainChannel;
     private readonly IModel _subChannel;
@@ -23,15 +23,19 @@ public class RabbitMQClientConnectionFactory : IClientConnectionFactory
         _options = options.Value;
 
         //main
-        _mainConnection = _options.CreateConnectionFactory().CreateConnectionLoop(_logger);
+        _mainConnection = (IAutorecoveringConnection)_options.CreateConnectionFactory().CreateConnectionLoop(_logger);
+        _mainConnection.ConnectionShutdown += (_, e) => _logger.LogInformation($"Client ConnectionShutdown, {e.ReplyCode}, {e.ReplyText}");
+        _mainConnection.ConnectionRecoveryError += (_, e) => _logger.LogInformation($"Client ConnectionRecoveryError, {e.Exception.Message}");
+        _mainConnection.RecoverySucceeded += (_, _) => _logger.LogInformation("Client RecoverySucceeded");
+
         _mainChannel = _mainConnection.CreateModel();
 
         //sub
         _subConnection = _options.CreateConnectionFactory_TopologyRecovery_Disabled().CreateConnectionLoop(_logger);
         _subChannel = _subConnection.CreateModel();
 
-        _subWatcher = new SubWatcher(new ExclusiveChecker(_subConnection, _logger));
-        _mainWatcher = new(_mainChannel, options.Value.RpcQueue);
+        _subWatcher = new SubWatcher(new ExclusiveChecker(_subConnection));
+        _mainWatcher = new(_mainConnection, options.Value.RpcQueue);
     }
 
     public IClientConnection Create(bool isRetry)
