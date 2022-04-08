@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -37,7 +38,7 @@ public sealed class CallSession : IDisposable
 
     private void ConnectionShutdown(object? sender, ShutdownEventArgs e)
     {
-        _logger.LogWarning($"======================\r\nMainChannel shutdown, {e.ReplyCode}, {e.ReplyText}.\r\n======================");
+        _logger.LogWarning($"MainChannel shutdown, {e.ReplyCode}, {e.ReplyText}.");
         OnDisconnected();
         Dispose();
     }
@@ -69,17 +70,17 @@ public sealed class CallSession : IDisposable
 
     public void Send(ReadOnlyMemory<byte> buffer)
     {
-        Console.WriteLine($"send, {_serviceToClientQueue}, {buffer.Length}");
         _subChannel.BasicPublish("", _serviceToClientQueue, null!, buffer);
     }
 
     private bool DeclareCallBack()
     {
+
         try
         {
             _subChannel = _subConnection.CreateModel();
             var clientToServiceQueue = _subChannel.QueueDeclare().QueueName;
-            Console.WriteLine($"service: _clientToServiceQueue: {clientToServiceQueue}");
+            Debug.WriteLine($"service: _clientToServiceQueue: {clientToServiceQueue}");
             var clientToServiceConsumer = new AsyncEventingBasicConsumer(_subChannel);
             clientToServiceConsumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Body));
             _consumerTag = _subChannel.BasicConsume(clientToServiceQueue, true, clientToServiceConsumer);

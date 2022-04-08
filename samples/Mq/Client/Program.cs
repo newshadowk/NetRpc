@@ -32,15 +32,15 @@ internal class Program
         var sp = services.BuildServiceProvider();
         _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
 
-        try
-        {
-            var s  = await _proxyAsync.Call2("123");
-            Console.WriteLine($"ret:{s}");
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        //try
+        //{
+        //    var s  = await _proxyAsync.Call2("123");
+        //    Console.WriteLine($"ret:{s}");
+        //}
+        //catch (Exception e)
+        //{
+        //    Console.WriteLine(e);
+        //}
 
         //try
         //{

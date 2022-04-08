@@ -26,9 +26,9 @@ public sealed class Service : IDisposable
     {
         _logger = logger;
         _mainConnection = (IAutorecoveringConnection)mainFactory.CreateConnectionLoop(logger);
-        _mainConnection.ConnectionShutdown += (_, e) => _logger.LogInformation(LogStr($"ConnectionShutdown, {e.ReplyCode}, {e.ReplyText}"));
-        _mainConnection.ConnectionRecoveryError += (_, e) => _logger.LogInformation(LogStr($"ConnectionRecoveryError, {e.Exception.Message}"));
-        _mainConnection.RecoverySucceeded += (_, _) => _logger.LogInformation(LogStr("RecoverySucceeded"));
+        _mainConnection.ConnectionShutdown += (_, e) => _logger.LogInformation($"ConnectionShutdown, {e.ReplyCode}, {e.ReplyText}");
+        _mainConnection.ConnectionRecoveryError += (_, e) => _logger.LogInformation($"ConnectionRecoveryError, {e.Exception.Message}");
+        _mainConnection.RecoverySucceeded += (_, _) => _logger.LogInformation("RecoverySucceeded");
 
         _mainChannel = _mainConnection.CreateModel();
 
@@ -75,10 +75,5 @@ public sealed class Service : IDisposable
     private Task OnReceivedAsync(EventArgsT<CallSession> e)
     {
          return ReceivedAsync.InvokeAsync(this, e);
-    }
-
-    private static string LogStr(string s)
-    {
-        return $"====================\r\n{s}\r\n====================";
     }
 }

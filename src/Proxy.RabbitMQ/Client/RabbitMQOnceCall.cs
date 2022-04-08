@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -80,7 +81,7 @@ public sealed class RabbitMQOnceCall : IDisposable
             _firstCid = Guid.NewGuid().ToString("N");
             _subChannel = _subConnection.CreateModel();
             _serviceToClientQueue = _subChannel.QueueDeclare().QueueName;
-            Console.WriteLine($"client: _serviceToClientQueue: {_serviceToClientQueue}");
+            Debug.WriteLine($"client: _serviceToClientQueue: {_serviceToClientQueue}");
             var consumer = new AsyncEventingBasicConsumer(_subChannel);
             consumer.Received += ConsumerReceivedAsync;
             _consumerTag = _subChannel.BasicConsume(_serviceToClientQueue, true, consumer);
