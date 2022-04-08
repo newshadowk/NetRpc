@@ -42,4 +42,11 @@ internal class ServiceAsync : IServiceAsync
         Console.WriteLine($"Call2 {s}");
         return s;
     }
+
+    public async Task P(CustomObj obj)
+    {
+        Console.WriteLine($"receive: {obj.Name}");
+        await Task.Delay(5000);
+        Console.WriteLine($"receive: {obj.Name} end");
+    }
 }

@@ -12,4 +12,7 @@ public interface IServiceAsync
     Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Func<CustomCallbackObj, Task> cb, CancellationToken token);
 
     Task<string> Call2(string s);
+
+    [MQPost]
+    Task P(CustomObj obj);
 }

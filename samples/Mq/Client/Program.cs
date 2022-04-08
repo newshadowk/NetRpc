@@ -32,6 +32,8 @@ internal class Program
         var sp = services.BuildServiceProvider();
         _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
 
+        //await Test_P(1);
+
         //try
         //{
         //    var s = await _proxyAsync.Call2("123");
@@ -270,8 +272,9 @@ internal class Program
             await Task.Delay(1000);
             try
             {
-                await Test_ComplexCallAsync();
+                //await Test_ComplexCallAsync();
                 //await Test_Call2(i++);
+                await Test_P(i++);
             }
             catch (Exception e)
             {
@@ -287,6 +290,12 @@ internal class Program
         Console.WriteLine($"send {i}");
         await _proxyAsync.Call2(i.ToString());
         Console.WriteLine("end");
+    }
+
+    private static async Task Test_P(int i)
+    {
+        Console.WriteLine($"post {i}");
+        await _proxyAsync.P(new CustomObj() { Name = i.ToString() });
     }
 
     private static async Task Test_ComplexCallAsync()

@@ -123,8 +123,11 @@ public class ExclusiveChecker
         _subConnection = subConnection;
     }
 
-    public bool Check(string queue)
+    public bool Check(string? queue)
     {
+        if (queue == null)
+            return true;
+
         IModel ch;
         try
         {
