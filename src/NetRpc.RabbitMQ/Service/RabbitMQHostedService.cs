@@ -22,8 +22,7 @@ public sealed class RabbitMQHostedService : IHostedService
         _logger = factory.CreateLogger("NetRpc");
         _requestHandler = requestHandler;
 
-        _service = new Service(opt.Value.CreateConnectionFactory(), opt.Value.CreateConnectionFactory_TopologyRecovery_Disabled(), 
-            opt.Value.RpcQueue, opt.Value.PrefetchCount, opt.Value.MaxPriority, _logger);
+        _service = new Service(opt.Value, factory);
         _service.ReceivedAsync += ServiceReceivedAsync;
     }
 
@@ -53,9 +52,15 @@ public sealed class RabbitMQHostedService : IHostedService
         _service?.Stop();
         while (_busyFlag.IsHandling)
         {
-            Console.WriteLine($"busyFlag count:{_busyFlag.GetCount()}");
-            // ReSharper disable once MethodSupportsCancellation
-            await Task.Delay(1000);
+            _logger.LogInformation($"busyFlag count:{_busyFlag.GetCount()}");
+            try
+            {
+                await Task.Delay(2000, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
         }
         _service?.Dispose();
         _logger.LogInformation("stop application end.");

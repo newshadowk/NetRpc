@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using NetRpc.RabbitMQ;
+using Proxy.RabbitMQ;
 
 namespace TestHelper;
 

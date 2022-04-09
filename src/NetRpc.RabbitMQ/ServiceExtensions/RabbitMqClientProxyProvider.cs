@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Proxy.RabbitMQ;
 
 namespace NetRpc.RabbitMQ;
 
@@ -34,7 +35,7 @@ public class RabbitMQClientProxyProvider : ClientProxyProviderBase
         if (options.IsPropertiesDefault())
             return null;
 
-        var f = new RabbitMQClientConnectionFactory(new SimpleOptions<RabbitMQClientOptions>(options), _loggerFactory);
+        var f = new RabbitMQClientConnectionFactory(new MQConnection(options, true, _loggerFactory));
         var clientProxy = new ClientProxy<TService>(
             f,
             new SimpleOptions<NClientOptions>(_nClientOption.CurrentValue),
@@ -76,7 +77,7 @@ public class OrphanRabbitMQClientProxyProvider : IOrphanClientProxyProvider
         if (options.IsPropertiesDefault())
             return null;
 
-        var f = new RabbitMQClientConnectionFactory(new SimpleOptions<RabbitMQClientOptions>(options), _loggerFactory);
+        var f = new RabbitMQClientConnectionFactory(new MQConnection(options, true, _loggerFactory));
         var clientProxy = new ClientProxy<TService>(
             f,
             new SimpleOptions<NClientOptions>(_nClientOption.CurrentValue),

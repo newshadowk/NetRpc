@@ -1,4 +1,6 @@
-﻿namespace NetRpc.RabbitMQ;
+﻿using Proxy.RabbitMQ;
+
+namespace NetRpc.RabbitMQ;
 
 /// <summary>
 /// Support OptionName.

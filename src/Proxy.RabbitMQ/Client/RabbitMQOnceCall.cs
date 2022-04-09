@@ -13,14 +13,9 @@ namespace Proxy.RabbitMQ;
 public sealed class RabbitMQOnceCall : IDisposable
 {
     private readonly CheckWriteOnceBlock<string> _clientToServiceQueueOnceBlock = new();
-    private readonly IModel _mainChannel;
-    private readonly IConnection _subConnection;
     private volatile IModel? _subChannel;
-    private readonly MainWatcher _mainWatcher;
-    private readonly SubWatcher _subWatcher;
     private readonly ILogger _logger;
-    private readonly string _rpcQueue;
-    private readonly TimeSpan _firstReplyTimeOut;
+    private readonly MQConnection _conn;
     private string _clientToServiceQueue = null!;
     private volatile bool _disposed;
     private string _serviceToClientQueue = null!;
@@ -32,19 +27,13 @@ public sealed class RabbitMQOnceCall : IDisposable
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>?>>? ReceivedAsync;
     public event EventHandler? Disconnected;
 
-    public RabbitMQOnceCall(IConnection subConnection, IModel mainChannel, MainWatcher mainWatcher, SubWatcher subWatcher, string rpcQueue, TimeSpan firstReplyTimeOut, ILogger logger)
+    public RabbitMQOnceCall(MQConnection conn)
     {
-        _mainChannel = mainChannel;
-        _subConnection = subConnection;
-        _rpcQueue = rpcQueue;
-        _firstReplyTimeOut = firstReplyTimeOut;
-        _logger = logger;
+        _conn = conn;
+        _logger = conn.Logger;
 
-        _subWatcher = subWatcher;
-        _subWatcher.Disconnected += SubWatcherDisconnected;
-
-        _mainWatcher = mainWatcher;
-        _mainWatcher.Disconnected += MainWatcherDisconnected;
+        _conn.SubWatcher.Disconnected += SubWatcherDisconnected;
+        _conn.MainWatcher!.Disconnected += MainWatcherDisconnected;
     }
 
     private void MainWatcherDisconnected(object? sender, EventArgs e)
@@ -80,10 +69,10 @@ public sealed class RabbitMQOnceCall : IDisposable
             return;
         _disposed = true;
 
-        _mainWatcher.Disconnected -= MainWatcherDisconnected;
-        _subWatcher.Disconnected -= SubWatcherDisconnected;
-        _mainChannel.BasicReturn -= BasicReturn;
-        _subWatcher.Remove(_clientToServiceQueue);
+        _conn.MainWatcher!.Disconnected -= MainWatcherDisconnected;
+        _conn.SubWatcher.Disconnected -= SubWatcherDisconnected;
+        _conn.MainChannel.BasicReturn -= BasicReturn;
+        _conn.SubWatcher.Remove(_clientToServiceQueue);
         _subChannel?.TryBasicCancel(_consumerTag, _logger);
         _subChannel?.Close();
     }
@@ -92,9 +81,9 @@ public sealed class RabbitMQOnceCall : IDisposable
     {
         if (!isPost)
         {
-            _mainChannel.BasicReturn += BasicReturn;
+            _conn.MainChannel.BasicReturn += BasicReturn;
             _firstCid = Guid.NewGuid().ToString("N");
-            _subChannel = _subConnection.CreateModel();
+            _subChannel = _conn.SubConnection.CreateModel();
             _serviceToClientQueue = _subChannel.QueueDeclare().QueueName;
             Debug.WriteLine($"client: _serviceToClientQueue: {_serviceToClientQueue}");
             var consumer = new AsyncEventingBasicConsumer(_subChannel);
@@ -126,7 +115,7 @@ public sealed class RabbitMQOnceCall : IDisposable
     private async Task SendPostAsync(ReadOnlyMemory<byte> buffer, int mqPriority)
     {
         var p = CreateProp(mqPriority);
-        _mainChannel.BasicPublish("", _rpcQueue, p, buffer);
+        _conn.MainChannel.BasicPublish("", _conn.Options.RpcQueue, p, buffer);
         await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>?>(null));
     }
 
@@ -135,26 +124,26 @@ public sealed class RabbitMQOnceCall : IDisposable
         var p = CreateProp(mqPriority);
         p.ReplyTo = _serviceToClientQueue;
         p.CorrelationId = _firstCid;
-        _mainChannel.BasicPublish("", _rpcQueue, true, p, buffer);
+        _conn.MainChannel.BasicPublish("", _conn.Options.RpcQueue, true, p, buffer);
 
         try
         {
-            _clientToServiceQueue = await _clientToServiceQueueOnceBlock.WriteOnceBlock.ReceiveAsync(_firstReplyTimeOut, _firstCts.Token);
+            _clientToServiceQueue = await _clientToServiceQueueOnceBlock.WriteOnceBlock.ReceiveAsync(_conn.Options.FirstReplyTimeOut, _firstCts.Token);
         }
         catch (OperationCanceledException)
         {
-            var msg = $"message has not sent to queue, check queue if exist : {_rpcQueue}.";
+            var msg = $"message has not sent to queue, check queue if exist : {_conn.Options.RpcQueue}.";
             _logger.LogWarning(msg);
             throw new InvalidOperationException(msg);
         }
         catch (TimeoutException)
         {
-            var msg = $"wait first reply timeout, {_firstReplyTimeOut.TotalSeconds} seconds.";
+            var msg = $"wait first reply timeout, {_conn.Options.FirstReplyTimeOut.TotalSeconds} seconds.";
             _logger.LogWarning(msg);
             throw new TimeoutException(msg);
         }
 
-        _subWatcher.Add(_clientToServiceQueue);
+        _conn.SubWatcher.Add(_clientToServiceQueue);
         isFirstSend = false;
     }
 
@@ -195,7 +184,7 @@ public sealed class RabbitMQOnceCall : IDisposable
 
     private IBasicProperties CreateProp(int mqPriority = 0)
     {
-        var p = _mainChannel.CreateBasicProperties();
+        var p = _conn.MainChannel.CreateBasicProperties();
         if (mqPriority != 0)
             p.Priority = (byte)mqPriority;
         return p;

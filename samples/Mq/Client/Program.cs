@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetRpc;
 using NetRpc.RabbitMQ;
+using Proxy.RabbitMQ;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Helper = TestHelper.Helper;
@@ -132,24 +133,12 @@ internal class Program
         var f2 = Helper.GetMQOptions().CreateConnectionFactory();
         var c2 = f2.CreateConnection();
 
-        Task.Run(() =>
-        {
-            while (true)
-            {
-                T21(c2);
-            }
-        });
+        var ch2 = c2.CreateModel();
 
-        Task.Run(() =>
-        {
-            while (true)
-            {
-                T21(c2);
-            }
-        });
-
-        //var ch2 = c2.CreateModel();
-
+        ch2.Close();
+        ch2.Close();
+        c2.Close();
+        c2.Close();
 
 
         //ch.BasicReturn += (sender, args) =>

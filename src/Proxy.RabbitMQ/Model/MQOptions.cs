@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NetRpc.RabbitMQ;
+namespace Proxy.RabbitMQ;
 
 public class MQOptions
 {

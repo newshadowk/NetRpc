@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
-using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
 
 namespace Proxy.RabbitMQ;
 
-public class SubWatcher
+public sealed class SubWatcher : IDisposable
 {
     private readonly ExclusiveChecker _checker;
     private readonly BusyTimer _t = new(5000);
@@ -57,9 +56,14 @@ public class SubWatcher
     {
         Disconnected?.Invoke(this, e);
     }
+
+    public void Dispose()
+    {
+        _t.Dispose();
+    }
 }
 
-public class MainWatcher
+public sealed class MainWatcher : IDisposable
 {
     private readonly IConnection _subConnection;
     private readonly string _queue;
@@ -77,7 +81,6 @@ public class MainWatcher
 
     private Task ElapsedAsync(object sender, ElapsedEventArgs e)
     {
-        
         if (!Check(_queue))
             OnDisconnected();
         return Task.CompletedTask;
@@ -111,6 +114,11 @@ public class MainWatcher
     private void OnDisconnected()
     {
         Disconnected?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void Dispose()
+    {
+        _t.Dispose();
     }
 }
 

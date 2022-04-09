@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using NetRpc.Contract;
 using Proxy.RabbitMQ;
 using RabbitMQ.Client;
@@ -10,18 +9,18 @@ namespace NetRpc.RabbitMQ;
 
 public class RabbitMQClientConnection : IClientConnection
 {
-    private readonly IConnection _mainConnection;
+    private readonly MQConnection _conn;
     private readonly MQOptions _opt;
     private readonly RabbitMQOnceCall _call;
 
-    public RabbitMQClientConnection(IConnection mainConnection, IConnection subConnection, IModel mainChannel, MainWatcher mainWatcher, SubWatcher subWatcher, MQOptions opt, ILogger logger)
+    public RabbitMQClientConnection(MQConnection conn)
     {
-        _opt = opt;
-        _call = new RabbitMQOnceCall(subConnection, mainChannel, mainWatcher, subWatcher, opt.RpcQueue, opt.FirstReplyTimeOut, logger);
+        _conn = conn;
+        _opt = conn.Options;
+        _call = new RabbitMQOnceCall(conn);
         _call.ReceivedAsync += CallReceived;
         _call.Disconnected += CallDisconnected;
-        _mainConnection = mainConnection;
-        _mainConnection.ConnectionShutdown += MainConnectionShutdown;
+        _conn.MainConnection.ConnectionShutdown += MainConnectionShutdown;
     }
 
     private void CallDisconnected(object? sender, EventArgs e)
@@ -44,7 +43,7 @@ public class RabbitMQClientConnection : IClientConnection
 
     public ValueTask DisposeAsync()
     {
-        _mainConnection.ConnectionShutdown -= MainConnectionShutdown;
+        _conn.MainConnection.ConnectionShutdown -= MainConnectionShutdown;
         _call.Dispose();
         return new ValueTask();
     }

@@ -9,57 +9,38 @@ namespace Proxy.RabbitMQ;
 
 public sealed class Service : IDisposable
 {
+    private readonly MQConnection _conn;
     public event AsyncEventHandler<EventArgsT<CallSession>>? ReceivedAsync;
-    private readonly IAutorecoveringConnection _mainConnection;
-    private readonly IModel _mainChannel;
-    private readonly IConnection _subConnection;
-    private readonly string _rpcQueue;
-    private readonly int _prefetchCount;
-    private readonly int _maxPriority;
     private readonly ILogger _logger;
     private volatile bool _disposed;
-    private volatile bool _stoped;
+    private volatile bool _stopped;
     private volatile string? _consumerTag;
-    private readonly SubWatcher _subWatcher;
-    private readonly ExclusiveChecker _checker;
     private readonly object _lockDispose = new ();
 
-    public Service(ConnectionFactory mainFactory, ConnectionFactory subFactory, string rpcQueue, int prefetchCount, int maxPriority, ILogger logger)
+    public Service(MQOptions options, ILoggerFactory factory)
     {
-        _logger = logger;
-        _mainConnection = (IAutorecoveringConnection)mainFactory.CreateConnectionLoop(logger);
-        _mainConnection.ConnectionShutdown += (_, e) => _logger.LogInformation($"Service ConnectionShutdown, {e.ReplyCode}, {e.ReplyText}");
-        _mainConnection.ConnectionRecoveryError += (_, e) => _logger.LogInformation($"Service ConnectionRecoveryError, {e.Exception.Message}");
-        _mainConnection.RecoverySucceeded += (_, _) => _logger.LogInformation("Service RecoverySucceeded");
-
-        _mainChannel = _mainConnection.CreateModel();
-
-        _subConnection = subFactory.CreateConnectionLoop(logger);
-        _checker = new ExclusiveChecker(_subConnection);
-        _subWatcher = new SubWatcher(_checker);
-        _rpcQueue = rpcQueue;
-        _prefetchCount = prefetchCount;
-        _maxPriority = maxPriority;
+        _conn = new MQConnection(options, false, factory);
+        _logger = _conn.Logger;
     }
 
     public void Open()
     {
         var args = new Dictionary<string, object>();
-        if (_maxPriority > 0)
-            args.Add("x-max-priority", _maxPriority);
+        if (_conn.Options.MaxPriority > 0)
+            args.Add("x-max-priority", _conn.Options.MaxPriority);
 
-        _mainChannel.QueueDeclare(_rpcQueue, false, false, true, args);
-        var consumer = new AsyncEventingBasicConsumer(_mainChannel);
-        _mainChannel.BasicQos(0, (ushort)_prefetchCount, false);
-        _consumerTag = _mainChannel.BasicConsume(_rpcQueue, true, consumer);
+        _conn.MainChannel.QueueDeclare(_conn.Options.RpcQueue, false, false, true, args);
+        var consumer = new AsyncEventingBasicConsumer(_conn.MainChannel);
+        _conn.MainChannel.BasicQos(0, (ushort)_conn.Options.PrefetchCount, false);
+        _consumerTag = _conn.MainChannel.BasicConsume(_conn.Options.RpcQueue, true, consumer);
         consumer.Received += (_, e) =>
         {
-            if (!_checker.Check(e.BasicProperties.ReplyTo))
+            if (!_conn.Checker.Check(e.BasicProperties.ReplyTo))
             {
                 _logger.LogWarning($"request ignore, {e.BasicProperties.ReplyTo} is not found.");
                 return Task.CompletedTask;
             }
-            return OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_subConnection, _subWatcher, e, _logger)));
+            return OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_conn.SubConnection, _conn.SubWatcher, e, _logger)));
         };
     }
 
@@ -67,13 +48,13 @@ public sealed class Service : IDisposable
     {
         lock (_lockDispose)
         {
-            if (_stoped)
+            if (_stopped)
                 return;
-            _stoped = true;
+            _stopped = true;
 
             _logger.LogInformation("Service Stop start.");
-            _mainChannel.TryBasicCancel(_consumerTag, _logger);
-            _mainChannel.TryClose(_logger);
+            _conn.MainChannel.TryBasicCancel(_consumerTag, _logger);
+            _conn.MainChannel.TryClose(_logger);
             _logger.LogInformation("Service Stop ok.");
         }
     }
@@ -89,8 +70,7 @@ public sealed class Service : IDisposable
 
             Stop();
 
-            _subConnection.TryClose(_logger);
-            _mainConnection.TryClose(_logger);
+            _conn.Dispose();
             _logger.LogInformation("Service Dispose ok.");
         }
     }

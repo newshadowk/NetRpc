@@ -57,9 +57,9 @@ public class ClientProxy<TService> : IClientProxy<TService> where TService : cla
             AdditionHeader,
             optionsName);
 
-        var invoker = new ClientMethodRetryInvoker(callFactory, GetServiceTypeSleepDurations(),GetServiceTypeNotRetryAttribute(), _logger);
+        var invoker = new ClientMethodRetryInvoker(callFactory, GetClientRetryAttribute(), GetServiceTypeNotRetryAttribute(), _logger);
         Proxy = SimpleDispatchProxyAsync.Create<TService>(invoker);
-        ((SimpleDispatchProxyAsync) (object) Proxy).ExceptionInvoked += ProxyExceptionInvoked;
+        ((SimpleDispatchProxyAsync)(object)Proxy).ExceptionInvoked += ProxyExceptionInvoked;
         _tHearbeat = new Timer(nClientOptions.Value.HearbeatInterval);
         _tHearbeat.Elapsed += THearbeatElapsed!;
     }
@@ -81,12 +81,11 @@ public class ClientProxy<TService> : IClientProxy<TService> where TService : cla
     {
     }
 
-    private ClientRetryAttribute? GetServiceTypeSleepDurations()
+    private ClientRetryAttribute? GetClientRetryAttribute()
     {
         var ret = _clientRetryAttributes.GetOrAdd(typeof(TService),
             t => t.GetCustomAttribute<ClientRetryAttribute>(true));
         return ret;
-        //return typeof(TService).GetCustomAttribute<ClientRetryAttribute>(true);
     }
 
     private ClientNotRetryAttribute? GetServiceTypeNotRetryAttribute()

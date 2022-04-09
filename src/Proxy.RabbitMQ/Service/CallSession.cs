@@ -81,7 +81,6 @@ public sealed class CallSession : IDisposable
 
     private bool DeclareCallBack()
     {
-
         try
         {
             _subChannel = _subConnection.CreateModel();

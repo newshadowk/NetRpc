@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NetRpc.RabbitMQ;
+using Proxy.RabbitMQ;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Helper = TestHelper.Helper;
