@@ -1,6 +1,8 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetRpc;
 using NetRpc.RabbitMQ;
+using Proxy.RabbitMQ;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -40,8 +42,6 @@ public static class NRabbitMQServiceExtensions
                 throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
         }
 
-        services.AddSingleton<IOrphanClientProxyProvider, OrphanRabbitMQClientProxyProvider>();
-
         return services;
     }
 
@@ -56,6 +56,12 @@ public static class NRabbitMQServiceExtensions
         services.AddNServiceContract(typeof(TService),
             p => ((ClientProxy<TService>) p.GetService(typeof(ClientProxy<TService>))!).Proxy,
             serviceLifetime);
+        return services;
+    }
+
+    public static IServiceCollection AddNRabbitMQStatus(this IServiceCollection services)
+    {
+        services.TryAddSingleton(typeof(QueueStatus));
         return services;
     }
 }

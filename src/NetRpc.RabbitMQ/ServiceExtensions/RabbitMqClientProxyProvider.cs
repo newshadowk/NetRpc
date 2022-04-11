@@ -7,15 +7,15 @@ namespace NetRpc.RabbitMQ;
 
 public class RabbitMQClientProxyProvider : ClientProxyProviderBase
 {
-    private readonly IOptionsMonitor<RabbitMQClientOptions> _rabbitMQClientOptions;
-    private readonly IOptionsMonitor<NClientOptions> _nClientOption;
+    private readonly IOptionsSnapshot<RabbitMQClientOptions> _rabbitMQClientOptions;
+    private readonly IOptions<NClientOptions> _nClientOption;
     private readonly IOptions<ClientMiddlewareOptions> _clientMiddlewareOptions;
     private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILoggerFactory _loggerFactory;
 
-    public RabbitMQClientProxyProvider(IOptionsMonitor<RabbitMQClientOptions> rabbitMQClientOptions,
-        IOptionsMonitor<NClientOptions> nClientOption,
+    public RabbitMQClientProxyProvider(IOptionsSnapshot<RabbitMQClientOptions> rabbitMQClientOptions,
+        IOptions<NClientOptions> nClientOption,
         IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
         IActionExecutingContextAccessor actionExecutingContextAccessor,
         IServiceProvider serviceProvider,
@@ -38,49 +38,7 @@ public class RabbitMQClientProxyProvider : ClientProxyProviderBase
         var f = new RabbitMQClientConnectionFactory(new MQConnection(options, true, _loggerFactory));
         var clientProxy = new ClientProxy<TService>(
             f,
-            new SimpleOptions<NClientOptions>(_nClientOption.CurrentValue),
-            _clientMiddlewareOptions,
-            _actionExecutingContextAccessor,
-            _serviceProvider,
-            _loggerFactory);
-        return clientProxy;
-    }
-}
-
-public class OrphanRabbitMQClientProxyProvider : IOrphanClientProxyProvider
-{
-    private readonly IOptionsMonitor<RabbitMQClientOptions> _rabbitMQClientOptions;
-    private readonly IOptionsMonitor<NClientOptions> _nClientOption;
-    private readonly IOptions<ClientMiddlewareOptions> _clientMiddlewareOptions;
-    private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ILoggerFactory _loggerFactory;
-
-    public OrphanRabbitMQClientProxyProvider(IOptionsMonitor<RabbitMQClientOptions> rabbitMQClientOptions,
-        IOptionsMonitor<NClientOptions> nClientOption,
-        IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
-        IActionExecutingContextAccessor actionExecutingContextAccessor,
-        IServiceProvider serviceProvider,
-        ILoggerFactory loggerFactory)
-    {
-        _rabbitMQClientOptions = rabbitMQClientOptions;
-        _nClientOption = nClientOption;
-        _clientMiddlewareOptions = clientMiddlewareOptions;
-        _actionExecutingContextAccessor = actionExecutingContextAccessor;
-        _serviceProvider = serviceProvider;
-        _loggerFactory = loggerFactory;
-    }
-
-    public ClientProxy<TService>? CreateProxy<TService>(string optionsName) where TService : class
-    {
-        var options = _rabbitMQClientOptions.Get(optionsName);
-        if (options.IsPropertiesDefault())
-            return null;
-
-        var f = new RabbitMQClientConnectionFactory(new MQConnection(options, true, _loggerFactory));
-        var clientProxy = new ClientProxy<TService>(
-            f,
-            new SimpleOptions<NClientOptions>(_nClientOption.CurrentValue),
+            new SimpleOptions<NClientOptions>(_nClientOption.Value),
             _clientMiddlewareOptions,
             _actionExecutingContextAccessor,
             _serviceProvider,

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using NetRpc;
 using NetRpc.Grpc;
 using NetRpc.RabbitMQ;
+using Proxy.RabbitMQ;
 using Helper = TestHelper.Helper;
 
 namespace Client;
@@ -76,7 +77,7 @@ public class MyHost : IHostedService
         });
     }
 
-    private void ClientProxy_ExceptionInvoked(object sender, EventArgsT<Exception> e)
+    private void ClientProxy_ExceptionInvoked(object sender, NetRpc.EventArgsT<Exception> e)
     {
         Console.WriteLine($"ClientProxy_ExceptionInvoked, {e.Value.Message}");
     }

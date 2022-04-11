@@ -26,7 +26,9 @@ internal class Program
             .ConfigureServices((_, services) =>
             {
                 services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
+                services.Configure<QueueStatusOptions>(i => i.CopyFrom(Helper.GetMQOptions()));
                 services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+                services.AddNRabbitMQStatus();
             }).ConfigureLogging((_, loggingBuilder) =>
             {
                 loggingBuilder.AddConsole();
@@ -34,7 +36,7 @@ internal class Program
             .Build();
         await mpHost.RunAsync();
     }
-
+    
     private static async Task T0()
     {
         Console.WriteLine("start");

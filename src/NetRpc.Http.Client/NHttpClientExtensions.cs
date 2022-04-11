@@ -30,8 +30,6 @@ public static class NHttpClientExtensions
                 throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
         }
 
-        services.AddSingleton<IOrphanClientProxyProvider, OrphanHttpClientProxyProvider>();
-
         return services;
     }
 }

@@ -1,4 +1,5 @@
-﻿using Proxy.RabbitMQ;
+﻿
+using Proxy.RabbitMQ;
 
 namespace NetRpc.RabbitMQ;
 

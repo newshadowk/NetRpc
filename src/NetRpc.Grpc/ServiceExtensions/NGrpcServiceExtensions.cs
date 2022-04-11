@@ -73,8 +73,6 @@ public static class NGrpcServiceExtensions
                 throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
         }
 
-        services.AddSingleton<IOrphanClientProxyProvider, OrphanNGrpcClientProxyProvider>();
-
         return services;
     }
 

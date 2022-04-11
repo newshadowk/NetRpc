@@ -96,4 +96,14 @@ public static class Helper
             log.LogWarning(e, null);
         }
     }
+
+    public static void CopyPropertiesFrom<T>(this T toObj, T fromObj)
+    {
+        var properties = typeof(T).GetProperties();
+        if (properties.Length == 0)
+            return;
+
+        foreach (var p in properties)
+            p.SetValue(toObj, p.GetValue(fromObj, null), null);
+    }
 }

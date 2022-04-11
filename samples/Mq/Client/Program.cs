@@ -35,15 +35,15 @@ internal class Program
 
         //await Test_P(1);
 
-        //try
-        //{
-        //    var s = await _proxyAsync.Call2("123");
-        //    Console.WriteLine($"ret:{s}");
-        //}
-        //catch (Exception e)
-        //{
-        //    Console.WriteLine(e);
-        //}
+        try
+        {
+            var s = await _proxyAsync.Call2("123");
+            Console.WriteLine($"ret:{s}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
 
         //try
         //{
@@ -60,7 +60,7 @@ internal class Program
         //Console.WriteLine("ReadLine");
         //Console.ReadLine();
 
-        DoT();
+        //DoT();
     }
 
     private static async Task T0()

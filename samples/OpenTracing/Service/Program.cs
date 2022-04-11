@@ -95,13 +95,11 @@ public class T1
 internal class Service : IService
 {
     private readonly IClientProxyFactory _factory;
-    private readonly IOrphanClientProxyFactory _factory2;
     private readonly ILogger<Service> _logger;
 
-    public Service(IClientProxyFactory factory, IOrphanClientProxyFactory factory2, ILogger<Service> logger)
+    public Service(IClientProxyFactory factory, ILogger<Service> logger)
     {
         _factory = factory;
-        _factory2 = factory2;
         _logger = logger;
     }
 

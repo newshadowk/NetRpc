@@ -146,7 +146,6 @@ public static class NServiceExtensions
         }
 
         services.TryAddSingleton<IActionExecutingContextAccessor, ActionExecutingContextAccessor>();
-        services.TryAddSingleton<IOrphanClientProxyFactory, OrphanClientProxyFactory>();
 
         return services;
     }
