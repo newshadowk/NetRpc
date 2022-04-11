@@ -28,7 +28,7 @@ internal class Program
                 services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
                 services.Configure<QueueStatusOptions>(i => i.CopyFrom(Helper.GetMQOptions()));
                 services.AddNServiceContract<IServiceAsync, ServiceAsync>();
-                services.AddNRabbitMQStatus();
+                services.AddNRabbitMQQueueStatus();
             }).ConfigureLogging((_, loggingBuilder) =>
             {
                 loggingBuilder.AddConsole();

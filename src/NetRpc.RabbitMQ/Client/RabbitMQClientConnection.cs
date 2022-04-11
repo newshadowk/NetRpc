@@ -66,9 +66,13 @@ public class RabbitMQClientConnection : IClientConnection
         {
             await _call.SendAsync(buffer, isPost, mqPriority);
         }
-        catch (TimeoutException e)
+        catch (MqHandshakeInnerException e)
         {
-            throw new MqHandshakeException(e.Message);
+            throw new MqHandshakeException(e.QueueCount);
+        }
+        catch (MaxQueueCountInnerException e)
+        {
+            throw new MaxQueueCountException(e.QueueCount);
         }
     }
 

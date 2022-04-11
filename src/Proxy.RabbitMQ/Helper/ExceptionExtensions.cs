@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace NetRpc.Contract;
+namespace Proxy.RabbitMQ;
 
 public static class ExceptionExtensions
 {

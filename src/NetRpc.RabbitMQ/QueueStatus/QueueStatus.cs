@@ -10,7 +10,7 @@ public sealed class QueueStatus : IDisposable
 {
     private readonly MQOptions _options;
     private readonly IAutorecoveringConnection _mainConnection;
-    private volatile IModel _mainChannel;
+    private readonly IModel _mainChannel;
 
     public QueueStatus(MQOptions options, ILoggerFactory factory)
     {
@@ -28,8 +28,6 @@ public sealed class QueueStatus : IDisposable
     {
         try
         {
-            if (_mainChannel.IsClosed)
-                _mainChannel = _mainConnection.CreateModel();
             var ok = _mainChannel.QueueDeclarePassive(_options.RpcQueue);
             return (int)ok.MessageCount;
         }

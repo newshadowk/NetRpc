@@ -34,6 +34,19 @@ public sealed class MQConnection : IDisposable
 
     public IAutorecoveringConnection SubConnection { get; }
 
+    public int GetMainQueueCount()
+    {
+        try
+        {
+            var ok = MainChannel.QueueDeclarePassive(Options.RpcQueue);
+            return (int)ok.MessageCount;
+        }
+        catch
+        {
+            return -1;
+        }
+    }
+
     public ExclusiveChecker Checker { get; }
 
     public ILogger Logger { get; }

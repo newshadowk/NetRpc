@@ -59,9 +59,10 @@ public static class NRabbitMQServiceExtensions
         return services;
     }
 
-    public static IServiceCollection AddNRabbitMQStatus(this IServiceCollection services)
+    public static IServiceCollection AddNRabbitMQQueueStatus(this IServiceCollection services)
     {
-        services.TryAddSingleton(typeof(QueueStatus));
+        services.TryAddSingleton<QueueStatus>();
+        services.TryAddSingleton<QueueStatusProvider>();
         return services;
     }
 }

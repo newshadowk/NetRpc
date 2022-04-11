@@ -5,20 +5,20 @@ using NetRpc.Contract;
 namespace NetRpc;
 
 [Serializable]
-public class MqHandshakeException : Exception
+public class MaxQueueCountException : Exception
 {
     public int QueueCount { get; set; }
 
-    public MqHandshakeException()
+    public MaxQueueCountException()
     {
     }
 
-    public MqHandshakeException(int queueCount)
+    public MaxQueueCountException(int queueCount)
     {
         QueueCount = queueCount;
     }
 
-    protected MqHandshakeException(SerializationInfo info, StreamingContext context) : base(info, context)
+    protected MaxQueueCountException(SerializationInfo info, StreamingContext context) : base(info, context)
     {
         this.SetObjectData(info);
     }
@@ -31,6 +31,6 @@ public class MqHandshakeException : Exception
 
     public override string ToString()
     {
-        return $"MqHandshakeException QueueCount:{QueueCount}";
+        return $"MaxQueueCountException QueueCount:{QueueCount}";
     }
 }

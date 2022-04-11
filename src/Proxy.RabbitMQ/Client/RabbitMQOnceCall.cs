@@ -121,6 +121,17 @@ public sealed class RabbitMQOnceCall : IDisposable
 
     private async Task SendFirstAsync(ReadOnlyMemory<byte> buffer, int mqPriority)
     {
+        var mainQueueCount = _conn.GetMainQueueCount();
+        if (mainQueueCount == -1)
+        {
+            var msg = $"mainQueueCount is -1, check queue if exist : {_conn.Options.RpcQueue}.";
+            _logger.LogWarning(msg);
+            throw new InvalidOperationException(msg);
+        }
+        
+        if (_conn.Options.MaxQueueCount != 0 && mainQueueCount > _conn.Options.MaxQueueCount)
+            throw new MaxQueueCountInnerException(mainQueueCount);
+
         var p = CreateProp(mqPriority);
         p.ReplyTo = _serviceToClientQueue;
         p.CorrelationId = _firstCid;
@@ -140,7 +151,7 @@ public sealed class RabbitMQOnceCall : IDisposable
         {
             var msg = $"wait first reply timeout, {_conn.Options.FirstReplyTimeOut.TotalSeconds} seconds.";
             _logger.LogWarning(msg);
-            throw new TimeoutException(msg);
+            throw new MqHandshakeInnerException(mainQueueCount);
         }
 
         _conn.SubWatcher.Add(_clientToServiceQueue);

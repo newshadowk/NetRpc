@@ -12,6 +12,11 @@ public class MQOptions
     public string RpcQueue { get; set; } = null!;
 
     /// <summary>
+    /// Default value is 0 (max value), greater than will throw MaxQueueCountException.
+    /// </summary>
+    public int MaxQueueCount { get; set; }
+
+    /// <summary>
     /// Default value is 1.
     /// </summary>
     public int PrefetchCount { get; set; } = 1;
@@ -24,11 +29,11 @@ public class MQOptions
     /// <summary>
     /// Default value is 1 minutes.
     /// </summary>
-    //public TimeSpan FirstReplyTimeOut { get; set; } = TimeSpan.FromMinutes(1);
-    public TimeSpan FirstReplyTimeOut { get; set; } = TimeSpan.FromSeconds(5);
+    public TimeSpan FirstReplyTimeOut { get; set; } = TimeSpan.FromMinutes(10);
+    //public TimeSpan FirstReplyTimeOut { get; set; } = TimeSpan.FromSeconds(5);
 
     public MQOptions(string host, string virtualHost, string rpcQueue, int port, string user, string password,
-        int prefetchCount = 1, int maxPriority = 0)
+        int prefetchCount = 1, int maxPriority = 0, int maxQueueCount = 0)
     {
         User = user;
         Password = password;
@@ -38,10 +43,12 @@ public class MQOptions
         RpcQueue = rpcQueue;
         PrefetchCount = prefetchCount;
         MaxPriority = maxPriority;
+        MaxQueueCount = maxQueueCount;
     }
 
     public MQOptions()
     {
+
     }
 
     public override string ToString()

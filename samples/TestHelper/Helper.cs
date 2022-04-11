@@ -19,7 +19,7 @@ public static class Helper
         var port = 5672;
         var rpcQueue = "rpc_test";
         var prefetchCount = 1;
-        var p = new MQOptions(host, virtualHost, rpcQueue, port, user, password, prefetchCount);
+        var p = new MQOptions(host, virtualHost, rpcQueue, port, user, password, prefetchCount, 0, 1);
         return p;
     }
 

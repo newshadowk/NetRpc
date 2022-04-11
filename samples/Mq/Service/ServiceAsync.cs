@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,35 +12,42 @@ namespace Service;
 
 internal class ServiceAsync : IServiceAsync
 {
-    private readonly QueueStatus _status;
+    //private readonly QueueStatus _status;
 
-    public ServiceAsync(QueueStatus status)
-    {
-        _status = status;
-    }
+    //public ServiceAsync(QueueStatusProvider provider)
+    //{ 
+    //    _status = provider.CreateQueueStatus("a1");
+    //    _status = provider.CreateQueueStatus("a1");
+    //}
+
+    private static readonly HashSet<string> _ha = new();
 
     public async Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Func<CustomCallbackObj, Task> cb, CancellationToken token)
     {
-
-        //Console.Write($"[ComplexCallAsync]...Received length:{data.Length}, {Helper.ReadStr(data)}, ");
         Console.Write($"[ComplexCallAsync]...Received length:{data.Length}");
         MemoryStream ms = new();
         await data.CopyToAsync(ms);
 
-        for (var i = 1; i <= 3; i++)
+        for (var i = 1; i <= 300; i++)
         {
             Console.Write($"{i}, ");
             await cb(new CustomCallbackObj {Progress = i});
-            //try
-            //{
-            //    await Task.Delay(2000, token);
-            //}
-            //catch (Exception e)
-            //{
-            //    Console.WriteLine("cancel!!!");
-            //    throw;
-            //}
+            try
+            {
+                await Task.Delay(1000, token);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("cancel!!!");
+                throw;
+            }
         }
+
+        //if (!_ha.Contains(obj.Name))
+        //{
+        //    _ha.Add(obj.Name);
+        //    throw new ArgumentNullException("123");
+        //}
 
         Console.WriteLine("...Send TestFile.txt");
         return new ComplexStream
@@ -52,7 +60,7 @@ internal class ServiceAsync : IServiceAsync
 
     public async Task<string> Call2(string s)
     {
-        Console.WriteLine($"{_status.GetMainQueueMsgCount()}");
+        //Console.WriteLine($"{_status.GetMainQueueMsgCount()}");
         Console.WriteLine($"Call2 {s}");
         return s;
     }

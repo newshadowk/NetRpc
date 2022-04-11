@@ -65,6 +65,10 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
         {
             throw;
         }
+        catch (MaxQueueCountException)
+        {
+            throw;
+        }
         catch (Exception e)
         {
             _logger.LogWarning($"Client SendCmdAsync error. {callParam}");

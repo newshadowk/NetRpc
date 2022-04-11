@@ -35,25 +35,25 @@ internal class Program
 
         //await Test_P(1);
 
-        try
-        {
-            var s = await _proxyAsync.Call2("123");
-            Console.WriteLine($"ret:{s}");
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-
         //try
         //{
-        //    await Test_ComplexCallAsync();
+        //    var s = await _proxyAsync.Call2("123");
+        //    Console.WriteLine($"ret:{s}");
         //}
         //catch (Exception e)
         //{
         //    Console.WriteLine(e);
-        //    throw;
         //}
+
+        try
+        {
+            await Test_ComplexCallAsync(1);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
 
         //await Task.Delay(1000);
 
@@ -269,7 +269,7 @@ internal class Program
             //await Task.Delay(1000);
             try
             {
-                await Test_ComplexCallAsync();
+                await Test_ComplexCallAsync(i++);
                 //await Test_Call2(i++);
                 //await Test_P(i++);
             }
@@ -295,13 +295,13 @@ internal class Program
         await _proxyAsync.P(new CustomObj() { Name = i.ToString() });
     }
 
-    private static async Task Test_ComplexCallAsync()
+    private static async Task Test_ComplexCallAsync(int i)
     {
         using (var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
         {
             Console.Write("[ComplexCallAsync]...Send TestFile.txt...");
             var complexStream = await _proxyAsync.ComplexCallAsync(
-                new CustomObj { Date = DateTime.Now, Name = "ComplexCall" },
+                new CustomObj { Date = DateTime.Now, Name = "ComplexCall" + i },
                 stream,
                 async i => Console.Write(", " + i.Progress),
                 default);
