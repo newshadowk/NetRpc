@@ -44,22 +44,22 @@ internal class Program
         //    Console.WriteLine(e);
         //}
 
-        try
-        {
-            await Test_ComplexCallAsync(1);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
+        //try
+        //{
+        //    await Test_ComplexCallAsync(1);
+        //}
+        //catch (Exception e)
+        //{
+        //    Console.WriteLine(e);
+        //    throw;
+        //}
 
         //await Task.Delay(1000);
 
         //Console.WriteLine("ReadLine");
         //Console.ReadLine();
 
-        //DoT();
+        DoT();
     }
 
     private static async Task T0()

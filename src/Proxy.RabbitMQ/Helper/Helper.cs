@@ -8,8 +8,42 @@ namespace Proxy.RabbitMQ;
 
 public static class Helper
 {
+    private static void PopulateFromUrl(MQOptions options)
+    {
+        if (options.Url == null)
+            return;
+        //amqp://user:pass@host:port/virtualHost
+        var s = options.Url!;
+
+        //user:pass@host:port/virtualHost
+        s = s[7..];
+        var i = s.IndexOf(":", StringComparison.Ordinal);
+        options.User = s[..i];
+
+        //pass@host:port/virtualHost
+        s = s[++i..];
+        i = s.IndexOf("@", StringComparison.Ordinal);
+        options.Password = s[..i];
+
+        //host:port/virtualHost
+        s = s[++i..];
+        i = s.IndexOf(":", StringComparison.Ordinal);
+        options.Host = s[..i];
+
+        //port/virtualHost
+        s = s[++i..];
+        i = s.IndexOf("/", StringComparison.Ordinal);
+        options.Port = int.Parse(s[..i]);
+
+        //virtualHost
+        s = s[++i..];
+        options.VirtualHost = s;
+    }
+
     public static ConnectionFactory CreateConnectionFactory(this MQOptions options)
     {
+        PopulateFromUrl(options);
+
         return new()
         {
             UserName = options.User,
@@ -20,13 +54,15 @@ public static class Helper
             AutomaticRecoveryEnabled = true,
             NetworkRecoveryInterval = TimeSpan.FromSeconds(5),
             DispatchConsumersAsync = true,
-            ConsumerDispatchConcurrency =  options.PrefetchCount,
+            ConsumerDispatchConcurrency = options.PrefetchCount,
             RequestedHeartbeat = TimeSpan.FromSeconds(10)
         };
     }
 
     public static ConnectionFactory CreateConnectionFactory_TopologyRecovery_Disabled(this MQOptions options)
     {
+        PopulateFromUrl(options);
+
         return new()
         {
             UserName = options.User,
@@ -108,15 +144,5 @@ public static class Helper
         {
             log.LogWarning(e, null);
         }
-    }
-
-    public static void CopyPropertiesFrom<T>(this T toObj, T fromObj)
-    {
-        var properties = typeof(T).GetProperties();
-        if (properties.Length == 0)
-            return;
-
-        foreach (var p in properties)
-            p.SetValue(toObj, p.GetValue(fromObj, null), null);
     }
 }

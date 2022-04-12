@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using NetRpc.RabbitMQ;
 using Proxy.RabbitMQ;
 
 namespace TestHelper;
@@ -12,14 +11,12 @@ public static class Helper
     public static MQOptions GetMQOptions()
     {
         //config your RabbitMQ parameters before run
-        var user = "guest";
-        var password = "guest";
-        var host = "192.168.0.50";
-        var virtualHost = "testvh";
-        var port = 5672;
-        var rpcQueue = "rpc_test";
-        var prefetchCount = 1;
-        var p = new MQOptions(host, virtualHost, rpcQueue, port, user, password, prefetchCount, 0, 1);
+        var p = new MQOptions
+        {
+            Url = "amqp://guest:guest@192.168.0.50:5672/testvh",
+            RpcQueue = "rpc.test",
+            PrefetchCount = 1
+        };
         return p;
     }
 

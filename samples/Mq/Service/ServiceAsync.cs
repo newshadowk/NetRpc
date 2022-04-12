@@ -28,19 +28,19 @@ internal class ServiceAsync : IServiceAsync
         MemoryStream ms = new();
         await data.CopyToAsync(ms);
 
-        for (var i = 1; i <= 30000; i++)
+        for (var i = 1; i <= 3; i++)
         {
             Console.Write($"{i}, ");
             await cb(new CustomCallbackObj {Progress = i});
-            try
-            {
-                await Task.Delay(1000, token);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("cancel!!!");
-                throw;
-            }
+            //try
+            //{
+            //    await Task.Delay(1000, token);
+            //}
+            //catch (Exception e)
+            //{
+            //    Console.WriteLine("cancel!!!");
+            //    throw;
+            //}
         }
 
         //if (!_ha.Contains(obj.Name))

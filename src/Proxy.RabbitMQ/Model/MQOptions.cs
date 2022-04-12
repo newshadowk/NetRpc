@@ -4,6 +4,7 @@ namespace Proxy.RabbitMQ;
 
 public class MQOptions
 {
+    public string? Url { get; set; }
     public string User { get; set; } = null!;
     public string Password { get; set; } = null!;
     public string Host { get; set; } = null!;
@@ -32,27 +33,9 @@ public class MQOptions
     public TimeSpan FirstReplyTimeOut { get; set; } = TimeSpan.FromMinutes(1);
     //public TimeSpan FirstReplyTimeOut { get; set; } = TimeSpan.FromSeconds(5);
 
-    public MQOptions(string host, string virtualHost, string rpcQueue, int port, string user, string password,
-        int prefetchCount = 1, int maxPriority = 0, int maxQueueCount = 0)
-    {
-        User = user;
-        Password = password;
-        Host = host;
-        VirtualHost = virtualHost;
-        Port = port;
-        RpcQueue = rpcQueue;
-        PrefetchCount = prefetchCount;
-        MaxPriority = maxPriority;
-        MaxQueueCount = maxQueueCount;
-    }
-
-    public MQOptions()
-    {
-
-    }
-
     public override string ToString()
     {
-        return $"{nameof(User)}:{User}, {Host}://{VirtualHost}/{RpcQueue}:{Port}, {nameof(PrefetchCount)}:{PrefetchCount}";
+        return $"{nameof(User)}:{User}, {Host}://{VirtualHost}/{RpcQueue}:{Port}, {nameof(PrefetchCount)}:{PrefetchCount}, " +
+               $"{nameof(MaxQueueCount)}:{MaxQueueCount}, {nameof(MaxPriority)}:{MaxPriority}, {nameof(FirstReplyTimeOut)}:{FirstReplyTimeOut.TotalSeconds} seconds.";
     }
 }
