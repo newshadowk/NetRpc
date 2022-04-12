@@ -33,16 +33,6 @@ public sealed class RabbitMQOnceCall : IDisposable
         _logger = conn.Logger;
 
         _conn.SubWatcher.Disconnected += SubWatcherDisconnected;
-        _conn.MainWatcher!.Disconnected += MainWatcherDisconnected;
-    }
-
-    private void MainWatcherDisconnected(object? sender, EventArgs e)
-    {
-        if (_disposed)
-            return;
-        
-        _logger.LogWarning("client MainWatcherDisconnected");
-        OnDisconnected();
     }
 
     private async void SubWatcherDisconnected(object? sender, EventArgsT<string> e)
@@ -69,7 +59,6 @@ public sealed class RabbitMQOnceCall : IDisposable
             return;
         _disposed = true;
 
-        _conn.MainWatcher!.Disconnected -= MainWatcherDisconnected;
         _conn.SubWatcher.Disconnected -= SubWatcherDisconnected;
         _conn.MainChannel.BasicReturn -= BasicReturn;
         _conn.SubWatcher.Remove(_clientToServiceQueue);

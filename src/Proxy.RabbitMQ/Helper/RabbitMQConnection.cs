@@ -8,7 +8,7 @@ public sealed class MQConnection : IDisposable
 {
     private volatile bool _disposed;
 
-    public MQConnection(MQOptions options, bool mainWatcherEnabled, ILoggerFactory factory)
+    public MQConnection(MQOptions options, ILoggerFactory factory)
     {
         Logger = factory.CreateLogger("NetRpc");
 
@@ -22,8 +22,6 @@ public sealed class MQConnection : IDisposable
         SubConnection = (IAutorecoveringConnection)options.CreateConnectionFactory_TopologyRecovery_Disabled().CreateConnectionLoop(Logger);
         Checker = new ExclusiveChecker(SubConnection);
         SubWatcher = new SubWatcher(Checker);
-        if (mainWatcherEnabled)
-            MainWatcher = new MainWatcher(MainConnection, options.RpcQueue);
 
         MainChannel = MainConnection.CreateModel();
     }
@@ -55,15 +53,12 @@ public sealed class MQConnection : IDisposable
 
     public SubWatcher SubWatcher { get; }
 
-    public MainWatcher? MainWatcher { get; }
-
     public void Dispose()
     {
         if (_disposed)
             return;
         _disposed = true;
         SubWatcher.Dispose();
-        MainWatcher?.Dispose();
 
         MainChannel.TryClose(Logger);
         SubConnection.TryClose(Logger);

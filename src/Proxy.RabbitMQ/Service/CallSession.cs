@@ -15,6 +15,7 @@ public sealed class CallSession : IDisposable
     private readonly BasicDeliverEventArgs _e;
     private readonly ILogger _logger;
     private readonly SubWatcher _subWatcher;
+    private readonly IModel _mainChannel;
     private readonly string _serviceToClientQueue;
     private volatile bool _disposed;
     private readonly bool _isPost;
@@ -23,7 +24,7 @@ public sealed class CallSession : IDisposable
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
     public event EventHandler? Disconnected;
 
-    public CallSession(IConnection subConnection, SubWatcher subWatcher, BasicDeliverEventArgs e, ILogger logger)
+    public CallSession(IConnection subConnection, SubWatcher subWatcher, IModel mainChannel, BasicDeliverEventArgs e, ILogger logger)
     {
         _isPost = e.BasicProperties.ReplyTo == null;
         _serviceToClientQueue = e.BasicProperties.ReplyTo!;
@@ -32,6 +33,7 @@ public sealed class CallSession : IDisposable
         _logger = logger;
         _subConnection.ConnectionShutdown += ConnectionShutdown;
         _subWatcher = subWatcher;
+        _mainChannel = mainChannel;
         _subWatcher.Disconnected += SubWatcherDisconnected;
         _subWatcher.Add(_serviceToClientQueue);
     }
@@ -117,7 +119,8 @@ public sealed class CallSession : IDisposable
         if (_disposed)
             return;
         _disposed = true;
-
+        
+        _mainChannel.TryBasicAck(_e.DeliveryTag, _logger);
         _subConnection.ConnectionShutdown -= ConnectionShutdown;
         _subWatcher.Disconnected -= SubWatcherDisconnected;
         _subWatcher.Remove(_serviceToClientQueue);

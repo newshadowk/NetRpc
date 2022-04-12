@@ -16,7 +16,7 @@ public sealed class RabbitMQClientConnectionFactory : IClientConnectionFactory
 
     public RabbitMQClientConnectionFactory(IOptions<RabbitMQClientOptions> options, ILoggerFactory factory)
     {
-        _conn = new MQConnection(options.Value, true, factory);
+        _conn = new MQConnection(options.Value, factory);
     }
 
     public IClientConnection Create(bool isRetry)

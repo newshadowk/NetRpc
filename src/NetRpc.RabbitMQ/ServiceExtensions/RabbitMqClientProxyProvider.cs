@@ -35,7 +35,7 @@ public class RabbitMQClientProxyProvider : ClientProxyProviderBase
         if (options.IsPropertiesDefault())
             return null;
 
-        var f = new RabbitMQClientConnectionFactory(new MQConnection(options, true, _loggerFactory));
+        var f = new RabbitMQClientConnectionFactory(new MQConnection(options, _loggerFactory));
         var clientProxy = new ClientProxy<TService>(
             f,
             new SimpleOptions<NClientOptions>(_nClientOption.Value),

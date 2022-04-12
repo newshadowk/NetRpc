@@ -63,65 +63,6 @@ public sealed class SubWatcher : IDisposable
     }
 }
 
-public sealed class MainWatcher : IDisposable
-{
-    private readonly IConnection _subConnection;
-    private readonly string _queue;
-    private readonly BusyTimer _t = new(5000);
-
-    public event EventHandler? Disconnected;
-
-    public MainWatcher(IConnection subConnection, string queue)
-    {
-        _subConnection = subConnection;
-        _queue = queue;
-        _t.ElapsedAsync += ElapsedAsync;
-        _t.Start();
-    }
-
-    private Task ElapsedAsync(object sender, ElapsedEventArgs e)
-    {
-        if (!Check(_queue))
-            OnDisconnected();
-        return Task.CompletedTask;
-    }
-
-    private bool Check(string queue)
-    {
-        IModel ch;
-        try
-        {
-            ch = _subConnection.CreateModel();
-        }
-        catch
-        {
-            return false;
-        }
-
-        try
-        {
-            using (ch)
-                ch.QueueDeclarePassive(queue);
-        }
-        catch
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    private void OnDisconnected()
-    {
-        Disconnected?.Invoke(this, EventArgs.Empty);
-    }
-
-    public void Dispose()
-    {
-        _t.Dispose();
-    }
-}
-
 public class ExclusiveChecker
 {
     private readonly IConnection _subConnection;

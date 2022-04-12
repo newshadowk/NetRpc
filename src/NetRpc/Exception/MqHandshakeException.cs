@@ -5,6 +5,7 @@ using NetRpc.Contract;
 namespace NetRpc;
 
 [Serializable]
+[NotRetry]
 public class MqHandshakeException : Exception
 {
     public int QueueCount { get; set; }

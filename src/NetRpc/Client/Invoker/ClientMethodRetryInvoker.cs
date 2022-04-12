@@ -195,6 +195,9 @@ internal sealed class ClientMethodRetryInvoker : IMethodInvoker
 
         public bool NeedRetry(Exception e)
         {
+            if (e.GetType().GetCustomAttribute<NotRetryAttribute>(true) != null)
+                return false;
+
             if (ExcludeExceptionTypes?.Length > 0)
             {
                 var notRetry = ExcludeExceptionTypes.Any(i => i.IsInstanceOfType(e));

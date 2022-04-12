@@ -19,7 +19,7 @@ public sealed class Service : IDisposable
 
     public Service(MQOptions options, ILoggerFactory factory)
     {
-        _conn = new MQConnection(options, false, factory);
+        _conn = new MQConnection(options,  factory);
         _logger = _conn.Logger;
     }
 
@@ -29,7 +29,7 @@ public sealed class Service : IDisposable
         if (_conn.Options.MaxPriority > 0)
             args.Add("x-max-priority", _conn.Options.MaxPriority);
 
-        _conn.MainChannel.QueueDeclare(_conn.Options.RpcQueue, false, false, true, args);
+        _conn.MainChannel.QueueDeclare(_conn.Options.RpcQueue, false, false, false, args);
         var consumer = new AsyncEventingBasicConsumer(_conn.MainChannel);
         _conn.MainChannel.BasicQos(0, (ushort)_conn.Options.PrefetchCount, false);
         _consumerTag = _conn.MainChannel.BasicConsume(_conn.Options.RpcQueue, false, consumer);
@@ -41,7 +41,7 @@ public sealed class Service : IDisposable
                 _conn.MainChannel.TryBasicAck(e.DeliveryTag, _logger);
                 return Task.CompletedTask;
             }
-            return OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_conn.SubConnection, _conn.SubWatcher, e, _logger)));
+            return OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_conn.SubConnection, _conn.SubWatcher, _conn.MainChannel, e, _logger)));
         };
     }
 
