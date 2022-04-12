@@ -32,12 +32,13 @@ public sealed class Service : IDisposable
         _conn.MainChannel.QueueDeclare(_conn.Options.RpcQueue, false, false, true, args);
         var consumer = new AsyncEventingBasicConsumer(_conn.MainChannel);
         _conn.MainChannel.BasicQos(0, (ushort)_conn.Options.PrefetchCount, false);
-        _consumerTag = _conn.MainChannel.BasicConsume(_conn.Options.RpcQueue, true, consumer);
+        _consumerTag = _conn.MainChannel.BasicConsume(_conn.Options.RpcQueue, false, consumer);
         consumer.Received += (_, e) =>
         {
             if (!_conn.Checker.Check(e.BasicProperties.ReplyTo))
             {
                 _logger.LogWarning($"request ignore, {e.BasicProperties.ReplyTo} is not found.");
+                _conn.MainChannel.TryBasicAck(e.DeliveryTag, _logger);
                 return Task.CompletedTask;
             }
             return OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_conn.SubConnection, _conn.SubWatcher, e, _logger)));

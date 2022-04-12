@@ -6,7 +6,6 @@ using DataContract;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetRpc;
-using NetRpc.RabbitMQ;
 using Proxy.RabbitMQ;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -20,7 +19,7 @@ internal class Program
 
     private static async Task Main(string[] args)
     {
-        await T1();
+        await T2();
         Console.Read();
     }
 
@@ -130,16 +129,9 @@ internal class Program
 
     private static async Task T2()
     {
-        var f2 = Helper.GetMQOptions().CreateConnectionFactory();
-        var c2 = f2.CreateConnection();
-
-        var ch2 = c2.CreateModel();
-
-        ch2.Close();
-        ch2.Close();
-        c2.Close();
-        c2.Close();
-
+        var f = Helper.GetMQOptions().CreateConnectionFactory();
+        var c = f.CreateConnection();
+        var ch = c.CreateModel();
 
         //ch.BasicReturn += (sender, args) =>
         //{
@@ -148,22 +140,25 @@ internal class Program
         //};
 
         //ch.BasicPublish("", "qn", true, null, Encoding.UTF8.GetBytes("123"));
-
-
-        //var qn = ch.QueueDeclare("rpc_test", false, false, false).QueueName;
-
-
-        //var consumer = new AsyncEventingBasicConsumer(ch);
-        //consumer.Received += ConsumerReceivedAsync;
-        //var _consumerTag = ch.BasicConsume(qn, true, consumer);
-
+        var qn = ch.QueueDeclare("rpc_test", false, false, false).QueueName;
+        ch.BasicQos(0, 1, false);
+        
+        var consumer = new AsyncEventingBasicConsumer(ch);
+        consumer.Received += async (_, e) =>
+        {
+            Console.WriteLine(Encoding.UTF8.GetString(e.Body.Span));
+            ch.BasicNack(e.DeliveryTag, false, false);
+        };
+        var _consumerTag = ch.BasicConsume(qn, false, consumer);
         //ch.BasicCancel(_consumerTag);
         //ch.Close();
         //c.Close();
 
-        //var f2 = Helper.GetMQOptions().CreateConnectionFactory();
-        //var c2 = f2.CreateConnection();
-        //var ch2 = c2.CreateModel();
+        var f2 = Helper.GetMQOptions().CreateConnectionFactory();
+        var c2 = f2.CreateConnection();
+        var ch2 = c2.CreateModel();
+
+        ch2.BasicPublish("", qn, null, Encoding.UTF8.GetBytes("123"));
 
         //while (true)
         //{
@@ -201,10 +196,6 @@ internal class Program
         //ch2.BasicPublish("", qn, null, Encoding.UTF8.GetBytes("123"));
     }
 
-    private static async Task ConsumerReceivedAsync(object sender, BasicDeliverEventArgs e)
-    {
-        Console.WriteLine(Encoding.UTF8.GetString(e.Body.Span));
-    }
 
     private static void Ch_ModelShutdown(object sender, ShutdownEventArgs e)
     {

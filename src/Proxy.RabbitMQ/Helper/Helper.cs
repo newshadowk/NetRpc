@@ -97,6 +97,19 @@ public static class Helper
         }
     }
 
+    public static void TryBasicAck(this IModel model, ulong deliveryTag, ILogger log)
+    {
+        try
+        {
+            if (model.IsOpen)
+                model.BasicAck(deliveryTag, false);
+        }
+        catch (Exception e)
+        {
+            log.LogWarning(e, null);
+        }
+    }
+
     public static void CopyPropertiesFrom<T>(this T toObj, T fromObj)
     {
         var properties = typeof(T).GetProperties();

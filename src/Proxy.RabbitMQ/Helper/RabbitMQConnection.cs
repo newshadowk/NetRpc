@@ -1,6 +1,4 @@
-﻿
-
-using System;
+﻿using System;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 
@@ -25,7 +23,7 @@ public sealed class MQConnection : IDisposable
         Checker = new ExclusiveChecker(SubConnection);
         SubWatcher = new SubWatcher(Checker);
         if (mainWatcherEnabled)
-            MainWatcher = new(MainConnection, options.RpcQueue);
+            MainWatcher = new MainWatcher(MainConnection, options.RpcQueue);
 
         MainChannel = MainConnection.CreateModel();
     }
