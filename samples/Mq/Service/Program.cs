@@ -41,7 +41,7 @@ internal class Program
     {
         Console.WriteLine("start");
 
-        var c = Helper.GetMQOptions().CreateConnectionFactory().CreateConnection();
+        var c = Helper.GetMQOptions().CreateMainConnectionFactory().CreateConnection();
         var ch = c.CreateModel();
         ch.QueueDeclare("rpc_test2", false, false, true, null);
         ch.BasicQos(0, 1, false);

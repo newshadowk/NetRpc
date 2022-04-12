@@ -64,7 +64,7 @@ internal class Program
 
     private static async Task T0()
     {
-        var f = Helper.GetMQOptions().CreateConnectionFactory();
+        var f = Helper.GetMQOptions().CreateMainConnectionFactory();
 
         var c = f.CreateConnection();
         c.CallbackException += C_CallbackException;
@@ -129,7 +129,7 @@ internal class Program
 
     private static async Task T2()
     {
-        var f = Helper.GetMQOptions().CreateConnectionFactory();
+        var f = Helper.GetMQOptions().CreateMainConnectionFactory();
         var c = f.CreateConnection();
         var ch = c.CreateModel();
 
@@ -154,7 +154,7 @@ internal class Program
         //ch.Close();
         //c.Close();
 
-        var f2 = Helper.GetMQOptions().CreateConnectionFactory();
+        var f2 = Helper.GetMQOptions().CreateMainConnectionFactory();
         var c2 = f2.CreateConnection();
         var ch2 = c2.CreateModel();
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
@@ -40,7 +41,7 @@ public static class Helper
         options.VirtualHost = s;
     }
 
-    public static ConnectionFactory CreateConnectionFactory(this MQOptions options)
+    public static ConnectionFactory CreateMainConnectionFactory(this MQOptions options, int prefetchCount = 1)
     {
         PopulateFromUrl(options);
 
@@ -54,12 +55,12 @@ public static class Helper
             AutomaticRecoveryEnabled = true,
             NetworkRecoveryInterval = TimeSpan.FromSeconds(5),
             DispatchConsumersAsync = true,
-            ConsumerDispatchConcurrency = options.PrefetchCount,
+            ConsumerDispatchConcurrency = prefetchCount,
             RequestedHeartbeat = TimeSpan.FromSeconds(10)
         };
     }
 
-    public static ConnectionFactory CreateConnectionFactory_TopologyRecovery_Disabled(this MQOptions options)
+    public static ConnectionFactory CreateSubConnectionFactory(this MQOptions options)
     {
         PopulateFromUrl(options);
 
@@ -74,7 +75,6 @@ public static class Helper
             TopologyRecoveryEnabled = false,
             NetworkRecoveryInterval = TimeSpan.FromSeconds(5),
             DispatchConsumersAsync = true,
-            ConsumerDispatchConcurrency =  options.PrefetchCount,
             RequestedHeartbeat = TimeSpan.FromSeconds(10)
         };
     } 
@@ -143,6 +143,22 @@ public static class Helper
         catch (Exception e)
         {
             log.LogWarning(e, null);
+        }
+    }
+
+    public static void CopyPropertiesFrom(this object toObj, object fromObj)
+    {
+        var srcPs = fromObj.GetType().GetProperties();
+        if (srcPs.Length == 0)
+            return;
+
+        var tgtPs = toObj.GetType().GetProperties().ToList();
+        tgtPs.RemoveAll(i => !i.CanWrite);
+        foreach (var srcP in srcPs)
+        {
+            var foundTgtP = tgtPs.FirstOrDefault(i => srcP.Name == i.Name);
+            if (foundTgtP != null)
+                foundTgtP.SetValue(toObj, srcP.GetValue(fromObj, null), null);
         }
     }
 }

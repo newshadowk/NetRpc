@@ -6,17 +6,17 @@ namespace NetRpc.RabbitMQ;
 
 public sealed class RabbitMQClientConnectionFactory : IClientConnectionFactory
 {
-    private readonly MQConnection _conn;
+    private readonly ClientConnection _conn;
     private volatile bool _disposed;
 
-    public RabbitMQClientConnectionFactory(MQConnection conn)
+    public RabbitMQClientConnectionFactory(ClientConnection conn)
     {
         _conn = conn;
     }
 
-    public RabbitMQClientConnectionFactory(IOptions<RabbitMQClientOptions> options, ILoggerFactory factory)
+    public RabbitMQClientConnectionFactory(IOptions<MQClientOptions> options, ILoggerFactory factory)
     {
-        _conn = new MQConnection(options.Value, factory);
+        _conn = new ClientConnection(options.Value, factory);
     }
 
     public IClientConnection Create(bool isRetry)

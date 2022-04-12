@@ -9,7 +9,7 @@ namespace Proxy.RabbitMQ;
 
 public sealed class Service : IDisposable
 {
-    private readonly MQConnection _conn;
+    private readonly ServiceConnection _conn;
     public event AsyncEventHandler<EventArgsT<CallSession>>? ReceivedAsync;
     private readonly ILogger _logger;
     private volatile bool _disposed;
@@ -17,9 +17,9 @@ public sealed class Service : IDisposable
     private volatile string? _consumerTag;
     private readonly object _lockDispose = new ();
 
-    public Service(MQOptions options, ILoggerFactory factory)
+    public Service(MQServiceOptions options, ILoggerFactory factory)
     {
-        _conn = new MQConnection(options,  factory);
+        _conn = new ServiceConnection(options, factory);
         _logger = _conn.Logger;
     }
 

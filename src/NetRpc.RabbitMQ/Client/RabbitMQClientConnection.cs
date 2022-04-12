@@ -13,7 +13,7 @@ public class RabbitMQClientConnection : IClientConnection
     private readonly MQOptions _opt;
     private readonly RabbitMQOnceCall _call;
 
-    public RabbitMQClientConnection(MQConnection conn)
+    public RabbitMQClientConnection(ClientConnection conn)
     {
         _conn = conn;
         _opt = conn.Options;

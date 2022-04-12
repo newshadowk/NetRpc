@@ -16,7 +16,7 @@ public sealed class QueueStatus : IDisposable
     {
         _options = options;
         var logger = factory.CreateLogger("NetRpc");
-        _mainConnection = (IAutorecoveringConnection)options.CreateConnectionFactory().CreateConnectionLoop(logger);
+        _mainConnection = (IAutorecoveringConnection)options.CreateMainConnectionFactory().CreateConnectionLoop(logger);
         _mainChannel = _mainConnection.CreateModel();
     }
 

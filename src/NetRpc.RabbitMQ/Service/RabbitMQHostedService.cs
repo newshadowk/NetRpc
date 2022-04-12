@@ -16,7 +16,7 @@ public sealed class RabbitMQHostedService : IHostedService
     private readonly Service? _service;
     private readonly ILogger _logger;
 
-    public RabbitMQHostedService(IOptions<RabbitMQServiceOptions> opt, BusyFlag busyFlag, RequestHandler requestHandler, ILoggerFactory factory)
+    public RabbitMQHostedService(IOptions<MQServiceOptions> opt, BusyFlag busyFlag, RequestHandler requestHandler, ILoggerFactory factory)
     {
         _busyFlag = busyFlag;
         _logger = factory.CreateLogger("NetRpc");

@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetRpc.Grpc;
 using NetRpc.RabbitMQ;
+using Proxy.RabbitMQ;
 using Helper = TestHelper.Helper;
 
 namespace Client;
@@ -21,7 +22,7 @@ internal class Program
                 services.Configure<GrpcClientOptions>("grpc", i => { i.Url = "http://localhost:50001"; });
                 services.AddNGrpcClient();
                 services.AddNClientContract<IService>("grpc");
-                services.Configure<RabbitMQClientOptions>("mq", i => { i.CopyFrom(Helper.GetMQOptions()); });
+                services.Configure<MQClientOptions>("mq", i => { i.CopyFrom(Helper.GetMQOptions()); });
                 services.AddNRabbitMQClient();
                 services.AddHostedService<H>();
             })

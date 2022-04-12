@@ -15,7 +15,7 @@ public sealed class RabbitMQOnceCall : IDisposable
     private readonly CheckWriteOnceBlock<string> _clientToServiceQueueOnceBlock = new();
     private volatile IModel? _subChannel;
     private readonly ILogger _logger;
-    private readonly MQConnection _conn;
+    private readonly ClientConnection _conn;
     private string _clientToServiceQueue = null!;
     private volatile bool _disposed;
     private string _serviceToClientQueue = null!;
@@ -27,7 +27,7 @@ public sealed class RabbitMQOnceCall : IDisposable
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>?>>? ReceivedAsync;
     public event EventHandler? Disconnected;
 
-    public RabbitMQOnceCall(MQConnection conn)
+    public RabbitMQOnceCall(ClientConnection conn)
     {
         _conn = conn;
         _logger = conn.Logger;

@@ -10,14 +10,11 @@ public static class Helper
 {
     public static MQOptions GetMQOptions()
     {
-        //config your RabbitMQ parameters before run
-        var p = new MQOptions
+        return new MQOptions
         {
             Url = "amqp://guest:guest@192.168.0.50:5672/testvh",
-            RpcQueue = "rpc.test",
-            PrefetchCount = 1
+            RpcQueue = "rpc.test"
         };
-        return p;
     }
 
     public static string GetTestFilePath()

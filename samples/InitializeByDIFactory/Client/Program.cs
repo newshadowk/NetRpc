@@ -30,8 +30,8 @@ internal class Program
                 services.AddHostedService<MyHost>();
 
                 services.AddNRabbitMQClient();
-                services.Configure<RabbitMQClientOptions>("mq1", context.Configuration.GetSection("Mq1"));
-                services.Configure<RabbitMQClientOptions>("mq2", context.Configuration.GetSection("Mq2"));
+                services.Configure<MQClientOptions>("mq1", context.Configuration.GetSection("Mq1"));
+                services.Configure<MQClientOptions>("mq2", context.Configuration.GetSection("Mq2"));
                 services.AddNClientContract<IService>("mq1");
 
                 services.AddNGrpcClient();

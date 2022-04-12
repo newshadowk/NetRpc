@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class NRabbitMQServiceExtensions
 {
     public static IServiceCollection AddNRabbitMQService(this IServiceCollection services,
-        Action<RabbitMQServiceOptions>? configureOptions = null)
+        Action<MQServiceOptions>? configureOptions = null)
     {
         if (configureOptions != null)
             services.Configure(configureOptions);
@@ -19,7 +19,7 @@ public static class NRabbitMQServiceExtensions
     }
 
     public static IServiceCollection AddNRabbitMQClient(this IServiceCollection services,
-        Action<RabbitMQClientOptions>? mQClientConfigureOptions = null,
+        Action<MQClientOptions>? mQClientConfigureOptions = null,
         Action<NClientOptions>? clientConfigureOptions = null,
         ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
     {
@@ -46,7 +46,7 @@ public static class NRabbitMQServiceExtensions
     }
 
     public static IServiceCollection AddNRabbitMQGateway<TService>(this IServiceCollection services,
-        Action<RabbitMQClientOptions>? mQClientConfigureOptions = null,
+        Action<MQClientOptions>? mQClientConfigureOptions = null,
         Action<NClientOptions>? clientConfigureOptions = null,
         ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
     {
