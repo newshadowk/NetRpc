@@ -28,7 +28,7 @@ internal class ServiceAsync : IServiceAsync
         MemoryStream ms = new();
         await data.CopyToAsync(ms);
 
-        for (var i = 1; i <= 300; i++)
+        for (var i = 1; i <= 30000; i++)
         {
             Console.Write($"{i}, ");
             await cb(new CustomCallbackObj {Progress = i});

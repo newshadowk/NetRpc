@@ -19,7 +19,7 @@ internal class Program
 
     private static async Task Main(string[] args)
     {
-        await T2();
+        await T1();
         Console.Read();
     }
 

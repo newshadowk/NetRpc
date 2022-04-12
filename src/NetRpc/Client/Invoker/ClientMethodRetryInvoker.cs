@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -27,24 +26,6 @@ internal sealed class ClientMethodRetryInvoker : IMethodInvoker
         _parentRetryAttribute = parentRetryAttribute;
         _clientNotRetryAttribute = clientNotRetryAttribute;
         _logger = logger;
-    }
-
-    public object? Invoke(MethodInfo targetMethod, object?[] args)
-    {
-        try
-        {
-            return CallAsync(targetMethod, args).Result;
-        }
-        catch (AggregateException e)
-        {
-            if (e.InnerException != null)
-            {
-                var edi = ExceptionDispatchInfo.Capture(e.InnerException);
-                edi.Throw();
-            }
-
-            throw;
-        }
     }
 
     public async Task InvokeAsync(MethodInfo targetMethod, object?[] args)

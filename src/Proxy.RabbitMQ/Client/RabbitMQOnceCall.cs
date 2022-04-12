@@ -118,7 +118,7 @@ public sealed class RabbitMQOnceCall : IDisposable
             throw new InvalidOperationException(msg);
         }
         
-        if (_conn.Options.MaxQueueCount != 0 && mainQueueCount > _conn.Options.MaxQueueCount)
+        if (_conn.Options.MaxQueueCount != 0 && mainQueueCount >= _conn.Options.MaxQueueCount)
             throw new MaxQueueCountInnerException(mainQueueCount);
 
         var p = CreateProp(mqPriority);

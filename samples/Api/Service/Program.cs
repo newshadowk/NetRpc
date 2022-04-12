@@ -22,7 +22,6 @@ internal class Program
             {
                 services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
                 services.AddNServiceContract<IServiceAsync, ServiceAsync>();
-                services.AddNServiceContract<IService, Service>();
             }).ConfigureLogging((hostContext, loggingBuilder) =>
             {
                 loggingBuilder.AddConsole();
@@ -42,7 +41,6 @@ internal class Program
                     {
                         services.AddNGrpcService();
                         services.AddNServiceContract<IServiceAsync, ServiceAsync>();
-                        services.AddNServiceContract<IService, Service>();
                     }).Configure(app => { app.UseNGrpc(); });
             }).Build();
         grpcHost.RunAsync();
@@ -62,7 +60,6 @@ internal class Program
                         services.AddSignalR();
                         services.AddNHttpService();
                         services.AddNServiceContract<IServiceAsync, ServiceAsync>();
-                        services.AddNServiceContract<IService, Service>();
                     })
                     .Configure(app =>
                     {

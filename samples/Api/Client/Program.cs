@@ -15,8 +15,7 @@ namespace Client;
 
 internal class Program
 {
-    private static IClientProxy<IService> _clientProxy;
-    private static IService _proxy;
+    private static IClientProxy<IServiceAsync> _clientProxy;
     private static IServiceAsync _proxyAsync;
 
     private static async Task Main(string[] args)
@@ -35,27 +34,23 @@ internal class Program
         Console.WriteLine("\r\n--------------- Client RabbitMQ ---------------");
         var services = new ServiceCollection();
         services.AddNClientContract<IServiceAsync>();
-        services.AddNClientContract<IService>();
         services.AddLogging(configure => configure.AddConsole());
         services.AddNRabbitMQClient(o => o.CopyFrom(Helper.GetMQOptions()));
         var sp = services.BuildServiceProvider();
-        _clientProxy = sp.GetService<IClientProxy<IService>>();
-        _clientProxy.Connected += (_, _) => Console.WriteLine("[event] Connected");
-        _clientProxy.DisConnected += (_, _) => Console.WriteLine("[event] DisConnected");
-        _clientProxy.ExceptionInvoked += (_, _) => Console.WriteLine("[event] ExceptionInvoked");
+        //_clientProxy = sp.GetService<IClientProxy<IServiceAsync>>();
+        //_clientProxy.Connected += (_, _) => Console.WriteLine("[event] Connected");
+        //_clientProxy.DisConnected += (_, _) => Console.WriteLine("[event] DisConnected");
+        //_clientProxy.ExceptionInvoked += (_, _) => Console.WriteLine("[event] ExceptionInvoked");
 
-        //Heartbeat
-        _clientProxy.HeartbeatAsync += (s, e) =>
-        {
-            Console.WriteLine("[event] Heartbeat");
-            ((IService)((IClientProxy)s).Proxy).Hearbeat();
-            return Task.CompletedTask;
-        };
-        //clientProxy.StartHeartbeat(true);
+        ////Heartbeat
+        //_clientProxy.HeartbeatAsync += async (s, e) =>
+        //{
+        //    Console.WriteLine("[event] Heartbeat"); 
+        //    await ((IServiceAsync)((IClientProxy)s).Proxy).Hearbeat();
+        //};
+        //_clientProxy.StartHeartbeat(true);
 
-        _proxy = _clientProxy.Proxy;
         _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
-        RunTest();
         await RunTestAsync();
     }
 
@@ -64,13 +59,9 @@ internal class Program
         Console.WriteLine("\r\n--------------- Client Grpc ---------------");
         var services = new ServiceCollection();
         services.AddNClientContract<IServiceAsync>();
-        services.AddNClientContract<IService>();
         services.AddNGrpcClient(o => o.Url = "http://localhost:50001");
         var sp = services.BuildServiceProvider();
-        _clientProxy = sp.GetService<IClientProxy<IService>>();
-        _proxy = _clientProxy.Proxy;
         _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
-        RunTest();
         await RunTestAsync();
     }
 
@@ -78,7 +69,6 @@ internal class Program
     {
         Console.WriteLine("\r\n--------------- Client Http ---------------");
         var services = new ServiceCollection();
-        services.AddNClientContract<IService>();
         services.AddNClientContract<IServiceAsync>();
         services.AddNHttpClient(o =>
         {
@@ -86,135 +76,9 @@ internal class Program
             o.ApiUrl = "http://localhost:50002/api";
         });
         var sp = services.BuildServiceProvider();
-        _clientProxy = sp.GetService<IClientProxy<IService>>();
-        _proxy = _clientProxy.Proxy;
         _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
-        RunTest();
         await RunTestAsync();
     }
-
-    #region Test
-
-    private static void RunTest()
-    {
-        Test_FilterAndHeader();
-        Test_SetAndGetObj();
-        Test_CallByCallBack();
-        Test_CallBySystemException();
-        Test_CallByCustomException();
-        Test_GetStream();
-        Test_SetStream();
-        Test_EchoStream();
-        Test_GetComplexStream();
-        Test_ComplexCall();
-    }
-
-    private static void Test_FilterAndHeader()
-    {
-        _clientProxy.AdditionHeader.Add("k1", "header value");
-        Console.Write("[FilterAndHeader], send:k1, header value");
-        _proxy.FilterAndHeader();
-    }
-
-    private static void Test_SetAndGetObj()
-    {
-        var obj = new CustomObj { Date = DateTime.Now, Name = "test" };
-        Console.Write($"[SetAndGetObj], send:{obj}, ");
-        var ret = _proxy.SetAndGetObj(obj);
-        Console.WriteLine($"receive:{ret}");
-    }
-
-    private static void Test_CallByCallBack()
-    {
-        Console.Write("[CallByCallBack]");
-        _proxy.CallByCallBack(async i => Console.Write(", " + i.Progress));
-        Console.WriteLine();
-    }
-
-    private static void Test_CallBySystemException()
-    {
-        Console.Write("[CallBySystemException]...");
-        try
-        {
-            _proxy.CallBySystemException();
-        }
-        catch (FaultException<NotImplementedException> e)
-        {
-            Console.WriteLine($"catch FaultException<NotImplementedException> {e}");
-        }
-        catch (NotImplementedException)
-        {
-            Console.WriteLine("catch NotImplementedException");
-        }
-    }
-
-    private static void Test_CallByCustomException()
-    {
-        Console.Write("[CallByCustomException]...");
-        try
-        {
-            _proxy.CallByCustomException();
-        }
-        catch (FaultException<CustomException>)
-        {
-            Console.WriteLine("catch FaultException<CustomException>");
-        }
-        catch (CustomException)
-        {
-            Console.WriteLine("catch CustomException");
-        }
-    }
-
-    private static void Test_GetStream()
-    {
-        Console.Write("[GetStream]...");
-        using (var stream = _proxy.GetStream())
-            Console.WriteLine($"length:{stream.Length}, {Helper.ReadStr(stream)}");
-    }
-
-    private static void Test_SetStream()
-    {
-        Console.Write("[SetStream]...Send TestFile.txt");
-        using (var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            _proxy.SetStream(stream);
-    }
-
-    private static void Test_EchoStream()
-    {
-        using (var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-        {
-            Console.Write("[EchoStream]...Send TestFile.txt...");
-            var data = _proxy.EchoStream(stream);
-            Console.WriteLine($"Received length:{data.Length}, {Helper.ReadStr(data)}");
-        }
-    }
-
-    private static void Test_GetComplexStream()
-    {
-        Console.Write("[GetComplexStream]...");
-        var complexStream = _proxy.GetComplexStream();
-        using (var stream = complexStream.Stream)
-            Console.WriteLine($"length:{stream.Length}, {Helper.ReadStr(stream)}");
-        Console.WriteLine($", otherInfo:{complexStream.OtherInfo}");
-    }
-
-    private static void Test_ComplexCall()
-    {
-        using (var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-        {
-            Console.Write("[ComplexCall]...Send TestFile.txt...");
-            var complexStream = _proxy.ComplexCall(
-                new CustomObj { Date = DateTime.Now, Name = "ComplexCall" },
-                stream,
-                async i => Console.Write(", " + i.Progress));
-
-            using (var stream2 = complexStream.Stream)
-                Console.Write($", receive length:{stream.Length}, {Helper.ReadStr(stream2)}");
-            Console.WriteLine($", otherInfo:{complexStream.OtherInfo}");
-        }
-    }
-
-    #endregion
 
     #region TestAsync
 

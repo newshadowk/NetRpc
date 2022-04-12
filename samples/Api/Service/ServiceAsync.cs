@@ -93,4 +93,9 @@ internal class ServiceAsync : IServiceAsync
             OtherInfo = "this is other info"
         };
     }
+
+    public async Task Hearbeat()
+    {
+        Console.WriteLine("Hearbeat");
+    }
 }

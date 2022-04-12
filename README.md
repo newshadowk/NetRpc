@@ -241,15 +241,6 @@ public interface IServiceAsync
     Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Func<CustomCallbackObj, Task> cb, CancellationToken token);
 }
 ```
-## Sync/Async
-NetRpc could use the both Sync/Async ways to defines the contract.
-```c#
-void Call();
-Task CallAsync();
-
-int GetValue();
-Task<int> GetValueAsync();
-```
 ## GenericType
 Make sure the genericType in contract is mark as **[Serializable]**.
 ```c#

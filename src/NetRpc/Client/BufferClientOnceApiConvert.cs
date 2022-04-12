@@ -17,6 +17,7 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
     private readonly DuplexPipe _streamPipe = new(new PipeOptions(pauseWriterThreshold: Helper.StreamBufferCacheCount, resumeWriterThreshold: 1));
     private int _disconnected;
     private volatile bool _streamResultReceived;
+    private volatile bool _resultReceived;
 
     public BufferClientOnceApiConvert(IClientConnection connection, ILogger logger)
     {
@@ -54,7 +55,8 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
         return _connection.SendAsync(new Request(RequestType.BufferEnd).All);
     }
 
-    public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, byte mqPriority, CancellationToken token)
+    public async Task<bool> SendCmdAsync(OnceCallParam callParam, MethodContext methodContext, Stream? stream, bool isPost, byte mqPriority,
+        CancellationToken token)
     {
         try
         {
@@ -90,7 +92,7 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
 
         async Task OnEnd(object sender, EventArgs e)
         {
-            ((ProxyStream) sender).FinishedAsync -= OnEnd;
+            ((ProxyStream)sender).FinishedAsync -= OnEnd;
             await DisposeAsync();
         }
 
@@ -114,6 +116,23 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
         }
     }
 
+    private async Task<bool> CheckReplyRepeatAsync()
+    {
+        if (!_resultReceived)
+            return false;
+
+        if (_streamResultReceived)
+        {
+            await _streamPipe.Output.CompleteAsync(new ReplyRepeatException());
+            await DisposeAsync();
+            return true;
+        }
+
+        await OnFaultAsync(new EventArgsT<object>(new ReplyRepeatException()));
+        await DisposeAsync();
+        return true;
+    }
+
     private async Task ConnectionReceivedAsync(object? sender, EventArgsT<ReadOnlyMemory<byte>> e)
     {
         var r = new Reply(e.Value);
@@ -121,6 +140,10 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
         {
             case ReplyType.ResultStream:
             {
+                if (await CheckReplyRepeatAsync())
+                    return;
+
+                _resultReceived = true;
                 _streamResultReceived = true;
                 if (TryToObject(r.Body, out long length))
                     OnResultStream(new EventArgsT<object>(GetReplyStream(length)));
@@ -130,6 +153,10 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
             }
             case ReplyType.CustomResult:
             {
+                if (await CheckReplyRepeatAsync())
+                    return;
+
+                _resultReceived = true;
                 if (TryToObject(r.Body, out CustomResult body))
                 {
                     if (body.HasStream)
@@ -146,12 +173,13 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
                 }
                 else
                     await OnFaultSerializationExceptionAsync();
+
                 break;
             }
             case ReplyType.Callback:
             {
                 if (TryToObject(r.Body, out var body))
-                    await OnCallbackAsync(new EventArgsT<object>(body!));
+                    await OnCallbackAsync(new EventArgsT<object>(body));
                 else
                     await OnFaultSerializationExceptionAsync();
                 break;
@@ -160,11 +188,12 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
             {
                 if (TryToObject(r.Body, out var body))
                 {
-                    await OnFaultAsync(new EventArgsT<object>(body!));
+                    await OnFaultAsync(new EventArgsT<object>(body));
                     await DisposeAsync();
                 }
                 else
                     await OnFaultSerializationExceptionAsync();
+
                 break;
             }
             case ReplyType.Buffer:
@@ -234,7 +263,7 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
     {
         if (TryToObject(body, out var obj2))
         {
-            obj = (T) obj2!;
+            obj = (T)obj2!;
             return true;
         }
 

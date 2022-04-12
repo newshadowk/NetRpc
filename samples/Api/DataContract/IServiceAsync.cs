@@ -30,4 +30,6 @@ public interface IServiceAsync
 
     /// <exception cref="TaskCanceledException"></exception>
     Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Func<CustomCallbackObj, Task> cb, CancellationToken token);
+
+    Task Hearbeat();
 }

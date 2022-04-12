@@ -29,7 +29,7 @@ public class MQOptions
     /// <summary>
     /// Default value is 1 minutes.
     /// </summary>
-    public TimeSpan FirstReplyTimeOut { get; set; } = TimeSpan.FromMinutes(10);
+    public TimeSpan FirstReplyTimeOut { get; set; } = TimeSpan.FromMinutes(1);
     //public TimeSpan FirstReplyTimeOut { get; set; } = TimeSpan.FromSeconds(5);
 
     public MQOptions(string host, string virtualHost, string rpcQueue, int port, string user, string password,

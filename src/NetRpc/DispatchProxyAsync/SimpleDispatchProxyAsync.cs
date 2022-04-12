@@ -21,26 +21,6 @@ public class SimpleDispatchProxyAsync : DispatchProxyAsync
         return (T) proxy;
     }
 
-    public static object Create(Type baseType, IMethodInvoker invoker)
-    {
-        object proxy = Create(baseType, typeof(SimpleDispatchProxyAsync));
-        ((SimpleDispatchProxyAsync) proxy).SetParams(invoker);
-        return proxy;
-    }
-
-    public override object? Invoke(MethodInfo method, object?[] args)
-    {
-        try
-        {
-            return _invoker.Invoke(method, args);
-        }
-        catch (Exception e)
-        {
-            OnExceptionInvoked(new EventArgsT<Exception>(e));
-            throw;
-        }
-    }
-
     public override async Task InvokeAsync(MethodInfo method, object?[] args)
     {
         try
