@@ -1008,4 +1008,4 @@ CreateClientProxy<TService>(Channel channel, int timeoutInterval = 1200000)
 * [samples/Gateway](samples/Gateway) Gateway for NetRpc.
 * [samples/OpenTracing](samples/OpenTracing) OpenTracing for NetRpc.
 * [samples/Retry](samples/Retry) Retry for NetRpc.
-* [samples/Retry](samples/ShortConn) ShortConn for NetRpc.
+* [samples/ShortConn](samples/ShortConn) ShortConn for NetRpc.
