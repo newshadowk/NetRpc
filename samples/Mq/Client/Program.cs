@@ -1,10 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.AspNetCore.Builder.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NetRpc;
 using Proxy.RabbitMQ;
 using RabbitMQ.Client;
@@ -15,7 +18,7 @@ namespace Client;
 
 internal class Program
 {
-    private static IServiceAsync _proxyAsync;
+    //private static IServiceAsync _proxyAsync;
 
     private static async Task Main(string[] args)
     {
@@ -28,9 +31,13 @@ internal class Program
         var services = new ServiceCollection();
         services.AddNClientContract<IServiceAsync>();
         services.AddLogging(configure => configure.AddConsole());
-        services.AddNRabbitMQClient(o => o.CopyFrom(Helper.GetMQOptions()));
+        //services.AddNRabbitMQClient(o => o.CopyFrom(Helper.GetMQOptions()));
+        services.AddNRabbitMQClient();
+        services.Configure<MQClientOptions>("a1", o => o.CopyFrom(Helper.GetMQOptions()));
+        //services.Configure<MQClientOptions>( o => o.CopyFrom(Helper.GetMQOptions()));
         var sp = services.BuildServiceProvider();
-        _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
+
+        //_proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
 
         //await Test_P(1);
 
@@ -59,7 +66,7 @@ internal class Program
         //Console.WriteLine("ReadLine");
         //Console.ReadLine();
 
-        DoT();
+        await DoT(sp);
     }
 
     private static async Task T0()
@@ -196,7 +203,6 @@ internal class Program
         //ch2.BasicPublish("", qn, null, Encoding.UTF8.GetBytes("123"));
     }
 
-
     private static void Ch_ModelShutdown(object sender, ShutdownEventArgs e)
     {
         Console.WriteLine("Ch_ModelShutdown");
@@ -252,15 +258,19 @@ internal class Program
         Console.WriteLine("C_CallbackException");
     }
 
-    private static async Task DoT()
+    private static async Task DoT(IServiceProvider sp)
     {
         var i = 0;
+        CancellationTokenSource cts = new CancellationTokenSource();
         while (true)
         {
+            using var serviceScope = sp.CreateScope();
+            var f = serviceScope.ServiceProvider.GetService<IClientProxyFactory>();
+            var s = f.CreateProxy<IServiceAsync>("a1").Proxy;
             //await Task.Delay(1000);
             try
             {
-                await Test_ComplexCallAsync(i++);
+                await Test_ComplexCallAsync(s, i++, cts.Token);
                 //await Test_Call2(i++);
                 //await Test_P(i++);
             }
@@ -269,33 +279,33 @@ internal class Program
                 Console.WriteLine($"error, {e.Message}");
             }
 
-            GC.Collect();
+            //GC.Collect();
         }
     }
 
     private static async Task Test_Call2(int i)
     {
-        Console.WriteLine($"send {i}");
-        await _proxyAsync.Call2(i.ToString());
-        Console.WriteLine("end");
+        //Console.WriteLine($"send {i}");
+        //await _proxyAsync.Call2(i.ToString());
+        //Console.WriteLine("end");
     }
 
     private static async Task Test_P(int i)
     {
         Console.WriteLine($"post {i}");
-        await _proxyAsync.P(new CustomObj() { Name = i.ToString() });
+        //await _proxyAsync.P(new CustomObj() { Name = i.ToString() });
     }
 
-    private static async Task Test_ComplexCallAsync(int i)
+    private static async Task Test_ComplexCallAsync(IServiceAsync service, int i, CancellationToken t)
     {
         using (var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
         {
             Console.Write("[ComplexCallAsync]...Send TestFile.txt...");
-            var complexStream = await _proxyAsync.ComplexCallAsync(
+            var complexStream = await service.ComplexCallAsync(
                 new CustomObj { Date = DateTime.Now, Name = "ComplexCall" + i },
                 stream,
                 async i => Console.Write(", " + i.Progress),
-                default);
+                t);
 
             using (complexStream.Stream)
             {

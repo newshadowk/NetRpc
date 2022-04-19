@@ -11,6 +11,7 @@ public class RabbitMQClientProxyProvider : ClientProxyProviderBase
     private readonly IOptions<NClientOptions> _nClientOption;
     private readonly IOptions<ClientMiddlewareOptions> _clientMiddlewareOptions;
     private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
+    private readonly ClientConnectionCache _clientConnectionCache;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILoggerFactory _loggerFactory;
 
@@ -18,6 +19,7 @@ public class RabbitMQClientProxyProvider : ClientProxyProviderBase
         IOptions<NClientOptions> nClientOption,
         IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
         IActionExecutingContextAccessor actionExecutingContextAccessor,
+        ClientConnectionCache clientConnectionCache,
         IServiceProvider serviceProvider,
         ILoggerFactory loggerFactory)
     {
@@ -25,6 +27,7 @@ public class RabbitMQClientProxyProvider : ClientProxyProviderBase
         _nClientOption = nClientOption;
         _clientMiddlewareOptions = clientMiddlewareOptions;
         _actionExecutingContextAccessor = actionExecutingContextAccessor;
+        _clientConnectionCache = clientConnectionCache;
         _serviceProvider = serviceProvider;
         _loggerFactory = loggerFactory;
     }
@@ -35,7 +38,7 @@ public class RabbitMQClientProxyProvider : ClientProxyProviderBase
         if (options.IsPropertiesDefault())
             return null;
 
-        var f = new RabbitMQClientConnectionFactory(new ClientConnection(options, _loggerFactory));
+        var f = new RabbitMQClientConnectionFactory(_clientConnectionCache.GetClient(optionsName));
         var clientProxy = new ClientProxy<TService>(
             f,
             new SimpleOptions<NClientOptions>(_nClientOption.Value),

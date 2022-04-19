@@ -15,7 +15,6 @@ namespace Client;
 
 internal class Program
 {
-    private static IClientProxy<IServiceAsync> _clientProxy;
     private static IServiceAsync _proxyAsync;
 
     private static async Task Main(string[] args)
@@ -37,18 +36,6 @@ internal class Program
         services.AddLogging(configure => configure.AddConsole());
         services.AddNRabbitMQClient(o => o.CopyFrom(Helper.GetMQOptions()));
         var sp = services.BuildServiceProvider();
-        //_clientProxy = sp.GetService<IClientProxy<IServiceAsync>>();
-        //_clientProxy.Connected += (_, _) => Console.WriteLine("[event] Connected");
-        //_clientProxy.DisConnected += (_, _) => Console.WriteLine("[event] DisConnected");
-        //_clientProxy.ExceptionInvoked += (_, _) => Console.WriteLine("[event] ExceptionInvoked");
-
-        ////Heartbeat
-        //_clientProxy.HeartbeatAsync += async (s, e) =>
-        //{
-        //    Console.WriteLine("[event] Heartbeat"); 
-        //    await ((IServiceAsync)((IClientProxy)s).Proxy).Hearbeat();
-        //};
-        //_clientProxy.StartHeartbeat(true);
 
         _proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
         await RunTestAsync();

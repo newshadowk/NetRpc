@@ -1,1 +1,0 @@
-@dotnet %~dp0\Client\bin\Debug\net6.0\client.dll

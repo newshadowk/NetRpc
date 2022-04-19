@@ -37,7 +37,7 @@ public class GrpcClientProxyProvider : ClientProxyProviderBase
             return null;
 
         var f = new GrpcClientConnectionFactory(new SimpleOptions<GrpcClientOptions>(options), _loggerFactory);
-        var clientProxy = new GrpcClientProxy<TService>(f,
+        var clientProxy = new ClientProxy<TService>(f,
             new SimpleOptions<NClientOptions>(_nClientOption.Value),
             _clientMiddlewareOptions,
             _actionExecutingContextAccessor,

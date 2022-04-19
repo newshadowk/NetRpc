@@ -13,8 +13,8 @@ public abstract class ClientProxyProviderBase : IClientProxyProvider
     public ClientProxy<TService>? CreateProxy<TService>(string optionsName) where TService : class
     {
         var key = $"{optionsName}_{typeof(TService).FullName}";
-        var clientProxy = (ClientProxy<TService>?)_caches.GetOrAdd(key, new Lazy<object?>(() =>
-           CreateProxyInner<TService>(optionsName), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
+        var clientProxy = (ClientProxy<TService>?) _caches.GetOrAdd(key, new Lazy<object?>(() =>
+            CreateProxyInner<TService>(optionsName), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
         return clientProxy;
     }
 

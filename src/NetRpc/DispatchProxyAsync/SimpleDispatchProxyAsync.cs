@@ -1,13 +1,10 @@
 ﻿using System.Threading.Tasks;
-using NetRpc;
 
 namespace System.Reflection;
 
 public class SimpleDispatchProxyAsync : DispatchProxyAsync
 {
     private IMethodInvoker _invoker = null!;
-
-    public event EventHandler<EventArgsT<Exception>>? ExceptionInvoked;
 
     private void SetParams(IMethodInvoker invoker)
     {
@@ -23,32 +20,11 @@ public class SimpleDispatchProxyAsync : DispatchProxyAsync
 
     public override async Task InvokeAsync(MethodInfo method, object?[] args)
     {
-        try
-        {
-            await _invoker.InvokeAsync(method, args);
-        }
-        catch (Exception e)
-        {
-            OnExceptionInvoked(new EventArgsT<Exception>(e));
-            throw;
-        }
+        await _invoker.InvokeAsync(method, args);
     }
 
     public override async Task<T> InvokeAsyncT<T>(MethodInfo method, object?[] args)
     {
-        try
-        {
-            return await _invoker.InvokeAsyncT<T>(method, args);
-        }
-        catch (Exception e)
-        {
-            OnExceptionInvoked(new EventArgsT<Exception>(e));
-            throw;
-        }
-    }
-
-    protected virtual void OnExceptionInvoked(EventArgsT<Exception> e)
-    {
-        ExceptionInvoked?.Invoke(this, e);
+        return await _invoker.InvokeAsyncT<T>(method, args);
     }
 }

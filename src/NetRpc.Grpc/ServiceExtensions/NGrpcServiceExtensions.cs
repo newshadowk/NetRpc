@@ -2,7 +2,6 @@
 using Grpc.AspNetCore.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetRpc;
 using NetRpc.Grpc;
 
@@ -43,7 +42,7 @@ public static class NGrpcServiceExtensions
     {
         services.AddNGrpcClient(grpcClientConfigureOptions, clientConfigureOptions, serviceLifetime);
         services.Configure<NClientOptions>(i => i.ForwardAllHeaders = true);
-        services.AddNGrpcClientContract<TService>(serviceLifetime);
+        services.AddNClientContract<TService>(serviceLifetime);
         services.AddNServiceContract(typeof(TService),
             p => ((IClientProxy<TService>) p.GetService(typeof(IClientProxy<TService>))!).Proxy, serviceLifetime);
         return services;
@@ -68,30 +67,6 @@ public static class NGrpcServiceExtensions
                 break;
             case ServiceLifetime.Transient:
                 services.AddTransient<IClientProxyProvider, GrpcClientProxyProvider>();
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
-        }
-
-        return services;
-    }
-
-    public static IServiceCollection AddNGrpcClientContract<TService>(this IServiceCollection services,
-        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
-    {
-        switch (serviceLifetime)
-        {
-            case ServiceLifetime.Singleton:
-                services.TryAddSingleton<IClientProxy<TService>, GrpcClientProxy<TService>>();
-                services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxy<TService>>()!.Proxy);
-                break;
-            case ServiceLifetime.Scoped:
-                services.TryAddScoped<IClientProxy<TService>, GrpcClientProxy<TService>>();
-                services.TryAddScoped(typeof(TService), p => p.GetService<IClientProxy<TService>>()!.Proxy);
-                break;
-            case ServiceLifetime.Transient:
-                services.TryAddTransient<IClientProxy<TService>, GrpcClientProxy<TService>>();
-                services.TryAddTransient(typeof(TService), p => p.GetService<IClientProxy<TService>>()!.Proxy);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);

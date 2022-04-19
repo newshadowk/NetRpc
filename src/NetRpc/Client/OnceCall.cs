@@ -62,7 +62,7 @@ public sealed class OnceCall : IOnceCall
 
             try
             {
-                //Send cmd
+                // Send cmd
                 var postStream = methodContext.ContractMethod.IsMQPost ? stream.StreamToBytes() : null;
                 var p = new OnceCallParam(header, action, postStream != null || stream != null,
                     postStream, stream.GetLength(), pureArgs);
@@ -73,10 +73,11 @@ public sealed class OnceCall : IOnceCall
                     return;
                 }
 
-                //sendCmd
+                // sendCmd
                 var sendStreamNext = await _convert.SendCmdAsync(p, methodContext, stream, methodContext.ContractMethod.IsMQPost, methodContext.ContractMethod.MqPriority, token);
 
-                //cancel token
+                // cancel token
+                // ReSharper disable once AsyncVoidLambda
                 _reg = token.Register(async () =>
                 {
                     try
@@ -92,7 +93,7 @@ public sealed class OnceCall : IOnceCall
                 if (!sendStreamNext || stream == null)
                     return;
 
-                //timeout
+                // timeout
 #pragma warning disable 4014
                 Task.Delay(TimeSpan.FromSeconds(60 * 20), _timeOutCts.Token).ContinueWith(async _ =>
 #pragma warning restore 4014
@@ -100,7 +101,7 @@ public sealed class OnceCall : IOnceCall
                     await SetFaultAsync(tcs, new TimeoutException($"Service is not response over {_timeoutInterval} ms, time out."));
                 }, _timeOutCts.Token);
 
-                //send stream
+                // send stream
                 await Helper.SendStreamAsync(_convert.SendBufferAsync, _convert.SendBufferEndAsync, stream, token, OnSendRequestStreamStarted, OnSendRequestStreamEndOrFault);
             }
             catch (Exception e)
@@ -121,10 +122,11 @@ public sealed class OnceCall : IOnceCall
     {
         _callbackDispatcher?.Dispose();
 
-        _convert.DisposingAsync += (_, _) =>
+        _convert.DisposingAsync += async (_, _) =>
         {
+            if (_reg != null)
+                await _reg.Value.DisposeAsync();
             _timeOutCts.Cancel();
-            return Task.CompletedTask;
         };
 
         //current thread is receive thread by lower layer (rabbitMQ or Grpc), can not be block.

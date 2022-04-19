@@ -11,7 +11,7 @@ namespace Proxy.RabbitMQ;
 public sealed class SubWatcher : IDisposable
 {
     private readonly ExclusiveChecker _checker;
-    private readonly BusyTimer _t = new(5000);
+    private readonly Timer _t = new (5000);
     private readonly SyncList<string> _list = new();
     private readonly object _lockCheck = new();
 
@@ -20,11 +20,11 @@ public sealed class SubWatcher : IDisposable
     public SubWatcher(ExclusiveChecker checker)
     {
         _checker = checker;
-        _t.ElapsedAsync += ElapsedAsync;
+        _t.Elapsed += Elapsed;
         _t.Start();
     }
 
-    private Task ElapsedAsync(object sender, ElapsedEventArgs e)
+    private void Elapsed(object? sender, ElapsedEventArgs e)
     {
         List<string> list;
         lock (_list.SyncRoot)
@@ -38,8 +38,6 @@ public sealed class SubWatcher : IDisposable
                     OnDisconnected(new EventArgsT<string>(s));
             }
         }
-
-        return Task.CompletedTask;
     }
 
     public void Add(string queue)

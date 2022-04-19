@@ -27,6 +27,7 @@ public static class NRabbitMQServiceExtensions
             services.Configure(mQClientConfigureOptions);
         services.AddLogging();
         services.AddNClientByClientConnectionFactory<RabbitMQClientConnectionFactory>(clientConfigureOptions, serviceLifetime);
+        services.AddSingleton<ClientConnectionCache>();
         switch (serviceLifetime)
         {
             case ServiceLifetime.Singleton:

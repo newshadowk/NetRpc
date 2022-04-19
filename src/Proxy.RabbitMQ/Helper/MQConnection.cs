@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Threading;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
 namespace Proxy.RabbitMQ;
@@ -82,4 +86,38 @@ public sealed class ServiceConnection : MQConnection
     }
 
     public MQServiceOptions Options { get; }
+}
+
+public class ClientConnectionCache
+{
+    private readonly IOptionsSnapshot<MQClientOptions>? _clientOptions;
+    private readonly ILoggerFactory _factory;
+
+    private readonly ConcurrentDictionary<string, Lazy<ClientConnection>> _clients = new(StringComparer.Ordinal);
+
+    public ClientConnectionCache(IOptionsSnapshot<MQClientOptions> clientOptions, ILoggerFactory factory)
+    {
+        _clientOptions = clientOptions;
+        _factory = factory;
+    }
+  
+    public ClientConnection GetClient(string optionsName = "")
+    {
+        if (_clientOptions == null)
+            throw new ArgumentNullException(nameof(_clientOptions));
+
+        var opt = _clientOptions.Get(optionsName);
+
+        var key = $"{optionsName}";
+        var conn = _clients.GetOrAdd(key, new Lazy<ClientConnection>(() =>
+            new ClientConnection(opt, _factory), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
+
+        return conn;
+    }
+
+    public void Close()
+    {
+        foreach (var i in _clients.Values) 
+            i.Value.Dispose();
+    }
 }
