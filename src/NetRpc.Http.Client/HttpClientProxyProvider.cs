@@ -6,14 +6,14 @@ namespace NetRpc.Http.Client;
 
 public class HttpClientProxyProvider : ClientProxyProviderBase
 {
-    private readonly IOptionsSnapshot<HttpClientOptions> _httpClientOptions;
+    private readonly IOptionsMonitor<HttpClientOptions> _httpClientOptions;
     private readonly IOptions<NClientOptions> _nClientOption;
     private readonly IOptions<ClientMiddlewareOptions> _clientMiddlewareOptions;
     private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILoggerFactory _loggerFactory;
 
-    public HttpClientProxyProvider(IOptionsSnapshot<HttpClientOptions> httpClientOptions,
+    public HttpClientProxyProvider(IOptionsMonitor<HttpClientOptions> httpClientOptions,
         IOptions<NClientOptions> nClientOption,
         IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
         IActionExecutingContextAccessor actionExecutingContextAccessor,

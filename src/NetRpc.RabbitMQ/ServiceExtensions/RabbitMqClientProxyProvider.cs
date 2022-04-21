@@ -7,7 +7,7 @@ namespace NetRpc.RabbitMQ;
 
 public class RabbitMQClientProxyProvider : ClientProxyProviderBase
 {
-    private readonly IOptionsSnapshot<MQClientOptions> _rabbitMQClientOptions;
+    private readonly IOptionsMonitor<MQClientOptions> _rabbitMQClientOptions;
     private readonly IOptions<NClientOptions> _nClientOption;
     private readonly IOptions<ClientMiddlewareOptions> _clientMiddlewareOptions;
     private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
@@ -15,7 +15,7 @@ public class RabbitMQClientProxyProvider : ClientProxyProviderBase
     private readonly IServiceProvider _serviceProvider;
     private readonly ILoggerFactory _loggerFactory;
 
-    public RabbitMQClientProxyProvider(IOptionsSnapshot<MQClientOptions> rabbitMQClientOptions,
+    public RabbitMQClientProxyProvider(IOptionsMonitor<MQClientOptions> rabbitMQClientOptions,
         IOptions<NClientOptions> nClientOption,
         IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
         IActionExecutingContextAccessor actionExecutingContextAccessor,

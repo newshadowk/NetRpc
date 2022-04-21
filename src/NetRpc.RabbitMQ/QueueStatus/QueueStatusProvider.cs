@@ -8,10 +8,10 @@ namespace NetRpc.RabbitMQ;
 
 public class QueueStatusProvider : QueueStatusProviderBase
 {
-    private readonly IOptionsSnapshot<QueueStatusOptions> _options;
+    private readonly IOptionsMonitor<QueueStatusOptions> _options;
     private readonly ILoggerFactory _factory;
 
-    public QueueStatusProvider(IOptionsSnapshot<QueueStatusOptions> options, ILoggerFactory factory)
+    public QueueStatusProvider(IOptionsMonitor<QueueStatusOptions> options, ILoggerFactory factory)
     {
         _options = options;
         _factory = factory;

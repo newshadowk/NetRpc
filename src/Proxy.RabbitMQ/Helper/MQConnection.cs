@@ -90,12 +90,12 @@ public sealed class ServiceConnection : MQConnection
 
 public class ClientConnectionCache
 {
-    private readonly IOptionsSnapshot<MQClientOptions>? _clientOptions;
+    private readonly IOptionsMonitor<MQClientOptions>? _clientOptions;
     private readonly ILoggerFactory _factory;
 
     private readonly ConcurrentDictionary<string, Lazy<ClientConnection>> _clients = new(StringComparer.Ordinal);
 
-    public ClientConnectionCache(IOptionsSnapshot<MQClientOptions> clientOptions, ILoggerFactory factory)
+    public ClientConnectionCache(IOptionsMonitor<MQClientOptions> clientOptions, ILoggerFactory factory)
     {
         _clientOptions = clientOptions;
         _factory = factory;

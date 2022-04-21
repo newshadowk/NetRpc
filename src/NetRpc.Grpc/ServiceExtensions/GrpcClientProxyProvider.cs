@@ -8,14 +8,14 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public class GrpcClientProxyProvider : ClientProxyProviderBase
 {
-    private readonly IOptionsSnapshot<GrpcClientOptions> _grpcClientOptions;
+    private readonly IOptionsMonitor<GrpcClientOptions> _grpcClientOptions;
     private readonly IOptions<NClientOptions> _nClientOption;
     private readonly IOptions<ClientMiddlewareOptions> _clientMiddlewareOptions;
     private readonly IServiceProvider _serviceProvider;
     private readonly IActionExecutingContextAccessor _actionExecutingContextAccessor;
     private readonly ILoggerFactory _loggerFactory;
 
-    public GrpcClientProxyProvider(IOptionsSnapshot<GrpcClientOptions> grpcClientOptions,
+    public GrpcClientProxyProvider(IOptionsMonitor<GrpcClientOptions> grpcClientOptions,
         IOptions<NClientOptions> nClientOption,
         IOptions<ClientMiddlewareOptions> clientMiddlewareOptions,
         IActionExecutingContextAccessor actionExecutingContextAccessor,

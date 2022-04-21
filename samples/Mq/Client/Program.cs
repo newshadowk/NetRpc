@@ -28,14 +28,21 @@ internal class Program
 
     private static async Task T1()
     {
+        //Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Development");
+
         var services = new ServiceCollection();
         services.AddNClientContract<IServiceAsync>();
         services.AddLogging(configure => configure.AddConsole());
         //services.AddNRabbitMQClient(o => o.CopyFrom(Helper.GetMQOptions()));
         services.AddNRabbitMQClient();
         services.Configure<MQClientOptions>("a1", o => o.CopyFrom(Helper.GetMQOptions()));
-        //services.Configure<MQClientOptions>( o => o.CopyFrom(Helper.GetMQOptions()));
+        services.Configure<MQClientOptions>(o => o.CopyFrom(Helper.GetMQOptions()));
         var sp = services.BuildServiceProvider();
+        using var serviceScope = sp.CreateScope();
+        var f = serviceScope.ServiceProvider.GetService<IClientProxyFactory>()!;
+        var clientProxy = f.CreateProxy<IServiceAsync>("a1");
+        await clientProxy.Proxy.Call2("sdf");
+
 
         //_proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
 
@@ -265,8 +272,11 @@ internal class Program
         while (true)
         {
             using var serviceScope = sp.CreateScope();
-            var f = serviceScope.ServiceProvider.GetService<IClientProxyFactory>();
-            var s = f.CreateProxy<IServiceAsync>("a1").Proxy;
+            //var f = serviceScope.ServiceProvider.GetService<IClientProxyFactory>();
+            //var s = f.CreateProxy<IServiceAsync>("a1").Proxy;
+            //var s = f.CreateProxy<IServiceAsync>("a1").Proxy;
+            var s = serviceScope.ServiceProvider.GetService<IServiceAsync>();
+
             //await Task.Delay(1000);
             try
             {
