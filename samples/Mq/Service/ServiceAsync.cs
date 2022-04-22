@@ -55,9 +55,13 @@ internal class ServiceAsync : IServiceAsync
         //}
 
         //Console.WriteLine("...Send TestFile.txt");
+
+        var rawData = new byte[1];
+        Random.Shared.NextBytes(rawData);
         return new ComplexStream
         {
-            Stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
+            //Stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
+            Stream = new MemoryStream(rawData),
             //Stream = File.Open(@"D:\TestFile\400MB.exe", FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
             OtherInfo = "this is other info"
         };
