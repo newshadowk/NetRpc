@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
@@ -12,6 +11,7 @@ public class MQConnection : IDisposable
 {
     private readonly MQOptions _options;
     private volatile bool _disposed;
+    private readonly IAutorecoveringConnection _checkConnection;
 
     public MQConnection(MQOptions options, int prefetchCount, ILoggerFactory factory)
     {
@@ -24,7 +24,8 @@ public class MQConnection : IDisposable
         MainConnection.RecoverySucceeded += (_, _) => Logger.LogInformation("Client RecoverySucceeded");
 
         SubConnection = (IAutorecoveringConnection)options.CreateSubConnectionFactory().CreateConnectionLoop(Logger);
-        Checker = new ExclusiveChecker(SubConnection);
+        _checkConnection = (IAutorecoveringConnection)options.CreateSubConnectionFactory().CreateConnectionLoop(Logger);
+        Checker = new ExclusiveChecker(_checkConnection);
         SubWatcher = new SubWatcher(Checker);
 
         MainChannel = MainConnection.CreateModel();
@@ -63,6 +64,7 @@ public class MQConnection : IDisposable
         SubWatcher.Dispose();
 
         MainChannel.TryClose(Logger);
+        _checkConnection.TryClose(Logger);
         SubConnection.TryClose(Logger);
         MainConnection.TryClose(Logger);
     }

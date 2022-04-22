@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Timers;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
@@ -63,11 +62,11 @@ public sealed class SubWatcher : IDisposable
 
 public class ExclusiveChecker
 {
-    private readonly IConnection _subConnection;
+    private readonly IConnection _checkConnection;
 
-    public ExclusiveChecker(IConnection subConnection)
+    public ExclusiveChecker(IConnection checkConnection)
     {
-        _subConnection = subConnection;
+        _checkConnection = checkConnection;
     }
 
     public bool Check(string? queue)
@@ -78,7 +77,7 @@ public class ExclusiveChecker
         IModel ch;
         try
         {
-            ch = _subConnection.CreateModel();
+            ch = _checkConnection.CreateModel();
         }
         catch
         {
