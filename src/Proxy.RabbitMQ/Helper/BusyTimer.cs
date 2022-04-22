@@ -3,12 +3,13 @@ using System.Threading.Tasks;
 using System.Timers;
 using Timer = System.Timers.Timer;
 
-namespace NetRpc;
+namespace Proxy.RabbitMQ;
 
 public sealed class BusyTimer : IDisposable
 {
     private readonly Timer T = new();
     private volatile bool _isStop;
+    private readonly object _lockStop = new();
     public double Interval => T.Interval;
 
     public BusyTimer(double interval)
@@ -19,23 +20,34 @@ public sealed class BusyTimer : IDisposable
 
     public void Dispose()
     {
-        _isStop = true;
-        T.Dispose();
+        lock (_lockStop)
+        {
+            T.Dispose();
+            _isStop = true;
+        }
     }
 
     public void Start()
     {
-        _isStop = false;
-        T.Start();
+        lock (_lockStop)
+        {
+            T.Start();
+            _isStop = false;
+        }
     }
 
     public void Stop()
     {
-        _isStop = true;
-        T.Stop();
+        lock (_lockStop)
+        {
+            T.Stop();
+            _isStop = true;
+        }
     }
 
     public event AsyncEventHandler<ElapsedEventArgs>? ElapsedAsync;
+
+    public event EventHandler<ElapsedEventArgs>? Elapsed;
 
     private Task OnElapsedAsync(ElapsedEventArgs e)
     {
@@ -48,13 +60,23 @@ public sealed class BusyTimer : IDisposable
  
         try
         {
+            // ReSharper disable once MethodHasAsyncOverload
+            OnElapsed(e);
             await OnElapsedAsync(e);
         }
         catch
         {
         }
 
-        if (!_isStop)
-            T.Start();
+        lock (_lockStop)
+        {
+            if (!_isStop)
+                T.Start();
+        }
+    }
+
+    private void OnElapsed(ElapsedEventArgs e)
+    {
+        Elapsed?.Invoke(this, e);
     }
 }
