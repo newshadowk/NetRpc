@@ -10,7 +10,7 @@ namespace Proxy.RabbitMQ;
 public sealed class SubWatcher : IDisposable
 {
     private readonly ExclusiveChecker _checker;
-    private readonly Timer _t = new (5000);
+    private readonly Timer _t = new (10000);
     private readonly SyncList<string> _list = new();
     private readonly object _lockCheck = new();
 
