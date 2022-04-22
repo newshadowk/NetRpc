@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,23 +26,27 @@ internal class ServiceAsync : IServiceAsync
     public async Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Func<CustomCallbackObj, Task> cb, CancellationToken token)
     {
         Console.Write($"[ComplexCallAsync]...Received length:{data.Length}");
+        Stopwatch sw = Stopwatch.StartNew();
         MemoryStream ms = new();
         await data.CopyToAsync(ms);
+        sw.Stop();
+        Console.WriteLine($"time:{sw.ElapsedMilliseconds}");
 
-        for (var i = 1; i <= 3; i++)
-        {
-            Console.Write($"{i}, ");
-            await cb(new CustomCallbackObj {Progress = i});
-            //try
-            //{
-            //    await Task.Delay(1000, token);
-            //}
-            //catch (Exception e)
-            //{
-            //    Console.WriteLine("cancel!!!");
-            //    throw;
-            //}
-        }
+        //for (var i = 1; i <= 3; i++)
+        //{
+        //    Console.Write($"{i}, ");
+        //    await cb(new CustomCallbackObj { Progress = i });
+        //    //try
+        //    //{
+        //    //    await Task.Delay(1000, token);
+        //    //}
+        //    //catch (Exception e)
+        //    //{
+        //    //    Console.WriteLine("cancel!!!");
+        //    //    throw;
+        //    //}
+        //}
+
 
         //if (!_ha.Contains(obj.Name))
         //{
@@ -49,7 +54,7 @@ internal class ServiceAsync : IServiceAsync
         //    throw new ArgumentNullException("123");
         //}
 
-        Console.WriteLine("...Send TestFile.txt");
+        //Console.WriteLine("...Send TestFile.txt");
         return new ComplexStream
         {
             Stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite),

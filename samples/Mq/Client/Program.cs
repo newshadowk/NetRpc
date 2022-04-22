@@ -4,11 +4,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
-using Microsoft.AspNetCore.Builder.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using NetRpc;
 using Proxy.RabbitMQ;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -33,16 +30,19 @@ internal class Program
         var services = new ServiceCollection();
         services.AddNClientContract<IServiceAsync>();
         services.AddLogging(configure => configure.AddConsole());
-        //services.AddNRabbitMQClient(o => o.CopyFrom(Helper.GetMQOptions()));
+
+        //services.AddNGrpcClient(o => o.Url = "http://localhost:50001");
+
         services.AddNRabbitMQClient();
         services.Configure<MQClientOptions>("a1", o => o.CopyFrom(Helper.GetMQOptions()));
         services.Configure<MQClientOptions>(o => o.CopyFrom(Helper.GetMQOptions()));
-        var sp = services.BuildServiceProvider();
-        using var serviceScope = sp.CreateScope();
-        var f = serviceScope.ServiceProvider.GetService<IClientProxyFactory>()!;
-        var clientProxy = f.CreateProxy<IServiceAsync>("a1");
-        await clientProxy.Proxy.Call2("sdf");
 
+        var sp = services.BuildServiceProvider();
+
+        //using var serviceScope = sp.CreateScope();
+        //var f = serviceScope.ServiceProvider.GetService<IClientProxyFactory>()!;
+        //var clientProxy = f.CreateProxy<IServiceAsync>("a1");
+        //await clientProxy.Proxy.Call2("sdf");
 
         //_proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
 
@@ -97,7 +97,7 @@ internal class Program
         var qName = "rpc_test2";
         //var q = ch.QueueDeclare(qName, false, false, false, null);
         var q = ch.QueueDeclare();
-        
+
         //int ii = 0;
         //while (true)
         //{
@@ -156,7 +156,7 @@ internal class Program
         //ch.BasicPublish("", "qn", true, null, Encoding.UTF8.GetBytes("123"));
         var qn = ch.QueueDeclare("rpc_test", false, false, false).QueueName;
         ch.BasicQos(0, 1, false);
-        
+
         var consumer = new AsyncEventingBasicConsumer(ch);
         consumer.Received += async (_, e) =>
         {
@@ -191,8 +191,6 @@ internal class Program
         //ch2.BasicQos(0, (ushort)1, false);
         //var consumer2 = new AsyncEventingBasicConsumer(ch2);
         //_consumerTag = ch2.BasicConsume("test2", false, consumer2);
-
-
 
 
         //try
@@ -268,7 +266,7 @@ internal class Program
     private static async Task DoT(IServiceProvider sp)
     {
         var i = 0;
-        CancellationTokenSource cts = new CancellationTokenSource();
+        var cts = new CancellationTokenSource();
         while (true)
         {
             using var serviceScope = sp.CreateScope();
@@ -306,9 +304,29 @@ internal class Program
         //await _proxyAsync.P(new CustomObj() { Name = i.ToString() });
     }
 
+    private static Stream _stream;
+    private static byte[] _rawData;
+
+    private static Stream GetSteam()
+    {
+        if (_rawData != null)
+        {
+            _stream = new MemoryStream(_rawData);
+            return _stream;
+        }
+
+        const int Size = 200 * 1024 * 1024;
+        _rawData = new byte[Size];
+        Random.Shared.NextBytes(_rawData);
+
+        _stream = new MemoryStream(_rawData);
+        return _stream;
+    }
+
     private static async Task Test_ComplexCallAsync(IServiceAsync service, int i, CancellationToken t)
     {
-        using (var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+        using (var stream = GetSteam())
+            //using (var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
         {
             Console.Write("[ComplexCallAsync]...Send TestFile.txt...");
             var complexStream = await service.ComplexCallAsync(
@@ -331,6 +349,7 @@ internal class Program
                     throw;
                 }
             }
+
             Console.WriteLine($", otherInfo:{complexStream.OtherInfo}");
         }
     }

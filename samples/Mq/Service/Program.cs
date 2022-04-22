@@ -2,6 +2,8 @@
 using System.Text;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -22,19 +24,28 @@ internal class Program
 
     private static async Task T1()
     {
-        var mpHost = new HostBuilder()
-            .ConfigureServices((_, services) =>
+        var grpcHost = Host.CreateDefaultBuilder()
+            .ConfigureWebHostDefaults(webBuilder =>
             {
-                services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
-                services.Configure<QueueStatusOptions>(i => i.CopyFrom(Helper.GetMQOptions()));
-                services.AddNServiceContract<IServiceAsync, ServiceAsync>();
-                services.AddNRabbitMQQueueStatus();
-            }).ConfigureLogging((_, loggingBuilder) =>
-            {
-                loggingBuilder.AddConsole();
-            })
-            .Build();
-        await mpHost.RunAsync();
+                webBuilder.ConfigureKestrel((_, options) =>
+                    {
+                        options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+                    })
+                    .ConfigureServices((_, services) =>
+                    {
+                        services.AddNGrpcService();
+                        services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+
+                        services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
+                        services.Configure<QueueStatusOptions>(i => i.CopyFrom(Helper.GetMQOptions()));
+                        services.AddNRabbitMQQueueStatus();
+
+                    }).ConfigureLogging((_, loggingBuilder) =>
+                    {
+                        loggingBuilder.AddConsole();
+                    }).Configure(app => { app.UseNGrpc(); });
+            }).Build();
+        await grpcHost.RunAsync();
     }
     
     private static async Task T0()
