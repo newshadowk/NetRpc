@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
@@ -96,6 +97,13 @@ public static class Helper
         }
     }
 
+    public static async Task SubBasicPublishAsync(this IModel subModel, string queue, ReadOnlyMemory<byte> buffer, MsgThreshold msg)
+    {
+        await msg.Wait(() => subModel.MessageCount(queue));
+        subModel.BasicPublish("", queue, null!, buffer);
+        msg.Add();
+    }
+
     public static void TryClose(this IModel model, ILogger log)
     {
         try
@@ -133,12 +141,12 @@ public static class Helper
         }
     }
 
-    public static void TryBasicAck(this IModel model, ulong deliveryTag, ILogger log)
+    public static void TryBasicAck(this IModel model, ulong deliveryTag, ILogger log, bool multiple = false)
     {
         try
         {
             if (model.IsOpen)
-                model.BasicAck(deliveryTag, false);
+                model.BasicAck(deliveryTag, multiple);
         }
         catch (Exception e)
         {

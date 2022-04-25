@@ -102,7 +102,7 @@ internal sealed class HttpServiceOnceApiConvert : IServiceOnceApiConvert
 
         // Cancel
         if (body.GetExceptionFrom<OperationCanceledException>(true) != null)
-            return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(), ClientConstValue.CancelStatusCode));
+            return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(), ClientConst.CancelStatusCode));
 
         // ResponseTextException
         var textEx = body.GetExceptionFrom<ResponseTextException>();
@@ -120,7 +120,7 @@ internal sealed class HttpServiceOnceApiConvert : IServiceOnceApiConvert
         }
 
         // default Exception
-        return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(null, body.Message), ClientConstValue.DefaultExceptionStatusCode));
+        return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(null, body.Message), ClientConst.DefaultExceptionStatusCode));
     }
 
     public Task SendCallbackAsync(object? callbackObj)

@@ -105,9 +105,9 @@ internal static class Helper
         if (dataObj == null)
             return (null, null, 0);
 
-        var connectionId = (string?) GetValue(dataObj, ClientConstValue.ConnIdName);
-        var callId = (string?) GetValue(dataObj, ClientConstValue.CallIdName);
-        var streamLengthObj = GetValue(dataObj, ClientConstValue.StreamLength);
+        var connectionId = (string?) GetValue(dataObj, ClientConst.ConnIdName);
+        var callId = (string?) GetValue(dataObj, ClientConst.CallIdName);
+        var streamLengthObj = GetValue(dataObj, ClientConst.StreamLength);
         var streamLength = (long?) streamLengthObj ?? 0;
         return (connectionId, callId, streamLength);
     }

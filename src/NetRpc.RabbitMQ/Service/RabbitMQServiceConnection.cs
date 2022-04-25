@@ -33,7 +33,7 @@ internal sealed class RabbitMQServiceConnection : IServiceConnection
 
     public Task SendAsync(ReadOnlyMemory<byte> buffer)
     {
-        return Task.Run(() => { _callSession.Send(buffer); });
+        return _callSession.SendAsync(buffer);
     }
 
     public Task<bool> StartAsync()

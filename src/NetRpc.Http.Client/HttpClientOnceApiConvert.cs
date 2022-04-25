@@ -148,7 +148,7 @@ internal sealed class HttpClientOnceApiConvert : IClientOnceApiConvert
                 OnResultStream(new EventArgsT<object>(s));
             else
             {
-                var resultH = res.Headers.First(i => i.Key == ClientConstValue.CustomResultHeaderKey);
+                var resultH = res.Headers.First(i => i.Key == ClientConst.CustomResultHeaderKey);
                 var hStr = HttpUtility.UrlDecode(resultH.Value.First(), Encoding.UTF8);
                 var retInstance = hStr.ToDtoObject(realRetT)!;
                 retInstance.SetStream(s);
@@ -178,7 +178,7 @@ internal sealed class HttpClientOnceApiConvert : IClientOnceApiConvert
     private static void TryThrowFault(MethodContext methodContext, string content, int statusCode)
     {
         //OperationCanceledException
-        if (statusCode == ClientConstValue.CancelStatusCode)
+        if (statusCode == ClientConst.CancelStatusCode)
             throw new OperationCanceledException();
 
         //ResponseTextException
@@ -201,7 +201,7 @@ internal sealed class HttpClientOnceApiConvert : IClientOnceApiConvert
         }
 
         //DefaultException
-        if (statusCode == ClientConstValue.DefaultExceptionStatusCode)
+        if (statusCode == ClientConst.DefaultExceptionStatusCode)
             throw CreateException(typeof(Exception), content);
     }
 

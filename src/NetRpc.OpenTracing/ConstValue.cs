@@ -1,6 +1,6 @@
 ﻿namespace NetRpc.OpenTracing;
 
-internal static class ConstValue
+internal static class Const
 {
     public const string SendStr = ">";
 

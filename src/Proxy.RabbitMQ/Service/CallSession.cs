@@ -19,6 +19,7 @@ public sealed class CallSession : IDisposable
     private readonly string _serviceToClientQueue;
     private volatile bool _disposed;
     private readonly bool _isPost;
+    private readonly MsgThreshold _msgThreshold = new();
     private volatile string? _consumerTag;
     private readonly AsyncLock _lock_Receive = new();
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
@@ -76,9 +77,9 @@ public sealed class CallSession : IDisposable
         return true;
     }
 
-    public void Send(ReadOnlyMemory<byte> buffer)
+    public Task SendAsync(ReadOnlyMemory<byte> buffer)
     {
-        _subChannel.BasicPublish("", _serviceToClientQueue, null!, buffer);
+        return _subChannel!.SubBasicPublishAsync(_serviceToClientQueue, buffer, _msgThreshold);
     }
 
     private bool DeclareCallBack()
@@ -86,12 +87,17 @@ public sealed class CallSession : IDisposable
         try
         {
             _subChannel = _subConnection.CreateModel();
-            var clientToServiceQueue = _subChannel.QueueDeclare().QueueName;
+            _subChannel.BasicQos(0, (ushort)Const.SubPrefetchCount, false);   //13 * 81920 = 4MB
+            var clientToServiceQueue = _subChannel.QueueDeclare(exclusive:false, autoDelete:true).QueueName;
             Debug.WriteLine($"service: _clientToServiceQueue: {clientToServiceQueue}");
             var clientToServiceConsumer = new AsyncEventingBasicConsumer(_subChannel);
-            clientToServiceConsumer.Received += (_, e) => OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Body));
-            _consumerTag = _subChannel.BasicConsume(clientToServiceQueue, true, clientToServiceConsumer);
-            Send(Encoding.UTF8.GetBytes(clientToServiceQueue));
+            clientToServiceConsumer.Received += async (_, e) =>
+            {
+                await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(e.Body));
+                _subChannel.TryBasicAck(e.DeliveryTag, _logger, true);
+            };
+            _consumerTag = _subChannel.BasicConsume(clientToServiceQueue, false, clientToServiceConsumer);
+            _subChannel.BasicPublish("", _serviceToClientQueue, null, Encoding.UTF8.GetBytes(clientToServiceQueue));
             return true;
         }
         catch
@@ -100,12 +106,12 @@ public sealed class CallSession : IDisposable
             return false;
         }
     }
-
+    
     private async Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>> e)
     {
         //Consumer will has 2 threads invoke simultaneously.
         //lock here make sure the msg sequence
-        using (await _lock_Receive.LockAsync())
+        using (await _lock_Receive.LockAsync()) 
             await ReceivedAsync.InvokeAsync(this, e);
     }
 

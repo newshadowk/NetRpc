@@ -24,6 +24,7 @@ public sealed class RabbitMQOnceCall : IDisposable
     private readonly AsyncLock _lock_Receive = new();
     private readonly CancellationTokenSource _firstCts = new();
     private volatile string? _firstCid;
+    private readonly MsgThreshold _msgThreshold = new();
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>?>>? ReceivedAsync;
     public event EventHandler? Disconnected;
 
@@ -73,7 +74,7 @@ public sealed class RabbitMQOnceCall : IDisposable
             _conn.MainChannel.BasicReturn += BasicReturn;
             _firstCid = Guid.NewGuid().ToString("N");
             _subChannel = _conn.SubConnection.CreateModel();
-            _serviceToClientQueue = _subChannel.QueueDeclare().QueueName;
+            _serviceToClientQueue = _subChannel.QueueDeclare(exclusive:false, autoDelete:true).QueueName;
             Debug.WriteLine($"client: _serviceToClientQueue: {_serviceToClientQueue}");
             var consumer = new AsyncEventingBasicConsumer(_subChannel);
             consumer.Received += ConsumerReceivedAsync;
@@ -98,7 +99,7 @@ public sealed class RabbitMQOnceCall : IDisposable
         //SendAfter
         //bug: after invoke 'BasicPublish' need an other thread to publish for real send? (sometimes happened.)
         //blocking thread in OnceCall row 96:Task.Delay(_timeoutInterval, _timeOutCts.Token).ContinueWith(i =>
-        _subChannel.BasicPublish("", _clientToServiceQueue, null, buffer);
+        await _subChannel!.SubBasicPublishAsync(_clientToServiceQueue, buffer, _msgThreshold);
     }
 
     private async Task SendPostAsync(ReadOnlyMemory<byte> buffer, int mqPriority)
@@ -123,7 +124,7 @@ public sealed class RabbitMQOnceCall : IDisposable
 
         var p = CreateProp(mqPriority);
         p.ReplyTo = _serviceToClientQueue;
-        p.CorrelationId = _firstCid;
+        p.CorrelationId = _firstCid!;
         _conn.MainChannel.BasicPublish("", _conn.Options.RpcQueue, true, p, buffer);
 
         try

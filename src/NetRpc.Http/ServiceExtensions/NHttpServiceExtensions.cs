@@ -98,7 +98,7 @@ public static class NHttpServiceExtensions
         app.UseFileServer(new FileServerOptions
         {
             RequestPath = new PathString(swaggerRootPath),
-            FileProvider = new EmbeddedFileProvider(typeof(SwaggerUiIndexMiddleware).GetTypeInfo().Assembly, ConstValue.SwaggerUi3Base)
+            FileProvider = new EmbeddedFileProvider(typeof(SwaggerUiIndexMiddleware).GetTypeInfo().Assembly, Const.SwaggerUi3Base)
         });
         return app;
     }

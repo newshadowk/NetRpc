@@ -55,12 +55,12 @@ public class OpenTracingMiddleware
         IScope scope;
         if (spanContext == null)
         {
-            scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.ReceiveStr}")
+            scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {Const.ReceiveStr}")
                 .StartActive(true);
         }
         else
         {
-            scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.ReceiveStr}")
+            scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {Const.ReceiveStr}")
                 .AsChildOf(spanContext).StartActive(true);
             spanContext.CopyBaggageItemsTo(scope.Span);
         }

@@ -25,7 +25,7 @@ public class MQConnection : IDisposable
 
         SubConnection = (IAutorecoveringConnection)options.CreateSubConnectionFactory().CreateConnectionLoop(Logger);
         _checkConnection = (IAutorecoveringConnection)options.CreateSubConnectionFactory().CreateConnectionLoop(Logger);
-        Checker = new ExclusiveChecker(_checkConnection);
+        Checker = new ChannelChecker(_checkConnection);
         SubWatcher = new SubWatcher(Checker);
 
         MainChannel = MainConnection.CreateModel();
@@ -39,8 +39,7 @@ public class MQConnection : IDisposable
     {
         try
         {
-            var ok = MainChannel.QueueDeclarePassive(_options.RpcQueue);
-            return (int)ok.MessageCount;
+            return (int)MainChannel.MessageCount(_options.RpcQueue);
         }
         catch
         {
@@ -48,7 +47,7 @@ public class MQConnection : IDisposable
         }
     }
 
-    public ExclusiveChecker Checker { get; }
+    public ChannelChecker Checker { get; }
 
     public ILogger Logger { get; }
 
@@ -85,6 +84,7 @@ public sealed class ServiceConnection : MQConnection
     public ServiceConnection(MQServiceOptions options, ILoggerFactory factory) : base(options, options.PrefetchCount, factory)
     {
         Options = options;
+        MainChannel.BasicQos(0, (ushort)options.PrefetchCount, false);
     }
 
     public MQServiceOptions Options { get; }

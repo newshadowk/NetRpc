@@ -33,7 +33,7 @@ public class StreamTracingMiddleware
             return;
 
         var spanBuilder = GlobalTracer.Instance.BuildSpan(
-                $"{ConstValue.ServiceStream} {NetRpc.Helper.SizeSuffix(context.Stream.Length)} {ConstValue.ReceiveStr}")
+                $"{Const.ServiceStream} {NetRpc.Helper.SizeSuffix(context.Stream.Length)} {Const.ReceiveStr}")
             .AsChildOf(GlobalTracer.Instance.ActiveSpan);
         ISpan? span = null;
 #pragma warning disable 1998
@@ -50,7 +50,7 @@ public class StreamTracingMiddleware
         if (context.Result.TryGetStream(out var outStream, out _))
         {
             var spanBuilder = GlobalTracer.Instance
-                .BuildSpan($"{ConstValue.ServiceStream} {NetRpc.Helper.SizeSuffix(outStream!.Length)} {ConstValue.SendStr}")
+                .BuildSpan($"{Const.ServiceStream} {NetRpc.Helper.SizeSuffix(outStream!.Length)} {Const.SendStr}")
                 .AsChildOf(GlobalTracer.Instance.ActiveSpan);
             ISpan? span = null;
             context.SendResultStreamStarted += (_, _) => span = spanBuilder.Start();

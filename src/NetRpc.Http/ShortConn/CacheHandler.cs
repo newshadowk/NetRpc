@@ -318,7 +318,7 @@ public class Cache
         d.Data.Status = ContextStatus.Err;
         if (e.GetExceptionFrom<OperationCanceledException>(true) != null)
         {
-            d.Data.StatusCode = ClientConstValue.CancelStatusCode;
+            d.Data.StatusCode = ClientConst.CancelStatusCode;
             d.Data.ErrMsg = e.Message;
             await _redis.SetAsync(id, d);
             return;
@@ -343,7 +343,7 @@ public class Cache
             return;
         }
 
-        d.Data.StatusCode = ClientConstValue.DefaultExceptionStatusCode;
+        d.Data.StatusCode = ClientConst.DefaultExceptionStatusCode;
         d.Data.ErrMsg = e.Message;
         await _redis.SetAsync(id, d);
     }

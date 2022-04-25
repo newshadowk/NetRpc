@@ -31,7 +31,6 @@ public sealed class Service : IDisposable
 
         _conn.MainChannel.QueueDeclare(_conn.Options.RpcQueue, false, false, false, args);
         var consumer = new AsyncEventingBasicConsumer(_conn.MainChannel);
-        _conn.MainChannel.BasicQos(0, (ushort)_conn.Options.PrefetchCount, false);
         _consumerTag = _conn.MainChannel.BasicConsume(_conn.Options.RpcQueue, false, consumer);
         consumer.Received += (_, e) =>
         {

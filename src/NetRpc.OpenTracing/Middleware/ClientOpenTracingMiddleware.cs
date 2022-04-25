@@ -26,7 +26,7 @@ public class ClientOpenTracingMiddleware
         }
 
         var injectDic = new Dictionary<string, string>();
-        using var scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {ConstValue.SendStr}").StartActive(true);
+        using var scope = tracer.BuildSpan($"{context.ContractMethod.MethodInfo.Name} {Const.SendStr}").StartActive(true);
         tracer.Inject(scope.Span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(injectDic));
         foreach (var dic in injectDic)
             context.Header[dic.Key] = dic.Value;

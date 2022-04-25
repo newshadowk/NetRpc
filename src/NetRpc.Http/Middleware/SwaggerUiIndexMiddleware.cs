@@ -100,7 +100,7 @@ public class SwaggerUiIndexMiddleware
 
     private static async Task<string> ReadStringAsync(string resourcePath)
     {
-        var stream = typeof(SwaggerUiIndexMiddleware).GetTypeInfo().Assembly.GetManifestResourceStream($"{ConstValue.SwaggerUi3Base}{resourcePath}")!;
+        var stream = typeof(SwaggerUiIndexMiddleware).GetTypeInfo().Assembly.GetManifestResourceStream($"{Const.SwaggerUi3Base}{resourcePath}")!;
         using var reader = new StreamReader(stream);
         return await reader.ReadToEndAsync();
     }

@@ -239,7 +239,7 @@ internal class PathProcessor
         {
             //600 cancel
             if (hasCancel)
-                ret.Add(ClientConstValue.CancelStatusCode.ToString(), new OpenApiResponse {Description = "A task was canceled."});
+                ret.Add(ClientConst.CancelStatusCode.ToString(), new OpenApiResponse {Description = "A task was canceled."});
 
             //exception
             GenerateException(ret, method);

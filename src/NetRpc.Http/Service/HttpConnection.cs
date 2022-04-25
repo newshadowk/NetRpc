@@ -113,7 +113,7 @@ internal sealed class HttpConnection : IDisposable
         {
             var json = result.Result.ToDtoJson();
             json = HttpUtility.UrlEncode(json, Encoding.UTF8);
-            _context.Response.Headers.Add(ClientConstValue.CustomResultHeaderKey, json);
+            _context.Response.Headers.Add(ClientConst.CustomResultHeaderKey, json);
         }
 
         var executor = new FileStreamResultExecutor(NullLoggerFactory.Instance);

@@ -9,14 +9,14 @@ namespace Proxy.RabbitMQ;
 
 public sealed class SubWatcher : IDisposable
 {
-    private readonly ExclusiveChecker _checker;
+    private readonly ChannelChecker _checker;
     private readonly BusyTimer _t = new (5000);
     private readonly SyncList<string> _list = new();
     private readonly object _lockCheck = new();
 
     public event EventHandler<EventArgsT<string>>? Disconnected;
 
-    public SubWatcher(ExclusiveChecker checker)
+    public SubWatcher(ChannelChecker checker)
     {
         _checker = checker;
         _t.Elapsed += Elapsed;
@@ -60,11 +60,11 @@ public sealed class SubWatcher : IDisposable
     }
 }
 
-public class ExclusiveChecker
+public class ChannelChecker
 {
     private readonly IConnection _checkConnection;
 
-    public ExclusiveChecker(IConnection checkConnection)
+    public ChannelChecker(IConnection checkConnection)
     {
         _checkConnection = checkConnection;
     }
@@ -88,13 +88,11 @@ public class ExclusiveChecker
         {
             using (ch)
                 ch.QueueDeclarePassive(queue);
+            return true;
         }
-        catch (OperationInterruptedException e)
+        catch
         {
-            if (e.ShutdownReason.ReplyCode == 405)
-                return true;
+            return false;
         }
-
-        return false;
     }
 }

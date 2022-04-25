@@ -1,6 +1,6 @@
 ﻿namespace NetRpc.Http.Client;
 
-public static class ClientConstValue
+public static class ClientConst
 {
     public const string ConnIdName = "_conn_id";
     public const string CallIdName = "_call_id";

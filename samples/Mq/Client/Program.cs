@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DataContract;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NetRpc;
 using Proxy.RabbitMQ;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -38,6 +39,11 @@ internal class Program
         services.Configure<MQClientOptions>(o => o.CopyFrom(Helper.GetMQOptions()));
 
         var sp = services.BuildServiceProvider();
+        //var f = sp.GetService<IClientProxyFactory>();
+        //var s = f.CreateProxy<IServiceAsync>("a1");
+
+        //await Test_ComplexCallAsync(s.Proxy, 0, CancellationToken.None);
+
 
         //using var serviceScope = sp.CreateScope();
         //var f = serviceScope.ServiceProvider.GetService<IClientProxyFactory>()!;
@@ -125,89 +131,131 @@ internal class Program
         //}
     }
 
-    private static void T21(IConnection c)
-    {
-        try
-        {
-            var ch = c.CreateModel();
-            var qn = ch.QueueDeclare().QueueName;
-            Console.WriteLine(qn);
-            ch.Dispose();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
-    }
-
     private static async Task T2()
     {
         var f = Helper.GetMQOptions().CreateMainConnectionFactory();
         var c = f.CreateConnection();
         var ch = c.CreateModel();
 
-        //ch.BasicReturn += (sender, args) =>
-        //{
-        //    var dd = sender;
-        //    Console.WriteLine();
-        //};
+        var qn = ch.QueueDeclare("rpc_test", false, false, true).QueueName;
 
-        //ch.BasicPublish("", "qn", true, null, Encoding.UTF8.GetBytes("123"));
-        var qn = ch.QueueDeclare("rpc_test", false, false, false).QueueName;
-        ch.BasicQos(0, 1, false);
+        const long Size = 81920;
+        var rawData = new byte[Size];
+        Random.Shared.NextBytes(rawData);
 
-        var consumer = new AsyncEventingBasicConsumer(ch);
-        consumer.Received += async (_, e) =>
+        Console.ReadLine();
+        Console.WriteLine("send start");
+
+        for (int i = 0; i < 10 * 1000; i++)
         {
-            Console.WriteLine(Encoding.UTF8.GetString(e.Body.Span));
-            ch.BasicNack(e.DeliveryTag, false, false);
-        };
-        var _consumerTag = ch.BasicConsume(qn, false, consumer);
-        //ch.BasicCancel(_consumerTag);
-        //ch.Close();
-        //c.Close();
+            ch.BasicPublish("", qn, null, rawData);
+        }
 
-        var f2 = Helper.GetMQOptions().CreateMainConnectionFactory();
-        var c2 = f2.CreateConnection();
-        var ch2 = c2.CreateModel();
+        Console.WriteLine("pub end");
+        Console.ReadLine();
 
-        ch2.BasicPublish("", qn, null, Encoding.UTF8.GetBytes("123"));
+        Console.ReadLine();
 
-        //while (true)
-        //{
-        //    try
-        //    {
-        //        ch2.QueueDeclarePassive(qn);
-        //    }
-        //    catch (OperationInterruptedException e)
-        //    {
-        //        Console.WriteLine(e.ShutdownReason.ReplyCode);
-        //    }
-        //}
+        GC.Collect();
+        Console.WriteLine("GC.Collect();");
+        Console.ReadLine();
+        try
+        {
+            Console.WriteLine("close start");
+            ch.Close();
+            GC.Collect();
+            Console.WriteLine("ch.Close();");
+            Console.ReadLine();
+            c.Close();
+            GC.Collect();
+            Console.WriteLine("c.Close();");
+            Console.ReadLine();
+            GC.Collect();
+            Console.WriteLine("GC.Collect();");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    
 
-
-        //ch2.QueueDeclare("test2", false, false, true);
-        //ch2.BasicQos(0, (ushort)1, false);
-        //var consumer2 = new AsyncEventingBasicConsumer(ch2);
-        //_consumerTag = ch2.BasicConsume("test2", false, consumer2);
-
-
-        //try
-        //{
-        //    var qdp = ch2.QueueDeclarePassive("123");
-        //}
-        //catch (Exception e)
-        //{
-        //    Console.WriteLine(e);
-        //}
-
-
-        //ch.BasicCancel(_consumerTag);
-
-        //ch2.BasicPublish("", qn, null, Encoding.UTF8.GetBytes("123"));
+        Console.WriteLine("send end");
     }
 
+    //private static async Task T4()
+    //{
+    //    var f = Helper.GetMQOptions().CreateMainConnectionFactory();
+    //    var c = f.CreateConnection();
+    //    var ch = c.CreateModel();
+
+    //    ch.BasicNacks += (s, e) =>
+    //    {
+    //        Console.WriteLine($"nack, {e.DeliveryTag}");
+    //    };
+    //    ch.BasicAcks += (s, e) =>
+    //    {
+    //        Console.WriteLine($"ack, {e.DeliveryTag}");
+    //    };
+    //    ch.BasicReturn += (s, e) =>
+    //    {
+    //        Console.WriteLine($"BasicReturn");
+    //    };
+    //    ch.FlowControl += (s, e) =>
+    //    {
+    //        Console.WriteLine($"BasicReturn");
+    //    };
+
+    //    ch.ExchangeDeclare("e1", );
+    //    ch.QueueDeclare(QueueName, QueueDurable, QueueExclusive, QueueDelete, null);
+    //    ch.QueueBind(QueueName, ExchangeName, RoutingKey);
+    //}
+  
+
+    private static async Task T3()
+    {
+        var f = Helper.GetMQOptions().CreateMainConnectionFactory();
+        var c = f.CreateConnection();
+        var ch = c.CreateModel();
+
+      
+        ch.BasicNacks += (s, e) =>
+        {
+            Console.WriteLine($"nack, {e.DeliveryTag}");
+        };
+        ch.BasicAcks += (s, e) =>
+        {
+            Console.WriteLine($"ack, {e.DeliveryTag}");
+        };
+        ch.BasicReturn += (s, e) =>
+        {
+            Console.WriteLine($"BasicReturn");
+        };
+        ch.FlowControl += (s, e) =>
+        {
+            Console.WriteLine($"BasicReturn");
+        };
+
+        //var qn = ch.QueueDeclare("rpc_test", false, false, false).QueueName;
+        ch.ConfirmSelect();
+      
+        const long Size = 81920;
+        var rawData = new byte[Size];
+        Random.Shared.NextBytes(rawData);
+
+        ch.BasicPublish("", "rpc_test", false, null, rawData);
+        var waitForConfirms = ch.WaitForConfirms();
+
+
+        //ch.BasicPublish("", qn, false, null, rawData);
+        //ch.BasicPublish("", qn, false, null, rawData);
+
+
+
+        Console.WriteLine("send end");
+    }
+
+ 
     private static void Ch_ModelShutdown(object sender, ShutdownEventArgs e)
     {
         Console.WriteLine("Ch_ModelShutdown");
@@ -315,7 +363,7 @@ internal class Program
             return _stream;
         }
 
-        const int Size = 200 * 1024 * 1024;
+        const long Size = 200 * 1024 * 1024;
         _rawData = new byte[Size];
         Random.Shared.NextBytes(_rawData);
 
@@ -326,7 +374,7 @@ internal class Program
     private static async Task Test_ComplexCallAsync(IServiceAsync service, int i, CancellationToken t)
     {
         using (var stream = GetSteam())
-            //using (var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+        //using (var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
         {
             Console.Write("[ComplexCallAsync]...Send TestFile.txt...");
             var complexStream = await service.ComplexCallAsync(

@@ -28,9 +28,10 @@ internal class ServiceAsync : IServiceAsync
         Console.Write($"[ComplexCallAsync]...Received length:{data.Length}");
         Stopwatch sw = Stopwatch.StartNew();
         MemoryStream ms = new();
+        //await Task.Delay(100000000);
         await data.CopyToAsync(ms);
         sw.Stop();
-        Console.WriteLine($"time:{sw.ElapsedMilliseconds}");
+        Console.WriteLine($"   time:{sw.ElapsedMilliseconds}");
 
         //for (var i = 1; i <= 3; i++)
         //{

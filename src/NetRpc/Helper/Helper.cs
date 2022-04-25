@@ -22,7 +22,9 @@ public static class Helper
     /// <summary>
     /// about 4 MB
     /// </summary>
-    public const int StreamBufferCacheCount = 53;
+    public const int PipePauseWriterThreshold = 2 * StreamBufferSize;
+
+    public const int PipeResumeWriterThreshold = 1 * StreamBufferSize;
 
     private static readonly string[] SizeSuffixes = {"bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
 

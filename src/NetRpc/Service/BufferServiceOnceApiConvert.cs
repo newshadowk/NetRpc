@@ -15,7 +15,7 @@ internal sealed class BufferServiceOnceApiConvert : IServiceOnceApiConvert
     private readonly IServiceConnection _connection;
     private readonly ILogger _logger;
     private CancellationTokenSource _cts = null!;
-    private readonly DuplexPipe _streamPipe = new(new PipeOptions(pauseWriterThreshold: Helper.StreamBufferCacheCount, resumeWriterThreshold: 1));
+    private readonly DuplexPipe _streamPipe = new(new PipeOptions(pauseWriterThreshold: Helper.PipePauseWriterThreshold, resumeWriterThreshold: Helper.PipeResumeWriterThreshold));
 
     private readonly WriteOnceBlock<byte[]> _cmdReq = new(null);
 

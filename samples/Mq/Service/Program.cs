@@ -20,6 +20,7 @@ internal class Program
     private static async Task Main(string[] args)
     {
         await T1();
+        Console.ReadLine();
     }
 
     private static async Task T1()
@@ -51,19 +52,16 @@ internal class Program
     private static async Task T0()
     {
         Console.WriteLine("start");
-
         var c = Helper.GetMQOptions().CreateMainConnectionFactory().CreateConnection();
         var ch = c.CreateModel();
-        ch.QueueDeclare("rpc_test2", false, false, true, null);
-        ch.BasicQos(0, 1, false);
+        ch.QueueDeclare("rpc_test", false, false, true, null);
+        //ch.BasicQos(0, 1, false);
         var consumer = new AsyncEventingBasicConsumer(ch);
         consumer.Received += async (_, e) =>
         {
-            Console.WriteLine($"{Encoding.UTF8.GetString(e.Body.Span)} start.");
-            await Task.Delay(1000);
-            Console.WriteLine($"{Encoding.UTF8.GetString(e.Body.Span)} end.");
-            ch.BasicAck(e.DeliveryTag, false);
+            Console.WriteLine($"r0, {e.DeliveryTag}");
+            ch.BasicNack(e.DeliveryTag, false, false);
         };
-        ch.BasicConsume("rpc_test2", false, consumer);
+        ch.BasicConsume("rpc_test", false, consumer);
     }
 }
