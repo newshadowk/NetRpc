@@ -74,11 +74,12 @@ public sealed class RabbitMQOnceCall : IDisposable
             _conn.MainChannel.BasicReturn += BasicReturn;
             _firstCid = Guid.NewGuid().ToString("N");
             _subChannel = _conn.SubConnection.CreateModel();
+            _subChannel.BasicQos(0, (ushort)Const.SubPrefetchCount, false);
             _serviceToClientQueue = _subChannel.QueueDeclare(exclusive:false, autoDelete:true).QueueName;
             Debug.WriteLine($"client: _serviceToClientQueue: {_serviceToClientQueue}");
             var consumer = new AsyncEventingBasicConsumer(_subChannel);
             consumer.Received += ConsumerReceivedAsync;
-            _consumerTag = _subChannel.BasicConsume(_serviceToClientQueue, true, consumer);
+            _consumerTag = _subChannel.BasicConsume(_serviceToClientQueue, false, consumer);
         }
     }
 
@@ -160,9 +161,9 @@ public sealed class RabbitMQOnceCall : IDisposable
                 }
             }
         else
-        {
             await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>?>(e.Body));
-        }
+
+        _subChannel!.TryBasicAck(e.DeliveryTag, _logger, true);
     }
 
     private void BasicReturn(object? sender, BasicReturnEventArgs args)

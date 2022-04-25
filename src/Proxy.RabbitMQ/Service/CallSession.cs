@@ -87,7 +87,7 @@ public sealed class CallSession : IDisposable
         try
         {
             _subChannel = _subConnection.CreateModel();
-            _subChannel.BasicQos(0, (ushort)Const.SubPrefetchCount, false);   //13 * 81920 = 4MB
+            _subChannel.BasicQos(0, (ushort)Const.SubPrefetchCount, false);
             var clientToServiceQueue = _subChannel.QueueDeclare(exclusive:false, autoDelete:true).QueueName;
             Debug.WriteLine($"service: _clientToServiceQueue: {clientToServiceQueue}");
             var clientToServiceConsumer = new AsyncEventingBasicConsumer(_subChannel);

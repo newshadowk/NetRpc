@@ -57,7 +57,7 @@ internal class ServiceAsync : IServiceAsync
 
         //Console.WriteLine("...Send TestFile.txt");
 
-        var rawData = new byte[1];
+        var rawData = new byte[1024*1024*200];
         Random.Shared.NextBytes(rawData);
         return new ComplexStream
         {
