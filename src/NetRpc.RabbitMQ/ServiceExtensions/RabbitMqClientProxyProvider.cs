@@ -35,7 +35,7 @@ public class RabbitMQClientProxyProvider : ClientProxyProviderBase
     protected override ClientProxy<TService>? CreateProxyInner<TService>(string optionsName)
     {
         var options = _rabbitMQClientOptions.Get(optionsName);
-        if (options.IsPropertiesDefault())
+        if (string.IsNullOrEmpty(options.Url) && string.IsNullOrEmpty(options.Host))
             return null;
 
         var f = new RabbitMQClientConnectionFactory(_clientConnectionCache.GetClient(optionsName));

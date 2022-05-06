@@ -31,7 +31,7 @@ public class HttpClientProxyProvider : ClientProxyProviderBase
     protected override ClientProxy<TService>? CreateProxyInner<TService>(string optionsName)
     {
         var options = _httpClientOptions.Get(optionsName);
-        if (options.IsPropertiesDefault())
+        if (string.IsNullOrEmpty(options.ApiUrl))
             return null;
 
         var f = new HttpOnceCallFactory(new SimpleOptions<HttpClientOptions>(options), _loggerFactory);

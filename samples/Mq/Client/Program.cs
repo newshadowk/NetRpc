@@ -29,17 +29,24 @@ internal class Program
         //Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Development");
 
         var services = new ServiceCollection();
-        services.AddNClientContract<IServiceAsync>();
+        services.AddNClientContract<IServiceAsync>("a1");
         services.AddLogging(configure => configure.AddConsole());
 
         //services.AddNGrpcClient(o => o.Url = "http://localhost:50001");
 
+        services.AddNGrpcClient();
         services.AddNRabbitMQClient();
         services.Configure<MQClientOptions>("a1", o => o.CopyFrom(Helper.GetMQOptions()));
-        services.Configure<MQClientOptions>(o => o.CopyFrom(Helper.GetMQOptions()));
+        //services.Configure<MQClientOptions>(o => o.CopyFrom(Helper.GetMQOptions()));
 
         var sp = services.BuildServiceProvider();
-        //var f = sp.GetService<IClientProxyFactory>();
+        var s = sp.GetService<IServiceAsync>();
+        await s.Call2("23");
+
+
+        //var f = sp.GetService<IClientProxyFactory>("a1");
+
+
         //var s = f.CreateProxy<IServiceAsync>("a1");
 
         //await Test_ComplexCallAsync(s.Proxy, 0, CancellationToken.None);

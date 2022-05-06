@@ -23,7 +23,6 @@ public class ClientProxy<TService> : IClientProxy<TService> where TService : cla
         get => Call.AdditionContextHeader;
         set => Call.AdditionContextHeader = value;
     }
-
     public Dictionary<string, object?> AdditionHeader { get; } = new();
 
     public ClientProxy(IOnceCallFactory onceCallFactory,

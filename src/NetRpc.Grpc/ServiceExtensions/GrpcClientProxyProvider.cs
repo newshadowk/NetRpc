@@ -33,7 +33,7 @@ public class GrpcClientProxyProvider : ClientProxyProviderBase
     protected override ClientProxy<TService>? CreateProxyInner<TService>(string optionsName)
     {
         var options = _grpcClientOptions.Get(optionsName);
-        if (options.IsPropertiesDefault())
+        if (string.IsNullOrEmpty(options.Url))
             return null;
 
         var f = new GrpcClientConnectionFactory(new SimpleOptions<GrpcClientOptions>(options), _loggerFactory);
