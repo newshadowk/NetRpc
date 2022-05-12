@@ -21,7 +21,7 @@ internal class Program
     {
         await RabbitMQ();
         await Grpc();
-        await Http();
+        await Http(); 
 
         Console.WriteLine("\r\n--------------- End ---------------");
         Console.Read();

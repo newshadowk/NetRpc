@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetRpc;
@@ -20,7 +21,7 @@ internal class Program
 
     private static async Task Main(string[] args)
     {
-        await T1();
+        await T3();
         Console.Read();
     }
 
@@ -41,7 +42,7 @@ internal class Program
 
         var sp = services.BuildServiceProvider();
         var s = sp.GetService<IServiceAsync>();
-        await s.Call2("23");
+        await s.Call2("test");
 
 
         //var f = sp.GetService<IClientProxyFactory>("a1");
@@ -93,7 +94,7 @@ internal class Program
     {
         var f = Helper.GetMQOptions().CreateMainConnectionFactory();
 
-        var c = f.CreateConnection();
+        var c = (IAutorecoveringConnection)f.CreateConnection();
         c.CallbackException += C_CallbackException;
         c.ConnectionBlocked += C_ConnectionBlocked;
         c.ConnectionShutdown += C_ConnectionShutdown;
@@ -107,35 +108,19 @@ internal class Program
         ch.BasicReturn += Ch_BasicReturn;
         ch.FlowControl += Ch_FlowControl;
         ch.ModelShutdown += Ch_ModelShutdown;
-        var qName = "rpc_test2";
-        //var q = ch.QueueDeclare(qName, false, false, false, null);
-        var q = ch.QueueDeclare();
 
-        //int ii = 0;
-        //while (true)
+        //var qName = "rpc_test2";
+        //ch.QueueDeclare(qName, exclusive:false, autoDelete:false);
+        //var consumer = new AsyncEventingBasicConsumer(ch);
+        //consumer.Received += async (_, e) =>
         //{
-        //    ii++;
-        //    Console.WriteLine(ii);
-        //    ch.QueueDeclarePassive(qName);
-        //}
+        //    Console.WriteLine($"r0, {e.DeliveryTag}");
+        //    ch.BasicNack(e.DeliveryTag, false, false);
+        //};
 
-        //var i = 0;
-        //while (true)
-        //{
-        //    //Console.ReadLine();
-        //    i++;
-        //    Console.WriteLine($"{qName} {i}");
-        //    try
-        //    {
-        //        ch.BasicPublish("", qName, true, null, Encoding.UTF8.GetBytes(i.ToString()));
-        //    }
-        //    catch
-        //    {
-        //        Console.WriteLine($"send err {i}");
-        //    }
-
-        //    await Task.Delay(2000);
-        //}
+        //ch.BasicConsume(qName, false, consumer);
+        
+        
     }
 
     private static async Task T2()
@@ -217,7 +202,6 @@ internal class Program
     //    ch.QueueDeclare(QueueName, QueueDurable, QueueExclusive, QueueDelete, null);
     //    ch.QueueBind(QueueName, ExchangeName, RoutingKey);
     //}
-  
 
     private static async Task T3()
     {
@@ -225,7 +209,6 @@ internal class Program
         var c = f.CreateConnection();
         var ch = c.CreateModel();
 
-      
         ch.BasicNacks += (s, e) =>
         {
             Console.WriteLine($"nack, {e.DeliveryTag}");
@@ -242,24 +225,20 @@ internal class Program
         {
             Console.WriteLine($"BasicReturn");
         };
-
-        //var qn = ch.QueueDeclare("rpc_test", false, false, false).QueueName;
-        ch.ConfirmSelect();
       
-        const long Size = 81920;
+        const long Size = 10;
         var rawData = new byte[Size];
         Random.Shared.NextBytes(rawData);
 
-        ch.BasicPublish("", "rpc_test", false, null, rawData);
-        var waitForConfirms = ch.WaitForConfirms();
+        int i = 1;
+        while (true)
+        {
+            Console.WriteLine($"send {i}");
+            ch.BasicPublish("", "rpc_test2", false, null, rawData);
+            await Task.Delay(2000);
+            i++;
 
-
-        //ch.BasicPublish("", qn, false, null, rawData);
-        //ch.BasicPublish("", qn, false, null, rawData);
-
-
-
-        Console.WriteLine("send end");
+        }
     }
 
  

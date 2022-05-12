@@ -25,23 +25,65 @@ public sealed class Service : IDisposable
 
     public void Open()
     {
+        QueueDeclareRpc();
+        RegConsumer();
+    }
+
+    private void QueueDeclareRpc()
+    {
         var args = new Dictionary<string, object>();
         if (_conn.Options.MaxPriority > 0)
             args.Add("x-max-priority", _conn.Options.MaxPriority);
 
         _conn.MainChannel.QueueDeclare(_conn.Options.RpcQueue, false, false, false, args);
+    }
+
+    private void RegConsumer()
+    {
         var consumer = new AsyncEventingBasicConsumer(_conn.MainChannel);
+        consumer.Received += ConsumerReceived;
+        consumer.ConsumerCancelled += ConsumerConsumerCancelled;
         _consumerTag = _conn.MainChannel.BasicConsume(_conn.Options.RpcQueue, false, consumer);
-        consumer.Received += (_, e) =>
+    }
+
+    private Task ConsumerConsumerCancelled(object sender, ConsumerEventArgs e)
+    {
+        try
         {
-            if (!_conn.Checker.Check(e.BasicProperties.ReplyTo))
-            {
-                _logger.LogWarning($"request ignore, {e.BasicProperties.ReplyTo} is not found.");
-                _conn.MainChannel.TryBasicAck(e.DeliveryTag, _logger);
-                return Task.CompletedTask;
-            }
-            return OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_conn.SubConnection, _conn.SubWatcher, _conn.MainChannel, e, _logger)));
-        };
+            var consumer = (AsyncEventingBasicConsumer)sender;
+            consumer.Received -= ConsumerReceived;
+            consumer.ConsumerCancelled -= ConsumerConsumerCancelled;
+
+            _logger.LogWarning($"Consumer cancelled, checking {_conn.Options.RpcQueue} exist.");
+
+            var exist = ChannelChecker.Check(_conn.MainConnection, _conn.Options.RpcQueue);
+
+            _logger.LogWarning($"{_conn.Options.RpcQueue} exist: {exist}");
+            _logger.LogWarning($"QueueDeclare: {_conn.Options.RpcQueue}");
+
+            QueueDeclareRpc();
+
+            _logger.LogWarning("RegConsumer again.");
+
+            RegConsumer();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "ConsumerConsumerCancelled failed.");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task ConsumerReceived(object sender, BasicDeliverEventArgs e)
+    {
+        if (!_conn.Checker.Check(e.BasicProperties.ReplyTo))
+        {
+            _logger.LogWarning($"request ignore, {e.BasicProperties.ReplyTo} is not found.");
+            _conn.MainChannel.TryBasicAck(e.DeliveryTag, _logger);
+            return Task.CompletedTask;
+        }
+        return OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_conn.SubConnection, _conn.SubWatcher, _conn.MainChannel, e, _logger)));
     }
 
     public void Stop()

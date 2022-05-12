@@ -69,7 +69,7 @@ public class ChannelChecker
         _checkConnection = checkConnection;
     }
 
-    public bool Check(string? queue)
+    public static bool Check(IConnection checkConnection, string? queue)
     {
         if (queue == null)
             return true;
@@ -77,7 +77,7 @@ public class ChannelChecker
         IModel ch;
         try
         {
-            ch = _checkConnection.CreateModel();
+            ch = checkConnection.CreateModel();
         }
         catch
         {
@@ -94,5 +94,10 @@ public class ChannelChecker
         {
             return false;
         }
+    }
+
+    public bool Check(string? queue)
+    {
+        return Check(_checkConnection, queue);
     }
 }

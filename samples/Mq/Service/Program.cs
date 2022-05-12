@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using System.Threading.Tasks;
 using DataContract;
 using Microsoft.AspNetCore.Hosting;
@@ -54,14 +53,50 @@ internal class Program
         Console.WriteLine("start");
         var c = Helper.GetMQOptions().CreateMainConnectionFactory().CreateConnection();
         var ch = c.CreateModel();
-        ch.QueueDeclare("rpc_test", false, false, true, null);
-        //ch.BasicQos(0, 1, false);
+        ch.BasicRecoverOk += (s, e) =>
+        {
+            Console.WriteLine("BasicRecoverOk");
+        };
+        ch.CallbackException += (s, e) =>
+        {
+            Console.WriteLine("CallbackException");
+        };
+        ch.FlowControl += (s, e) =>
+        {
+            Console.WriteLine("FlowControl");
+        };
+        ch.ModelShutdown += (s, e) =>
+        {
+            Console.WriteLine("ModelShutdown");
+        };
+
+        string qName = "rpc_test2";
+
+        var q = ch.QueueDeclare(qName, false, false, false, null);
+        ch.QueueDeclare(qName, false, false, false, null);
         var consumer = new AsyncEventingBasicConsumer(ch);
         consumer.Received += async (_, e) =>
         {
             Console.WriteLine($"r0, {e.DeliveryTag}");
             ch.BasicNack(e.DeliveryTag, false, false);
         };
-        ch.BasicConsume("rpc_test", false, consumer);
+       
+        consumer.Shutdown += async (s, e) =>
+        {
+            Console.WriteLine("consumerShutdown");
+        };
+
+        consumer.Unregistered += async (s, e) =>
+        {
+            Console.WriteLine("consumerUnregistered");
+        };
+
+        consumer.ConsumerCancelled += async (_, e) =>
+        {
+            Console.WriteLine("ConsumerCancelled");
+        };
+
+
+        ch.BasicConsume(qName, false, consumer);
     }
 }
