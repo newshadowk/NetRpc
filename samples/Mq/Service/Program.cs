@@ -18,7 +18,7 @@ internal class Program
 {
     private static async Task Main(string[] args)
     {
-        await T1();
+        await T0();
         Console.ReadLine();
     }
 
@@ -72,7 +72,6 @@ internal class Program
 
         string qName = "rpc_test2";
 
-        var q = ch.QueueDeclare(qName, false, false, false, null);
         ch.QueueDeclare(qName, false, false, false, null);
         var consumer = new AsyncEventingBasicConsumer(ch);
         consumer.Received += async (_, e) =>

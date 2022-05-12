@@ -205,6 +205,7 @@ internal class Program
 
     private static async Task T3()
     {
+        var qName = "rpc_test2";
         var f = Helper.GetMQOptions().CreateMainConnectionFactory();
         var c = f.CreateConnection();
         var ch = c.CreateModel();
@@ -226,6 +227,15 @@ internal class Program
             Console.WriteLine($"BasicReturn");
         };
       
+        ch.BasicQos(0, 0, true);
+        var consumer = new AsyncEventingBasicConsumer(ch);
+        consumer.Received += async (_, e) =>
+        {
+            Console.WriteLine($"r0, {e.DeliveryTag}");
+            ch.BasicNack(e.DeliveryTag, false, false);
+        };
+        ch.BasicConsume(qName, false, consumer);
+
         const long Size = 10;
         var rawData = new byte[Size];
         Random.Shared.NextBytes(rawData);
@@ -234,7 +244,7 @@ internal class Program
         while (true)
         {
             Console.WriteLine($"send {i}");
-            ch.BasicPublish("", "rpc_test2", false, null, rawData);
+            ch.BasicPublish("", qName, false, null, rawData);
             await Task.Delay(2000);
             i++;
 
