@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -15,6 +17,7 @@ public sealed class OnceCall : IOnceCall
     private AsyncDispatcher? _callbackDispatcher;
     private CancellationTokenRegistration? _reg;
     private readonly IClientOnceApiConvert _convert;
+    private OnceCallParam? _callParam;
 
     public OnceCall(IClientOnceApiConvert convert, int timeoutInterval, ILogger logger)
     {
@@ -64,7 +67,7 @@ public sealed class OnceCall : IOnceCall
             {
                 // Send cmd
                 var postStream = methodContext.ContractMethod.IsMQPost ? stream.StreamToBytes() : null;
-                var p = new OnceCallParam(header, action, postStream != null || stream != null,
+                _callParam = new OnceCallParam(header, action, postStream != null || stream != null,
                     postStream, stream.GetLength(), pureArgs);
 
                 if (token.IsCancellationRequested)
@@ -74,7 +77,7 @@ public sealed class OnceCall : IOnceCall
                 }
 
                 // sendCmd
-                var sendStreamNext = await _convert.SendCmdAsync(p, methodContext, stream, methodContext.ContractMethod.IsMQPost, methodContext.ContractMethod.MqPriority, token);
+                var sendStreamNext = await _convert.SendCmdAsync(_callParam, methodContext, stream, methodContext.ContractMethod.IsMQPost, methodContext.ContractMethod.MqPriority, token);
 
                 // cancel token
                 // ReSharper disable once AsyncVoidLambda
@@ -146,6 +149,10 @@ public sealed class OnceCall : IOnceCall
 
     private async Task SetFaultAsync(TaskCompletionSource<object?> tcs, object result)
     {
+        if (result is SerializationException { Message: Const.DeserializationFailure } &&
+            _callParam != null) 
+            _logger.LogWarning($"SetFaultAsync, {_callParam}");
+
         if (_reg != null)
             await _reg.Value.DisposeAsync();
         _timeOutCts.Cancel();

@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="SwaggerUi3\dialog\dialog.css" />
+    <None Remove="SwaggerUi3\index.css" />
     <None Remove="SwaggerUi3\swagger-ui-es-bundle-core.js" />
     <None Remove="SwaggerUi3\swagger-ui-es-bundle-core.js.map" />
     <None Remove="SwaggerUi3\swagger-ui-es-bundle.js" />
@@ -13,8 +14,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CSRedisCore" Version="3.6.9" />
-    <PackageReference Include="Microsoft.OpenApi" Version="1.2.3" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.3.0" />
+    <PackageReference Include="Microsoft.OpenApi" Version="1.3.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.3.1" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="SwaggerUi3\dialog\dialog.css" />
@@ -24,6 +25,7 @@
     <EmbeddedResource Include="SwaggerUi3\dialog\signalr.min.js" />
     <EmbeddedResource Include="SwaggerUi3\favicon-16x16.png" />
     <EmbeddedResource Include="SwaggerUi3\favicon-32x32.png" />
+    <EmbeddedResource Include="SwaggerUi3\index.css" />
     <EmbeddedResource Include="SwaggerUi3\index.html" />
     <EmbeddedResource Include="SwaggerUi3\oauth2-redirect.html" />
     <EmbeddedResource Include="SwaggerUi3\swagger-ui-bundle.js" />

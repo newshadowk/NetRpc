@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NetRpc.Http;
-using Helper = TestHelper.Helper;
+using TestHelper;
 
 namespace Service;
 
@@ -22,10 +22,8 @@ internal class Program
             {
                 services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
                 services.AddNServiceContract<IServiceAsync, ServiceAsync>();
-            }).ConfigureLogging((hostContext, loggingBuilder) =>
-            {
-                loggingBuilder.AddConsole();
-            })
+                services.AddNMiddleware(o => o.UseMiddleware<TestGlobalExceptionMiddleware>());
+            }).ConfigureLogging((hostContext, loggingBuilder) => { loggingBuilder.AddConsole(); })
             .Build();
         mpHost.RunAsync();
 
@@ -33,14 +31,12 @@ internal class Program
         var grpcHost = Host.CreateDefaultBuilder()
             .ConfigureWebHostDefaults(webBuilder =>
             {
-                webBuilder.ConfigureKestrel((_, options) =>
-                    {
-                        options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
-                    })
+                webBuilder.ConfigureKestrel((_, options) => { options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2); })
                     .ConfigureServices((_, services) =>
                     {
                         services.AddNGrpcService();
                         services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+                        services.AddNMiddleware(o => o.UseMiddleware<TestGlobalExceptionMiddleware>());
                     }).Configure(app => { app.UseNGrpc(); });
             }).Build();
         grpcHost.RunAsync();

@@ -30,6 +30,23 @@ public sealed class OnceCallParam
 
     public override string ToString()
     {
-        return $"{Action}({PureArgs.ListToString(", ")})";
+        return $"Method:{Action}\r\nHeader:{HeaderStr(Header)}\r\nPureArgs\r\n{ArgsStr(PureArgs)}";
+    }
+
+    private static string ArgsStr(IEnumerable<object?> list)
+    {
+        var s = "";
+        int i = 0;
+        foreach (var p in list)
+            s += $"Param:{i++}\r\n{p.ToDtoJson()}\r\n";
+        return s;
+    }
+
+    private static string HeaderStr(Dictionary<string, object?> header)
+    {
+        var s = "";
+        foreach (var p in header)
+            s += $"  {p.Key}:{p.Value}\r\n";
+        return s;
     }
 }

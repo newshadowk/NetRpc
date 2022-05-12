@@ -11,6 +11,7 @@ using NetRpc;
 using NetRpc.Http;
 using NetRpc.Http.Client;
 using NetRpc.Http.ShortConn;
+using Const = NetRpc.Http.Const;
 using Helper = NetRpc.Http.Helper;
 
 namespace Microsoft.Extensions.DependencyInjection;

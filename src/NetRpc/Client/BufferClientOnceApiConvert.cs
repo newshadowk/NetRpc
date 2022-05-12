@@ -246,14 +246,17 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
 
     private bool TryToObject(ReadOnlyMemory<byte> body, [NotNullWhen(true)] out object? obj)
     {
+        var array = body.ToArray();
+
         try
         {
-            obj = body.ToArray().ToObject<object>();
-            return true;
+            obj = array.ToObject<object>();
+            throw new Exception("123");
+            //return true;
         }
         catch (Exception e)
         {
-            _logger.LogWarning(e, null);
+            _logger.LogWarning(e, $"Base64Str:{Convert.ToBase64String(array)}");
             obj = default;
             return false;
         }
@@ -263,7 +266,7 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
     {
         if (TryToObject(body, out var obj2))
         {
-            obj = (T)obj2!;
+            obj = (T)obj2;
             return true;
         }
 
@@ -271,9 +274,13 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
         return false;
     }
 
+    private static string Base64Encode(string plainText) {
+        return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(plainText));
+    }
+
     private async Task OnFaultSerializationExceptionAsync()
     {
-        await OnFaultAsync(new EventArgsT<object>(new SerializationException("Deserialization failure when receive data.")));
+        await OnFaultAsync(new EventArgsT<object>(new SerializationException(Const.DeserializationFailure)));
         await DisposeAsync();
     }
 }

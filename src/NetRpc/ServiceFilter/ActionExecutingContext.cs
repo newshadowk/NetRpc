@@ -145,7 +145,7 @@ public class ActionExecutingContext : IActionExecutingContext
 
     public override string ToString()
     {
-        return $"Header:{DicToStringForDisplay(Header)}, MethodName:{InstanceMethod.MethodInfo.Name}, Args:{Args.ListToStringForDisplay(",")}";
+        return $"Method:{InstanceMethod.MethodInfo.Name}\r\n\r\nHeader:\r\n{HeaderStr(Header)}\r\n{ArgsStr(PureArgs)}";
     }
 
     private static Type? GetFuncType(IEnumerable<object?> args)
@@ -163,11 +163,20 @@ public class ActionExecutingContext : IActionExecutingContext
         return null;
     }
 
-    public static string DicToStringForDisplay(Dictionary<string, object?> header)
+    private static string ArgsStr(IEnumerable<object?> list)
+    {
+        var s = "";
+        int i = 0;
+        foreach (var p in list)
+            s += $"Param:{i++}\r\n{p.ToDtoJson()}\r\n";
+        return s;
+    }
+
+    private static string HeaderStr(Dictionary<string, object?> header)
     {
         var s = "";
         foreach (var p in header)
-            s += $"{p.Key}:{p.Value}, ";
+            s += $"  {p.Key}:{p.Value}\r\n";
         return s;
     }
 

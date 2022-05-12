@@ -7,6 +7,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using NetRpc.Contract;
@@ -27,6 +29,13 @@ public static class Helper
     public const int PipeResumeWriterThreshold = 1 * StreamBufferSize;
 
     private static readonly string[] SizeSuffixes = {"bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+
+    private static readonly JsonSerializerOptions JsOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Converters = {new JsonStringEnumConverter(JsonNamingPolicy.CamelCase), new StreamConverter()}
+    };
 
     public static string SizeSuffix(long value, int decimalPlaces = 1)
     {
@@ -68,31 +77,7 @@ public static class Helper
             SizeSuffixes[mag]);
         // ReSharper restore FormatStringProblem
     }
-
-    [return: NotNullIfNotNull("list")]
-    public static string? ListToStringForDisplay<T>(this IEnumerable<T>? list, string split, bool displayCount = true)
-    {
-        if (list == null)
-            return null;
-
-        StringBuilder sb = new();
-        var toList = list as IList<T> ?? list.ToList();
-
-        if (displayCount)
-        {
-            sb.Append("[Count:" + toList.Count + "]");
-            sb.Append(split);
-        }
-
-        foreach (var s in toList)
-        {
-            sb.Append(s);
-            sb.Append(split);
-        }
-
-        return sb.ToString().TrimEndString(split);
-    }
-
+ 
     public static async Task SendStreamAsync(Func<ReadOnlyMemory<byte>, Task> publishBuffer, Func<Task> publishBufferEnd, Stream stream,
         CancellationToken token, Action started, Action endOrFault)
     {
@@ -329,9 +314,7 @@ public static class Helper
             throw new ArgumentException("Callback");
         };
     }
-
- 
-
+   
     public static bool IsPropertiesDefault<T>(this T? obj) where T : class
     {
         if (obj == null)
@@ -480,5 +463,13 @@ public static class Helper
             ret += "\r\n" + ee.StackTrace;
         ret += "\r\n";
         return ret;
+    }
+
+    [return: NotNullIfNotNull("obj")]
+    public static string? ToDtoJson<T>(this T obj)
+    {
+        if (obj == null)
+            return null;
+        return JsonSerializer.Serialize(obj, JsOptions);
     }
 }
