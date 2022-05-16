@@ -251,12 +251,11 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
         try
         {
             obj = array.ToObject<object>();
-            throw new Exception("123");
-            //return true;
+            return true;
         }
         catch (Exception e)
         {
-            _logger.LogWarning(e, $"Base64Str:{Convert.ToBase64String(array)}");
+            _logger.LogWarning(e, $"Deserialization err, Base64:{Convert.ToBase64String(array)}");
             obj = default;
             return false;
         }
