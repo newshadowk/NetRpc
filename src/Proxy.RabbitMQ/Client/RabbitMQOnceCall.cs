@@ -73,7 +73,7 @@ public sealed class RabbitMQOnceCall : IDisposable
         {
             _conn.MainChannel.BasicReturn += BasicReturn;
             _firstCid = Guid.NewGuid().ToString("N");
-            _subChannel = _conn.SubConnection.CreateModel();
+            _subChannel = _conn.Connection.CreateModel();
             _subChannel.BasicQos(0, (ushort)Const.SubPrefetchCount, false);
             _serviceToClientQueue = _subChannel.QueueDeclare(exclusive:false, autoDelete:true).QueueName;
             Debug.WriteLine($"client: _serviceToClientQueue: {_serviceToClientQueue}");

@@ -21,19 +21,15 @@ internal class Program
 
     private static async Task Main(string[] args)
     {
-        await T3();
+        await T1();
         Console.Read();
     }
 
     private static async Task T1()
     {
-        //Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Development");
-
         var services = new ServiceCollection();
         services.AddNClientContract<IServiceAsync>("a1");
         services.AddLogging(configure => configure.AddConsole());
-
-        //services.AddNGrpcClient(o => o.Url = "http://localhost:50001");
 
         services.AddNGrpcClient();
         services.AddNRabbitMQClient();
@@ -41,51 +37,6 @@ internal class Program
         //services.Configure<MQClientOptions>(o => o.CopyFrom(Helper.GetMQOptions()));
 
         var sp = services.BuildServiceProvider();
-        var s = sp.GetService<IServiceAsync>();
-        await s.Call2("test");
-
-
-        //var f = sp.GetService<IClientProxyFactory>("a1");
-
-
-        //var s = f.CreateProxy<IServiceAsync>("a1");
-
-        //await Test_ComplexCallAsync(s.Proxy, 0, CancellationToken.None);
-
-
-        //using var serviceScope = sp.CreateScope();
-        //var f = serviceScope.ServiceProvider.GetService<IClientProxyFactory>()!;
-        //var clientProxy = f.CreateProxy<IServiceAsync>("a1");
-        //await clientProxy.Proxy.Call2("sdf");
-
-        //_proxyAsync = sp.GetService<IClientProxy<IServiceAsync>>()!.Proxy;
-
-        //await Test_P(1);
-
-        //try
-        //{
-        //    var s = await _proxyAsync.Call2("123");
-        //    Console.WriteLine($"ret:{s}");
-        //}
-        //catch (Exception e)
-        //{
-        //    Console.WriteLine(e);
-        //}
-
-        //try
-        //{
-        //    await Test_ComplexCallAsync(1);
-        //}
-        //catch (Exception e)
-        //{
-        //    Console.WriteLine(e);
-        //    throw;
-        //}
-
-        //await Task.Delay(1000);
-
-        //Console.WriteLine("ReadLine");
-        //Console.ReadLine();
 
         await DoT(sp);
     }
@@ -314,17 +265,13 @@ internal class Program
         while (true)
         {
             using var serviceScope = sp.CreateScope();
-            //var f = serviceScope.ServiceProvider.GetService<IClientProxyFactory>();
-            //var s = f.CreateProxy<IServiceAsync>("a1").Proxy;
-            //var s = f.CreateProxy<IServiceAsync>("a1").Proxy;
             var s = serviceScope.ServiceProvider.GetService<IServiceAsync>();
 
-            //await Task.Delay(1000);
+            await Task.Delay(3000);
             try
             {
-                await Test_ComplexCallAsync(s, i++, cts.Token);
-                //await Test_Call2(i++);
-                //await Test_P(i++);
+                //await Test_ComplexCallAsync(s, i++, cts.Token);
+                await Test_Call2(s, i++);
             }
             catch (Exception e)
             {
@@ -335,17 +282,11 @@ internal class Program
         }
     }
 
-    private static async Task Test_Call2(int i)
+    private static async Task Test_Call2(IServiceAsync s, int i)
     {
-        //Console.WriteLine($"send {i}");
-        //await _proxyAsync.Call2(i.ToString());
-        //Console.WriteLine("end");
-    }
-
-    private static async Task Test_P(int i)
-    {
-        Console.WriteLine($"post {i}");
-        //await _proxyAsync.P(new CustomObj() { Name = i.ToString() });
+        Console.WriteLine($"send {i}");
+        await s.Call2(i.ToString());
+        Console.WriteLine("end");
     }
 
     private static Stream _stream;

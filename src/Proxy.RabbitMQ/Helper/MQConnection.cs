@@ -18,22 +18,19 @@ public class MQConnection : IDisposable
         _options = options;
         Logger = factory.CreateLogger("NetRpc");
 
-        MainConnection = (IAutorecoveringConnection)options.CreateMainConnectionFactory(prefetchCount).CreateConnectionLoop(Logger);
-        MainConnection.ConnectionShutdown += (_, e) => Logger.LogInformation($"Client ConnectionShutdown, {e.ReplyCode}, {e.ReplyText}");
-        MainConnection.ConnectionRecoveryError += (_, e) => Logger.LogInformation($"Client ConnectionRecoveryError, {e.Exception.Message}");
-        MainConnection.RecoverySucceeded += (_, _) => Logger.LogInformation("Client RecoverySucceeded");
+        Connection = (IAutorecoveringConnection)options.CreateMainConnectionFactory(prefetchCount).CreateConnectionLoop(Logger);
+        Connection.ConnectionShutdown += (_, e) => Logger.LogInformation($"Main ConnectionShutdown, {e.ReplyCode}, {e.ReplyText}");
+        Connection.ConnectionRecoveryError += (_, e) => Logger.LogInformation($"Main ConnectionRecoveryError, {e.Exception.Message}");
+        Connection.RecoverySucceeded += (_, _) => Logger.LogInformation("Main RecoverySucceeded");
 
-        SubConnection = (IAutorecoveringConnection)options.CreateSubConnectionFactory().CreateConnectionLoop(Logger);
-        _checkConnection = (IAutorecoveringConnection)options.CreateSubConnectionFactory().CreateConnectionLoop(Logger);
+        _checkConnection = (IAutorecoveringConnection)options.CreateCheckerConnectionFactory().CreateConnectionLoop(Logger);
         Checker = new ChannelChecker(_checkConnection);
         SubWatcher = new SubWatcher(Checker);
 
-        MainChannel = MainConnection.CreateModel();
+        MainChannel = Connection.CreateModel();
     }
 
-    public IAutorecoveringConnection MainConnection { get; }
-
-    public IAutorecoveringConnection SubConnection { get; }
+    public IAutorecoveringConnection Connection { get; }
 
     public int GetMainQueueCount()
     {
@@ -64,8 +61,7 @@ public class MQConnection : IDisposable
 
         MainChannel.TryClose(Logger);
         _checkConnection.TryClose(Logger);
-        SubConnection.TryClose(Logger);
-        MainConnection.TryClose(Logger);
+        Connection.TryClose(Logger);
     }
 }
 

@@ -11,7 +11,7 @@ namespace Proxy.RabbitMQ;
 public sealed class CallSession : IDisposable
 {
     private volatile IModel? _subChannel;
-    private readonly IConnection _subConnection;
+    private readonly IConnection _connection;
     private readonly BasicDeliverEventArgs _e;
     private readonly ILogger _logger;
     private readonly SubWatcher _subWatcher;
@@ -25,14 +25,14 @@ public sealed class CallSession : IDisposable
     public event AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;
     public event EventHandler? Disconnected;
 
-    public CallSession(IConnection subConnection, SubWatcher subWatcher, IModel mainChannel, BasicDeliverEventArgs e, ILogger logger)
+    public CallSession(IConnection connection, SubWatcher subWatcher, IModel mainChannel, BasicDeliverEventArgs e, ILogger logger)
     {
         _isPost = e.BasicProperties.ReplyTo == null;
         _serviceToClientQueue = e.BasicProperties.ReplyTo!;
-        _subConnection = subConnection;
+        _connection = connection;
         _e = e;
         _logger = logger;
-        _subConnection.ConnectionShutdown += ConnectionShutdown;
+        _connection.ConnectionShutdown += ConnectionShutdown;
         _subWatcher = subWatcher;
         _mainChannel = mainChannel;
         _subWatcher.Disconnected += SubWatcherDisconnected;
@@ -86,7 +86,7 @@ public sealed class CallSession : IDisposable
     {
         try
         {
-            _subChannel = _subConnection.CreateModel();
+            _subChannel = _connection.CreateModel();
             _subChannel.BasicQos(0, (ushort)Const.SubPrefetchCount, false);
             var clientToServiceQueue = _subChannel.QueueDeclare(exclusive:false, autoDelete:true).QueueName;
             Debug.WriteLine($"service: _clientToServiceQueue: {clientToServiceQueue}");
@@ -127,7 +127,7 @@ public sealed class CallSession : IDisposable
         _disposed = true;
         
         _mainChannel.TryBasicAck(_e.DeliveryTag, _logger);
-        _subConnection.ConnectionShutdown -= ConnectionShutdown;
+        _connection.ConnectionShutdown -= ConnectionShutdown;
         _subWatcher.Disconnected -= SubWatcherDisconnected;
         _subWatcher.Remove(_serviceToClientQueue);
         _subChannel?.TryBasicCancel(_consumerTag, _logger);

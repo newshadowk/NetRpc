@@ -20,6 +20,7 @@ public sealed class Service : IDisposable
     public Service(MQServiceOptions options, ILoggerFactory factory)
     {
         _conn = new ServiceConnection(options, factory);
+        _conn.Connection.RecoverySucceeded += RecoverySucceeded;
         _logger = _conn.Logger;
     }
 
@@ -46,31 +47,51 @@ public sealed class Service : IDisposable
         _consumerTag = _conn.MainChannel.BasicConsume(_conn.Options.RpcQueue, false, consumer);
     }
 
-    private Task ConsumerConsumerCancelled(object sender, ConsumerEventArgs e)
+    private void Recovery()
     {
+        _logger.LogWarning("Recovery start.");
+        _logger.LogWarning($"Connection.IsOpen:{_conn.Connection.IsOpen}");
+
+        if (!_conn.Connection.IsOpen)
+        {
+            _logger.LogWarning("Recovery cancelled, wait connection recovery...");
+            return;
+        }
+
+        _logger.LogWarning($"Checking {_conn.Options.RpcQueue} exist.");
+
+        var exist = ChannelChecker.Check(_conn.Connection, _conn.Options.RpcQueue);
+
+        _logger.LogWarning($"{_conn.Options.RpcQueue} exist: {exist}");
+        _logger.LogWarning($"QueueDeclare: {_conn.Options.RpcQueue}");
+
         try
         {
-            var consumer = (AsyncEventingBasicConsumer)sender;
-            consumer.Received -= ConsumerReceived;
-            consumer.ConsumerCancelled -= ConsumerConsumerCancelled;
-
-            _logger.LogWarning($"Consumer cancelled, checking {_conn.Options.RpcQueue} exist.");
-
-            var exist = ChannelChecker.Check(_conn.MainConnection, _conn.Options.RpcQueue);
-
-            _logger.LogWarning($"{_conn.Options.RpcQueue} exist: {exist}");
-            _logger.LogWarning($"QueueDeclare: {_conn.Options.RpcQueue}");
-
             QueueDeclareRpc();
 
             _logger.LogWarning("RegConsumer again.");
 
             RegConsumer();
+            _logger.LogWarning("Recovery ok.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "ConsumerConsumerCancelled failed.");
+            _logger.LogError(ex, "Recovery failed.");
         }
+    }
+
+    private void RecoverySucceeded(object? sender, EventArgs e)
+    {
+        Recovery();
+    }
+
+    private Task ConsumerConsumerCancelled(object sender, ConsumerEventArgs e)
+    {
+        var consumer = (AsyncEventingBasicConsumer)sender;
+        consumer.Received -= ConsumerReceived;
+        consumer.ConsumerCancelled -= ConsumerConsumerCancelled;
+
+        Recovery();
 
         return Task.CompletedTask;
     }
@@ -83,7 +104,7 @@ public sealed class Service : IDisposable
             _conn.MainChannel.TryBasicAck(e.DeliveryTag, _logger);
             return Task.CompletedTask;
         }
-        return OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_conn.SubConnection, _conn.SubWatcher, _conn.MainChannel, e, _logger)));
+        return OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_conn.Connection, _conn.SubWatcher, _conn.MainChannel, e, _logger)));
     }
 
     public void Stop()

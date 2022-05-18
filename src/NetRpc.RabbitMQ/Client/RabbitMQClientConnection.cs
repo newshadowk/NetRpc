@@ -20,7 +20,7 @@ public class RabbitMQClientConnection : IClientConnection
         _call = new RabbitMQOnceCall(conn);
         _call.ReceivedAsync += CallReceived;
         _call.Disconnected += CallDisconnected;
-        _conn.MainConnection.ConnectionShutdown += MainConnectionShutdown;
+        _conn.Connection.ConnectionShutdown += MainConnectionShutdown;
     }
 
     private void CallDisconnected(object? sender, EventArgs e)
@@ -43,7 +43,7 @@ public class RabbitMQClientConnection : IClientConnection
 
     public ValueTask DisposeAsync()
     {
-        _conn.MainConnection.ConnectionShutdown -= MainConnectionShutdown;
+        _conn.Connection.ConnectionShutdown -= MainConnectionShutdown;
         _call.Dispose();
         return new ValueTask();
     }
