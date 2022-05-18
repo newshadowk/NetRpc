@@ -273,10 +273,6 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
         return false;
     }
 
-    private static string Base64Encode(string plainText) {
-        return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(plainText));
-    }
-
     private async Task OnFaultSerializationExceptionAsync()
     {
         await OnFaultAsync(new EventArgsT<object>(new SerializationException(Const.DeserializationFailure)));
