@@ -13,4 +13,10 @@ public interface IService_
 
     [HttpGet("call/result/{id}")]
     Task<CallResult> CallResultAsync(string id);
+
+    [HttpGet("call2/start")]
+    Task<string> Call2Async();
+
+    [HttpGet("call2/result/{id}")]
+    Task<CbObj?> Call2ResultAsync(string id);
 }

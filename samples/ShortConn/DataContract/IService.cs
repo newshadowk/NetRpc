@@ -14,6 +14,8 @@ public interface IServiceAsync
     [HttpPost("call")]
     [FaultException(typeof(NotImplementedException), 400, "1", "this is a err")]
     Task<CallResult> CallAsync(CallParam p, Stream stream, Func<CbObj, Task> cb, CancellationToken token);
+
+    Task<CbObj> Call2Async();
 }
 
 public class CbObj

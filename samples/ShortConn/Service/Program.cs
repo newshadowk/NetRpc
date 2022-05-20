@@ -37,7 +37,7 @@ internal class Program
                             o.ShortConnRedisConnStr =
                                 "192.168.0.50:6379,password=111,defaultDatabase=0,poolsize=50,ssl=false,writeBuffer=10240";
                             o.ShortConnTempDir = @"d:\1";
-                            o.RemainShortConnCacheIn30MinutesWhenFinished = true;
+                            o.ShortConnCacheExpireSecondsWhenFinished = 10;
                         });
                         services.AddNGrpcClient(o => o.Url = "http://localhost:50001");
                         services.AddNClientContract<IService1Async>();
@@ -95,6 +95,11 @@ public class ServiceAsync : IServiceAsync
         ms.Seek(0, SeekOrigin.Begin);
         return new CallResult { P1 = "ret", Steam = ms, StreamName = p.StreamName };
     }
+
+    public Task<CbObj> Call2Async()
+    {
+        return Task.FromResult(new CbObj { P1 = "123" });
+    }
 }
 
 public class IService : IService_
@@ -114,5 +119,15 @@ public class IService : IService_
     public async Task<CallResult?> CallResultAsync(string id)
     {
         return await _cacheHandler.GetResultAsync<CallResult>(id);
+    }
+
+    public Task<string> Call2Async()
+    {
+        return _cacheHandler.StartAsync<IServiceAsync, CbObj>("Call2Async");
+    }
+
+    public async Task<CbObj?> Call2ResultAsync(string id)
+    {
+        return await _cacheHandler.GetResultAsync<CbObj>(id);
     }
 }

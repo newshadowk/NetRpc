@@ -62,7 +62,7 @@ public class CacheHandler
             token);
     }
 
-    public async Task<string> StartAsync<TServcie, TResult>(string methodName, Stream? stream, params object[] pureArgs) where TResult: class
+    public async Task<string> StartAsync<TServcie, TResult>(string methodName, Stream? stream = null, params object[] pureArgs) where TResult: class
     {
         ProxyStream? ps = null;
         if (stream != null)
@@ -121,16 +121,11 @@ public class CacheHandler
     {
         var c = await _cache.GetWithSteamAsync<T>(id);
 
-        if (!_options.RemainShortConnCacheIn30MinutesWhenFinished)
-        {
-            //DelAsync
-            if (c.Data.HasStream)
-            {
-                GlobalActionExecutingContext.Context!.SendResultStreamEndOrFault += (_, _) => { _cache.DelAsync(id); };
-            }
-            else
-                await _cache.DelAsync(id);
-        }
+        //Expire DelAsync
+        if (c.Data.HasStream)
+            GlobalActionExecutingContext.Context!.SendResultStreamEndOrFault += (_, _) => { _cache.ExpireWhenFinishedAsync(id); };
+        else
+            await _cache.ExpireWhenFinishedAsync(id);
 
         return c.Result;
     }
@@ -182,6 +177,7 @@ public class CancelWatcher
 
 public class ShortConnRedis : IDisposable
 {
+
     // ReSharper disable MemberCanBeMadeStatic.Global
     private readonly ILogger _log;
     private const int ExpireSeconds = 1800;
@@ -189,9 +185,11 @@ public class ShortConnRedis : IDisposable
     private const string IdPrefixKey = "task_";
     private const string PruneLastTimeKey = "task_prune_last_time";
     private CSRedisClient.SubscribeObject? _subObj;
+    private readonly HttpServiceOptions _options;
 
     public ShortConnRedis(IOptions<HttpServiceOptions> options, ILoggerFactory loggerFactory)
     {
+        _options = options.Value;
         _log = loggerFactory.CreateLogger<ShortConnRedis>();
         var c = new CSRedisClient(options.Value.ShortConnRedisConnStr);
         SCRedisHelper.Initialization(c);
@@ -223,26 +221,37 @@ public class ShortConnRedis : IDisposable
 
     public async Task SetAsync<T>(string id, InnerContextData<T> obj) where T : class
     {
-        var ok = await SCRedisHelper.SetAsync($"{IdPrefixKey}{id}", obj, ExpireSeconds);
+        var ok = await SCRedisHelper.SetAsync(GetId(id), obj, ExpireSeconds);
         if (!ok)
-            _log.LogError($"SetAsync err, id:{id}, value:\r\n{obj.ToDtoJson()}");
+            _log.LogError($"SetAsync err, id:{GetId(id)}, value:\r\n{obj.ToDtoJson()}");
+    }
+
+    public async Task ExpireWhenFinishedAsync(string id)
+    {
+        var ok = await SCRedisHelper.ExpireAsync(GetId(id), _options.ShortConnCacheExpireSecondsWhenFinished);
+        if (!ok)
+            _log.LogError($"ExpireAsync err, id:{GetId(id)}");
     }
 
     public Task<InnerContextData<T>> GetAsync<T>(string id) where T : class
     {
-        return SCRedisHelper.GetAsync<InnerContextData<T>>($"{IdPrefixKey}{id}");
+        return SCRedisHelper.GetAsync<InnerContextData<T>>(GetId(id));
     }
 
     public Task DelAsync(string id)
     {
-        return SCRedisHelper.DelAsync(id);
+        return SCRedisHelper.DelAsync(GetId(id));
     }
 
     public Task<bool> ExistsAsync(string id)
     {
-        return SCRedisHelper.ExistsAsync($"{IdPrefixKey}{id}");
+        return SCRedisHelper.ExistsAsync(GetId(id));
     }
-    // ReSharper restore MemberCanBeMadeStatic.Global
+
+    private static string GetId(string id)
+    {
+        return $"{IdPrefixKey}id";
+    }
 
     public void Dispose()
     {
@@ -252,11 +261,13 @@ public class ShortConnRedis : IDisposable
 
 public class Cache
 {
+    private readonly HttpServiceOptions _options;
     private readonly ShortConnRedis _redis;
     private readonly FileCache _fileCache;
 
-    public Cache(ShortConnRedis redis, FileCache fileCache)
+    public Cache(IOptions<HttpServiceOptions> options, ShortConnRedis redis, FileCache fileCache)
     {
+        _options = options.Value;
         _redis = redis;
         _fileCache = fileCache;
     }
@@ -302,10 +313,11 @@ public class Cache
         await _redis.SetAsync(id, d);
     }
 
-    public Task DelAsync(string id)
+    public Task ExpireWhenFinishedAsync(string id)
     {
-        _fileCache.Del(id);
-        return _redis.DelAsync(id);
+        if (_options.ShortConnCacheExpireSecondsWhenFinished == 0) 
+            _fileCache.Del(id);
+        return _redis.ExpireWhenFinishedAsync(id);
     }
 
     public async Task SetFaultAsync<T>(string id, Exception e, ActionExecutingContext? context) where T : class
@@ -405,7 +417,7 @@ public class FileCache
 
 public class FilePrune
 {
-    private readonly TimeSpan _checkTimeSpan = TimeSpan.FromMinutes(10);
+    private readonly TimeSpan _checkTimeSpan = TimeSpan.FromMinutes(5);
     private readonly ShortConnRedis _redis;
     private readonly FileCache _fileCache;
     private readonly BusyTimer _t;

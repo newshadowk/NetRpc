@@ -28,9 +28,9 @@ public sealed class HttpServiceOptions
     public string? ShortConnTempDir { get; set; }
 
     /// <summary>
-    /// Default is false.
+    /// Default value is 0, no cache
     /// </summary>
-    public bool RemainShortConnCacheIn30MinutesWhenFinished { get; set; }
+    public int ShortConnCacheExpireSecondsWhenFinished { get; set; }
 }
 
 public class KeyRole
