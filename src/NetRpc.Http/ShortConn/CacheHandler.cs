@@ -120,7 +120,7 @@ public class CacheHandler
 
         //Expire DelAsync
         if (c.Data.HasStream)
-            GlobalActionExecutingContext.Context!.SendResultStreamEndOrFault += (_, _) => { _cache.ExpireWhenFinishedAsync(id); };
+            GlobalActionExecutingContext.Context!.SendResultStreamEndOrFault += async (_, _) => { await _cache.ExpireWhenFinishedAsync(id); };
         else
             await _cache.ExpireWhenFinishedAsync(id);
 
@@ -174,7 +174,6 @@ public class CancelWatcher
 
 public class ShortConnRedis : IDisposable
 {
-
     // ReSharper disable MemberCanBeMadeStatic.Global
     private readonly ILogger _log;
     private const int ExpireSeconds = 1800;
@@ -310,11 +309,15 @@ public class Cache
         await _redis.SetAsync(id, d);
     }
 
-    public Task ExpireWhenFinishedAsync(string id)
+    public async Task ExpireWhenFinishedAsync(string id)
     {
-        if (_options.ShortConnCacheExpireSecondsWhenFinished == 0) 
+        if (_options.ShortConnCacheExpireSecondsWhenFinished == 0)
+        {
             _fileCache.Del(id);
-        return _redis.ExpireWhenFinishedAsync(id);
+            await _redis.DelAsync(id);
+            return;
+        }
+        await _redis.ExpireWhenFinishedAsync(id);
     }
 
     public async Task SetFaultAsync<T>(string id, Exception e, ActionExecutingContext? context) where T : class
