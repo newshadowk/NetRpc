@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NetRpc.Http;
+﻿namespace NetRpc.Http;
 
 public class ContextData
 {

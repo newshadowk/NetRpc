@@ -1,11 +1,14 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
+using NetRpc;
 using NetRpc.Contract;
 
 namespace DataContract;
 
 [Tag("service")]
 [HttpRoute("service")]
+[FaultExceptionDefine(typeof(IdNotFoundException), 400, "1")]
+[InheritedFaultExceptionDefine]
 public interface IService_
 {
     [HttpPost("call/start")]

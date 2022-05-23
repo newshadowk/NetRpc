@@ -111,12 +111,22 @@ public class CacheHandler
 
     public async Task<ContextData> GetProgressAsync(string id)
     {
-        return (await _cache.GetAsync<object>(id)).Data;
+        var obj = await _cache.GetAsync<object>(id);
+        if (obj == null)
+            return new ContextData
+            {
+                Status = ContextStatus.Err,
+                ErrMsg = $"Id is not found:{id}"
+            };
+
+        return obj.Data;
     }
 
     public async Task<T?> GetResultAsync<T>(string id) where T : class
     {
         var c = await _cache.GetWithSteamAsync<T>(id);
+        if (c == null)
+            throw new IdNotFoundException($"Id is not found:{id}");
 
         //Expire DelAsync
         if (c.Data.HasStream)
@@ -229,9 +239,9 @@ public class ShortConnRedis : IDisposable
             _log.LogError($"ExpireAsync err, id:{GetId(id)}");
     }
 
-    public Task<InnerContextData<T>> GetAsync<T>(string id) where T : class
+    public Task<InnerContextData<T>?> GetAsync<T>(string id) where T : class
     {
-        return SCRedisHelper.GetAsync<InnerContextData<T>>(GetId(id));
+        return SCRedisHelper.GetAsync<InnerContextData<T>>(GetId(id))!;
     }
 
     public Task DelAsync(string id)
@@ -273,14 +283,17 @@ public class Cache
         return _redis.SetAsync(id, new InnerContextData<T>());
     }
 
-    public Task<InnerContextData<T>> GetAsync<T>(string id) where T : class
+    public Task<InnerContextData<T>?> GetAsync<T>(string id) where T : class
     {
         return _redis.GetAsync<T>(id);
     }
 
-    public async Task<InnerContextData<T>> GetWithSteamAsync<T>(string id) where T : class
+    public async Task<InnerContextData<T>?> GetWithSteamAsync<T>(string id) where T : class
     {
-        var c = await _redis.GetAsync<T>(id);
+        InnerContextData<T>? c = await _redis.GetAsync<T>(id);
+        if (c == null)
+            return null;
+
         if (c.Data.HasStream)
             c.Result.SetStream(_fileCache.OpenRead(id));
         return c;
@@ -289,6 +302,9 @@ public class Cache
     public async Task SetProgAsync<T>(string id, object? prog) where T : class
     {
         var d = await _redis.GetAsync<T>(id);
+        if (d == null)
+            return;
+
         d.Data.Prog = prog.ToDtoJsonNotIndented();
         await _redis.SetAsync(id, d);
     }
@@ -296,6 +312,9 @@ public class Cache
     public async Task SetResultAsync<T>(string id, T? result) where T : class
     {
         var d = await _redis.GetAsync<T>(id);
+        if (d == null)
+            throw new IdNotFoundException($"Id is not found:{id}");
+        
         if (result.TryGetStream(out var retStream, out var retStreamName))
         {
             d.Data.HasStream = true;
@@ -323,6 +342,8 @@ public class Cache
     public async Task SetFaultAsync<T>(string id, Exception e, ActionExecutingContext? context) where T : class
     {
         var d = await GetAsync<T>(id);
+        if (d == null)
+            return;
 
         // UnWarp FaultException
         e = NetRpc.Helper.UnWarpException(e);

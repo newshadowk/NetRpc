@@ -281,13 +281,13 @@ public sealed class ContractInfo
     private Dictionary<MethodInfo, List<FaultExceptionAttribute>> GetFaultDic(Type contractType, List<MethodInfo> methodInfos)
     {
         var isInheritedFault = contractType.GetCustomAttribute<InheritedFaultExceptionDefineAttribute>() != null;
-        var existFaultExceptionDefines = GetFaultExceptionDefineFromGroup(contractType);
+        var existDefinesInGroup = GetFaultExceptionDefineFromGroup(contractType);
         var faultDic = GetItemsFromDefines(
             Type,
             methodInfos,
             (i, define) => i.DetailType == define.DetailType,
             i => new FaultExceptionAttribute(i.DetailType, i.StatusCode, i.ErrorCode, i.Description),
-            existFaultExceptionDefines,
+            existDefinesInGroup,
             isInheritedFault);
         return faultDic;
     }
@@ -338,19 +338,19 @@ public sealed class ContractInfo
         IEnumerable<MethodInfo> methodInfos,
         Func<T, TDefine, bool> match,
         Func<TDefine, T> convert,
-        List<TDefine> existDefines,
+        List<TDefine> existDefinesInGroup,
         bool isInheritedDefines)
         where T : Attribute
         where TDefine : Attribute
     {
         var dic = new Dictionary<MethodInfo, List<T>>();
         var defines = contractType.GetCustomAttributes<TDefine>(true).ToList();
-        defines.AddRange(existDefines);
+        defines.AddRange(existDefinesInGroup);
 
         var items = contractType.GetCustomAttributes<T>(true).ToList();
 
         if (isInheritedDefines)
-            items.AddRange(existDefines.ConvertAll(i => convert(i)));
+            items.AddRange(defines.ConvertAll(i => convert(i)));
 
         foreach (var m in methodInfos)
         {

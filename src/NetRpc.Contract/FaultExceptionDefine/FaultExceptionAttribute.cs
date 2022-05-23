@@ -17,7 +17,7 @@ public sealed class InheritedFaultExceptionDefineAttribute : Attribute
 }
 
 /// <summary>
-/// Show FaultException description in swagger.
+/// Hide FaultException description in swagger.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface, AllowMultiple = true, Inherited = false)]
 public sealed class HideFaultExceptionDescriptionAttribute : Attribute

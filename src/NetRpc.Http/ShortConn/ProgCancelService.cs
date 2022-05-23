@@ -3,8 +3,8 @@ using NetRpc.Contract;
 
 namespace NetRpc.Http.ShortConn;
 
-[Tag("ctl")]
-[HttpRoute("ctl")]
+[Tag("prog")]
+[HttpRoute("prog")]
 public interface IProgCancelService
 {
     [HttpGet("prog/{id}")]
