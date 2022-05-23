@@ -21,16 +21,13 @@ public class CacheHandler
     private readonly Cache _cache;
     private readonly CancelWatcher _cancelWatcher;
     private readonly MiddlewareBuilder _middlewareBuilder;
-    private readonly HttpServiceOptions _options;
     private readonly ILogger<CacheHandler> _log;
 
-    public CacheHandler(Cache cache, CancelWatcher cancelWatcher, MiddlewareBuilder middlewareBuilder, FilePrune filePrune, ILoggerFactory factory,
-        IOptions<HttpServiceOptions> options)
+    public CacheHandler(Cache cache, CancelWatcher cancelWatcher, MiddlewareBuilder middlewareBuilder, FilePrune filePrune, ILoggerFactory factory)
     {
         _cache = cache;
         _cancelWatcher = cancelWatcher;
         _middlewareBuilder = middlewareBuilder;
-        _options = options.Value;
         _log = factory.CreateLogger<CacheHandler>();
         filePrune.Start();
     }
@@ -250,7 +247,7 @@ public class ShortConnRedis : IDisposable
 
     private static string GetId(string id)
     {
-        return $"{IdPrefixKey}id";
+        return $"{IdPrefixKey}{id}";
     }
 
     public void Dispose()
