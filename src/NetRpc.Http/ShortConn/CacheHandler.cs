@@ -313,7 +313,7 @@ public class Cache
     {
         var d = await _redis.GetAsync<T>(id);
         if (d == null)
-            throw new IdNotFoundException($"Id is not found:{id}");
+            return;
         
         if (result.TryGetStream(out var retStream, out var retStreamName))
         {
