@@ -44,6 +44,8 @@ public sealed class RequestHandler
                 contextAccessor,
                 channelType,
                 _logger);
+
+            GlobalDebugContext.Context.Info("--- Request start ---");
             if (await onceTransfer.StartAsync())
                 await onceTransfer.HandleRequestAsync();
         }

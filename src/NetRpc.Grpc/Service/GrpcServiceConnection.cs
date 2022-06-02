@@ -48,10 +48,14 @@ internal sealed class GrpcServiceConnection : IServiceConnection
         {
             try
             {
-                await _responseStream.WriteAsync(new StreamBuffer {Body = ByteString.CopyFrom(buffer.Span)});
+                DebugI($"Send buffer len:{buffer.Span.Length}");
+                await _responseStream.WriteAsync(new StreamBuffer { Body = ByteString.CopyFrom(buffer.Span) });
+                DebugI("Send buffer end.");
+                throw new Exception("123");
             }
             catch (Exception e)
             {
+                _logger.LogWarning(GlobalDebugContext.Context.ToString());
                 _logger.LogWarning(e, "Service WriteAsync error. ");
                 await OnDisconnectedAsync(EventArgs.Empty);
                 throw;
@@ -59,19 +63,30 @@ internal sealed class GrpcServiceConnection : IServiceConnection
         }
     }
 
+    private static void DebugI(string s)
+    {
+        GlobalDebugContext.Context.Info(s);
+    }
+
     public Task<bool> StartAsync()
     {
+        DebugI("start.");
+        
         Task.Run(async () =>
         {
             //MoveNext will have a Exception when client is disconnected.
-
             try
             {
+                DebugI("MoveNext, start");
                 while (await _requestStream.MoveNext(CancellationToken.None))
                 {
+                    DebugI("MoveNext, in");
                     try
                     {
-                        await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(_requestStream.Current.Body.ToByteArray()));
+                        var buffer = _requestStream.Current.Body.ToByteArray();
+                        DebugI($"MoveNext, buffer len:{buffer.Length}");
+                        await OnReceivedAsync(new EventArgsT<ReadOnlyMemory<byte>>(buffer));
+                        DebugI("MoveNext, end.");
                     }
                     catch (Exception e)
                     {
@@ -82,6 +97,7 @@ internal sealed class GrpcServiceConnection : IServiceConnection
             }
             catch (Exception e)
             {
+                _logger.LogWarning(GlobalDebugContext.Context.ToString());
                 _logger.LogWarning(e, "Service MoveNext error. ");
                 await OnDisconnectedAsync(EventArgs.Empty);
             }

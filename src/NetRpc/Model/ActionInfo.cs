@@ -7,7 +7,7 @@ public sealed class ActionInfo
 {
     public string FullName { get; set; } = null!;
 
-    public string[] GenericArguments { get; set; } = new string[0];
+    public string[] GenericArguments { get; set; } = Array.Empty<string>();
 
     public override string ToString()
     {

@@ -40,26 +40,21 @@ internal sealed class ServiceOnceTransfer
     public async Task HandleRequestAsync()
     {
         ActionExecutingContext? context = null;
+        object? ret;
 
         try
         {
             //get context
             context = await GetContextAsync();
 
+            //debug info
+            GlobalDebugContext.Context.Info($"context:\r\n{context}");
+
             //set Accessor
             _actionExecutingContextAccessor.Context = context;
 
             //middleware Invoke
-            var ret = await _middlewareBuilder.InvokeAsync(context);
-
-            //if Post, do not need send back to client.
-            if (context.ContractMethod.IsMQPost)
-                return;
-
-            var hasStream = ret.TryGetStream(out var retStream, out var retStreamName);
-
-            //send result
-            await _convert.SendResultAsync(new CustomResult(ret, hasStream, context.ContractMethod.IsImages, retStream.GetLength()), retStream, retStreamName, context);
+            ret = await _middlewareBuilder.InvokeAsync(context);
         }
         catch (Exception e)
         {
@@ -76,6 +71,24 @@ internal sealed class ServiceOnceTransfer
             {
                 _logger.LogWarning(e2, "HandleRequestAsync SendFaultAsync");
             }
+
+            return;
+        }
+
+        //if Post, do not need send back to client.
+        if (context.ContractMethod.IsMQPost)
+            return;
+
+        var hasStream = ret.TryGetStream(out var retStream, out var retStreamName);
+
+        try
+        {
+            //send result
+            await _convert.SendResultAsync(new CustomResult(ret, hasStream, context.ContractMethod.IsImages, retStream.GetLength()), retStream, retStreamName, context);
+        }
+        catch (Exception e)
+        {
+            _logger.LogWarning(e, "HandleRequestAsync SendResultAsync");
         }
     }
 
