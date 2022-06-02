@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NetRpc;
 using NetRpc.Http;
 
 namespace Service;
@@ -59,6 +60,7 @@ public class ServiceAsync : IServiceAsync
 {
     public async Task<string> CallAsync(string s)
     {
+        GlobalDebugContext.Context.Info("call...");
         Console.WriteLine($"Receive: {s}");
         return s;
     }

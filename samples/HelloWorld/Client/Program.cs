@@ -22,7 +22,15 @@ internal class Program
         //get service
         var service = sp.GetService<IServiceAsync>();
         Console.WriteLine("call: hello world.");
-        var ret = await service.CallAsync("hello world.");
+        try
+        {
+            var ret = await service.CallAsync("hello world.");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
 
         Console.Read();
     }
