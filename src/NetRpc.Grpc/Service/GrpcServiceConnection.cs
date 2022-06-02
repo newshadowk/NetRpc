@@ -51,7 +51,6 @@ internal sealed class GrpcServiceConnection : IServiceConnection
                 DebugI($"Send buffer len:{buffer.Span.Length}");
                 await _responseStream.WriteAsync(new StreamBuffer { Body = ByteString.CopyFrom(buffer.Span) });
                 DebugI("Send buffer end.");
-                throw new Exception("123");
             }
             catch (Exception e)
             {
