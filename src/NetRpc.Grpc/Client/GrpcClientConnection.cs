@@ -37,7 +37,7 @@ internal sealed class GrpcClientConnection : IClientConnection
 
     public async ValueTask DisposeAsync()
     {
-        using (await LockDispose.LockAsync())
+        using (await _sendLock.LockAsync())
         {
             if (_isDispose)
                 return;

@@ -19,18 +19,35 @@ internal class Program
         services.AddLogging(l => l.AddConsole());
         var sp = services.BuildServiceProvider();
 
+        for (int i = 0; i < 5; i++)
+        {
+            int j = i;
+            Task.Run(async () =>
+            {
+                int i0 = 0;
+                while (true)
+                {
+                    using var c = sp.CreateScope();
+                    var s = c.ServiceProvider.GetService<IServiceAsync>();
+                    await s.CallAsync($"{i0++}");
+                    Console.WriteLine($"{j} - {i0}");
+                }
+            });
+        }
+        
+
         //get service
-        var service = sp.GetService<IServiceAsync>();
-        Console.WriteLine("call: hello world.");
-        try
-        {
-            var ret = await service.CallAsync("hello world.");
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
+        //var service = sp.GetService<IServiceAsync>();
+        //Console.WriteLine("call: hello world.");
+        //try
+        //{
+        //    var ret = await service.CallAsync("hello world.");
+        //}
+        //catch (Exception e)
+        //{
+        //    Console.WriteLine(e);
+        //    throw;
+        //}
 
         Console.Read();
     }
