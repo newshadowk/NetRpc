@@ -25,7 +25,7 @@ public static class OpenApiAnyFactoryOld
             return new OpenApiDate(typedValue6);
         if (schema.Type == "string" && schema.Format == "date-time" && TryCast(value, out DateTime typedValue7))
             return new OpenApiDate(typedValue7);
-        if (schema.Type == "string" && value.GetType().IsEnum)
+        if (value.GetType().IsEnum)
             return new OpenApiString(Enum.GetName(value.GetType(), value));
         return schema.Type == "string" ? new OpenApiString(value.ToString()) : null;
     }
