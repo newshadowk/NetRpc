@@ -145,7 +145,7 @@ public class ActionExecutingContext : IActionExecutingContext
 
     public override string ToString()
     {
-        return $"Method:{InstanceMethod.MethodInfo.Name}\r\n\r\nHeader:\r\n{HeaderStr(Header)}\r\n{ArgsStr(PureArgs)}";
+        return $"[ActionExecutingContext]\r\nMethod:{InstanceMethod.MethodInfo.Name}\r\n\r\nHeader:\r\n{HeaderStr(Header)}\r\n{ArgsStr(PureArgs)}";
     }
 
     private static Type? GetFuncType(IEnumerable<object?> args)

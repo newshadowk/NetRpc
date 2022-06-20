@@ -30,7 +30,7 @@ public sealed class OnceCallParam
 
     public override string ToString()
     {
-        return $"Method:{Action}\r\nHeader:{HeaderStr(Header)}\r\nPureArgs\r\n{ArgsStr(PureArgs)}";
+        return $"[OnceCallParam]\r\nMethod:{Action}\r\nHeader:{HeaderStr(Header)}\r\nPureArgs\r\n{ArgsStr(PureArgs)}";
     }
 
     private static string ArgsStr(IEnumerable<object?> list)
