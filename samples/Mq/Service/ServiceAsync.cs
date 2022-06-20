@@ -5,9 +5,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
-using NetRpc.RabbitMQ;
-using Proxy.RabbitMQ;
-using Helper = TestHelper.Helper;
 
 namespace Service;
 
@@ -28,8 +25,7 @@ internal class ServiceAsync : IServiceAsync
         Console.Write($"[ComplexCallAsync]...Received length:{data.Length}");
         Stopwatch sw = Stopwatch.StartNew();
         MemoryStream ms = new();
-        //await Task.Delay(100000000);
-        await data.CopyToAsync(ms);
+        //await data.CopyToAsync(ms);
         sw.Stop();
         Console.WriteLine($"   time:{sw.ElapsedMilliseconds}");
 

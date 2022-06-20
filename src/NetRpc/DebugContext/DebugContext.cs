@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Threading;
 
 namespace NetRpc;
@@ -7,13 +8,14 @@ public class DebugContext
 {
     private readonly string _id = Guid.NewGuid().ToString()[32..];
 
-    private string _s = "[Debug Context]\r\n";
+    private readonly StringBuilder _sb = new("[Debug Context]\r\n");
 
     public void Info(string s)
     {
         var ss = $"---> {_id} {T()} {s}";
-        _s += ss + "\r\n";
-        //Console.WriteLine(ss);
+        _sb.AppendLine(ss);
+        _sb.AppendLine("\r\n");
+        Console.WriteLine(ss);
     }
 
     private static string T()
@@ -23,7 +25,7 @@ public class DebugContext
 
     public override string ToString()
     {
-        return $"{_s}";
+        return _sb.ToString();
     }
 }
 

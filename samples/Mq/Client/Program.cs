@@ -36,9 +36,25 @@ internal class Program
         services.Configure<MQClientOptions>("a1", o => o.CopyFrom(Helper.GetMQOptions()));
         //services.Configure<MQClientOptions>(o => o.CopyFrom(Helper.GetMQOptions()));
 
-        var sp = services.BuildServiceProvider();
+        var sp = services.BuildServiceProvider(); 
+        var s = sp.GetService<IServiceAsync>();
 
-        await DoT(sp);
+        var fs = File.OpenRead(@"D:\TestFile\10MB.db");
+
+
+        try
+        {
+            Console.WriteLine("send start");
+            var r = await s.ComplexCallAsync(new CustomObj(), fs, null, CancellationToken.None);
+            Console.WriteLine("send end");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
+        //await DoT(sp);
     }
 
     private static async Task T0()
