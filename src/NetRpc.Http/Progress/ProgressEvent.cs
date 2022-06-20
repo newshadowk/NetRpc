@@ -19,8 +19,6 @@ internal sealed class ProgressEvent : IDisposable
 
             if (totalSize == 0)
                 percent = 0;
-            else if (totalSize == 0 && currSize == 0)
-                percent = 100;
             else
                 percent = (int) ((double) currSize / totalSize * 100);
 

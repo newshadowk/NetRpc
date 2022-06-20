@@ -32,7 +32,7 @@ public class ClientStreamTracingMiddleware
             return;
 
         var spanBuilder = GlobalTracer.Instance.BuildSpan(
-                $"{Const.ClientStream} {NetRpc.Helper.SizeSuffix(context.Stream.Length)} {Const.SendStr}")
+                $"{Const.ClientStream} {NetRpc.Helper.SizeSuffix(context.Stream.GetLength())} {Const.SendStr}")
             .AsChildOf(GlobalTracer.Instance.ActiveSpan);
         ISpan? span = null;
         context.OnceCall.SendRequestStreamStarted += (_, _) => span = spanBuilder.Start();
@@ -46,9 +46,9 @@ public class ClientStreamTracingMiddleware
 
         if (context.Result.TryGetStream(out var outStream, out _))
         {
-            var readStream = (ProxyStream) outStream!;
+            var readStream = (ProxyStream) outStream;
             var spanBuilder = GlobalTracer.Instance.BuildSpan(
-                    $"{Const.ClientStream} {NetRpc.Helper.SizeSuffix(readStream.Length)} {Const.ReceiveStr}")
+                    $"{Const.ClientStream} {NetRpc.Helper.SizeSuffix(readStream.GetLength())} {Const.ReceiveStr}")
                 .AsChildOf(GlobalTracer.Instance.ActiveSpan);
             ISpan? span = null;
 
