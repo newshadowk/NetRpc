@@ -15,7 +15,7 @@ public class DebugContext
         var ss = $"---> {_id} {T()} {s}";
         _sb.AppendLine(ss);
         _sb.AppendLine("\r\n");
-        Console.WriteLine(ss);
+        //Console.WriteLine(ss);
     }
 
     private static string T()
