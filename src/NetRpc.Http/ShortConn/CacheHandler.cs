@@ -84,21 +84,19 @@ public class CacheHandler
     {
         await _cache.CreateAsync<T>(id);
 
-        async Task Cb(object? i)
-        {
-            await _cache.SetProgAsync<T>(id, i);
-        }
+        async Task Cb(object? i) => await _cache.SetProgAsync<T>(id, i);
 
         var contractOptions = GlobalServiceProvider.Provider!.GetRequiredService<IOptions<ContractOptions>>();
+        var contextAccessor = GlobalServiceProvider.Provider!.GetRequiredService<IActionExecutingContextAccessor>();
         using var scope = GlobalServiceProvider.Provider!.GetRequiredService<IServiceScopeFactory>().CreateScope();
         GlobalServiceProvider.ScopeProvider = scope.ServiceProvider;
         var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
-        var context = GetContext(instances, scope.ServiceProvider, action, Cb, stream, pureArgs, header, _cancelWatcher.Create(id).Token);
-        context.Properties["sc_id"] = id; 
+        contextAccessor.Context  = GetContext(instances, scope.ServiceProvider, action, Cb, stream, pureArgs, header, _cancelWatcher.Create(id).Token);
+        contextAccessor.Context.Properties["sc_id"] = id;
 
         try
         {
-            var ret = await _middlewareBuilder.InvokeAsync(context);
+            var ret = await _middlewareBuilder.InvokeAsync(contextAccessor.Context);
             _cancelWatcher.Remove(id);
             await _cache.SetResultAsync(id, ret);
         }
@@ -106,7 +104,7 @@ public class CacheHandler
         {
             _log.LogError(e, $"start err, id:{id}");
             _cancelWatcher.Remove(id);
-            await _cache.SetFaultAsync<T>(id, e, context);
+            await _cache.SetFaultAsync<T>(id, e, contextAccessor.Context);
         }
     }
 

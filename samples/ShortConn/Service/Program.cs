@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NetRpc;
 using NetRpc.Contract;
 using NetRpc.Http;
 using NetRpc.Http.ShortConn;
@@ -77,6 +78,9 @@ public class ServiceAsync : IServiceAsync
 
     public async Task<CallResult> CallAsync(CallParam p, Stream stream, Func<CbObj, Task> cb, CancellationToken token)
     {
+        var actionExecutingContext = GlobalActionExecutingContext.Context;
+
+
         var ms = new MemoryStream();
         await stream.CopyToAsync(ms, token);
 
