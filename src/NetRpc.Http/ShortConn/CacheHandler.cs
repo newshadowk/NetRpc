@@ -94,6 +94,7 @@ public class CacheHandler
         GlobalServiceProvider.ScopeProvider = scope.ServiceProvider;
         var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
         var context = GetContext(instances, scope.ServiceProvider, action, Cb, stream, pureArgs, header, _cancelWatcher.Create(id).Token);
+        context.Properties["sc_id"] = id; 
 
         try
         {
