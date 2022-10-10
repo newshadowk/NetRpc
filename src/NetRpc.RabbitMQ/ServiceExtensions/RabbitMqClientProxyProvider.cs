@@ -41,7 +41,7 @@ public class RabbitMQClientProxyProvider : ClientProxyProviderBase
         var f = new RabbitMQClientConnectionFactory(_clientConnectionCache.GetClient(optionsName));
         var clientProxy = new ClientProxy<TService>(
             f,
-            new SimpleOptions<NClientOptions>(_nClientOption.Value),
+            Options.Create(_nClientOption.Value),
             _clientMiddlewareOptions,
             _actionExecutingContextAccessor,
             _serviceProvider,

@@ -34,10 +34,10 @@ public class HttpClientProxyProvider : ClientProxyProviderBase
         if (string.IsNullOrEmpty(options.ApiUrl))
             return null;
 
-        var f = new HttpOnceCallFactory(new SimpleOptions<HttpClientOptions>(options), _loggerFactory);
+        var f = new HttpOnceCallFactory(Options.Create(options), _loggerFactory);
         var clientProxy = new ClientProxy<TService>(
             f,
-            new SimpleOptions<NClientOptions>(_nClientOption.Value),
+            Options.Create(_nClientOption.Value),
             _clientMiddlewareOptions,
             _actionExecutingContextAccessor,
             _serviceProvider,

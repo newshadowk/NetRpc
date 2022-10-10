@@ -36,9 +36,9 @@ public class GrpcClientProxyProvider : ClientProxyProviderBase
         if (string.IsNullOrEmpty(options.Url))
             return null;
 
-        var f = new GrpcClientConnectionFactory(new SimpleOptions<GrpcClientOptions>(options), _loggerFactory);
+        var f = new GrpcClientConnectionFactory(Options.Options.Create(options), _loggerFactory);
         var clientProxy = new ClientProxy<TService>(f,
-            new SimpleOptions<NClientOptions>(_nClientOption.Value),
+            Options.Options.Create(_nClientOption.Value),
             _clientMiddlewareOptions,
             _actionExecutingContextAccessor,
             _serviceProvider,
