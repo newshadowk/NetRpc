@@ -44,10 +44,10 @@ public static class NHttpServiceExtensions
         return services;
     }
 
-    public static IServiceCollection AddNHttpService(this IServiceCollection services, Action<HttpServiceOptions>? httpServiceConfigureOptions = null)
+    public static IServiceCollection AddNHttpService(this IServiceCollection services, Action<HttpServiceOptions>? configureHttpServiceOptions = null)
     {
-        if (httpServiceConfigureOptions != null)
-            services.Configure(httpServiceConfigureOptions);
+        if (configureHttpServiceOptions != null)
+            services.Configure(configureHttpServiceOptions);
 
         //HttpObjProcessor
         services.TryAddSingleton<HttpObjProcessorManager>();
@@ -72,11 +72,11 @@ public static class NHttpServiceExtensions
     }
 
     public static IServiceCollection AddNHttpGateway<TService>(this IServiceCollection services,
-        Action<HttpClientOptions>? httpClientConfigureOptions = null,
-        Action<NClientOptions>? clientConfigureOptions = null,
+        Action<HttpClientOptions>? configureHttpClientOptions = null,
+        Action<NClientOptions>? configureClientOptions = null,
         ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
     {
-        services.AddNHttpClient(httpClientConfigureOptions, clientConfigureOptions, serviceLifetime);
+        services.AddNHttpClient(configureHttpClientOptions, configureClientOptions, serviceLifetime);
         services.Configure<NClientOptions>(i => i.ForwardAllHeaders = true);
         services.AddNClientContract<TService>(serviceLifetime);
         services.AddNServiceContract(typeof(TService),

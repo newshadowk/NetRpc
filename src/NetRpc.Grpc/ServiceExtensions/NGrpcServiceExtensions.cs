@@ -36,11 +36,11 @@ public static class NGrpcServiceExtensions
     }
 
     public static IServiceCollection AddNGrpcGateway<TService>(this IServiceCollection services,
-        Action<GrpcClientOptions>? grpcClientConfigureOptions = null,
-        Action<NClientOptions>? clientConfigureOptions = null,
+        Action<GrpcClientOptions>? configureGrpcClientOptions = null,
+        Action<NClientOptions>? configureClientOptions = null,
         ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
     {
-        services.AddNGrpcClient(grpcClientConfigureOptions, clientConfigureOptions, serviceLifetime);
+        services.AddNGrpcClient(configureGrpcClientOptions, configureClientOptions, serviceLifetime);
         services.Configure<NClientOptions>(i => i.ForwardAllHeaders = true);
         services.AddNClientContract<TService>(serviceLifetime);
         services.AddNServiceContract(typeof(TService),
@@ -49,14 +49,14 @@ public static class NGrpcServiceExtensions
     }
 
     public static IServiceCollection AddNGrpcClient(this IServiceCollection services,
-        Action<GrpcClientOptions>? grpcClientConfigureOptions = null,
-        Action<NClientOptions>? clientConfigureOptions = null,
+        Action<GrpcClientOptions>? configureGrpcClientOptions = null,
+        Action<NClientOptions>? configureClientOptions = null,
         ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
     {
-        if (grpcClientConfigureOptions != null)
-            services.Configure(grpcClientConfigureOptions);
+        if (configureGrpcClientOptions != null)
+            services.Configure(configureGrpcClientOptions);
         services.AddLogging();
-        services.AddNClientByClientConnectionFactory<GrpcClientConnectionFactory>(clientConfigureOptions, serviceLifetime);
+        services.AddNClientByClientConnectionFactory<GrpcClientConnectionFactory>(configureClientOptions, serviceLifetime);
         switch (serviceLifetime)
         {
             case ServiceLifetime.Singleton:

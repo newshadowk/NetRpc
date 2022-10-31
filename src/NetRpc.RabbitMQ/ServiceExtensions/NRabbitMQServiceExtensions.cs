@@ -19,14 +19,14 @@ public static class NRabbitMQServiceExtensions
     }
 
     public static IServiceCollection AddNRabbitMQClient(this IServiceCollection services,
-        Action<MQClientOptions>? mQClientConfigureOptions = null,
-        Action<NClientOptions>? clientConfigureOptions = null,
+        Action<MQClientOptions>? configureMQClientOptions = null,
+        Action<NClientOptions>? configureClientOptions = null,
         ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
     {
-        if (mQClientConfigureOptions != null)
-            services.Configure(mQClientConfigureOptions);
+        if (configureMQClientOptions != null)
+            services.Configure(configureMQClientOptions);
         services.AddLogging();
-        services.AddNClientByClientConnectionFactory<RabbitMQClientConnectionFactory>(clientConfigureOptions, serviceLifetime);
+        services.AddNClientByClientConnectionFactory<RabbitMQClientConnectionFactory>(configureClientOptions, serviceLifetime);
         services.AddSingleton<ClientConnectionCache>();
         switch (serviceLifetime)
         {
@@ -47,11 +47,11 @@ public static class NRabbitMQServiceExtensions
     }
 
     public static IServiceCollection AddNRabbitMQGateway<TService>(this IServiceCollection services,
-        Action<MQClientOptions>? mQClientConfigureOptions = null,
-        Action<NClientOptions>? clientConfigureOptions = null,
+        Action<MQClientOptions>? configureMQClientOptions = null,
+        Action<NClientOptions>? configureClientOptions = null,
         ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
     {
-        services.AddNRabbitMQClient(mQClientConfigureOptions, clientConfigureOptions, serviceLifetime);
+        services.AddNRabbitMQClient(configureMQClientOptions, configureClientOptions, serviceLifetime);
         services.Configure<NClientOptions>(i => i.ForwardAllHeaders = true);
         services.AddNClientContract<TService>(serviceLifetime);
         services.AddNServiceContract(typeof(TService),

@@ -7,14 +7,14 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class NHttpClientExtensions
 {
     public static IServiceCollection AddNHttpClient(this IServiceCollection services,
-        Action<HttpClientOptions>? httpClientConfigureOptions = null,
-        Action<NClientOptions>? clientConfigureOptions = null,
+        Action<HttpClientOptions>? configureHttpClientOptions = null,
+        Action<NClientOptions>? configureClientOptions = null,
         ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
     {
-        if (httpClientConfigureOptions != null)
-            services.Configure(httpClientConfigureOptions);
+        if (configureHttpClientOptions != null)
+            services.Configure(configureHttpClientOptions);
         services.AddLogging();
-        services.AddNClientByOnceCallFactory<HttpOnceCallFactory>(clientConfigureOptions, serviceLifetime);
+        services.AddNClientByOnceCallFactory<HttpOnceCallFactory>(configureClientOptions, serviceLifetime);
         switch (serviceLifetime)
         {
             case ServiceLifetime.Singleton:
