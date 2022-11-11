@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 public class NClientOptions
 {
@@ -22,5 +20,5 @@ public class NClientOptions
     /// <summary>
     /// Forward headers from coming side by keys.
     /// </summary>
-    public List<string> ForwardHeaderKeys { get; set; } = new(); 
+    public List<string> ForwardHeaderKeys { get; set; } = new();
 }

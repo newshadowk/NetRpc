@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NetRpc.Http;
+﻿namespace NetRpc.Http;
 
 internal class HttpNotMatchedException : Exception
 {

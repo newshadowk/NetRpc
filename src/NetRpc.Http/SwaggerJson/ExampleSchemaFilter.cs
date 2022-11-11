@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
@@ -19,7 +18,7 @@ public class ExampleSchemaFilter : ISchemaFilter
         //    return;
 
         var propertyInfos = context.Type.GetProperties();
-        foreach (PropertyInfo propertyInfo in propertyInfos)
+        foreach (var propertyInfo in propertyInfos)
         {
             var example = propertyInfo.GetCustomAttribute<ExampleAttribute>();
             var name = GetName(propertyInfo);
@@ -35,7 +34,7 @@ public class ExampleSchemaFilter : ISchemaFilter
                             property.Value.Example = new OpenApiNull();
                             break;
                         }
-                    
+
                         property.Value.Example = OpenApiAnyFactoryOld.CreateFor(property.Value, example.Value);
                         //property.Value.Example = OpenApiAnyFactory.TryCreateFor(property.Value, attribute.Value, out IOpenApiAny openApiAny)
                         //    ? openApiAny

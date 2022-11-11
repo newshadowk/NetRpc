@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections;
 using System.Reflection;
 using Microsoft.Extensions.Primitives;
 using NetRpc.Http.Client;
@@ -117,15 +114,15 @@ internal sealed class HttpDataObj
             return;
 
         if (propertyValue == DBNull.Value || propertyValue == null)
-            type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance, new object[] {null!});
+            type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance, new object[] { null! });
         else if (typeof(IConvertible).IsAssignableFrom(tgtProperty.PropertyType))
         {
             type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance,
-                new[] {Convert.ChangeType(propertyValue, tgtProperty.PropertyType)});
+                new[] { Convert.ChangeType(propertyValue, tgtProperty.PropertyType) });
         }
         else if (tgtProperty.PropertyType == typeof(DateTimeOffset) ||
                  tgtProperty.PropertyType == typeof(DateTimeOffset?))
-            tgtProperty.SetValue(classInstance, DateTimeOffset.Parse((string) propertyValue));
+            tgtProperty.SetValue(classInstance, DateTimeOffset.Parse((string)propertyValue));
         else
             tgtProperty.SetValue(classInstance, propertyValue);
     }
@@ -140,7 +137,7 @@ internal sealed class HttpDataObj
         if (tgtProperty.PropertyType == typeof(Guid))
         {
             type.InvokeMember(tgtProperty.Name, BindingFlags.SetProperty, Type.DefaultBinder, classInstance,
-                new[] {(object) Guid.Parse(propertyValueStr)});
+                new[] { (object)Guid.Parse(propertyValueStr) });
             return true;
         }
 
@@ -181,6 +178,6 @@ internal sealed class HttpDataObj
             return json.ToDtoObjectByNumber(t)!;
         }
 
-        return sv[0];
+        return sv[0]!;
     }
 }

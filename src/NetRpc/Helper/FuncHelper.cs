@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace NetRpc;
 
@@ -11,8 +9,8 @@ internal static class FuncHelper
     {
         if (func == null)
             return null;
-        var f = (Delegate) func;
-        return o => (Task) f.DynamicInvoke(o)!;
+        var f = (Delegate)func;
+        return o => (Task)f.DynamicInvoke(o)!;
     }
 
     [return: NotNullIfNotNull("func")]

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 public class AsyncLock
 {
@@ -21,7 +16,7 @@ public class AsyncLock
         var wait = _semaphore.WaitAsync();
         return wait.IsCompleted
             ? _release
-            : wait.ContinueWith((_, state) => new Release((AsyncLock) state!),
+            : wait.ContinueWith((_, state) => new Release((AsyncLock)state!),
                 this, CancellationToken.None,
                 TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
     }

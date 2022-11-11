@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using NetRpc.Contract;
+﻿using NetRpc.Contract;
 using Proxy.RabbitMQ;
 using RabbitMQ.Client;
 

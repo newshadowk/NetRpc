@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using NetRpc;
 using NetRpc.Contract;
 using Helper = TestHelper.Helper;
+
 // ReSharper disable MethodHasAsyncOverload
 // ReSharper disable PossibleNullReferenceException
 
@@ -19,9 +20,9 @@ internal class Program
 
     private static async Task Main(string[] args)
     {
-        await RabbitMQ();
+        //await RabbitMQ();
         await Grpc();
-        await Http(); 
+        await Http();
 
         Console.WriteLine("\r\n--------------- End ---------------");
         Console.Read();
@@ -85,7 +86,7 @@ internal class Program
 
     private static async Task Test_SetAndGetObjAsync()
     {
-        var obj = new CustomObj {Date = DateTime.Now, Name = "test"};
+        var obj = new CustomObj { Date = DateTime.Now, Name = "test" };
         Console.Write($"[SetAndGetObjAsync], send:{obj}, ");
         var ret = await _proxyAsync.SetAndGetObj(obj);
         Console.WriteLine($"receive:{ret}");
@@ -178,7 +179,7 @@ internal class Program
         {
             Console.Write("[ComplexCallAsync]...Send TestFile.txt...");
             var complexStream = await _proxyAsync.ComplexCallAsync(
-                new CustomObj {Date = DateTime.Now, Name = "ComplexCall"},
+                new CustomObj { Date = DateTime.Now, Name = "ComplexCall" },
                 stream,
                 async i => Console.Write(", " + i.Progress),
                 default);

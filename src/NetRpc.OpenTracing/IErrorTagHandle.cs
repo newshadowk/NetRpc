@@ -1,6 +1,5 @@
 ﻿using OpenTracing;
 using OpenTracing.Tag;
-using System;
 
 namespace NetRpc.OpenTracing;
 

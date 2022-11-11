@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Threading;
+﻿using System.Collections.Concurrent;
 
 namespace NetRpc;
 
@@ -13,7 +11,7 @@ public abstract class ClientProxyProviderBase : IClientProxyProvider
     public ClientProxy<TService>? CreateProxy<TService>(string optionsName) where TService : class
     {
         var key = $"{optionsName}_{typeof(TService).FullName}";
-        var clientProxy = (ClientProxy<TService>?) _caches.GetOrAdd(key, new Lazy<object?>(() =>
+        var clientProxy = (ClientProxy<TService>?)_caches.GetOrAdd(key, new Lazy<object?>(() =>
             CreateProxyInner<TService>(optionsName), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
         return clientProxy;
     }

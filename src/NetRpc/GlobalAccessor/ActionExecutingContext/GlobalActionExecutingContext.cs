@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 public interface IActionExecutingContextAccessor
 {

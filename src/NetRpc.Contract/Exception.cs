@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NetRpc
+﻿namespace NetRpc
 {
     public class IdNotFoundException : Exception
     {

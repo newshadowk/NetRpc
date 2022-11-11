@@ -1,17 +1,12 @@
-﻿using System;
-using System.Buffers;
-using System.Collections.Generic;
+﻿using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 using NetRpc.Contract;
+
 namespace NetRpc;
 
 public static class Helper
@@ -28,13 +23,13 @@ public static class Helper
 
     public const int PipeResumeWriterThreshold = 1 * StreamBufferSize;
 
-    private static readonly string[] SizeSuffixes = {"bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+    private static readonly string[] SizeSuffixes = { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
 
     private static readonly JsonSerializerOptions JsOptions = new()
     {
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Converters = {new JsonStringEnumConverter(JsonNamingPolicy.CamelCase), new StreamConverter()}
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase), new StreamConverter() }
     };
 
     public static string SizeSuffix(long value, int decimalPlaces = 1)
@@ -57,11 +52,11 @@ public static class Helper
         // ReSharper restore FormatStringProblem
 
         // mag is 0 for bytes, 1 for KB, 2, for MB, etc.
-        var mag = (int) Math.Log(value, 1024);
+        var mag = (int)Math.Log(value, 1024);
 
         // 1L << (mag * 10) == 2 ^ (10 * mag) 
         // [i.e. the number of bytes in the unit corresponding to mag]
-        var adjustedSize = (decimal) value / (1L << (mag * 10));
+        var adjustedSize = (decimal)value / (1L << (mag * 10));
 
         // make adjustment when the value is large enough that
         // it would round up to 1000 or more
@@ -77,7 +72,7 @@ public static class Helper
             SizeSuffixes[mag]);
         // ReSharper restore FormatStringProblem
     }
- 
+
     public static async Task SendStreamAsync(Func<ReadOnlyMemory<byte>, Task> publishBuffer, Func<Task> publishBufferEnd, Stream stream,
         CancellationToken token, Action started, Action endOrFault)
     {
@@ -93,9 +88,11 @@ public static class Helper
                     await publishBuffer(bo.Array.AsMemory()[..readCount]);
                     break;
                 }
+
                 await publishBuffer(bo.Array.AsMemory()[..readCount]);
                 readCount = await stream.GreedReadAsync(bo.Array, 0, StreamBufferSize, token);
             }
+
             await publishBufferEnd();
         }
         catch
@@ -103,6 +100,7 @@ public static class Helper
             endOrFault();
             throw;
         }
+
         endOrFault();
     }
 
@@ -180,7 +178,7 @@ public static class Helper
     [return: NotNullIfNotNull("bytes")]
     public static T ToObject<T>(this byte[]? bytes)
     {
-        return (T) bytes.ToObject()!;
+        return (T)bytes.ToObject()!;
     }
 
     [return: NotNullIfNotNull("bytes")]
@@ -218,7 +216,7 @@ public static class Helper
         if (bodyFe == null && ex is not OperationCanceledException)
         {
             var gt = typeof(FaultException<>).MakeGenericType(ex.GetType());
-            var fe = (FaultException) Activator.CreateInstance(gt, ex)!;
+            var fe = (FaultException)Activator.CreateInstance(gt, ex)!;
             if (context != null)
                 fe.AppendMethodInfo(context.ActionInfo, context.Args);
             return fe;
@@ -266,7 +264,7 @@ public static class Helper
 
     public static Exception UnWarpException(Exception ex)
     {
-        if (ex is FaultException { Detail: { } } fe) 
+        if (ex is FaultException { Detail: { } } fe)
             return fe.Detail;
 
         return ex;
@@ -284,12 +282,12 @@ public static class Helper
         if (context.CallbackType != typeof(double))
             return;
 
-        var rate = (double) progressCount / 100;
+        var rate = (double)progressCount / 100;
         var totalCount = context.Stream.Length;
 
         context.Stream.ProgressAsync += async (_, e) =>
         {
-            var p = (double) e.Value / totalCount;
+            var p = (double)e.Value / totalCount;
             if (p == 0)
                 return;
 
@@ -314,7 +312,7 @@ public static class Helper
             throw new ArgumentException("Callback");
         };
     }
-   
+
     public static bool IsPropertiesDefault<T>(this T? obj) where T : class
     {
         if (obj == null)
@@ -456,7 +454,7 @@ public static class Helper
 
     private static string GetMsgContent(Exception ee)
     {
-        string ret = ee.Message;
+        var ret = ee.Message;
         if (ee.TargetSite != null)
             ret += $"\r\nTargetSite:{ee.TargetSite.DeclaringType?.Name}.{ee.TargetSite.Name}";
         if (!string.IsNullOrEmpty(ee.StackTrace))

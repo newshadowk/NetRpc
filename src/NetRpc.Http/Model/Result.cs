@@ -18,7 +18,7 @@ internal class Result
 
     public static Result FromPainText(string? ret, int statusCode)
     {
-        return new()
+        return new Result
         {
             Ret = ret,
             IsPainText = true,
@@ -28,7 +28,7 @@ internal class Result
 
     public static Result FromFaultException(FaultExceptionJsonObj obj, int statusCode)
     {
-        return new()
+        return new Result
         {
             Ret = obj,
             StatusCode = statusCode

@@ -16,10 +16,7 @@ internal class Program
         var grpcHost = Host.CreateDefaultBuilder()
             .ConfigureWebHostDefaults(webBuilder =>
             {
-                webBuilder.ConfigureKestrel((_, options) =>
-                    {
-                        options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
-                    })
+                webBuilder.ConfigureKestrel((_, options) => { options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2); })
                     .ConfigureServices((_, services) =>
                     {
                         services.AddNGrpcService();

@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OpenTracing.Util;
 
 namespace NetRpc.OpenTracing;
@@ -26,7 +25,7 @@ public class SpanLogger : ILogger
         return true;
     }
 
-    public IDisposable BeginScope<TState>(TState state)
+    public IDisposable BeginScope<TState>(TState state) where TState : notnull
     {
         return NullScope.Instance;
     }
@@ -34,7 +33,7 @@ public class SpanLogger : ILogger
 
 internal sealed class NullScope : IDisposable
 {
-    public static NullScope Instance { get; } = new ();
+    public static NullScope Instance { get; } = new();
 
     private NullScope()
     {

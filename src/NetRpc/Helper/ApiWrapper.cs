@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.ExceptionServices;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace NetRpc;
 
@@ -62,7 +56,7 @@ public static class ApiWrapper
                 return null;
 
             //Task<>
-            var ret = (object) invokeRet.GetAwaiter().GetResult();
+            var ret = (object)invokeRet.GetAwaiter().GetResult();
             return ret;
         }
 
@@ -75,7 +69,7 @@ public static class ApiWrapper
     {
         foreach (var i in instances)
         {
-            (MethodInfo? instanceMethodInfo, ContractMethod? contractMethod) = GetMethodInfo(action, i.Contract, i.Target);
+            (var instanceMethodInfo, var contractMethod) = GetMethodInfo(action, i.Contract, i.Target);
             if (instanceMethodInfo != default)
                 return (instanceMethodInfo, contractMethod!, i);
         }

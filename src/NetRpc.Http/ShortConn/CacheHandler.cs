@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Timers;
+﻿using System.Timers;
 using CSRedis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,7 +8,9 @@ using NetRpc.Http.Client;
 
 namespace NetRpc.Http.ShortConn;
 
-public abstract class SCRedisHelper : RedisHelper<SCRedisHelper> {}
+public abstract class SCRedisHelper : RedisHelper<SCRedisHelper>
+{
+}
 
 public class CacheHandler
 {
@@ -59,7 +55,7 @@ public class CacheHandler
             token);
     }
 
-    public async Task<string> StartAsync<TServcie, TResult>(string methodName, Stream? stream = null, params object[] pureArgs) where TResult: class
+    public async Task<string> StartAsync<TServcie, TResult>(string methodName, Stream? stream = null, params object[] pureArgs) where TResult : class
     {
         ProxyStream? ps = null;
         if (stream != null)
@@ -73,7 +69,7 @@ public class CacheHandler
         return InnerStart<TResult>(typeof(TServcie).GetMethod(methodName)!.ToActionInfo(), ps, pureArgs, GlobalActionExecutingContext.Context!.Header);
     }
 
-    private string InnerStart<T>(ActionInfo action, ProxyStream? stream, object[] pureArgs, Dictionary<string, object?> header) where T: class
+    private string InnerStart<T>(ActionInfo action, ProxyStream? stream, object[] pureArgs, Dictionary<string, object?> header) where T : class
     {
         var id = Guid.NewGuid().ToString("N");
         InnerStart<T>(id, action, stream, pureArgs, header);
@@ -84,14 +80,17 @@ public class CacheHandler
     {
         await _cache.CreateAsync<T>(id);
 
-        async Task Cb(object? i) => await _cache.SetProgAsync<T>(id, i);
+        async Task Cb(object? i)
+        {
+            await _cache.SetProgAsync<T>(id, i);
+        }
 
         var contractOptions = GlobalServiceProvider.Provider!.GetRequiredService<IOptions<ContractOptions>>();
         var contextAccessor = GlobalServiceProvider.Provider!.GetRequiredService<IActionExecutingContextAccessor>();
         using var scope = GlobalServiceProvider.Provider!.GetRequiredService<IServiceScopeFactory>().CreateScope();
         GlobalServiceProvider.ScopeProvider = scope.ServiceProvider;
         var instances = scope.ServiceProvider.GetContractInstances(contractOptions.Value);
-        contextAccessor.Context  = GetContext(instances, scope.ServiceProvider, action, Cb, stream, pureArgs, header, _cancelWatcher.Create(id).Token);
+        contextAccessor.Context = GetContext(instances, scope.ServiceProvider, action, Cb, stream, pureArgs, header, _cancelWatcher.Create(id).Token);
         contextAccessor.Context.Properties["sc_id"] = id;
 
         try
@@ -289,7 +288,7 @@ public class Cache
 
     public async Task<InnerContextData<T>?> GetWithSteamAsync<T>(string id) where T : class
     {
-        InnerContextData<T>? c = await _redis.GetAsync<T>(id);
+        var c = await _redis.GetAsync<T>(id);
         if (c == null)
             return null;
 
@@ -313,7 +312,7 @@ public class Cache
         var d = await _redis.GetAsync<T>(id);
         if (d == null)
             return;
-        
+
         if (result.TryGetStream(out var retStream, out var retStreamName))
         {
             d.Data.HasStream = true;
@@ -335,6 +334,7 @@ public class Cache
             await _redis.DelAsync(id);
             return;
         }
+
         await _redis.ExpireWhenFinishedAsync(id);
     }
 

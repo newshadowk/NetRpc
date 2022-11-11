@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
 using NetRpc.Contract;
@@ -105,10 +102,10 @@ internal static class Helper
         if (dataObj == null)
             return (null, null, 0);
 
-        var connectionId = (string?) GetValue(dataObj, ClientConst.ConnIdName);
-        var callId = (string?) GetValue(dataObj, ClientConst.CallIdName);
+        var connectionId = (string?)GetValue(dataObj, ClientConst.ConnIdName);
+        var callId = (string?)GetValue(dataObj, ClientConst.CallIdName);
         var streamLengthObj = GetValue(dataObj, ClientConst.StreamLength);
-        var streamLength = (long?) streamLengthObj ?? 0;
+        var streamLength = (long?)streamLengthObj ?? 0;
         return (connectionId, callId, streamLength);
     }
 

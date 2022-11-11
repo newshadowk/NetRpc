@@ -1,6 +1,4 @@
-﻿
-using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
 namespace NetRpc.Contract;
 
@@ -9,7 +7,7 @@ public sealed class FaultException<T> : FaultException where T : Exception
 {
     public new T? Detail
     {
-        get => (T) base.Detail!;
+        get => (T)base.Detail!;
         set => base.Detail = value;
     }
 

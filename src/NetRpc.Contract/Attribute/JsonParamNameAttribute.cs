@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NetRpc.Contract;
+﻿namespace NetRpc.Contract;
 
 [AttributeUsage(AttributeTargets.Parameter)]
 public sealed class JsonParamNameAttribute : Attribute

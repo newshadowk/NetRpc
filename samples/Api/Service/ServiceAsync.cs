@@ -11,7 +11,7 @@ internal class ServiceAsync : IServiceAsync
 {
     public async Task<CustomObj> SetAndGetObj(CustomObj obj)
     {
-        var ret = new CustomObj {Date = DateTime.Now, Name = "SetAndGetObj"};
+        var ret = new CustomObj { Date = DateTime.Now, Name = "SetAndGetObj" };
         Console.WriteLine($"[SetAndGetObj], receive:{obj}, return:{ret}");
         return ret;
     }
@@ -22,7 +22,7 @@ internal class ServiceAsync : IServiceAsync
         for (var i = 1; i <= 3; i++)
         {
             Console.Write($"{i}, ");
-            await cb(new CustomCallbackObj {Progress = i});
+            await cb(new CustomCallbackObj { Progress = i });
             await Task.Delay(100);
         }
 
@@ -82,7 +82,7 @@ internal class ServiceAsync : IServiceAsync
         for (var i = 1; i <= 3; i++)
         {
             Console.Write($"{i}, ");
-            await cb(new CustomCallbackObj {Progress = i});
+            await cb(new CustomCallbackObj { Progress = i });
             await Task.Delay(100, token);
         }
 

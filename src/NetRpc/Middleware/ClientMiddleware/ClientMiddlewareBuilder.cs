@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace NetRpc;
 
@@ -79,7 +75,7 @@ public class ClientMiddlewareBuilder
             var instance = ActivatorUtilities.CreateInstance(serviceProvider, middleware, ctorArgs);
 
             if (parameters.Length == 1)
-                return (ClientRequestDelegate) methodInfo.CreateDelegate(typeof(ClientRequestDelegate), instance);
+                return (ClientRequestDelegate)methodInfo.CreateDelegate(typeof(ClientRequestDelegate), instance);
 
             var factory = Compile<object>(methodInfo, parameters);
             return context => factory(instance, context, context.ServiceProvider);

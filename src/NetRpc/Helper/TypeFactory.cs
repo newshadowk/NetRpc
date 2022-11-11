@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -23,9 +21,9 @@ public class CustomsPropertyInfo
         Type = type;
         PropertyName = propertyName;
         if (cad != null)
-            Attributes = new List<CustomAttributeData> {cad};
+            Attributes = new List<CustomAttributeData> { cad };
         if (cab != null)
-            AttributeBuilders = new List<CustomAttributeBuilder> {cab};
+            AttributeBuilders = new List<CustomAttributeBuilder> { cab };
     }
 
     public Type Type { get; }
@@ -98,7 +96,7 @@ public class CacheTypeBuilder
             var setPropertyMethodNameBuilder = myTypeBuilder.DefineMethod(cpi.SetPropertyMethodName,
                 getSetAttr,
                 null,
-                new[] {cpi.Type});
+                new[] { cpi.Type });
 
             var setPropertyMethodNameBuilderGenerator = setPropertyMethodNameBuilder.GetILGenerator();
             setPropertyMethodNameBuilderGenerator.Emit(OpCodes.Ldarg_0);
@@ -119,7 +117,7 @@ public class CacheTypeBuilder
     private static List<CustomAttributeBuilder> GetCustomAttributeBuilder(IList<CustomAttributeData> customAttributeData)
     {
         var ret = new List<CustomAttributeBuilder>();
-        foreach (CustomAttributeData att in customAttributeData)
+        foreach (var att in customAttributeData)
         {
             var namedFieldValues = new List<object>();
             var fields = new List<FieldInfo>();
@@ -131,7 +129,7 @@ public class CacheTypeBuilder
             // att.NamedArguments maybe null, check the sources.
             if (att.NamedArguments != null && att.NamedArguments.Count > 0)
             {
-                FieldInfo[] possibleFields = att.GetType().GetFields();
+                var possibleFields = att.GetType().GetFields();
 
                 foreach (var arg in att.NamedArguments)
                 {

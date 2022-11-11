@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
@@ -57,7 +52,7 @@ internal sealed class FormDataHttpObjProcessor : IHttpObjProcessor
             throw new ArgumentNullException("", "File name is null.");
         dataObj.TrySetStreamName(fileName);
         var proxyStream = new ProxyStream(section.Body, dataObj.StreamLength);
-        return new HttpObj {HttpDataObj = dataObj, ProxyStream = proxyStream};
+        return new HttpObj { HttpDataObj = dataObj, ProxyStream = proxyStream };
     }
 
     private static string? Match(string src, string left, string right)
@@ -115,7 +110,7 @@ internal sealed class JsonHttpObjProcessor : IHttpObjProcessor
             body = await sr.ReadToEndAsync();
 
         var dataObj = Helper.ToHttpDataObj(body, item.DataObjType!);
-        return new HttpObj {HttpDataObj = dataObj};
+        return new HttpObj { HttpDataObj = dataObj };
     }
 }
 
@@ -132,7 +127,7 @@ internal sealed class FormUrlEncodedObjProcessor : IHttpObjProcessor
 
     public Task<HttpObj> ProcessAsync(ProcessItem item)
     {
-        return Task.FromResult(new HttpObj {HttpDataObj = GetHttpDataObjFromQuery(item)});
+        return Task.FromResult(new HttpObj { HttpDataObj = GetHttpDataObjFromQuery(item) });
     }
 
     private static HttpDataObj GetHttpDataObjFromQuery(ProcessItem item)

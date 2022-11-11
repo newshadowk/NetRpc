@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
@@ -18,7 +16,7 @@ public static class ExceptionExtensions
     {
         foreach (var p in e.GetType().GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance))
         {
-            var bytes = (byte[]) info.GetValue(p.Name, typeof(byte[]))!;
+            var bytes = (byte[])info.GetValue(p.Name, typeof(byte[]))!;
             var value = bytes.ToObject();
             p.SetValue(e, value);
         }

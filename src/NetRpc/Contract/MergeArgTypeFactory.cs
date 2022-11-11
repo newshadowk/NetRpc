@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using NetRpc.Contract;
 
 namespace NetRpc;
@@ -103,7 +99,7 @@ public static class MergeArgTypeFactory
             cis.Add(new CustomsPropertyInfo(typeof(long), CallConst.StreamLength));
 
         var t = TypeFactory.BuildType(typeName, cis);
-        (Type t2, bool isEmpty) = BuildTypeWithoutPathQueryStream(typeNameWithoutStreamName, cis, pathQueryParams);
+        (var t2, var isEmpty) = BuildTypeWithoutPathQueryStream(typeNameWithoutStreamName, cis, pathQueryParams);
 
         if (cis.Count == 0)
             return new MergeArgType(null, null, null, null, null,
@@ -117,7 +113,7 @@ public static class MergeArgTypeFactory
 
     private static CustomAttributeData? FindExampleCAD(List<CustomAttributeData> methodsAd, PPInfo p)
     {
-        var found = methodsAd.Find(i => (string) i.ConstructorArguments[0].Value! == p.Name);
+        var found = methodsAd.Find(i => (string)i.ConstructorArguments[0].Value! == p.Name);
         if (found != null)
             return found;
 
@@ -153,9 +149,9 @@ public static class MergeArgTypeFactory
     {
         var list = cis.ToList();
         list.RemoveAll(i =>
-                i.PropertyName.IsStreamName() && i.Type == typeof(string) // stream
+                (i.PropertyName.IsStreamName() && i.Type == typeof(string)) // stream
                 ||
-                !i.Type.IsFuncT() && !i.Type.IsCancellationToken() && pathQueryParams.Any(j => j == i.PropertyName.ToLower()) // pathQueryParams
+                (!i.Type.IsFuncT() && !i.Type.IsCancellationToken() && pathQueryParams.Any(j => j == i.PropertyName.ToLower())) // pathQueryParams
         );
 
         return (TypeFactory.BuildType(typeName, list), list.Count == 0);

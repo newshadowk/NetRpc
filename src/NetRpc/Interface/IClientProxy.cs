@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 public interface IClientProxy<out TService> : IClientProxy where TService : class
 {

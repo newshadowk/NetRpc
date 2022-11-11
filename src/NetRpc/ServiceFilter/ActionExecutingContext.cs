@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 using NetRpc.Contract;
 
 namespace NetRpc;
@@ -166,7 +161,7 @@ public class ActionExecutingContext : IActionExecutingContext
     private static string ArgsStr(IEnumerable<object?> list)
     {
         var s = "";
-        int i = 0;
+        var i = 0;
         foreach (var p in list)
             s += $"Param:{i++}\r\n{p.ToDtoJson()}\r\n";
         return s;

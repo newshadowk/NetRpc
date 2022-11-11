@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NetRpc.Contract;
+﻿namespace NetRpc.Contract;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public abstract class HttpMethodAttribute : Attribute, IRouteTemplateProvider

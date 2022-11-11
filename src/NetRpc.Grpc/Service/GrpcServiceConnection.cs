@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
+﻿using System.Threading.Tasks.Dataflow;
 using Google.Protobuf;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
@@ -18,7 +15,8 @@ internal sealed class GrpcServiceConnection : IServiceConnection
     private readonly WriteOnceBlock<bool> _end = new(i => i);
     private readonly CancellationTokenRegistration _grpcTokenReg;
 
-    public GrpcServiceConnection(IAsyncStreamReader<StreamBuffer> requestStream, IServerStreamWriter<StreamBuffer> responseStream, ILogger logger, CancellationToken grpcToken)
+    public GrpcServiceConnection(IAsyncStreamReader<StreamBuffer> requestStream, IServerStreamWriter<StreamBuffer> responseStream, ILogger logger,
+        CancellationToken grpcToken)
     {
         _requestStream = requestStream;
         _responseStream = responseStream;
@@ -70,7 +68,7 @@ internal sealed class GrpcServiceConnection : IServiceConnection
     public Task<bool> StartAsync()
     {
         DebugI("start.");
-        
+
         Task.Run(async () =>
         {
             //MoveNext will have a Exception when client is disconnected.

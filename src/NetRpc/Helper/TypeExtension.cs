@@ -1,10 +1,5 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using NetRpc.Contract;
 
 namespace NetRpc;
@@ -41,7 +36,7 @@ public static class TypeExtension
 
     public static ActionInfo ToActionInfo(this MethodInfo method)
     {
-        return new()
+        return new ActionInfo
         {
             GenericArguments = method.GetGenericArguments().ToList().ConvertAll(GetTypeName).ToArray(),
             FullName = method.ToFullMethodName()
@@ -90,7 +85,7 @@ public static class TypeExtension
         var found = ps.FirstOrDefault(i => i.PropertyType.IsStream());
         if (found == null)
             return false;
-        stream = (Stream) found.GetValue(obj)!;
+        stream = (Stream)found.GetValue(obj)!;
 
         //streamName
         found = ps.FirstOrDefault(i => i.Name.IsStreamName());

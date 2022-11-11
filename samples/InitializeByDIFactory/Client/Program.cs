@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetRpc;
 using NetRpc.Grpc;
-using NetRpc.RabbitMQ;
 using Proxy.RabbitMQ;
 
 namespace Client;

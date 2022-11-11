@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Timers;
+﻿using System.Timers;
 using Timer = System.Timers.Timer;
 
 namespace Proxy.RabbitMQ;
@@ -57,7 +55,7 @@ public sealed class BusyTimer : IDisposable
     private async void T_Elapsed(object? sender, ElapsedEventArgs e)
     {
         T.Stop();
- 
+
         try
         {
             // ReSharper disable once MethodHasAsyncOverload

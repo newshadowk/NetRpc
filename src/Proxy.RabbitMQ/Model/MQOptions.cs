@@ -1,5 +1,4 @@
-﻿
-namespace Proxy.RabbitMQ;
+﻿namespace Proxy.RabbitMQ;
 
 public class MQOptions
 {

@@ -1,9 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 public abstract class CacheStream : EventStream
 {
@@ -16,6 +11,7 @@ public abstract class CacheStream : EventStream
             ReadCacheStream = stream;
             return true;
         }
+
         return false;
     }
 
@@ -26,6 +22,7 @@ public abstract class CacheStream : EventStream
             ReadCacheStream = new MemoryStream();
             return true;
         }
+
         return false;
     }
 

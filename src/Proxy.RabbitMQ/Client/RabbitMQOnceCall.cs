@@ -1,8 +1,5 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
@@ -75,7 +72,7 @@ public sealed class RabbitMQOnceCall : IDisposable
             _firstCid = Guid.NewGuid().ToString("N");
             _subChannel = _conn.Connection.CreateModel();
             _subChannel.BasicQos(0, (ushort)Const.SubPrefetchCount, false);
-            _serviceToClientQueue = _subChannel.QueueDeclare(exclusive:false, autoDelete:true).QueueName;
+            _serviceToClientQueue = _subChannel.QueueDeclare(exclusive: false, autoDelete: true).QueueName;
             Debug.WriteLine($"client: _serviceToClientQueue: {_serviceToClientQueue}");
             var consumer = new AsyncEventingBasicConsumer(_subChannel);
             consumer.Received += ConsumerReceivedAsync;
@@ -119,7 +116,7 @@ public sealed class RabbitMQOnceCall : IDisposable
             _logger.LogWarning(msg);
             throw new InvalidOperationException(msg);
         }
-        
+
         if (_conn.Options.MaxQueueCount != 0 && mainQueueCount >= _conn.Options.MaxQueueCount)
             throw new MaxQueueCountInnerException(mainQueueCount);
 

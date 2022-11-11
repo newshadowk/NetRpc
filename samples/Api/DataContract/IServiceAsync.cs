@@ -14,10 +14,10 @@ public interface IServiceAsync
 
     Task CallByCallBackAsync(Func<CustomCallbackObj, Task> cb);
 
-    [FaultException(typeof(NotImplementedException))]  //defined only for http channel
+    [FaultException(typeof(NotImplementedException))] //defined only for http channel
     Task CallBySystemExceptionAsync();
 
-    [FaultException(typeof(CustomException))]      //defined only for http channel
+    [FaultException(typeof(CustomException))] //defined only for http channel
     Task CallByCustomExceptionAsync();
 
     Task<Stream> GetStreamAsync();

@@ -4,7 +4,7 @@ public static class ArrayPoolExtensions
 {
     public static ArrayOwner<T> RentOwner<T>(this ArrayPool<T> arrayPool, int minimumLength)
     {
-        return new(arrayPool.Rent(minimumLength));
+        return new ArrayOwner<T>(arrayPool.Rent(minimumLength));
     }
 }
 

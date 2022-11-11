@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 public static class NullReply
 {
@@ -47,66 +45,66 @@ internal class Message
 
 internal sealed class Request : Message
 {
-    public new RequestType Type => (RequestType) base.Type;
+    public new RequestType Type => (RequestType)base.Type;
 
     public Request(ReadOnlyMemory<byte> bytes) : base(bytes)
     {
     }
 
-    public Request(RequestType type, ReadOnlyMemory<byte> body = default) : base((byte) type, body)
+    public Request(RequestType type, ReadOnlyMemory<byte> body = default) : base((byte)type, body)
     {
     }
 }
 
 internal sealed class Reply : Message
 {
-    public new ReplyType Type => (ReplyType) base.Type;
+    public new ReplyType Type => (ReplyType)base.Type;
 
     public Reply(ReadOnlyMemory<byte> bytes) : base(bytes)
     {
     }
 
-    private Reply(ReplyType type, ReadOnlyMemory<byte> body = default) : base((byte) type, body)
+    private Reply(ReplyType type, ReadOnlyMemory<byte> body = default) : base((byte)type, body)
     {
     }
 
     public static Reply FromResultStream(long? streamLength)
     {
-        return new(ReplyType.ResultStream, streamLength.ToBytes());
+        return new Reply(ReplyType.ResultStream, streamLength.ToBytes());
     }
 
     public static Reply FromResult(CustomResult result)
     {
-        return new(ReplyType.CustomResult, result.ToBytes());
+        return new Reply(ReplyType.CustomResult, result.ToBytes());
     }
 
     public static Reply FromCallback(object? callbackObj)
     {
-        return new(ReplyType.Callback, callbackObj.ToBytes());
+        return new Reply(ReplyType.Callback, callbackObj.ToBytes());
     }
 
     public static Reply FromFault(Exception ex)
     {
-        return new(ReplyType.Fault, ex.ToBytes());
+        return new Reply(ReplyType.Fault, ex.ToBytes());
     }
 
     public static Reply FromBuffer(ReadOnlyMemory<byte> buffer)
     {
-        return new(ReplyType.Buffer, buffer);
+        return new Reply(ReplyType.Buffer, buffer);
     }
 
     public static Reply FromBufferCancel()
     {
-        return new(ReplyType.BufferCancel);
+        return new Reply(ReplyType.BufferCancel);
     }
 
     public static Reply FromBufferFault()
     {
-        return new(ReplyType.BufferFault);
+        return new Reply(ReplyType.BufferFault);
     }
 
     public static Reply FromBufferEnd()
     {
-        return new(ReplyType.BufferEnd);
+        return new Reply(ReplyType.BufferEnd);
     }
 }

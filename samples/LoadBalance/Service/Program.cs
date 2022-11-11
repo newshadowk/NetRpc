@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using DataContract;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Helper = TestHelper.Helper;
+using TestHelper;
 
 namespace Service;
 

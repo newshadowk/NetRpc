@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NetRpc;
-using NetRpc.Contract;
 using NetRpc.Http;
 using NetRpc.Http.ShortConn;
 

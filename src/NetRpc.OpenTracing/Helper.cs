@@ -1,7 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using OpenTracing;
 using OpenTracing.Tag;
@@ -15,7 +12,7 @@ public static class Helper
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         IgnoreReadOnlyProperties = true,
-        Converters = {new StreamConverter()}
+        Converters = { new StreamConverter() }
     };
 
     public static ISpan SetTagMethodObj(this ISpan span, IActionExecutingContext context, int maxLength, bool isForce = false)

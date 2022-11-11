@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,9 +29,9 @@ internal static class ActivatorUtilities
         if (!instanceType.GetTypeInfo().IsAbstract)
         {
             foreach (var constructor in instanceType
-                .GetTypeInfo()
-                .DeclaredConstructors
-                .Where(c => !c.IsStatic && c.IsPublic))
+                         .GetTypeInfo()
+                         .DeclaredConstructors
+                         .Where(c => !c.IsStatic && c.IsPublic))
             {
                 var matcher = new ConstructorMatcher(constructor);
                 var isPreferred = constructor.IsDefined(typeof(ActivatorUtilitiesConstructorAttribute), false);
@@ -108,7 +106,7 @@ internal static class ActivatorUtilities
     /// <returns>An activated object of type T</returns>
     public static T CreateInstance<T>(IServiceProvider provider, params object[] parameters)
     {
-        return (T) CreateInstance(provider, typeof(T), parameters);
+        return (T)CreateInstance(provider, typeof(T), parameters);
     }
 
     /// <summary>
@@ -119,7 +117,7 @@ internal static class ActivatorUtilities
     /// <returns>The resolved service or created instance</returns>
     public static T GetServiceOrCreateInstance<T>(IServiceProvider provider)
     {
-        return (T) GetServiceOrCreateInstance(provider, typeof(T));
+        return (T)GetServiceOrCreateInstance(provider, typeof(T));
     }
 
     /// <summary>
@@ -135,7 +133,7 @@ internal static class ActivatorUtilities
 
     private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
     {
-        var mc = (MethodCallExpression) expr.Body;
+        var mc = (MethodCallExpression)expr.Body;
         return mc.Method;
     }
 
@@ -448,7 +446,7 @@ internal class ParameterDefaultValue
             if (defaultValue != null &&
                 parameter.ParameterType.IsGenericType &&
                 parameter.ParameterType.GetGenericTypeDefinition() == _nullable
-            )
+               )
             {
                 var underlyingType = Nullable.GetUnderlyingType(parameter.ParameterType);
                 if (underlyingType != null && underlyingType.IsEnum)

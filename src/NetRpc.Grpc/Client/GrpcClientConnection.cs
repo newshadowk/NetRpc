@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
+﻿using System.Threading.Tasks.Dataflow;
 using Google.Protobuf;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
@@ -71,12 +67,12 @@ internal sealed class GrpcClientConnection : IClientConnection
         ChannelType = ChannelType.Grpc
     };
 
-    public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false,byte mqPriority = 0)
+    public async Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false, byte mqPriority = 0)
     {
         //add a lock here will not slowdown send speed.
         using (await _sendLock.LockAsync())
         {
-            var sb = new StreamBuffer {Body = ByteString.CopyFrom(buffer.ToArray())};
+            var sb = new StreamBuffer { Body = ByteString.CopyFrom(buffer.ToArray()) };
             try
             {
                 await _api.RequestStream.WriteAsync(sb);
@@ -99,12 +95,12 @@ internal sealed class GrpcClientConnection : IClientConnection
 #pragma warning restore 1998
     {
         //create header
-        Metadata? sendHeaders = new ();
+        Metadata? sendHeaders = new();
 
         if (_client.HeaderHost != null)
             sendHeaders.Add("Host", _client.HeaderHost);
 
-        foreach (var p in headers) 
+        foreach (var p in headers)
             sendHeaders.Add(p.Key, p.Value?.ToString()!);
 
         //create connection.

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 public class MiddlewareOptions
 {
@@ -33,13 +30,13 @@ public class MiddlewareOptions
     {
         if (callbackThrottlingInterval <= 0)
             return;
-        _items.Add((typeof(CallbackThrottlingMiddleware), new object[] {callbackThrottlingInterval}));
+        _items.Add((typeof(CallbackThrottlingMiddleware), new object[] { callbackThrottlingInterval }));
     }
 
     public void UseStreamCallBack(int progressCount)
     {
         if (progressCount <= 0)
             return;
-        _items.Add((typeof(StreamCallBackMiddleware), new object[] {progressCount}));
+        _items.Add((typeof(StreamCallBackMiddleware), new object[] { progressCount }));
     }
 }

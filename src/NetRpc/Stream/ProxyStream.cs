@@ -1,9 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 public sealed class ProxyStream : CacheStream
 {

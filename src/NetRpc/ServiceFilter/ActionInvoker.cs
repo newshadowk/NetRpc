@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Runtime.ExceptionServices;
-using System.Threading.Tasks;
+﻿using System.Runtime.ExceptionServices;
 
 namespace NetRpc;
 
@@ -51,7 +48,7 @@ public class ActionInvoker
 
             case State.ActionAsyncBegin:
             {
-                var filter = (ActionFilterAttribute) state;
+                var filter = (ActionFilterAttribute)state;
                 var task = filter.OnActionExecutionAsync(_context, InvokeNextActionFilterAwaitedAsync);
                 if (task.Status != TaskStatus.RanToCompletion)
                 {
@@ -144,7 +141,7 @@ public class ActionInvoker
         {
             var next = State.ActionNext;
             var scope = Scope.Action;
-            var state = (object) null!;
+            var state = (object)null!;
             var isCompleted = false;
             while (!isCompleted)
             {

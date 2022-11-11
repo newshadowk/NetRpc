@@ -27,10 +27,7 @@ internal class Program
         var grpcHost = Host.CreateDefaultBuilder()
             .ConfigureWebHostDefaults(webBuilder =>
             {
-                webBuilder.ConfigureKestrel((_, options) =>
-                    {
-                        options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
-                    })
+                webBuilder.ConfigureKestrel((_, options) => { options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2); })
                     .ConfigureServices((_, services) =>
                     {
                         services.AddNGrpcService();
@@ -39,38 +36,22 @@ internal class Program
                         services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
                         services.Configure<QueueStatusOptions>(i => i.CopyFrom(Helper.GetMQOptions()));
                         services.AddNRabbitMQQueueStatus();
-
-                    }).ConfigureLogging((_, loggingBuilder) =>
-                    {
-                        loggingBuilder.AddConsole();
-                    }).Configure(app => { app.UseNGrpc(); });
+                    }).ConfigureLogging((_, loggingBuilder) => { loggingBuilder.AddConsole(); }).Configure(app => { app.UseNGrpc(); });
             }).Build();
         await grpcHost.RunAsync();
     }
-    
+
     private static async Task T0()
     {
         Console.WriteLine("start");
         var c = Helper.GetMQOptions().CreateMainConnectionFactory().CreateConnection();
         var ch = c.CreateModel();
-        ch.BasicRecoverOk += (s, e) =>
-        {
-            Console.WriteLine("BasicRecoverOk");
-        };
-        ch.CallbackException += (s, e) =>
-        {
-            Console.WriteLine("CallbackException");
-        };
-        ch.FlowControl += (s, e) =>
-        {
-            Console.WriteLine("FlowControl");
-        };
-        ch.ModelShutdown += (s, e) =>
-        {
-            Console.WriteLine("ModelShutdown");
-        };
+        ch.BasicRecoverOk += (s, e) => { Console.WriteLine("BasicRecoverOk"); };
+        ch.CallbackException += (s, e) => { Console.WriteLine("CallbackException"); };
+        ch.FlowControl += (s, e) => { Console.WriteLine("FlowControl"); };
+        ch.ModelShutdown += (s, e) => { Console.WriteLine("ModelShutdown"); };
 
-        string qName = "rpc_test2";
+        var qName = "rpc_test2";
 
         ch.QueueDeclare(qName, false, false, false, null);
         var consumer = new AsyncEventingBasicConsumer(ch);
@@ -79,21 +60,12 @@ internal class Program
             Console.WriteLine($"r0, {e.DeliveryTag}");
             ch.BasicNack(e.DeliveryTag, false, false);
         };
-       
-        consumer.Shutdown += async (s, e) =>
-        {
-            Console.WriteLine("consumerShutdown");
-        };
 
-        consumer.Unregistered += async (s, e) =>
-        {
-            Console.WriteLine("consumerUnregistered");
-        };
+        consumer.Shutdown += async (s, e) => { Console.WriteLine("consumerShutdown"); };
 
-        consumer.ConsumerCancelled += async (_, e) =>
-        {
-            Console.WriteLine("ConsumerCancelled");
-        };
+        consumer.Unregistered += async (s, e) => { Console.WriteLine("consumerUnregistered"); };
+
+        consumer.ConsumerCancelled += async (_, e) => { Console.WriteLine("ConsumerCancelled"); };
 
 
         ch.BasicConsume(qName, false, consumer);

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -23,6 +21,7 @@ public class ClientProxy<TService> : IClientProxy<TService> where TService : cla
         get => Call.AdditionContextHeader;
         set => Call.AdditionContextHeader = value;
     }
+
     public Dictionary<string, object?> AdditionHeader { get; } = new();
 
     public ClientProxy(IOnceCallFactory onceCallFactory,

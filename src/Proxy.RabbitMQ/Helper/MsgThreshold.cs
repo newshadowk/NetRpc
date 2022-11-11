@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Proxy.RabbitMQ;
+﻿namespace Proxy.RabbitMQ;
 
 public class MsgThreshold
 {
@@ -18,7 +14,7 @@ public class MsgThreshold
         if (_count <= Const.SubQueueMsgMaxCount)
             return;
 
-        while (messageCount() >= Const.SubQueueMsgMaxCount - 1) 
+        while (messageCount() >= Const.SubQueueMsgMaxCount - 1)
             await Task.Delay(0);
     }
 }

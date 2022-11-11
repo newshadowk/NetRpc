@@ -5,17 +5,17 @@
 #pragma warning disable 0414, 1591
 #region Designer generated code
 
-using grpc = global::Grpc.Core;
+using Grpc1 = global::Grpc.Core;
 
 namespace Proxy.Grpc {
   public static partial class MessageCall
   {
     static readonly string __ServiceName = "Proxy.Grpc.MessageCall";
 
-    static readonly grpc::Marshaller<global::Proxy.Grpc.StreamBuffer> __Marshaller_Proxy_Grpc_StreamBuffer = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Proxy.Grpc.StreamBuffer.Parser.ParseFrom);
+    static readonly Grpc1::Marshaller<global::Proxy.Grpc.StreamBuffer> __Marshaller_Proxy_Grpc_StreamBuffer = Grpc1::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Proxy.Grpc.StreamBuffer.Parser.ParseFrom);
 
-    static readonly grpc::Method<global::Proxy.Grpc.StreamBuffer, global::Proxy.Grpc.StreamBuffer> __Method_DuplexStreamingServerMethod = new grpc::Method<global::Proxy.Grpc.StreamBuffer, global::Proxy.Grpc.StreamBuffer>(
-        grpc::MethodType.DuplexStreaming,
+    static readonly Grpc1::Method<global::Proxy.Grpc.StreamBuffer, global::Proxy.Grpc.StreamBuffer> __Method_DuplexStreamingServerMethod = new Grpc1::Method<global::Proxy.Grpc.StreamBuffer, global::Proxy.Grpc.StreamBuffer>(
+        Grpc1::MethodType.DuplexStreaming,
         __ServiceName,
         "DuplexStreamingServerMethod",
         __Marshaller_Proxy_Grpc_StreamBuffer,
@@ -28,27 +28,27 @@ namespace Proxy.Grpc {
     }
 
     /// <summary>Base class for server-side implementations of MessageCall</summary>
-    [grpc::BindServiceMethod(typeof(MessageCall), "BindService")]
+    [Grpc1::BindServiceMethod(typeof(MessageCall), "BindService")]
     public abstract partial class MessageCallBase
     {
-      public virtual global::System.Threading.Tasks.Task DuplexStreamingServerMethod(grpc::IAsyncStreamReader<global::Proxy.Grpc.StreamBuffer> requestStream, grpc::IServerStreamWriter<global::Proxy.Grpc.StreamBuffer> responseStream, grpc::ServerCallContext context)
+      public virtual global::System.Threading.Tasks.Task DuplexStreamingServerMethod(Grpc1::IAsyncStreamReader<global::Proxy.Grpc.StreamBuffer> requestStream, Grpc1::IServerStreamWriter<global::Proxy.Grpc.StreamBuffer> responseStream, Grpc1::ServerCallContext context)
       {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+        throw new Grpc1::RpcException(new Grpc1::Status(Grpc1::StatusCode.Unimplemented, ""));
       }
 
     }
 
     /// <summary>Client for MessageCall</summary>
-    public partial class MessageCallClient : grpc::ClientBase<MessageCallClient>
+    public partial class MessageCallClient : Grpc1::ClientBase<MessageCallClient>
     {
       /// <summary>Creates a new client for MessageCall</summary>
       /// <param name="channel">The channel to use to make remote calls.</param>
-      public MessageCallClient(grpc::ChannelBase channel) : base(channel)
+      public MessageCallClient(Grpc1::ChannelBase channel) : base(channel)
       {
       }
       /// <summary>Creates a new client for MessageCall that uses a custom <c>CallInvoker</c>.</summary>
       /// <param name="callInvoker">The callInvoker to use to make remote calls.</param>
-      public MessageCallClient(grpc::CallInvoker callInvoker) : base(callInvoker)
+      public MessageCallClient(Grpc1::CallInvoker callInvoker) : base(callInvoker)
       {
       }
       /// <summary>Protected parameterless constructor to allow creation of test doubles.</summary>
@@ -61,11 +61,11 @@ namespace Proxy.Grpc {
       {
       }
 
-      public virtual grpc::AsyncDuplexStreamingCall<global::Proxy.Grpc.StreamBuffer, global::Proxy.Grpc.StreamBuffer> DuplexStreamingServerMethod(grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual Grpc1::AsyncDuplexStreamingCall<global::Proxy.Grpc.StreamBuffer, global::Proxy.Grpc.StreamBuffer> DuplexStreamingServerMethod(Grpc1::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
-        return DuplexStreamingServerMethod(new grpc::CallOptions(headers, deadline, cancellationToken));
+        return DuplexStreamingServerMethod(new Grpc1::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual grpc::AsyncDuplexStreamingCall<global::Proxy.Grpc.StreamBuffer, global::Proxy.Grpc.StreamBuffer> DuplexStreamingServerMethod(grpc::CallOptions options)
+      public virtual Grpc1::AsyncDuplexStreamingCall<global::Proxy.Grpc.StreamBuffer, global::Proxy.Grpc.StreamBuffer> DuplexStreamingServerMethod(Grpc1::CallOptions options)
       {
         return CallInvoker.AsyncDuplexStreamingCall(__Method_DuplexStreamingServerMethod, null, options);
       }
@@ -78,9 +78,9 @@ namespace Proxy.Grpc {
 
     /// <summary>Creates service definition that can be registered with a server</summary>
     /// <param name="serviceImpl">An object implementing the server-side handling logic.</param>
-    public static grpc::ServerServiceDefinition BindService(MessageCallBase serviceImpl)
+    public static Grpc1::ServerServiceDefinition BindService(MessageCallBase serviceImpl)
     {
-      return grpc::ServerServiceDefinition.CreateBuilder()
+      return Grpc1::ServerServiceDefinition.CreateBuilder()
           .AddMethod(__Method_DuplexStreamingServerMethod, serviceImpl.DuplexStreamingServerMethod).Build();
     }
 
@@ -88,9 +88,9 @@ namespace Proxy.Grpc {
     /// Note: this method is part of an experimental API that can change or be removed without any prior notice.</summary>
     /// <param name="serviceBinder">Service methods will be bound by calling <c>AddMethod</c> on this object.</param>
     /// <param name="serviceImpl">An object implementing the server-side handling logic.</param>
-    public static void BindService(grpc::ServiceBinderBase serviceBinder, MessageCallBase serviceImpl)
+    public static void BindService(Grpc1::ServiceBinderBase serviceBinder, MessageCallBase serviceImpl)
     {
-      serviceBinder.AddMethod(__Method_DuplexStreamingServerMethod, serviceImpl == null ? null : new grpc::DuplexStreamingServerMethod<global::Proxy.Grpc.StreamBuffer, global::Proxy.Grpc.StreamBuffer>(serviceImpl.DuplexStreamingServerMethod));
+      serviceBinder.AddMethod(__Method_DuplexStreamingServerMethod, serviceImpl == null ? null : new Grpc1::DuplexStreamingServerMethod<global::Proxy.Grpc.StreamBuffer, global::Proxy.Grpc.StreamBuffer>(serviceImpl.DuplexStreamingServerMethod));
     }
 
   }

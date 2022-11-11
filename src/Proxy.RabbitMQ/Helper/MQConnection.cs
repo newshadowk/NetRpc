@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Threading;
+﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
@@ -98,7 +96,7 @@ public class ClientConnectionCache
         _clientOptions = clientOptions;
         _factory = factory;
     }
-  
+
     public ClientConnection GetClient(string optionsName = "")
     {
         if (_clientOptions == null)
@@ -115,7 +113,7 @@ public class ClientConnectionCache
 
     public void Close()
     {
-        foreach (var i in _clients.Values) 
+        foreach (var i in _clients.Values)
             i.Value.Dispose();
     }
 }

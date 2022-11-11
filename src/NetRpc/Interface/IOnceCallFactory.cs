@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 /// <summary>
 /// DI

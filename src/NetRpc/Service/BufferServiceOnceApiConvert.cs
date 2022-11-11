@@ -1,9 +1,5 @@
-﻿using System;
-using System.IO;
-using System.IO.Pipelines;
+﻿using System.IO.Pipelines;
 using System.Runtime.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Logging;
 using NetRpc.Contract;
@@ -15,7 +11,9 @@ internal sealed class BufferServiceOnceApiConvert : IServiceOnceApiConvert
     private readonly IServiceConnection _connection;
     private readonly ILogger _logger;
     private CancellationTokenSource _cts = null!;
-    private readonly DuplexPipe _streamPipe = new(new PipeOptions(pauseWriterThreshold: Helper.PipePauseWriterThreshold, resumeWriterThreshold: Helper.PipeResumeWriterThreshold));
+
+    private readonly DuplexPipe _streamPipe =
+        new(new PipeOptions(pauseWriterThreshold: Helper.PipePauseWriterThreshold, resumeWriterThreshold: Helper.PipeResumeWriterThreshold));
 
     private readonly WriteOnceBlock<byte[]> _cmdReq = new(null);
 
@@ -143,7 +141,7 @@ internal sealed class BufferServiceOnceApiConvert : IServiceOnceApiConvert
     {
         return SendAsync(Reply.FromBufferFault());
     }
-        
+
     public Task SendCallbackAsync(object? callbackObj)
     {
         Reply reply;

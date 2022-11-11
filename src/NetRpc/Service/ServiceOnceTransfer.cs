@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using NetRpc.Contract;
 
 namespace NetRpc;
@@ -84,7 +79,8 @@ internal sealed class ServiceOnceTransfer
         try
         {
             //send result
-            await _convert.SendResultAsync(new CustomResult(ret, hasStream, context.ContractMethod.IsImages, retStream.GetLength()), retStream, retStreamName, context);
+            await _convert.SendResultAsync(new CustomResult(ret, hasStream, context.ContractMethod.IsImages, retStream.GetLength()), retStream, retStreamName,
+                context);
         }
         catch (Exception e)
         {

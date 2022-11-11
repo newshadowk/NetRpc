@@ -1,5 +1,4 @@
-﻿using System;
-using NetRpc;
+﻿using NetRpc;
 using NetRpc.Http.Client;
 
 namespace Microsoft.Extensions.DependencyInjection;

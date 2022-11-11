@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetRpc;
 using NetRpc.RabbitMQ;
 using Proxy.RabbitMQ;
@@ -55,7 +54,7 @@ public static class NRabbitMQServiceExtensions
         services.Configure<NClientOptions>(i => i.ForwardAllHeaders = true);
         services.AddNClientContract<TService>(serviceLifetime);
         services.AddNServiceContract(typeof(TService),
-            p => ((ClientProxy<TService>) p.GetService(typeof(ClientProxy<TService>))!).Proxy,
+            p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))!).Proxy,
             serviceLifetime);
         return services;
     }

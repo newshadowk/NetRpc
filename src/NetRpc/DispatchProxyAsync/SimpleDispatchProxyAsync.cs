@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace System.Reflection;
+﻿namespace System.Reflection;
 
 public class SimpleDispatchProxyAsync : DispatchProxyAsync
 {
@@ -14,8 +12,8 @@ public class SimpleDispatchProxyAsync : DispatchProxyAsync
     public static T Create<T>(IMethodInvoker invoker) where T : class
     {
         object proxy = Create<T, SimpleDispatchProxyAsync>();
-        ((SimpleDispatchProxyAsync) proxy).SetParams(invoker);
-        return (T) proxy;
+        ((SimpleDispatchProxyAsync)proxy).SetParams(invoker);
+        return (T)proxy;
     }
 
     public override async Task InvokeAsync(MethodInfo method, object?[] args)

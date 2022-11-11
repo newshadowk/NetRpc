@@ -1,7 +1,5 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -88,7 +86,7 @@ public sealed class CallSession : IDisposable
         {
             _subChannel = _connection.CreateModel();
             _subChannel.BasicQos(0, (ushort)Const.SubPrefetchCount, false);
-            var clientToServiceQueue = _subChannel.QueueDeclare(exclusive:false, autoDelete:true).QueueName;
+            var clientToServiceQueue = _subChannel.QueueDeclare(exclusive: false, autoDelete: true).QueueName;
             Debug.WriteLine($"service: _clientToServiceQueue: {clientToServiceQueue}");
             var clientToServiceConsumer = new AsyncEventingBasicConsumer(_subChannel);
             clientToServiceConsumer.Received += async (_, e) =>
@@ -106,12 +104,12 @@ public sealed class CallSession : IDisposable
             return false;
         }
     }
-    
+
     private async Task OnReceivedAsync(EventArgsT<ReadOnlyMemory<byte>> e)
     {
         //Consumer will has 2 threads invoke simultaneously.
         //lock here make sure the msg sequence
-        using (await _lock_Receive.LockAsync()) 
+        using (await _lock_Receive.LockAsync())
             await ReceivedAsync.InvokeAsync(this, e);
     }
 
@@ -125,7 +123,7 @@ public sealed class CallSession : IDisposable
         if (_disposed)
             return;
         _disposed = true;
-        
+
         _mainChannel.TryBasicAck(_e.DeliveryTag, _logger);
         _connection.ConnectionShutdown -= ConnectionShutdown;
         _subWatcher.Disconnected -= SubWatcherDisconnected;

@@ -1,5 +1,4 @@
-﻿using System;
-using Jaeger;
+﻿using Jaeger;
 using Jaeger.Reporters;
 using Jaeger.Samplers;
 using Jaeger.Senders.Thrift;

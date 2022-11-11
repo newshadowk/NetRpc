@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NetRpc.Contract;
+﻿namespace NetRpc.Contract;
 
 [AttributeUsage(AttributeTargets.Interface)]
 public sealed class ServiceNameAttribute : Attribute

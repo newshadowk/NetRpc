@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Timers;
+﻿using System.Timers;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Exceptions;
 
 namespace Proxy.RabbitMQ;
 
 public sealed class SubWatcher : IDisposable
 {
     private readonly ChannelChecker _checker;
-    private readonly BusyTimer _t = new (5000);
+    private readonly BusyTimer _t = new(5000);
     private readonly SyncList<string> _list = new();
     private readonly object _lockCheck = new();
 

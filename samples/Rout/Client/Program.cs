@@ -6,7 +6,6 @@ using DataContract;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetRpc.Grpc;
-using NetRpc.RabbitMQ;
 using Proxy.RabbitMQ;
 using Helper = TestHelper.Helper;
 
@@ -47,7 +46,7 @@ public class H : IHostedService
     {
         try
         {
-            var ret = await _s1.Call(new InParam {P1 = "123"}, 100, File.OpenRead(Helper.GetTestFilePath()),
+            var ret = await _s1.Call(new InParam { P1 = "123" }, 100, File.OpenRead(Helper.GetTestFilePath()),
                 async i => Console.WriteLine(i), CancellationToken.None);
             Console.WriteLine($"ret:{ret.P1}, {Helper.ReadStr(ret.Stream)}");
 

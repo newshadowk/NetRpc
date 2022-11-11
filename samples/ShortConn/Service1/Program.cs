@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using DataContract;
 using Microsoft.AspNetCore.Hosting;
@@ -36,6 +37,6 @@ public class Service1Async : IService1Async
 
     public Task<Stream> Call2Async(string s)
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace NetRpc.Contract;
+﻿namespace NetRpc.Contract;
 
 public interface IFaultExceptionGroup
 {
@@ -37,11 +34,11 @@ public sealed class FaultExceptionAttribute : Attribute
 
     public string? ErrorCode { get; set; }
 
-    public Type DetailType { get; set;}
+    public Type DetailType { get; set; }
 
-    public string? Description { get; set;}
+    public string? Description { get; set; }
 
-    public int StatusCode { get; set;}
+    public int StatusCode { get; set; }
 }
 
 [AttributeUsage(AttributeTargets.Interface, AllowMultiple = true)]

@@ -1,10 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Reflection.Emit;
 using System.Runtime.ExceptionServices;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace System.Reflection;
 
@@ -170,7 +166,7 @@ internal static class AsyncDispatchProxyGenerator
         var packed = new PackedArgs(args);
         var method = s_proxyAssembly.ResolveMethodToken(packed.DeclaringType, packed.MethodToken);
         if (method.IsGenericMethodDefinition)
-            method = ((MethodInfo) method).MakeGenericMethod(packed.GenericTypes);
+            method = ((MethodInfo)method).MakeGenericMethod(packed.GenericTypes);
 
         return new ProxyMethodResolverContext(packed, method);
     }
@@ -185,13 +181,14 @@ internal static class AsyncDispatchProxyGenerator
         {
             Debug.Assert(s_dispatchProxyInvokeMethod != null);
             returnValue = s_dispatchProxyInvokeMethod.Invoke(context.Packed.DispatchProxy,
-                new object[] {context.Method, context.Packed.Args})!;
+                new object[] { context.Method, context.Packed.Args })!;
             context.Packed.ReturnValue = returnValue;
         }
         catch (TargetInvocationException tie)
         {
             ExceptionDispatchInfo.Capture(tie.InnerException!).Throw();
         }
+
         return returnValue;
     }
 
@@ -203,8 +200,8 @@ internal static class AsyncDispatchProxyGenerator
         try
         {
             Debug.Assert(s_dispatchProxyInvokeAsyncMethod != null);
-            await (Task) s_dispatchProxyInvokeAsyncMethod.Invoke(context.Packed.DispatchProxy,
-                new object[] {context.Method, context.Packed.Args})!;
+            await (Task)s_dispatchProxyInvokeAsyncMethod.Invoke(context.Packed.DispatchProxy,
+                new object[] { context.Method, context.Packed.Args })!;
         }
         catch (TargetInvocationException tie)
         {
@@ -222,8 +219,8 @@ internal static class AsyncDispatchProxyGenerator
         {
             Debug.Assert(s_dispatchProxyInvokeAsyncTMethod != null);
             var genericMethod = s_dispatchProxyInvokeAsyncTMethod.MakeGenericMethod(typeof(T));
-            returnValue = await (Task<T>) genericMethod.Invoke(context.Packed.DispatchProxy,
-                new object[] {context.Method, context.Packed.Args})!;
+            returnValue = await (Task<T>)genericMethod.Invoke(context.Packed.DispatchProxy,
+                new object[] { context.Method, context.Packed.Args })!;
             context.Packed.ReturnValue = returnValue!;
         }
         catch (TargetInvocationException tie)
@@ -243,7 +240,7 @@ internal static class AsyncDispatchProxyGenerator
         internal const int GenericTypesPosition = 4;
         internal const int ReturnValuePosition = 5;
 
-        internal static readonly Type[] PackedTypes = {typeof(object), typeof(Type), typeof(int), typeof(object[]), typeof(Type[]), typeof(object)};
+        internal static readonly Type[] PackedTypes = { typeof(object), typeof(Type), typeof(int), typeof(object[]), typeof(Type[]), typeof(object) };
 
         private readonly object[] _args;
 
@@ -256,15 +253,15 @@ internal static class AsyncDispatchProxyGenerator
             _args = args;
         }
 
-        internal DispatchProxyAsync DispatchProxy => (DispatchProxyAsync) _args[DispatchProxyPosition];
+        internal DispatchProxyAsync DispatchProxy => (DispatchProxyAsync)_args[DispatchProxyPosition];
 
-        internal Type DeclaringType => (Type) _args[DeclaringTypePosition];
+        internal Type DeclaringType => (Type)_args[DeclaringTypePosition];
 
-        internal int MethodToken => (int) _args[MethodTokenPosition];
+        internal int MethodToken => (int)_args[MethodTokenPosition];
 
-        internal object[] Args => (object[]) _args[ArgsPosition];
+        internal object[] Args => (object[])_args[ArgsPosition];
 
-        internal Type[] GenericTypes => (Type[]) _args[GenericTypesPosition];
+        internal Type[] GenericTypes => (Type[])_args[GenericTypesPosition];
 
         internal object ReturnValue
         {
@@ -342,7 +339,7 @@ internal static class AsyncDispatchProxyGenerator
             // public IgnoresAccessChecksToAttribute(string)
             var constructorBuilder = attributeTypeBuilder.DefineConstructor(MethodAttributes.Public,
                 CallingConventions.HasThis,
-                new[] {assemblyNameField.FieldType});
+                new[] { assemblyNameField.FieldType });
 
             var il = constructorBuilder.GetILGenerator();
 
@@ -396,9 +393,9 @@ internal static class AsyncDispatchProxyGenerator
             // Create a builder to construct the instance via the ctor and property
             var customAttributeBuilder =
                 new CustomAttributeBuilder(attributeUsageConstructorInfo,
-                    new object[] {AttributeTargets.Assembly},
-                    new[] {allowMultipleProperty},
-                    new object[] {true});
+                    new object[] { AttributeTargets.Assembly },
+                    new[] { allowMultipleProperty },
+                    new object[] { true });
 
             // Attach this attribute instance to the newly defined attribute type
             attributeTypeBuilder.SetCustomAttribute(customAttributeBuilder);
@@ -416,7 +413,7 @@ internal static class AsyncDispatchProxyGenerator
             // [assembly: System.Runtime.CompilerServices.IgnoresAccessChecksToAttribute(assemblyName)]
             var attributeConstructor = IgnoresAccessChecksAttributeConstructor;
             var customAttributeBuilder =
-                new CustomAttributeBuilder(attributeConstructor, new object[] {assemblyName});
+                new CustomAttributeBuilder(attributeConstructor, new object[] { assemblyName });
             _ab.SetCustomAttribute(customAttributeBuilder);
         }
 
@@ -651,7 +648,7 @@ internal static class AsyncDispatchProxyGenerator
             packedArr.EndSet(typeof(DispatchProxyAsync));
 
             // packed[PackedArgs.DeclaringTypePosition] = typeof(iface);
-            var Type_GetTypeFromHandle = typeof(Type).GetRuntimeMethod("GetTypeFromHandle", new[] {typeof(RuntimeTypeHandle)});
+            var Type_GetTypeFromHandle = typeof(Type).GetRuntimeMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) });
             int methodToken;
             Type declaringType;
             _assembly.GetTokenForMethod(mi, out declaringType, out methodToken);

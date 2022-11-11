@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 internal class MethodInvokeMiddleware
 {

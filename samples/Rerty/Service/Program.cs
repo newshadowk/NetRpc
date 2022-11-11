@@ -17,10 +17,7 @@ internal class Program
         var host = Host.CreateDefaultBuilder()
             .ConfigureWebHostDefaults(builder =>
             {
-                builder.ConfigureKestrel((context, options) =>
-                    {
-                        options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
-                    })
+                builder.ConfigureKestrel((context, options) => { options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2); })
                     .ConfigureServices((context, services) =>
                     {
                         services.AddNGrpcService();
@@ -53,7 +50,7 @@ public class ServiceAsync : IServiceAsync
 
     public async Task Call2Async(Stream s)
     {
-        MemoryStream ms = new MemoryStream();
+        var ms = new MemoryStream();
         await s.CopyToAsync(ms);
         var array = ms.ToArray();
         throw new Exception();

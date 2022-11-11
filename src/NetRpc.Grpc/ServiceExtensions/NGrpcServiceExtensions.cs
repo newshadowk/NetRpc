@@ -1,5 +1,4 @@
-﻿using System;
-using Grpc.AspNetCore.Server;
+﻿using Grpc.AspNetCore.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using NetRpc;
@@ -44,7 +43,7 @@ public static class NGrpcServiceExtensions
         services.Configure<NClientOptions>(i => i.ForwardAllHeaders = true);
         services.AddNClientContract<TService>(serviceLifetime);
         services.AddNServiceContract(typeof(TService),
-            p => ((IClientProxy<TService>) p.GetService(typeof(IClientProxy<TService>))!).Proxy, serviceLifetime);
+            p => ((IClientProxy<TService>)p.GetService(typeof(IClientProxy<TService>))!).Proxy, serviceLifetime);
         return services;
     }
 

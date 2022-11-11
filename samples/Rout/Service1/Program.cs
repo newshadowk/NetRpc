@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Helper = TestHelper.Helper;
+using TestHelper;
 
 namespace Service;
 
@@ -18,10 +18,7 @@ internal class Program
         var host = Host.CreateDefaultBuilder()
             .ConfigureWebHostDefaults(webBuilder =>
             {
-                webBuilder.ConfigureKestrel((_, options) =>
-                    {
-                        options.ListenAnyIP(50002, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
-                    })
+                webBuilder.ConfigureKestrel((_, options) => { options.ListenAnyIP(50002, listenOptions => listenOptions.Protocols = HttpProtocols.Http2); })
                     .ConfigureServices((_, services) =>
                     {
                         services.AddNGrpcService();

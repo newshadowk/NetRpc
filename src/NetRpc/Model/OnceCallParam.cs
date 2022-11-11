@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 [Serializable]
 public sealed class OnceCallParam
@@ -36,7 +33,7 @@ public sealed class OnceCallParam
     private static string ArgsStr(IEnumerable<object?> list)
     {
         var s = "";
-        int i = 0;
+        var i = 0;
         foreach (var p in list)
             s += $"Param:{i++}\r\n{p.ToDtoJson()}\r\n";
         return s;

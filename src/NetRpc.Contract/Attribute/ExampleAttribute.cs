@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NetRpc.Contract;
+﻿namespace NetRpc.Contract;
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = true)]
 public class ExampleAttribute : Attribute

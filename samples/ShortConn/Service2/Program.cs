@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Reflection.Metadata.Ecma335;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
@@ -8,23 +7,23 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NetRpc.Http;
 
 namespace Service;
+
 internal class Program
 {
     private static async Task Main(string[] args)
     {
-       var host = Host.CreateDefaultBuilder()
+        var host = Host.CreateDefaultBuilder()
             .ConfigureWebHostDefaults(webBuilder =>
             {
                 webBuilder.ConfigureKestrel((_, options) =>
                     {
                         options.ListenAnyIP(80);
-                        options.ListenAnyIP(81, listenOptions => listenOptions.Protocols = HttpProtocols.Http2); 
+                        options.ListenAnyIP(81, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
                     })
                     .ConfigureServices((_, services) =>
                     {
@@ -50,10 +49,7 @@ internal class Program
 
                         app.Use(static async (context, next) =>
                         {
-                            context.Response.OnCompleted(async _ =>
-                            {
-                                Console.WriteLine("OnCompleted");
-                            }, null!);
+                            context.Response.OnCompleted(async _ => { Console.WriteLine("OnCompleted"); }, null!);
 
                             await next();
                         });
@@ -73,23 +69,26 @@ public static class G
     public static volatile bool Stopping;
 }
 
-public class EInvoiceSenderService: IHostedService {
+public class EInvoiceSenderService : IHostedService
+{
     public EInvoiceSenderService(IHostApplicationLifetime t)
     {
         t.ApplicationStopping.Register(() =>
         {
             G.Stopping = true;
             Console.WriteLine("ApplicationStopping start.");
-            for (int i = 0; i < 5000; i++)
+            for (var i = 0; i < 5000; i++)
             {
                 Console.WriteLine($"sleep {i}");
                 Thread.Sleep(1000);
             }
+
             Console.WriteLine("ApplicationStopping end.");
         });
     }
 
-    public Task StartAsync(CancellationToken cancellationToken) {
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
         Console.WriteLine("StartAsync");
 
         return Task.CompletedTask;

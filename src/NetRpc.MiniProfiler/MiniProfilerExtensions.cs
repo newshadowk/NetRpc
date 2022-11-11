@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using NetRpc.Http;
 using NetRpc.MiniProfiler;
 using StackExchange.Profiling;
@@ -82,7 +81,7 @@ public static class MiniProfilerExtensions
             // (defaults to false, debug/heavy mode is off)
             //options.EnableDebugMode = true;
         };
-        services.AddMiniProfiler(configureOptions).AddEntityFramework(); 
+        services.AddMiniProfiler(configureOptions).AddEntityFramework();
 
         return services;
     }

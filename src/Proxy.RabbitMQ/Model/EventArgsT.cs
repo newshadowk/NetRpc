@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Proxy.RabbitMQ;
+﻿namespace Proxy.RabbitMQ;
 
 public sealed class EventArgsT<T> : EventArgs
 {

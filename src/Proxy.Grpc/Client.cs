@@ -1,5 +1,4 @@
-﻿using System;
-using Grpc.Net.Client;
+﻿using Grpc.Net.Client;
 
 namespace Proxy.Grpc;
 
@@ -12,7 +11,7 @@ public sealed class Client : IDisposable
 
     public Client(GrpcChannelOptions options, string url, string? headerHost, string connectionDescription)
     {
-        Uri uri = new (url);
+        Uri uri = new(url);
         _channel = GrpcChannel.ForAddress(url, options);
         Host = uri.Host;
         Port = uri.Port;

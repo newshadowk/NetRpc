@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text;
-using System.Threading;
+﻿using System.Text;
 
 namespace NetRpc;
 
@@ -38,7 +36,7 @@ public static class GlobalDebugContext
         get
         {
             if (Local.Value == null)
-                Local.Value = new ();
+                Local.Value = new DebugContext();
             return Local.Value;
         }
     }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -139,7 +135,7 @@ internal class PathProcessor
                 In = ParameterLocation.Header,
                 Name = header.Name,
                 Description = header.Description,
-                Schema = new OpenApiSchema {Type = "string"}
+                Schema = new OpenApiSchema { Type = "string" }
             });
         }
     }
@@ -179,7 +175,7 @@ internal class PathProcessor
     private static List<OpenApiTag> GenerateTags(ContractMethod method)
     {
         var tags = new List<OpenApiTag>();
-        method.Tags.ToList().ForEach(i => tags.Add(new OpenApiTag {Name = i}));
+        method.Tags.ToList().ForEach(i => tags.Add(new OpenApiTag { Name = i }));
         return tags;
     }
 
@@ -195,7 +191,7 @@ internal class PathProcessor
                 GenerateRequestBodyByForm(body,
                     new TypeName("data", argType),
                     new TypeName(streamName, typeof(IFormFile))
-                    );
+                );
             }
             else
                 GenerateRequestBodyByBody(body, argType);
@@ -239,7 +235,7 @@ internal class PathProcessor
         {
             //600 cancel
             if (hasCancel)
-                ret.Add(ClientConst.CancelStatusCode.ToString(), new OpenApiResponse {Description = "A task was canceled."});
+                ret.Add(ClientConst.CancelStatusCode.ToString(), new OpenApiResponse { Description = "A task was canceled." });
 
             //exception
             GenerateException(ret, method);
@@ -287,7 +283,7 @@ internal class PathProcessor
             Schema = openApiSchema,
             Encoding = openApiSchema.Properties.ToDictionary(
                 entry => entry.Key,
-                _ => new OpenApiEncoding {Style = ParameterStyle.Form}
+                _ => new OpenApiEncoding { Style = ParameterStyle.Form }
             )
         });
     }
@@ -307,7 +303,6 @@ internal class PathProcessor
 
         if (type.Name.StartsWith("SimObj"))
         {
-
         }
 
         return _schemaGenerator.GenerateSchema(type, SchemaRepository);

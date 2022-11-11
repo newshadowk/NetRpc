@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NetRpc.Contract;
+﻿namespace NetRpc.Contract;
 
 [AttributeUsage(AttributeTargets.Interface, AllowMultiple = true)]
 public class SecurityApiKeyDefineAttribute : Attribute

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Proxy.RabbitMQ;
+﻿using Proxy.RabbitMQ;
 using AsyncEventHandler = System.AsyncEventHandler;
 
 namespace NetRpc.RabbitMQ;
@@ -24,7 +22,7 @@ internal sealed class RabbitMQServiceConnection : IServiceConnection
     public ValueTask DisposeAsync()
     {
         _callSession.Dispose();
-        return new ();
+        return new ValueTask();
     }
 
     public event System.AsyncEventHandler<EventArgsT<ReadOnlyMemory<byte>>>? ReceivedAsync;

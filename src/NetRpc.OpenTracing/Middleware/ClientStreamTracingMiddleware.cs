@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using OpenTracing;
+﻿using OpenTracing;
 using OpenTracing.Util;
 
 namespace NetRpc.OpenTracing;
@@ -46,7 +45,7 @@ public class ClientStreamTracingMiddleware
 
         if (context.Result.TryGetStream(out var outStream, out _))
         {
-            var readStream = (ProxyStream) outStream;
+            var readStream = (ProxyStream)outStream;
             var spanBuilder = GlobalTracer.Instance.BuildSpan(
                     $"{Const.ClientStream} {NetRpc.Helper.SizeSuffix(readStream.GetLength())} {Const.ReceiveStr}")
                 .AsChildOf(GlobalTracer.Instance.ActiveSpan);

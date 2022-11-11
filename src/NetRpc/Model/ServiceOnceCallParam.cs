@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 [Serializable]
 public sealed class ServiceOnceCallParam

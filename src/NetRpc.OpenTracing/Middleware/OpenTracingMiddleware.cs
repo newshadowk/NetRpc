@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using OpenTracing;
 using OpenTracing.Propagation;
 using OpenTracing.Tag;

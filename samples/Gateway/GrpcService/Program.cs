@@ -19,10 +19,7 @@ namespace GrpcService
             var host = Host.CreateDefaultBuilder()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.ConfigureKestrel((_, options) =>
-                        {
-                            options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
-                        })
+                    webBuilder.ConfigureKestrel((_, options) => { options.ListenAnyIP(50001, listenOptions => listenOptions.Protocols = HttpProtocols.Http2); })
                         .ConfigureServices((_, services) =>
                         {
                             services.AddNGrpcService();
@@ -57,7 +54,7 @@ namespace GrpcService
             for (var i = 1; i <= 3; i++)
             {
                 Console.Write($"{i}, ");
-                await cb(new CustomCallbackObj {Progress = i});
+                await cb(new CustomCallbackObj { Progress = i });
                 await Task.Delay(100, token);
             }
 

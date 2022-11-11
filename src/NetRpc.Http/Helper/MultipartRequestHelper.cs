@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using Microsoft.Net.Http.Headers;
+﻿using Microsoft.Net.Http.Headers;
 
 namespace NetRpc.Http;
 

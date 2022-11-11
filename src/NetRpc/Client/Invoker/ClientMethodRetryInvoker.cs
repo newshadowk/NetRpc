@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Linq;
+﻿using System.Collections.Concurrent;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetRpc.Contract;
 using Polly;
@@ -20,7 +15,8 @@ internal sealed class ClientMethodRetryInvoker : IMethodInvoker
     private static readonly ConcurrentDictionary<MethodInfo, ClientRetryAttribute?> ClientRetryAttributes = new();
     private static readonly ConcurrentDictionary<MethodInfo, ClientNotRetryAttribute?> ClientNotRetryAttributes = new();
 
-    public ClientMethodRetryInvoker(CallFactory callFactory, ClientRetryAttribute? parentRetryAttribute, ClientNotRetryAttribute? clientNotRetryAttribute, ILogger logger)
+    public ClientMethodRetryInvoker(CallFactory callFactory, ClientRetryAttribute? parentRetryAttribute, ClientNotRetryAttribute? clientNotRetryAttribute,
+        ILogger logger)
     {
         _callFactory = callFactory;
         _parentRetryAttribute = parentRetryAttribute;
@@ -38,7 +34,7 @@ internal sealed class ClientMethodRetryInvoker : IMethodInvoker
         var ret = await CallAsync(targetMethod, args);
         if (ret == null)
             return default!;
-        return (T) ret;
+        return (T)ret;
     }
 
     private async Task<object?> CallAsync(MethodInfo targetMethod, object?[] args)
@@ -61,14 +57,15 @@ internal sealed class ClientMethodRetryInvoker : IMethodInvoker
         var p = Policy
             .Handle<Exception>(e => retryInfo.NeedRetry(e))
             .WaitAndRetryAsync(retryInfo.Durations,
-                (exception, span, context) => 
-                    _logger.LogWarning(exception, $"{context["name"]}, retry count:{context["count"]}, wait ms:{span.TotalMilliseconds}\r\n{Environment.StackTrace}"));
+                (exception, span, context) =>
+                    _logger.LogWarning(exception,
+                        $"{context["name"]}, retry count:{context["count"]}, wait ms:{span.TotalMilliseconds}\r\n{Environment.StackTrace}"));
 
         return await p.ExecuteAsync(async (context, t) =>
         {
             context["name"] = targetMethod.ToFullMethodName();
-            bool isRetry = AddCount(context);
-            if (isRetry) 
+            var isRetry = AddCount(context);
+            if (isRetry)
                 proxyStream?.Reset();
             var call = _callFactory.Create();
             return await call.CallAsync(targetMethod, isRetry, callback, t, proxyStream, otherArgs);
@@ -80,8 +77,8 @@ internal sealed class ClientMethodRetryInvoker : IMethodInvoker
         if (!c.Contains("count"))
             c["count"] = 1;
         else
-            c["count"] = (int) c["count"] + 1;
-            
+            c["count"] = (int)c["count"] + 1;
+
         return (int)c["count"] > 1;
     }
 
@@ -100,7 +97,7 @@ internal sealed class ClientMethodRetryInvoker : IMethodInvoker
         return default;
     }
 
-    private static RetryInfo GetRetryInfo(ClientRetryAttribute attribute,ClientNotRetryAttribute? notRetryAttribute)
+    private static RetryInfo GetRetryInfo(ClientRetryAttribute attribute, ClientNotRetryAttribute? notRetryAttribute)
     {
         var durations = attribute.SleepDurations.ToList().ConvertAll(i => TimeSpan.FromMilliseconds(i)).ToArray();
         var notRetryExceptionTypes = notRetryAttribute?.ExceptionTypes;
@@ -131,7 +128,7 @@ internal sealed class ClientMethodRetryInvoker : IMethodInvoker
         found = objs.FirstOrDefault(i => i is CancellationToken);
         if (found != null)
         {
-            retToken = (CancellationToken) found;
+            retToken = (CancellationToken)found;
             objs.Remove(found);
         }
 
@@ -140,7 +137,7 @@ internal sealed class ClientMethodRetryInvoker : IMethodInvoker
         found = objs.FirstOrDefault(i => i is Stream);
         if (found != null)
         {
-            retStream = (Stream) found;
+            retStream = (Stream)found;
             objs.Remove(found);
         }
 
@@ -160,8 +157,8 @@ internal sealed class ClientMethodRetryInvoker : IMethodInvoker
         }
 
         //client retry 
-        ProxyStream proxyStream = new (stream);
-        if (!stream.CanSeek) 
+        ProxyStream proxyStream = new(stream);
+        if (!stream.CanSeek)
             proxyStream.TryAttachCache();
 
         return proxyStream;
@@ -185,6 +182,7 @@ internal sealed class ClientMethodRetryInvoker : IMethodInvoker
                 if (notRetry)
                     return false;
             }
+
             var ret = ExceptionTypes.Any(i => i.IsInstanceOfType(e));
             return ret;
         }

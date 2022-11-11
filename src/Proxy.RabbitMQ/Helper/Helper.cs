@@ -1,8 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
 
@@ -46,7 +42,7 @@ public static class Helper
     {
         PopulateFromUrl(options);
 
-        return new()
+        return new ConnectionFactory
         {
             UserName = options.User,
             Password = options.Password,
@@ -66,7 +62,7 @@ public static class Helper
     {
         PopulateFromUrl(options);
 
-        return new()
+        return new ConnectionFactory
         {
             UserName = options.User,
             Password = options.Password,
@@ -79,18 +75,20 @@ public static class Helper
             DispatchConsumersAsync = true,
             RequestedHeartbeat = TimeSpan.FromSeconds(10)
         };
-    } 
+    }
 
     public static IConnection CreateConnectionLoop(this ConnectionFactory factory, ILogger logger)
     {
         while (true)
         {
-            try {
+            try
+            {
                 logger.LogInformation("Create Mq connection...");
                 var conn = factory.CreateConnection();
                 logger.LogInformation("Create Mq connection...ok.");
                 return conn;
-            } catch (BrokerUnreachableException)
+            }
+            catch (BrokerUnreachableException)
             {
                 logger.LogInformation("Create Mq connection...failed. retry after 3s.");
                 Thread.Sleep(3000);

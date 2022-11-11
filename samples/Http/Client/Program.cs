@@ -6,7 +6,7 @@ using DataContract;
 using Microsoft.Extensions.DependencyInjection;
 using NetRpc.Contract;
 using NetRpc.Http.Client;
-using Helper = TestHelper.Helper;
+using TestHelper;
 
 namespace Client;
 

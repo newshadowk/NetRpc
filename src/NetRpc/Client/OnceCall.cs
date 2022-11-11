@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Runtime.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Runtime.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace NetRpc;
@@ -77,7 +71,8 @@ public sealed class OnceCall : IOnceCall
                 }
 
                 // sendCmd
-                var sendStreamNext = await _convert.SendCmdAsync(_callParam, methodContext, stream, methodContext.ContractMethod.IsMQPost, methodContext.ContractMethod.MqPriority, token);
+                var sendStreamNext = await _convert.SendCmdAsync(_callParam, methodContext, stream, methodContext.ContractMethod.IsMQPost,
+                    methodContext.ContractMethod.MqPriority, token);
 
                 // cancel token
                 // ReSharper disable once AsyncVoidLambda
@@ -105,7 +100,8 @@ public sealed class OnceCall : IOnceCall
                 }, _timeOutCts.Token);
 
                 // send stream
-                await Helper.SendStreamAsync(_convert.SendBufferAsync, _convert.SendBufferEndAsync, stream, token, OnSendRequestStreamStarted, OnSendRequestStreamEndOrFault);
+                await Helper.SendStreamAsync(_convert.SendBufferAsync, _convert.SendBufferEndAsync, stream, token, OnSendRequestStreamStarted,
+                    OnSendRequestStreamEndOrFault);
             }
             catch (Exception e)
             {
@@ -117,7 +113,7 @@ public sealed class OnceCall : IOnceCall
             await SetCancelAsync(tcs);
 
         var t32 = await tcs.Task;
-        
+
         return t32;
     }
 
@@ -150,7 +146,7 @@ public sealed class OnceCall : IOnceCall
     private async Task SetFaultAsync(TaskCompletionSource<object?> tcs, object result)
     {
         if (result is SerializationException { Message: Const.DeserializationFailure } &&
-            _callParam != null) 
+            _callParam != null)
             _logger.LogWarning($"SetFaultAsync, {_callParam}");
 
         if (_reg != null)

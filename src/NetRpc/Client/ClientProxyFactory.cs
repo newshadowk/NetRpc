@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 public class ClientProxyFactory : IClientProxyFactory
 {

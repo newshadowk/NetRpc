@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Runtime.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace NetRpc;
@@ -14,7 +9,10 @@ internal sealed class BufferClientOnceApiConvert : IClientOnceApiConvert
 {
     private readonly IClientConnection _connection;
     private readonly ILogger _logger;
-    private readonly DuplexPipe _streamPipe = new(new PipeOptions(pauseWriterThreshold: Helper.PipePauseWriterThreshold, resumeWriterThreshold: Helper.PipeResumeWriterThreshold));
+
+    private readonly DuplexPipe _streamPipe =
+        new(new PipeOptions(pauseWriterThreshold: Helper.PipePauseWriterThreshold, resumeWriterThreshold: Helper.PipeResumeWriterThreshold));
+
     private int _disconnected;
     private volatile bool _streamResultReceived;
     private volatile bool _resultReceived;

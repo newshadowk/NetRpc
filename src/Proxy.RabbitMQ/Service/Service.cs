@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -15,7 +12,7 @@ public sealed class Service : IDisposable
     private volatile bool _disposed;
     private volatile bool _stopped;
     private volatile string? _consumerTag;
-    private readonly object _lockDispose = new ();
+    private readonly object _lockDispose = new();
 
     public Service(MQServiceOptions options, ILoggerFactory factory)
     {
@@ -104,6 +101,7 @@ public sealed class Service : IDisposable
             _conn.MainChannel.TryBasicAck(e.DeliveryTag, _logger);
             return Task.CompletedTask;
         }
+
         return OnReceivedAsync(new EventArgsT<CallSession>(new CallSession(_conn.Connection, _conn.SubWatcher, _conn.MainChannel, e, _logger)));
     }
 
@@ -140,6 +138,6 @@ public sealed class Service : IDisposable
 
     private Task OnReceivedAsync(EventArgsT<CallSession> e)
     {
-         return ReceivedAsync.InvokeAsync(this, e);
+        return ReceivedAsync.InvokeAsync(this, e);
     }
 }

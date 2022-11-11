@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NetRpc.Contract;
+﻿namespace NetRpc.Contract;
 
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface, Inherited = false)]
 public sealed class ClientNotRetryAttribute : Attribute

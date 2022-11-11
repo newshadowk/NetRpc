@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 public static class GlobalServiceProvider
 {

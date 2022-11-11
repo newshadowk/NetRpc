@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.OpenApi.Any;
+﻿using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
 namespace NetRpc.Http;
@@ -34,7 +33,7 @@ public static class OpenApiAnyFactoryOld
     {
         try
         {
-            typedValue = (T) Convert.ChangeType(value, typeof(T));
+            typedValue = (T)Convert.ChangeType(value, typeof(T));
             return true;
         }
         catch

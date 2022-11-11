@@ -23,7 +23,7 @@ internal class ServiceAsync : IServiceAsync
     public async Task<ComplexStream> ComplexCallAsync(CustomObj obj, Stream data, Func<CustomCallbackObj, Task> cb, CancellationToken token)
     {
         Console.Write($"[ComplexCallAsync]...Received length:{data.Length}");
-        Stopwatch sw = Stopwatch.StartNew();
+        var sw = Stopwatch.StartNew();
         MemoryStream ms = new();
         //await data.CopyToAsync(ms);
         sw.Stop();
@@ -53,7 +53,7 @@ internal class ServiceAsync : IServiceAsync
 
         //Console.WriteLine("...Send TestFile.txt");
 
-        var rawData = new byte[1024*1024*200];
+        var rawData = new byte[1024 * 1024 * 200];
         Random.Shared.NextBytes(rawData);
         return new ComplexStream
         {

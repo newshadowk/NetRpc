@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -29,7 +28,7 @@ internal class NHttpMiddleware
 
         bool notMatched;
         await using (var convert = new HttpServiceOnceApiConvert(contractOptions.Value.Contracts, httpContext, httpOptions.Value.ApiRootPath,
-            httpOptions.Value.IgnoreWhenNotMatched, hub, httpObjProcessorManager, loggerFactory))
+                         httpOptions.Value.IgnoreWhenNotMatched, hub, httpObjProcessorManager, loggerFactory))
         {
             await requestHandler.HandleAsync(convert, ChannelType.Http);
             notMatched = convert.NotMatched;

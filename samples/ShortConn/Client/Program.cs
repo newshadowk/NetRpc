@@ -2,8 +2,6 @@
 using System.IO;
 using System.Threading.Tasks;
 using DataContract;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Client;
@@ -38,6 +36,7 @@ internal class Program
             {
                 Console.WriteLine($"{i} !");
             }
+
             Console.WriteLine(i);
         }
     }
@@ -57,6 +56,7 @@ internal class Program
             {
                 Console.WriteLine($"{i} !");
             }
+
             Console.WriteLine(i);
         }
     }
@@ -66,7 +66,7 @@ internal class Program
         var p = sp.GetService<IService1Async>()!;
         MemoryStream ms = new();
         Console.WriteLine("Call2Async start");
-        var r = await p.Call2Async($"send: get stream");
+        var r = await p.Call2Async("send: get stream");
         await r.CopyToAsync(ms);
         Console.WriteLine($"Call2Async end, {ms.Length}");
     }

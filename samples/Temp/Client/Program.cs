@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using DataContract;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NetRpc;
 
 namespace Client;
 
@@ -34,7 +33,7 @@ internal class Program
             Console.WriteLine(e);
             throw;
         }
-       
+
 
         //get service
         //var service = sp.GetService<IServiceAsync>();

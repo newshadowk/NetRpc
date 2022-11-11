@@ -5,10 +5,11 @@
 #pragma warning disable 1591, 0612, 3021
 #region Designer generated code
 
-using pb = global::Google.Protobuf;
-using pbc = global::Google.Protobuf.Collections;
-using pbr = global::Google.Protobuf.Reflection;
-using scg = global::System.Collections.Generic;
+using Pb = global::Google.Protobuf;
+using Pbc = global::Google.Protobuf.Collections;
+using Pbr = global::Google.Protobuf.Reflection;
+using Scg = global::System.Collections.Generic;
+
 namespace Proxy.Grpc {
 
   /// <summary>Holder for reflection information generated from message.proto</summary>
@@ -16,10 +17,10 @@ namespace Proxy.Grpc {
 
     #region Descriptor
     /// <summary>File descriptor for message.proto</summary>
-    public static pbr::FileDescriptor Descriptor {
+    public static Pbr::FileDescriptor Descriptor {
       get { return descriptor; }
     }
-    private static pbr::FileDescriptor descriptor;
+    private static Pbr::FileDescriptor descriptor;
 
     static MessageReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
@@ -28,29 +29,29 @@ namespace Proxy.Grpc {
             "CgRib2R5GAEgASgMMmYKC01lc3NhZ2VDYWxsElcKG0R1cGxleFN0cmVhbWlu",
             "Z1NlcnZlck1ldGhvZBIYLlByb3h5LkdycGMuU3RyZWFtQnVmZmVyGhguUHJv",
             "eHkuR3JwYy5TdHJlYW1CdWZmZXIiACgBMAFiBnByb3RvMw=="));
-      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proxy.Grpc.StreamBuffer), global::Proxy.Grpc.StreamBuffer.Parser, new[]{ "Body" }, null, null, null, null)
+      descriptor = Pbr::FileDescriptor.FromGeneratedCode(descriptorData,
+          new Pbr::FileDescriptor[] { },
+          new Pbr::GeneratedClrTypeInfo(null, null, new Pbr::GeneratedClrTypeInfo[] {
+            new Pbr::GeneratedClrTypeInfo(typeof(global::Proxy.Grpc.StreamBuffer), global::Proxy.Grpc.StreamBuffer.Parser, new[]{ "Body" }, null, null, null, null)
           }));
     }
     #endregion
 
   }
   #region Messages
-  public sealed partial class StreamBuffer : pb::IMessage<StreamBuffer> {
-    private static readonly pb::MessageParser<StreamBuffer> _parser = new pb::MessageParser<StreamBuffer>(() => new StreamBuffer());
-    private pb::UnknownFieldSet _unknownFields;
+  public sealed partial class StreamBuffer : Pb::IMessage<StreamBuffer> {
+    private static readonly Pb::MessageParser<StreamBuffer> _parser = new Pb::MessageParser<StreamBuffer>(() => new StreamBuffer());
+    private Pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<StreamBuffer> Parser { get { return _parser; } }
+    public static Pb::MessageParser<StreamBuffer> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pbr::MessageDescriptor Descriptor {
+    public static Pbr::MessageDescriptor Descriptor {
       get { return global::Proxy.Grpc.MessageReflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
+    Pbr::MessageDescriptor Pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
@@ -64,7 +65,7 @@ namespace Proxy.Grpc {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public StreamBuffer(StreamBuffer other) : this() {
       body_ = other.body_;
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+      _unknownFields = Pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -74,12 +75,12 @@ namespace Proxy.Grpc {
 
     /// <summary>Field number for the "body" field.</summary>
     public const int BodyFieldNumber = 1;
-    private pb::ByteString body_ = pb::ByteString.Empty;
+    private Pb::ByteString body_ = Pb::ByteString.Empty;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pb::ByteString Body {
+    public Pb::ByteString Body {
       get { return body_; }
       set {
-        body_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        body_ = Pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -112,11 +113,11 @@ namespace Proxy.Grpc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
+      return Pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void WriteTo(pb::CodedOutputStream output) {
+    public void WriteTo(Pb::CodedOutputStream output) {
       if (Body.Length != 0) {
         output.WriteRawTag(10);
         output.WriteBytes(Body);
@@ -130,7 +131,7 @@ namespace Proxy.Grpc {
     public int CalculateSize() {
       int size = 0;
       if (Body.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeBytesSize(Body);
+        size += 1 + Pb::CodedOutputStream.ComputeBytesSize(Body);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -146,16 +147,16 @@ namespace Proxy.Grpc {
       if (other.Body.Length != 0) {
         Body = other.Body;
       }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+      _unknownFields = Pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(pb::CodedInputStream input) {
+    public void MergeFrom(Pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            _unknownFields = Pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
             Body = input.ReadBytes();

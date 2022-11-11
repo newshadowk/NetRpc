@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Xml;
+﻿using System.Xml;
 using System.Xml.XPath;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -20,7 +18,7 @@ public static class XmlHelper
     private static XPathDocument ResetXmlForInnerType_InnerTypeMap(string docPath)
     {
         var pathRoot = GetDoc(docPath);
-        (XPathNavigator newPathMembers, XmlDocument newDoc) = CreateNewDoc();
+        (var newPathMembers, var newDoc) = CreateNewDoc();
 
         foreach (var i in MergeArgTypeFactory.InnerTypeMap)
         {
@@ -35,7 +33,7 @@ public static class XmlHelper
     private static XPathDocument ResetXmlForInnerType_MethodParams(List<ContractInfo> contractInfos, string docPath)
     {
         var rawRoot = GetDoc(docPath);
-        (XPathNavigator newPathMembers, XmlDocument newDoc) = CreateNewDoc();
+        (var newPathMembers, var newDoc) = CreateNewDoc();
 
         foreach (var contractInfo in contractInfos)
         foreach (var method in contractInfo.Methods)

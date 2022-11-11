@@ -1,7 +1,4 @@
-﻿using System;
-using System.Runtime.ExceptionServices;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Runtime.ExceptionServices;
 using System.Threading.Tasks.Dataflow;
 
 namespace NetRpc;
@@ -86,7 +83,7 @@ public class AsyncDispatcher : IDisposable
         _funcQ.Post(invokeFunc);
         var (exceptionDispatchInfo, result) = await invokeFunc.InvokedFlag.ReceiveAsync(_cts.Token);
         exceptionDispatchInfo?.Throw();
-        return (TResult) result!;
+        return (TResult)result!;
     }
 
     public Task BeginInvoke(Action action)

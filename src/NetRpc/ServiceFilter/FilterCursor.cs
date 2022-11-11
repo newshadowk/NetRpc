@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 public class FilterCursor
 {

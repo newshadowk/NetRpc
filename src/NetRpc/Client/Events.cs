@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 public sealed class EventArgsT<T> : EventArgs
 {

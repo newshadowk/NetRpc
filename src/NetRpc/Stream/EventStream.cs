@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 public abstract class EventStream : Stream
 {

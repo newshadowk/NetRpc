@@ -48,11 +48,11 @@ internal class Program
                         services.AddNGrpcService();
 
                         services.AddNRabbitMQService(i => i.CopyFrom(Helper.GetMQOptions()));
-                        services.AddNServiceContract<IService, Service>(ServiceLifetime.Scoped);
+                        services.AddNServiceContract<IService, Service>();
 
                         services.Configure<GrpcClientOptions>("grpc1", i => { i.Url = "http://localhost:50002"; });
                         services.Configure<GrpcClientOptions>("grpc2", i => { i.Url = "http://localhost:50003"; });
-                        services.AddNGrpcClient(null, null, ServiceLifetime.Scoped);
+                        services.AddNGrpcClient();
 
                         services.Configure<ServiceSwaggerOptions>(i => i.HostPath = "http://localhost:5101/swagger");
                         services.Configure<ClientSwaggerOptions>("grpc1", i => i.HostPath = "http://localhost:5102/swagger");
@@ -120,8 +120,8 @@ internal class Service : IService
             B1 = true,
             BigList = new List<InnerObj>
             {
-                new() {IP1 = "1"},
-                new() {IP1 = "2"}
+                new() { IP1 = "1" },
+                new() { IP1 = "2" }
             }
         };
 

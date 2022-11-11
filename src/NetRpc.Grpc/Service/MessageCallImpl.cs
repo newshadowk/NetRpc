@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Grpc.Core;
+﻿using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using NetRpc.Contract;
 using Proxy.Grpc;

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
+﻿using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using NetRpc.Contract;
@@ -253,7 +250,7 @@ public class MethodRoute
         var methodHttpMethods = methodInfo.GetCustomAttributes<HttpMethodAttribute>(true).ToList();
         var methodRoutes = methodInfo.GetCustomAttributes<HttpRouteAttribute>(true).ToList();
         var obsolete = contractType.IsDefined(typeof(ObsoleteAttribute)) | methodInfo.IsDefined(typeof(ObsoleteAttribute));
-        string contractTag = GetTag(tag, contractType, contractTrimAsync);
+        var contractTag = GetTag(tag, contractType, contractTrimAsync);
 
         //tempInfos
         var tempInfos = new List<TempInfo>();
@@ -323,7 +320,7 @@ public class MethodRoute
         foreach (var group in tempInfos.GroupBy(i => i.Path))
         {
             var r = new HttpRoutInfo(contractTag, group.Key, methodInfo);
-            foreach (TempInfo info in group)
+            foreach (var info in group)
             {
                 if (info.Method != null)
                     r.HttpMethods.Add(HttpMethodAttributeFactory.Create(info.Method, info.Obsolete));

@@ -1,5 +1,4 @@
 ﻿using System.Security.Authentication;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace NetRpc.Http;
@@ -8,7 +7,7 @@ public class AuthTokenAttribute : ActionFilterAttribute
 {
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        var accessor = (IHttpContextAccessor) context.ServiceProvider.GetService(typeof(IHttpContextAccessor))!;
+        var accessor = (IHttpContextAccessor)context.ServiceProvider.GetService(typeof(IHttpContextAccessor))!;
         if (accessor == null)
             throw new AuthenticationException("IHttpContextAccessor is null.");
 

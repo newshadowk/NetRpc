@@ -1,13 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NetRpc;
 using Proxy.RabbitMQ;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -36,7 +33,7 @@ internal class Program
         services.Configure<MQClientOptions>("a1", o => o.CopyFrom(Helper.GetMQOptions()));
         //services.Configure<MQClientOptions>(o => o.CopyFrom(Helper.GetMQOptions()));
 
-        var sp = services.BuildServiceProvider(); 
+        var sp = services.BuildServiceProvider();
         var s = sp.GetService<IServiceAsync>();
 
         var fs = File.OpenRead(@"D:\TestFile\10MB.db");
@@ -86,8 +83,6 @@ internal class Program
         //};
 
         //ch.BasicConsume(qName, false, consumer);
-        
-        
     }
 
     private static async Task T2()
@@ -96,7 +91,7 @@ internal class Program
         var c = f.CreateConnection();
         var ch = c.CreateModel();
 
-        var qn = ch.QueueDeclare("rpc_test", false, false, true).QueueName;
+        var qn = ch.QueueDeclare("rpc_test", false, false).QueueName;
 
         const long Size = 81920;
         var rawData = new byte[Size];
@@ -105,7 +100,7 @@ internal class Program
         Console.ReadLine();
         Console.WriteLine("send start");
 
-        for (int i = 0; i < 10 * 1000; i++)
+        for (var i = 0; i < 10 * 1000; i++)
         {
             ch.BasicPublish("", qn, null, rawData);
         }
@@ -137,7 +132,7 @@ internal class Program
             Console.WriteLine(e);
             throw;
         }
-    
+
 
         Console.WriteLine("send end");
     }
@@ -177,23 +172,11 @@ internal class Program
         var c = f.CreateConnection();
         var ch = c.CreateModel();
 
-        ch.BasicNacks += (s, e) =>
-        {
-            Console.WriteLine($"nack, {e.DeliveryTag}");
-        };
-        ch.BasicAcks += (s, e) =>
-        {
-            Console.WriteLine($"ack, {e.DeliveryTag}");
-        };
-        ch.BasicReturn += (s, e) =>
-        {
-            Console.WriteLine($"BasicReturn");
-        };
-        ch.FlowControl += (s, e) =>
-        {
-            Console.WriteLine($"BasicReturn");
-        };
-      
+        ch.BasicNacks += (s, e) => { Console.WriteLine($"nack, {e.DeliveryTag}"); };
+        ch.BasicAcks += (s, e) => { Console.WriteLine($"ack, {e.DeliveryTag}"); };
+        ch.BasicReturn += (s, e) => { Console.WriteLine("BasicReturn"); };
+        ch.FlowControl += (s, e) => { Console.WriteLine("BasicReturn"); };
+
         ch.BasicQos(0, 0, true);
         var consumer = new AsyncEventingBasicConsumer(ch);
         consumer.Received += async (_, e) =>
@@ -207,18 +190,17 @@ internal class Program
         var rawData = new byte[Size];
         Random.Shared.NextBytes(rawData);
 
-        int i = 1;
+        var i = 1;
         while (true)
         {
             Console.WriteLine($"send {i}");
             ch.BasicPublish("", qName, false, null, rawData);
             await Task.Delay(2000);
             i++;
-
         }
     }
 
- 
+
     private static void Ch_ModelShutdown(object sender, ShutdownEventArgs e)
     {
         Console.WriteLine("Ch_ModelShutdown");
@@ -327,7 +309,7 @@ internal class Program
     private static async Task Test_ComplexCallAsync(IServiceAsync service, int i, CancellationToken t)
     {
         using (var stream = GetSteam())
-        //using (var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            //using (var stream = File.Open(Helper.GetTestFilePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
         {
             Console.Write("[ComplexCallAsync]...Send TestFile.txt...");
             var complexStream = await service.ComplexCallAsync(

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.Json.Serialization;
 using NetRpc.Contract;
@@ -61,11 +60,11 @@ public class PPInfo
 
     private static CustomAttributeBuilder GetJsonBuilder(string name)
     {
-        Type[] ctorParams = {typeof(string)};
+        Type[] ctorParams = { typeof(string) };
 
         var classCtorInfo = typeof(JsonPropertyNameAttribute).GetConstructor(ctorParams);
         return new CustomAttributeBuilder(
             classCtorInfo!,
-            new object[] {name});
+            new object[] { name });
     }
 }

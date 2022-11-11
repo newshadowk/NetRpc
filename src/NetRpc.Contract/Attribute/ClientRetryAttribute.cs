@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NetRpc.Contract;
+﻿namespace NetRpc.Contract;
 
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface, Inherited = false)]
 public sealed class ClientRetryAttribute : Attribute
@@ -10,7 +8,7 @@ public sealed class ClientRetryAttribute : Attribute
     {
     }
 
-    public ClientRetryAttribute(Type exceptionType, params int[] sleepDurations) : this(new[] {exceptionType}, sleepDurations)
+    public ClientRetryAttribute(Type exceptionType, params int[] sleepDurations) : this(new[] { exceptionType }, sleepDurations)
     {
     }
 

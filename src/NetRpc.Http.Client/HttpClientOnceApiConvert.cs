@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Web;
 using NetRpc.Contract;
 
@@ -92,7 +85,7 @@ internal sealed class HttpClientOnceApiConvert : IClientOnceApiConvert
         var postObj = methodContext.ContractMethod.CreateMergeArgTypeObj(_callId, _connId, stream?.Length ?? 0, callParam.PureArgs);
         var actionPath = methodContext.ContractMethod.Route.DefaultRout.Path;
         var reqUrl = $"{_apiUrl}/{actionPath}";
-        
+
         var client = new HttpClient();
         client.Timeout = TimeSpan.FromMilliseconds(_timeoutInterval);
 

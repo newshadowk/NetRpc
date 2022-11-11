@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -69,7 +66,7 @@ internal sealed class HttpConnection : IDisposable
             _logger.LogWarning(e, null);
         }
     }
-    
+
     private async Task UploadProgress(ProgressEventArgs args)
     {
         try
@@ -129,6 +126,7 @@ internal sealed class HttpConnection : IDisposable
             aec.OnSendResultStreamEndOrFault();
             throw;
         }
+
         aec.OnSendResultStreamEndOrFault();
     }
 

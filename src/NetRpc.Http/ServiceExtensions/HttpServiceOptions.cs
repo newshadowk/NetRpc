@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using Microsoft.Extensions.Options;
 
 namespace NetRpc.Http;
@@ -60,7 +58,7 @@ public class SwaggerKeyRoles
     public ReadOnlyCollection<string> GetRoles(string? key)
     {
         if (key == null)
-            return new ReadOnlyCollection<string>(new List<string> {"default"});
+            return new ReadOnlyCollection<string>(new List<string> { "default" });
 
         if (_map.TryGetValue(key.ToLower(), out var values))
             return values;

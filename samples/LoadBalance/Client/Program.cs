@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using DataContract;
 using Microsoft.Extensions.DependencyInjection;
-using Helper = TestHelper.Helper;
+using TestHelper;
 
 namespace Client;
 

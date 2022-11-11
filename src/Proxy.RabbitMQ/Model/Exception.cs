@@ -1,7 +1,4 @@
-﻿using System;
-using System.Runtime.Serialization;
-
-namespace Proxy.RabbitMQ;
+﻿namespace Proxy.RabbitMQ;
 
 public class MaxQueueCountInnerException : Exception
 {

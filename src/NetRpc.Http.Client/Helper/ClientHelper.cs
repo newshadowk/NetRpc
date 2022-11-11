@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -12,14 +10,14 @@ public static class ClientHelper
     {
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Converters = {new JsonStringEnumConverter(JsonNamingPolicy.CamelCase), new StreamConverter()}
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase), new StreamConverter() }
     };
 
     private static readonly JsonSerializerOptions JsOptionsNotIndented = new()
     {
         WriteIndented = false,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Converters = {new JsonStringEnumConverter(JsonNamingPolicy.CamelCase), new StreamConverter()}
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase), new StreamConverter() }
     };
 
     public static object? ToDtoObject(this string? str, Type t)

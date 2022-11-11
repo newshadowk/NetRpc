@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using NetRpc.Contract;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -55,7 +53,7 @@ internal class NSwaggerProvider : INSwaggerProvider
         contracts.ForEach(i => tags.AddRange(i.Tags));
         var distTags = tags.Distinct();
         foreach (var distTag in distTags)
-            _doc.Tags.Add(new OpenApiTag {Name = distTag});
+            _doc.Tags.Add(new OpenApiTag { Name = distTag });
     }
 
     private void ProcessComponents(List<ContractInfo> contracts)

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NetRpc.Http.Client;
+﻿namespace NetRpc.Http.Client;
 
 internal sealed class CallbackEventArgs : EventArgs
 {

@@ -95,7 +95,7 @@ internal class Program
         {
             Console.Write("[ComplexCallAsync]...Send TestFile.txt...");
             var complexStream = await _c1.Proxy.ComplexCallAsync(
-                new CustomObj {Date = DateTime.Now, Name = "ComplexCall"},
+                new CustomObj { Date = DateTime.Now, Name = "ComplexCall" },
                 stream,
                 async i => Console.Write(", " + i.Progress),
                 default);

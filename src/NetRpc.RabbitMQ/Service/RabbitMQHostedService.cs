@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NetRpc.Contract;
@@ -62,6 +59,7 @@ public sealed class RabbitMQHostedService : IHostedService
                 break;
             }
         }
+
         _service?.Dispose();
         _logger.LogInformation("stop application end.");
     }

@@ -41,7 +41,7 @@ public class CallParam
 public class CallResult
 {
     public string P1 { get; set; }
-    
+
     public string StreamName { get; set; }
 
     [field: NonSerialized]

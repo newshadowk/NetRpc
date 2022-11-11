@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 internal sealed class CallFactory
 {
@@ -36,7 +33,7 @@ internal sealed class CallFactory
 
     public Call Create()
     {
-        return new(_id,
+        return new Call(_id,
             ClientContractInfoCache.GetOrAdd(_tService),
             _serviceProvider,
             _options,

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace NetRpc;
+﻿namespace NetRpc;
 
 public interface IClientConnection : IAsyncDisposable
 {
@@ -12,7 +8,7 @@ public interface IClientConnection : IAsyncDisposable
 
     event EventHandler<EventArgsT<string>>? ReceiveDisconnected;
 
-    Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false,byte mqPriority = 0);
+    Task SendAsync(ReadOnlyMemory<byte> buffer, bool isEnd = false, bool isPost = false, byte mqPriority = 0);
 
     Task StartAsync(Dictionary<string, object?> headers, bool isPost);
 }

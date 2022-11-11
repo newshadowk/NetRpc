@@ -1,5 +1,4 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
@@ -80,7 +79,7 @@ public static class NHttpServiceExtensions
         services.Configure<NClientOptions>(i => i.ForwardAllHeaders = true);
         services.AddNClientContract<TService>(serviceLifetime);
         services.AddNServiceContract(typeof(TService),
-            p => ((ClientProxy<TService>) p.GetService(typeof(ClientProxy<TService>))!).Proxy,
+            p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))!).Proxy,
             serviceLifetime);
         return services;
     }
