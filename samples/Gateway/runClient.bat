@@ -1,1 +1,1 @@
-@dotnet %~dp0\Client\bin\Debug\net6.0\Client.dll
+@dotnet %~dp0\Client\bin\Debug\net7.0\Client.dll
