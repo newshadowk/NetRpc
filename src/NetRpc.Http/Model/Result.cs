@@ -55,8 +55,7 @@ internal class Result
         return JsonSerializer.Serialize(Ret, new JsonSerializerOptions
         {
             WriteIndented = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            PropertyNamingPolicy = new JsonRestfulNamingPolicy()
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         });
     }
 }
