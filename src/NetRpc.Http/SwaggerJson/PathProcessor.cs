@@ -89,7 +89,14 @@ internal class PathProcessor
 
         foreach (var p in contractMethod.InnerSystemTypeParameters)
         {
-            var schema = _schemaGenerator.GenerateSchema(p.Type, SchemaRepository, p.PropertyInfo!, p.ParameterInfo!);
+            bool required = true;
+            var schema = _schemaGenerator.GenerateSchema(p.Type, SchemaRepository, p.PropertyInfo, p.ParameterInfo);
+            if (p.ParameterInfo is { ParameterType.IsGenericType: true } && 
+                p.ParameterInfo.ParameterType.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                schema.Nullable = true;
+                required = false;
+            }
             if (routInfo.IsPath(p.DefineName))
             {
                 operation.Parameters.Add(new OpenApiParameter
@@ -98,7 +105,7 @@ internal class PathProcessor
                     Name = p.DefineName,
                     Schema = schema,
                     Description = schema.Description,
-                    Required = true
+                    Required = required
                 });
             }
             else
@@ -108,7 +115,8 @@ internal class PathProcessor
                     In = ParameterLocation.Query,
                     Name = p.DefineName,
                     Schema = schema,
-                    Description = schema.Description
+                    Description = schema.Description,
+                    Required = required
                 });
             }
         }

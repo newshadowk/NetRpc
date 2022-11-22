@@ -243,21 +243,8 @@ public class ServiceAsync : IServiceAsync
 
 public class Service4Async : IService4Async
 {
-    //public async Task<string> Call(CancellationToken token)
-    //{
-    //    //return obj5.TaskId;
-    //    await Task.Delay(1000 * 3600, token);
-    //    return "123";
-    //}
-
-    //public async Task<string> Call(Obj5 obj5)
-    //{
-    //    return obj5.TaskId;
-    //}
-
-    public async Task<object> ValidateInviteCodeAsync(string code, string lang)
+    public Task<object> ValidateInviteCodeAsync(int? i, int i2)
     {
-        throw new CustomException("123", "1", "2");
         throw new NotImplementedException();
     }
 }

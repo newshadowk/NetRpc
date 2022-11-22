@@ -52,8 +52,7 @@ public class RouteFilterAttribute : ActionFilterAttribute
         if (srcObj == null)
             return null;
 
-        if (srcObj is Stream ||
-            srcObj is Action ||
+        if (srcObj is Stream or Action ||
             srcObj.GetType().IsSystemTypeOrEnum())
             return srcObj;
 

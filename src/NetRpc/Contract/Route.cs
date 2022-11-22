@@ -39,16 +39,25 @@ public sealed class HttpRoutInfo
             keys.Add(o!.Value.Substring(2, o.Value.Length - 3));
 
         //S/Get/C/\{p1}/D/\{p2} =>
-        //S/Get/C/([\w-]+)/D/([\w-]+)
-        tmpP = Regex.Replace(tmpP, @"\\{[\w-]+}", @"([\w-]+)");
+        //S/Get/C/([\w-,{}]+)/D/([\w-,{}]+)
+        tmpP = Regex.Replace(tmpP, @"\\{[\w-]+}", @"([\w-,{}]+)");
 
         //S/Get/C/v1/D/v2 matches
-        //S/Get/C/([\w-]+)/D/([\w-]+)
+        //S/Get/C/([\w-,{}]+)/D/([\w-,{}]+)
         var dic = new Dictionary<string, string>();
         mc = Regex.Matches(rawPath, tmpP);
         var gc = mc[0].Groups;
         for (var i = 1; i < gc.Count; i++)
-            dic.Add(keys[i - 1], gc[i].Value);
+        {
+            var key = keys[i - 1];
+
+            // null
+            // {key} or ,
+            if (gc[i].Value  == $"{{{key}}}" || gc[i].Value == ",")
+                continue;
+
+            dic.Add(key, gc[i].Value);
+        }
 
         return dic;
     }
@@ -78,7 +87,7 @@ public sealed class HttpRoutInfo
     public MergeArgType MergeArgType { get; }
 
     /// <summary>
-    /// S/Get/C/{p1}/sss => S/Get/C/[\w-]+/sss$
+    /// S/Get/C/{p1}/sss => S/Get/C/[\w-,{}]+/sss$
     /// </summary>
     private static string ReplacePathStr(string path)
     {
@@ -86,8 +95,8 @@ public sealed class HttpRoutInfo
         //S/Get/C/\{p1}/sss
         var temps = Regex.Escape(path);
 
-        //S/Get/C/[\w-]+/sss
-        var ret = Regex.Replace(temps, @"\\{[\w-]+}", @"[\w-]+");
+        //S/Get/C/[\w-,{}]+/sss
+        var ret = Regex.Replace(temps, @"\\{[\w-]+}", @"[\w-,{}]+");
         return ret + "$";
     }
 
