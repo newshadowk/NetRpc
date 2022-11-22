@@ -131,7 +131,8 @@ public interface IService2Async
     //Task<string> Call5Async(string p1, int p2, Func<double, Task> cb, CancellationToken token);
 }
 
-[FaultExceptionDefine(typeof(CustomException), 300, "1", "errorCode1 error description")]
+// [FaultExceptionDefine(typeof(CustomException), 300, "1", "errorCode1 error description2")]
+[FaultExceptionDefine(typeof(CustomException), 300, "1")]
 //[FaultExceptionDefine(typeof(CustomException2), 400, "2", "errorCode2 error description")]
 public interface IService4Async
 {

@@ -272,14 +272,7 @@ client.Context.AdditionHeader = new Dictionary<string, object> {{"SessionId", 1}
 //will tranfer the header of SessionId to service.
 client.Proxy.Call();
 ```
-## ContractLifeTime
-```c#
-//Singleton: create one instance for every request.
-services.AddNRpcContract<IService, Service>(ServiceLifetime.Singleton);
 
-//Scoped: create new instance for each request. 
-services.AddNRpcContract<IService, Service>(ServiceLifetime.Scoped);
-```
 ## Context
 On service side, **Midderware** or **Filter** can access **ActionExecutingContext**, it is
 

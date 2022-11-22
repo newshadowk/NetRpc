@@ -31,7 +31,7 @@ public sealed class ContractMethod
         IsTracerIgnore = GetCustomAttribute<TracerIgnoreAttribute>(contractType, methodInfo) != null;
         IsTracerArgsIgnore = GetCustomAttribute<TracerArgsIgnoreAttribute>(contractType, methodInfo) != null;
         IsTraceReturnIgnore = GetCustomAttribute<TracerReturnIgnoreAttribute>(contractType, methodInfo) != null;
-        IsImages = GetCustomAttribute<HttpImagesAttribute>(contractType, methodInfo) != null;
+        IsImage = GetCustomAttribute<HttpImageAttribute>(contractType, methodInfo) != null;
 
         Route = new MethodRoute(contractType, methodInfo);
         var mqPostAttribute = GetCustomAttribute<MQPostAttribute>(contractType, methodInfo);
@@ -68,7 +68,7 @@ public sealed class ContractMethod
 
     public bool IsMQPost { get; }
 
-    public bool IsImages { get; }
+    public bool IsImage { get; }
 
     /// <summary>
     /// 队列优先级

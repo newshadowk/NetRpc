@@ -17,28 +17,11 @@ public static class NServiceExtensions
         return services;
     }
 
-    public static IServiceCollection AddNServiceContract(this IServiceCollection services, Type serviceType, Type implementationType,
-        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
+    public static IServiceCollection AddNServiceContract(this IServiceCollection services, Type serviceType, Type implementationType)
     {
         Helper.CheckContract(serviceType);
-
         services.Configure<ContractOptions>(i => i.Contracts.Add(new ContractInfo(serviceType, implementationType)));
-
-        switch (serviceLifetime)
-        {
-            case ServiceLifetime.Singleton:
-                services.TryAddSingleton(serviceType, implementationType);
-                break;
-            case ServiceLifetime.Scoped:
-                services.TryAddScoped(serviceType, implementationType);
-                break;
-            case ServiceLifetime.Transient:
-                services.TryAddTransient(serviceType, implementationType);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
-        }
-
+        services.TryAddScoped(serviceType, implementationType);
         return services;
     }
 
@@ -51,36 +34,18 @@ public static class NServiceExtensions
         return services;
     }
 
-    public static IServiceCollection AddNServiceContract<TService, TImplementation>(this IServiceCollection services,
-        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
+    public static IServiceCollection AddNServiceContract<TService, TImplementation>(this IServiceCollection services) where TService : class
         where TImplementation : class, TService
     {
-        services.AddNServiceContract(typeof(TService), typeof(TImplementation), serviceLifetime);
+        services.AddNServiceContract(typeof(TService), typeof(TImplementation));
         return services;
     }
 
-    public static IServiceCollection AddNServiceContract(this IServiceCollection services, Type serviceType,
-        Func<IServiceProvider, object> implementationFactory, ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
+    public static IServiceCollection AddNServiceContract(this IServiceCollection services, Type serviceType, Func<IServiceProvider, object> implementationFactory)
     {
         Helper.CheckContract(serviceType);
-
         services.Configure<ContractOptions>(i => i.Contracts.Add(new ContractInfo(serviceType)));
-
-        switch (serviceLifetime)
-        {
-            case ServiceLifetime.Singleton:
-                services.TryAddSingleton(serviceType, implementationFactory);
-                break;
-            case ServiceLifetime.Scoped:
-                services.TryAddScoped(serviceType, implementationFactory);
-                break;
-            case ServiceLifetime.Transient:
-                services.TryAddTransient(serviceType, implementationFactory);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
-        }
-
+        services.TryAddScoped(serviceType, implementationFactory);
         return services;
     }
 
@@ -120,133 +85,58 @@ public static class NServiceExtensions
     #region Client
 
     // ReSharper disable once UnusedMethodReturnValue.Local
-    private static IServiceCollection AddNClient(this IServiceCollection services, Action<NClientOptions>? configureOptions = null,
-        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
+    private static IServiceCollection AddNClient(this IServiceCollection services, Action<NClientOptions>? configureOptions = null)
     {
         Helper.CheckBinSer();
 
         if (configureOptions != null)
             services.Configure(configureOptions);
 
-        switch (serviceLifetime)
-        {
-            case ServiceLifetime.Singleton:
-                services.TryAddSingleton<IClientProxyFactory, ClientProxyFactory>();
-                break;
-            case ServiceLifetime.Scoped:
-                services.TryAddScoped<IClientProxyFactory, ClientProxyFactory>();
-                break;
-            case ServiceLifetime.Transient:
-                services.TryAddTransient<IClientProxyFactory, ClientProxyFactory>();
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
-        }
-
+        services.TryAddScoped<IClientProxyFactory, ClientProxyFactory>();
         services.TryAddSingleton<IActionExecutingContextAccessor, ActionExecutingContextAccessor>();
 
         return services;
     }
 
-    public static IServiceCollection AddNClientContract<TService>(this IServiceCollection services,
-        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
+    public static IServiceCollection AddNClientContract<TService>(this IServiceCollection services) where TService : class
     {
         Helper.CheckContract(typeof(TService));
 
         ClientContractInfoCache.GetOrAdd<TService>();
 
-        switch (serviceLifetime)
-        {
-            case ServiceLifetime.Singleton:
-                services.TryAddSingleton<IClientProxy<TService>, ClientProxy<TService>>();
-                services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxy<TService>>()!.Proxy);
-                break;
-            case ServiceLifetime.Scoped:
-                services.TryAddScoped<IClientProxy<TService>, ClientProxy<TService>>();
-                services.TryAddScoped(typeof(TService), p => p.GetService<IClientProxy<TService>>()!.Proxy);
-                break;
-            case ServiceLifetime.Transient:
-                services.TryAddTransient<IClientProxy<TService>, ClientProxy<TService>>();
-                services.TryAddTransient(typeof(TService), p => p.GetService<IClientProxy<TService>>()!.Proxy);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
-        }
+        services.TryAddScoped<IClientProxy<TService>, ClientProxy<TService>>();
+        services.TryAddScoped(typeof(TService), p => p.GetService<IClientProxy<TService>>()!.Proxy);
 
         return services;
     }
 
-    public static IServiceCollection AddNClientContract<TService>(this IServiceCollection services, string optionsName,
-        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
+    public static IServiceCollection AddNClientContract<TService>(this IServiceCollection services, string optionsName) where TService : class
     {
         Helper.CheckContract(typeof(TService));
 
         ClientContractInfoCache.GetOrAdd<TService>();
 
-        switch (serviceLifetime)
-        {
-            case ServiceLifetime.Singleton:
-                services.TryAddSingleton(typeof(IClientProxy<TService>), p => p.GetService<IClientProxyFactory>()!.CreateProxy<TService>(optionsName)!);
-                services.TryAddSingleton(typeof(TService), p => p.GetService<IClientProxyFactory>()!.CreateProxy<TService>(optionsName)!.Proxy);
-                break;
-            case ServiceLifetime.Scoped:
-                services.TryAddScoped(typeof(IClientProxy<TService>), p => p.GetService<IClientProxyFactory>()!.CreateProxy<TService>(optionsName)!);
-                services.TryAddScoped(typeof(TService), p => p.GetService<IClientProxyFactory>()!.CreateProxy<TService>(optionsName)!.Proxy);
-                break;
-            case ServiceLifetime.Transient:
-                services.TryAddTransient(typeof(IClientProxy<TService>), p => p.GetService<IClientProxyFactory>()!.CreateProxy<TService>(optionsName)!);
-                services.TryAddTransient(typeof(TService), p => p.GetService<IClientProxyFactory>()!.CreateProxy<TService>(optionsName)!.Proxy);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
-        }
+        services.TryAddScoped(typeof(IClientProxy<TService>), p => p.GetService<IClientProxyFactory>()!.CreateProxy<TService>(optionsName)!);
+        services.TryAddScoped(typeof(TService), p => p.GetService<IClientProxyFactory>()!.CreateProxy<TService>(optionsName)!.Proxy);
 
         return services;
     }
 
     public static IServiceCollection AddNClientByOnceCallFactory<TOnceCallFactoryImplementation>(this IServiceCollection services,
-        Action<NClientOptions>? configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
+        Action<NClientOptions>? configureOptions = null)
         where TOnceCallFactoryImplementation : class, IOnceCallFactory
     {
-        switch (serviceLifetime)
-        {
-            case ServiceLifetime.Singleton:
-                services.TryAddSingleton<IOnceCallFactory, TOnceCallFactoryImplementation>();
-                break;
-            case ServiceLifetime.Scoped:
-                services.TryAddScoped<IOnceCallFactory, TOnceCallFactoryImplementation>();
-                break;
-            case ServiceLifetime.Transient:
-                services.TryAddTransient<IOnceCallFactory, TOnceCallFactoryImplementation>();
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
-        }
-
-        services.AddNClient(configureOptions, serviceLifetime);
+        services.TryAddScoped<IOnceCallFactory, TOnceCallFactoryImplementation>();
+        services.AddNClient(configureOptions);
         return services;
     }
 
     public static IServiceCollection AddNClientByClientConnectionFactory<TClientConnectionFactoryImplementation>(this IServiceCollection services,
-        Action<NClientOptions>? configureOptions = null, ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
+        Action<NClientOptions>? configureOptions = null)
         where TClientConnectionFactoryImplementation : class, IClientConnectionFactory
     {
-        switch (serviceLifetime)
-        {
-            case ServiceLifetime.Singleton:
-                services.TryAddSingleton<IClientConnectionFactory, TClientConnectionFactoryImplementation>();
-                break;
-            case ServiceLifetime.Scoped:
-                services.TryAddScoped<IClientConnectionFactory, TClientConnectionFactoryImplementation>();
-                break;
-            case ServiceLifetime.Transient:
-                services.TryAddTransient<IClientConnectionFactory, TClientConnectionFactoryImplementation>();
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
-        }
-
-        services.AddNClient(configureOptions, serviceLifetime);
+        services.TryAddScoped<IClientConnectionFactory, TClientConnectionFactoryImplementation>();
+        services.AddNClient(configureOptions);
         return services;
     }
 

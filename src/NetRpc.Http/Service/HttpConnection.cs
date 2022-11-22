@@ -88,7 +88,7 @@ internal sealed class HttpConnection : IDisposable
 
         FileStreamResult fRet;
 
-        if (result.IsImages)
+        if (result.IsImage)
         {
             //images no FileDownloadName
             string ext;

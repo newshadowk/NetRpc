@@ -36,41 +36,25 @@ public static class NGrpcServiceExtensions
 
     public static IServiceCollection AddNGrpcGateway<TService>(this IServiceCollection services,
         Action<GrpcClientOptions>? configureGrpcClientOptions = null,
-        Action<NClientOptions>? configureClientOptions = null,
-        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
+        Action<NClientOptions>? configureClientOptions = null) where TService : class
     {
-        services.AddNGrpcClient(configureGrpcClientOptions, configureClientOptions, serviceLifetime);
+        services.AddNGrpcClient(configureGrpcClientOptions, configureClientOptions);
         services.Configure<NClientOptions>(i => i.ForwardAllHeaders = true);
-        services.AddNClientContract<TService>(serviceLifetime);
+        services.AddNClientContract<TService>();
         services.AddNServiceContract(typeof(TService),
-            p => ((IClientProxy<TService>)p.GetService(typeof(IClientProxy<TService>))!).Proxy, serviceLifetime);
+            p => ((IClientProxy<TService>)p.GetService(typeof(IClientProxy<TService>))!).Proxy);
         return services;
     }
 
     public static IServiceCollection AddNGrpcClient(this IServiceCollection services,
         Action<GrpcClientOptions>? configureGrpcClientOptions = null,
-        Action<NClientOptions>? configureClientOptions = null,
-        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
+        Action<NClientOptions>? configureClientOptions = null)
     {
         if (configureGrpcClientOptions != null)
             services.Configure(configureGrpcClientOptions);
         services.AddLogging();
-        services.AddNClientByClientConnectionFactory<GrpcClientConnectionFactory>(configureClientOptions, serviceLifetime);
-        switch (serviceLifetime)
-        {
-            case ServiceLifetime.Singleton:
-                services.AddSingleton<IClientProxyProvider, GrpcClientProxyProvider>();
-                break;
-            case ServiceLifetime.Scoped:
-                services.AddScoped<IClientProxyProvider, GrpcClientProxyProvider>();
-                break;
-            case ServiceLifetime.Transient:
-                services.AddTransient<IClientProxyProvider, GrpcClientProxyProvider>();
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
-        }
-
+        services.AddNClientByClientConnectionFactory<GrpcClientConnectionFactory>(configureClientOptions);
+        services.AddScoped<IClientProxyProvider, GrpcClientProxyProvider>();
         return services;
     }
 }

@@ -79,7 +79,7 @@ internal sealed class ServiceOnceTransfer
         try
         {
             //send result
-            await _convert.SendResultAsync(new CustomResult(ret, hasStream, context.ContractMethod.IsImages, retStream.GetLength()), retStream, retStreamName,
+            await _convert.SendResultAsync(new CustomResult(ret, hasStream, context.ContractMethod.IsImage, retStream.GetLength()), retStream, retStreamName,
                 context);
         }
         catch (Exception e)

@@ -72,15 +72,12 @@ public static class NHttpServiceExtensions
 
     public static IServiceCollection AddNHttpGateway<TService>(this IServiceCollection services,
         Action<HttpClientOptions>? configureHttpClientOptions = null,
-        Action<NClientOptions>? configureClientOptions = null,
-        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
+        Action<NClientOptions>? configureClientOptions = null) where TService : class
     {
-        services.AddNHttpClient(configureHttpClientOptions, configureClientOptions, serviceLifetime);
+        services.AddNHttpClient(configureHttpClientOptions, configureClientOptions);
         services.Configure<NClientOptions>(i => i.ForwardAllHeaders = true);
-        services.AddNClientContract<TService>(serviceLifetime);
-        services.AddNServiceContract(typeof(TService),
-            p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))!).Proxy,
-            serviceLifetime);
+        services.AddNClientContract<TService>();
+        services.AddNServiceContract(typeof(TService), p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))!).Proxy);
         return services;
     }
 

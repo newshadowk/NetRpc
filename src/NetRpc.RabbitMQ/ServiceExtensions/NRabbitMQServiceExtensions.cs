@@ -19,43 +19,26 @@ public static class NRabbitMQServiceExtensions
 
     public static IServiceCollection AddNRabbitMQClient(this IServiceCollection services,
         Action<MQClientOptions>? configureMQClientOptions = null,
-        Action<NClientOptions>? configureClientOptions = null,
-        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
+        Action<NClientOptions>? configureClientOptions = null)
     {
         if (configureMQClientOptions != null)
             services.Configure(configureMQClientOptions);
         services.AddLogging();
-        services.AddNClientByClientConnectionFactory<RabbitMQClientConnectionFactory>(configureClientOptions, serviceLifetime);
+        services.AddNClientByClientConnectionFactory<RabbitMQClientConnectionFactory>(configureClientOptions);
         services.AddSingleton<ClientConnectionCache>();
-        switch (serviceLifetime)
-        {
-            case ServiceLifetime.Singleton:
-                services.AddSingleton<IClientProxyProvider, RabbitMQClientProxyProvider>();
-                break;
-            case ServiceLifetime.Scoped:
-                services.AddScoped<IClientProxyProvider, RabbitMQClientProxyProvider>();
-                break;
-            case ServiceLifetime.Transient:
-                services.AddTransient<IClientProxyProvider, RabbitMQClientProxyProvider>();
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(serviceLifetime), serviceLifetime, null);
-        }
-
+        services.AddScoped<IClientProxyProvider, RabbitMQClientProxyProvider>();
         return services;
     }
 
     public static IServiceCollection AddNRabbitMQGateway<TService>(this IServiceCollection services,
         Action<MQClientOptions>? configureMQClientOptions = null,
-        Action<NClientOptions>? configureClientOptions = null,
-        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) where TService : class
+        Action<NClientOptions>? configureClientOptions = null) where TService : class
     {
-        services.AddNRabbitMQClient(configureMQClientOptions, configureClientOptions, serviceLifetime);
+        services.AddNRabbitMQClient(configureMQClientOptions, configureClientOptions);
         services.Configure<NClientOptions>(i => i.ForwardAllHeaders = true);
-        services.AddNClientContract<TService>(serviceLifetime);
+        services.AddNClientContract<TService>();
         services.AddNServiceContract(typeof(TService),
-            p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))!).Proxy,
-            serviceLifetime);
+            p => ((ClientProxy<TService>)p.GetService(typeof(ClientProxy<TService>))!).Proxy);
         return services;
     }
 

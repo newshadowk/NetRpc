@@ -9,13 +9,13 @@ public sealed class CustomResult
 
     public bool HasStream { get; set; }
 
-    public bool IsImages { get; set; }
+    public bool IsImage { get; set; }
 
-    public CustomResult(object? result, bool hasStream, bool isImages, long streamLength)
+    public CustomResult(object? result, bool hasStream, bool isImage, long streamLength)
     {
         Result = result;
         HasStream = hasStream;
-        IsImages = isImages;
+        IsImage = isImage;
         StreamLength = streamLength;
     }
 }

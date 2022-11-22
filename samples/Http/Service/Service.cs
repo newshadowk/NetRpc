@@ -255,8 +255,9 @@ public class Service4Async : IService4Async
     //    return obj5.TaskId;
     //}
 
-    public Task<object> ValidateInviteCodeAsync(string code, string lang)
+    public async Task<object> ValidateInviteCodeAsync(string code, string lang)
     {
+        throw new CustomException("123", "1", "2");
         throw new NotImplementedException();
     }
 }
