@@ -155,7 +155,7 @@ public class A : Attribute
 
 public class Obj5
 {
-    [CanNull]
+    [AllowNullValue]
     [JsonIgnore]
     public string TaskId { get; set; }
 

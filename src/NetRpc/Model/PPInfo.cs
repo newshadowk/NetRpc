@@ -12,7 +12,7 @@ public class PPInfo
 
     public ParameterInfo? ParameterInfo { get; }
 
-    public bool AllowNull { get; }
+    public bool AllowNullValue { get; }
 
     public Type Type { get; }
 
@@ -37,9 +37,9 @@ public class PPInfo
         PropertyInfo = propertyInfo;
         Type = propertyInfo.PropertyType;
 
-        var attr = propertyInfo.GetCustomAttribute<CanNullAttribute>();
+        var attr = propertyInfo.GetCustomAttribute<AllowNullValueAttribute>();
         if (attr != null) 
-            AllowNull = true;
+            AllowNullValue = true;
     }
 
     public PPInfo(ParameterInfo parameterInfo)
@@ -60,7 +60,7 @@ public class PPInfo
         if (parameterInfo is { ParameterType.IsGenericType: true } &&
             parameterInfo.ParameterType.GetGenericTypeDefinition() == typeof(Nullable<>))
         {
-            AllowNull = true;
+            AllowNullValue = true;
         }
     }
 

@@ -91,7 +91,7 @@ internal class PathProcessor
         {
             var schema = _schemaGenerator.GenerateSchema(p.Type, SchemaRepository, p.PropertyInfo, p.ParameterInfo);
             bool required = true;
-            if (p.AllowNull)
+            if (p.AllowNullValue)
             {
                 schema.Nullable = true;
                 required = false;
