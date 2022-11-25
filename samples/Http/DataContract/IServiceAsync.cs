@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -140,17 +141,25 @@ public interface IService4Async
     //Task<string> Call(Obj5 obj5);
     [FaultException(typeof(CustomException))]
     // [HttpGet()]
-    [HttpGet("ValidateInviteCode/{s}")]
-    Task<object> ValidateInviteCodeAsync(string s);
+    [HttpGet("ValidateInviteCode")]
+    Task<object> ValidateInviteCodeAsync(Obj5 s);
 
     //[HttpPost]
     //Task<string> Call(CancellationToken token);
 }
 
+public class A : Attribute
+{
+
+}
+
 public class Obj5
 {
+    [CanNull]
+    [JsonIgnore]
     public string TaskId { get; set; }
-    //public string TaskId2 { get;set; }
+
+    public string TaskId2 { get;set; }
 }
 
 [Serializable]

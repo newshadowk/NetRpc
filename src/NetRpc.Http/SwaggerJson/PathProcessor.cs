@@ -89,14 +89,14 @@ internal class PathProcessor
 
         foreach (var p in contractMethod.InnerSystemTypeParameters)
         {
-            bool required = true;
             var schema = _schemaGenerator.GenerateSchema(p.Type, SchemaRepository, p.PropertyInfo, p.ParameterInfo);
-            if (p.ParameterInfo is { ParameterType.IsGenericType: true } && 
-                p.ParameterInfo.ParameterType.GetGenericTypeDefinition() == typeof(Nullable<>))
+            bool required = true;
+            if (p.AllowNull)
             {
                 schema.Nullable = true;
                 required = false;
             }
+
             if (routInfo.IsPath(p.DefineName))
             {
                 operation.Parameters.Add(new OpenApiParameter

@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.Json.Serialization;
 using NetRpc.Contract;
@@ -10,6 +11,8 @@ public class PPInfo
     public PropertyInfo? PropertyInfo { get; }
 
     public ParameterInfo? ParameterInfo { get; }
+
+    public bool AllowNull { get; }
 
     public Type Type { get; }
 
@@ -33,6 +36,10 @@ public class PPInfo
         Name = propertyInfo.Name;
         PropertyInfo = propertyInfo;
         Type = propertyInfo.PropertyType;
+
+        var attr = propertyInfo.GetCustomAttribute<CanNullAttribute>();
+        if (attr != null) 
+            AllowNull = true;
     }
 
     public PPInfo(ParameterInfo parameterInfo)
@@ -49,6 +56,12 @@ public class PPInfo
         Name = parameterInfo.Name!;
         ParameterInfo = parameterInfo;
         Type = parameterInfo.ParameterType;
+
+        if (parameterInfo is { ParameterType.IsGenericType: true } &&
+            parameterInfo.ParameterType.GetGenericTypeDefinition() == typeof(Nullable<>))
+        {
+            AllowNull = true;
+        }
     }
 
     public PPInfo(string name, Type type)

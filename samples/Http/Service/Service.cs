@@ -243,7 +243,7 @@ public class ServiceAsync : IServiceAsync
 
 public class Service4Async : IService4Async
 {
-    public async Task<object> ValidateInviteCodeAsync(string s)
+    public Task<object> ValidateInviteCodeAsync(Obj5 s)
     {
         throw new NotImplementedException();
     }
