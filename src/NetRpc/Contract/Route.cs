@@ -9,6 +9,11 @@ public sealed class HttpRoutInfo
 {
     private readonly string _regPatternPathWithoutQuery;
 
+    //(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]
+    //https://www.cnblogs.com/speeding/p/5097790.html
+
+    private const string CR = "[\\w+&@#/%?=~_|!:,.;]";
+
     /// <summary>
     /// lowercase
     /// </summary>
@@ -39,11 +44,11 @@ public sealed class HttpRoutInfo
             keys.Add(o!.Value.Substring(2, o.Value.Length - 3));
 
         //S/Get/C/\{p1}/D/\{p2} =>
-        //S/Get/C/([\w-,{}]+)/D/([\w-,{}]+)
-        tmpP = Regex.Replace(tmpP, @"\\{[\w-]+}", @"([\w-,{}]+)");
+        //S/Get/C/(CR+)/D/(CR+)
+        tmpP = Regex.Replace(tmpP, @"\\{[\w-]+}", $"({CR}+)");
 
         //S/Get/C/v1/D/v2 matches
-        //S/Get/C/([\w-,{}]+)/D/([\w-,{}]+)
+        //S/Get/C/(CR+)/D/(CR+)
         var dic = new Dictionary<string, string>();
         mc = Regex.Matches(rawPath, tmpP);
         var gc = mc[0].Groups;
@@ -87,7 +92,7 @@ public sealed class HttpRoutInfo
     public MergeArgType MergeArgType { get; }
 
     /// <summary>
-    /// S/Get/C/{p1}/sss => S/Get/C/[\w-,{}]+/sss$
+    /// S/Get/C/{p1}/sss => S/Get/C/CR+/sss$
     /// </summary>
     private static string ReplacePathStr(string path)
     {
@@ -95,8 +100,8 @@ public sealed class HttpRoutInfo
         //S/Get/C/\{p1}/sss
         var temps = Regex.Escape(path);
 
-        //S/Get/C/[\w-,{}]+/sss
-        var ret = Regex.Replace(temps, @"\\{[\w-]+}", @"[\w-,{}]+");
+        //S/Get/C/CR+/sss
+        var ret = Regex.Replace(temps, @"\\{[\w-]+}", $"{CR}+");
         return ret + "$";
     }
 

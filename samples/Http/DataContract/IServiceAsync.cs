@@ -140,8 +140,8 @@ public interface IService4Async
     //Task<string> Call(Obj5 obj5);
     [FaultException(typeof(CustomException))]
     // [HttpGet()]
-    [HttpGet("ValidateInviteCode/{i}/{i2}")]
-    Task<object> ValidateInviteCodeAsync(int? i, int i2);
+    [HttpGet("ValidateInviteCode/{s}")]
+    Task<object> ValidateInviteCodeAsync(string s);
 
     //[HttpPost]
     //Task<string> Call(CancellationToken token);
