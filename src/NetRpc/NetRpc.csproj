@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>net7.0</TargetFrameworks>
     <SignAssembly>true</SignAssembly>
-    <Description>NetRpc is a light weight rpc engine base on RabbitMQ, Grpc, Http targeting .NET5. especially suitable for handle long call.</Description>
+    <Description>NetRpc is a light weight rpc engine base on RabbitMQ, Grpc, Http targeting .NET7. especially suitable for handle long call.</Description>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="7.0.0" />
