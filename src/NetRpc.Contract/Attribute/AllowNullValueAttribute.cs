@@ -1,6 +1,6 @@
 ﻿namespace NetRpc.Contract;
 
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = true)]
 public class AllowNullValueAttribute : Attribute
 {
     public AllowNullValueAttribute()

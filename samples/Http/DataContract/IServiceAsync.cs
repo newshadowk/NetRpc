@@ -137,29 +137,19 @@ public interface IService2Async
 //[FaultExceptionDefine(typeof(CustomException2), 400, "2", "errorCode2 error description")]
 public interface IService4Async
 {
-    //[HttpPatch("call/{TaskId}")]
-    //Task<string> Call(Obj5 obj5);
-    [FaultException(typeof(CustomException))]
-    // [HttpGet()]
-    [HttpGet("ValidateInviteCode")]
-    Task<object> ValidateInviteCodeAsync(Obj5 s);
+    // [HttpGet("t1")]
+    // Task<object> T1([AllowNullValue]string i, int i2);
 
-    //[HttpPost]
-    //Task<string> Call(CancellationToken token);
+    [HttpGet("t1")]
+    Task<object> T1(Obj5 i);
 }
 
-public class A : Attribute
-{
-
-}
 
 public class Obj5
 {
-    [NoTrim]
-    [JsonIgnore]
     public string TaskId { get; set; }
 
-    public string TaskId2 { get;set; }
+    public int? TaskId2 { get;set; }
 }
 
 [Serializable]

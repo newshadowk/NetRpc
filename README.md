@@ -770,6 +770,46 @@ public interface IService4Async
     Task<Obj4> Call([JsonParamName("i-d")] Obj4 id, [JsonParamName("test-red")] string testRed);
 }
 ```
+
+## [Http] AllowNullValue Attribute
+```c#
+public interface IService4Async
+{
+    [HttpGet("Call")]
+    Task<Obj4> Call([AllowNullValue] string s);
+}
+```
+
+```c#
+public interface IService4Async
+{
+    [HttpGet("Call")]
+    Task<Obj4> Call(Obj o);
+}
+
+public class Obj
+{
+    [AllowNullValue]
+    public string S1 {get;set;}
+}
+
+```
+
+## [Http] NoTrim Attribute
+```c#
+public class Obj
+{
+    [NoTrim]
+    public string S1 { get; set; }  //will not Trim
+
+    public string S2 { get; set; }  //will Trim
+}
+
+Obj obj = new { S1 = " 1 ", S2 = " 2 "}
+StringTrimExtension.StringTrim(obj);
+```
+
+
 ## [Http] Obsolete Attribute
 ```c#
 [Obsolete]

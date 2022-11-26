@@ -40,6 +40,12 @@ public class PPInfo
         var attr = propertyInfo.GetCustomAttribute<AllowNullValueAttribute>();
         if (attr != null) 
             AllowNullValue = true;
+
+        if (propertyInfo is { PropertyType.IsGenericType: true } &&
+            propertyInfo.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+        {
+            AllowNullValue = true;
+        }
     }
 
     public PPInfo(ParameterInfo parameterInfo)
@@ -56,6 +62,10 @@ public class PPInfo
         Name = parameterInfo.Name!;
         ParameterInfo = parameterInfo;
         Type = parameterInfo.ParameterType;
+
+        var attr = parameterInfo.GetCustomAttribute<AllowNullValueAttribute>();
+        if (attr != null) 
+            AllowNullValue = true;
 
         if (parameterInfo is { ParameterType.IsGenericType: true } &&
             parameterInfo.ParameterType.GetGenericTypeDefinition() == typeof(Nullable<>))
