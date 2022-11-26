@@ -18,7 +18,7 @@ public static class XmlHelper
     private static XPathDocument ResetXmlForInnerType_InnerTypeMap(string docPath)
     {
         var pathRoot = GetDoc(docPath);
-        (var newPathMembers, var newDoc) = CreateNewDoc();
+        var (newPathMembers, newDoc) = CreateNewDoc();
 
         foreach (var i in MergeArgTypeFactory.InnerTypeMap)
         {
@@ -33,7 +33,7 @@ public static class XmlHelper
     private static XPathDocument ResetXmlForInnerType_MethodParams(List<ContractInfo> contractInfos, string docPath)
     {
         var rawRoot = GetDoc(docPath);
-        (var newPathMembers, var newDoc) = CreateNewDoc();
+        var (newPathMembers, newDoc) = CreateNewDoc();
 
         foreach (var contractInfo in contractInfos)
         foreach (var method in contractInfo.Methods)
