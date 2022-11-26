@@ -47,7 +47,7 @@ internal class PathProcessor
         if (isSupportBody)
         {
             AddPathParams(contractMethod, operation, routInfo);
-            if (!routInfo.MergeArgType.IsEmptyTypeWithoutPathQueryStream)
+            if (routInfo.MergeArgType.TypeWithoutPathQueryStream != null || routInfo.MergeArgType.StreamPropName != null)
                 operation.RequestBody = GenerateRequestBody(routInfo.MergeArgType.TypeWithoutPathQueryStream, routInfo.MergeArgType.StreamPropName);
         }
         else

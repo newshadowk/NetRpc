@@ -8,8 +8,11 @@ public static class TypeFactory
 {
     private static volatile CacheTypeBuilder _builder = new();
 
-    public static TypeInfo BuildType(string typeName, List<CustomsPropertyInfo> ps)
+    public static TypeInfo? BuildType(string typeName, List<CustomsPropertyInfo> ps)
     {
+        if (ps.Count == 0)
+            return null;
+
         return _builder.BuildType(typeName, ps);
     }
 }
@@ -67,7 +70,7 @@ public class CacheTypeBuilder
             TypeAttributes.Public);
 
         AddPropertyToTypeBuilder(typeBuilder, ps);
-        return typeBuilder.CreateTypeInfo()!;
+        return typeBuilder.CreateTypeInfo();
     }
 
     private static void AddPropertyToTypeBuilder(TypeBuilder myTypeBuilder, List<CustomsPropertyInfo> ps)

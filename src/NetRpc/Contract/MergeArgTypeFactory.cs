@@ -95,20 +95,16 @@ public static class MergeArgTypeFactory
         }
 
         //StreamLength
-        if (addedStream)
+        if (addedStream && addedCallId)
             cis.Add(new CustomsPropertyInfo(typeof(long), CallConst.StreamLength));
 
         var t = TypeFactory.BuildType(typeName, cis);
-        var (t2, isEmpty) = BuildTypeWithoutPathQueryStream(typeNameWithoutStreamName, cis, pathQueryParams);
-
-        if (cis.Count == 0)
-            return new MergeArgType(null, null, null, null, null,
-                false, false, null, method);
+        var t2 = BuildTypeWithoutPathQueryStream(typeNameWithoutStreamName, cis, pathQueryParams);
 
         //SetInnerTypeMap
         SetInnerTypeMap(t2, isSingleValue, singleValue!);
 
-        return new MergeArgType(t, t2, streamName, action, cancelToken, isEmpty, isSingleValue, singleValue, method);
+        return new MergeArgType(t, t2, streamName, action, cancelToken, isSingleValue, singleValue, method);
     }
 
     private static CustomAttributeData? FindExampleCAD(List<CustomAttributeData> methodsAd, PPInfo p)
@@ -129,8 +125,11 @@ public static class MergeArgTypeFactory
         return null;
     }
 
-    private static void SetInnerTypeMap(Type mergeArgType, bool isSingleValue, ParameterInfo singleValue)
+    private static void SetInnerTypeMap(Type? mergeArgType, bool isSingleValue, ParameterInfo singleValue)
     {
+        if (mergeArgType == null) 
+            return;
+
         if (isSingleValue)
         {
             InnerTypeMap.Add(new InnerTypeMapItem(singleValue!.ParameterType, mergeArgType));
@@ -145,7 +144,7 @@ public static class MergeArgTypeFactory
         }
     }
 
-    private static (Type t, bool isEmpty) BuildTypeWithoutPathQueryStream(string typeName, List<CustomsPropertyInfo> cis, List<string> pathQueryParams)
+    private static Type? BuildTypeWithoutPathQueryStream(string typeName, List<CustomsPropertyInfo> cis, List<string> pathQueryParams)
     {
         var list = cis.ToList();
         list.RemoveAll(i =>
@@ -154,6 +153,9 @@ public static class MergeArgTypeFactory
                 (!i.Type.IsFuncT() && !i.Type.IsCancellationToken() && pathQueryParams.Any(j => j == i.DefineName.ToLower())) // pathQueryParams
         );
 
-        return (TypeFactory.BuildType(typeName, list), list.Count == 0);
+        if (list.Count == 0)
+            return null;
+
+        return TypeFactory.BuildType(typeName, list);
     }
 }

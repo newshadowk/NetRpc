@@ -73,8 +73,11 @@ public static class XmlHelper
 
         foreach (var p in type.MethodInfo.GetParameters())
         {
+            if (type.TypeWithoutPathQueryStream == null)
+                continue;
+
             var pPath = rawRoot.SelectSingleNode($"/doc/members/member[@name='{methodStr}']/param[@name='{p.Name}']");
-            var prop = type.TypeWithoutPathQueryStream!.GetProperties().FirstOrDefault(i => i.Name == p.Name);
+            var prop = type.TypeWithoutPathQueryStream.GetProperties().FirstOrDefault(i => i.Name == p.Name);
             if (pPath != null && prop != null)
             {
                 var str = XmlCommentsNodeNameHelper.GetMemberNameForFieldOrProperty(prop);

@@ -35,23 +35,27 @@ internal sealed class FormDataHttpObjProcessor : IHttpObjProcessor
             MediaTypeHeaderValue.Parse(item.HttpRequest.ContentType),
             _defaultFormOptions.MultipartBoundaryLengthLimit);
         var reader = new MultipartReader(boundary, item.HttpRequest.Body);
-        var section = await reader.ReadNextSectionAsync();
 
         //body
-        ValidateSection(section);
-        var ms = new MemoryStream();
-        await section!.Body.CopyToAsync(ms);
-        var body = Encoding.UTF8.GetString(ms.ToArray());
-        var dataObj = Helper.ToHttpDataObj(body, item.DataObjType!);
+        HttpDataObj dataObj = new HttpDataObj();
+        if (item.DataObjType != null)
+        {
+            var bodySec = await reader.ReadNextSectionAsync();
+            ValidateSection(bodySec);
+            var ms = new MemoryStream();
+            await bodySec!.Body.CopyToAsync(ms);
+            var body = Encoding.UTF8.GetString(ms.ToArray());
+            dataObj = Helper.ToHttpDataObj(body, item.DataObjType!);
+        }
 
         //stream
-        section = await reader.ReadNextSectionAsync();
-        ValidateSection(section);
-        var fileName = GetFileName(section!.ContentDisposition);
+        var streamSec = await reader.ReadNextSectionAsync();
+        ValidateSection(streamSec);
+        var fileName = GetFileName(streamSec!.ContentDisposition);
         if (fileName == null)
             throw new ArgumentNullException("", "File name is null.");
         dataObj.TrySetStreamName(fileName);
-        var proxyStream = new ProxyStream(section.Body, dataObj.StreamLength);
+        var proxyStream = new ProxyStream(streamSec.Body, dataObj.StreamLength);
         return new HttpObj { HttpDataObj = dataObj, ProxyStream = proxyStream };
     }
 
@@ -105,6 +109,9 @@ internal sealed class JsonHttpObjProcessor : IHttpObjProcessor
 
     public async Task<HttpObj> ProcessAsync(ProcessItem item)
     {
+        if (item.DataObjType == null)
+            return new HttpObj();
+
         string body;
         using (var sr = new StreamReader(item.HttpRequest.Body, Encoding.UTF8))
             body = await sr.ReadToEndAsync();
@@ -127,6 +134,9 @@ internal sealed class FormUrlEncodedObjProcessor : IHttpObjProcessor
 
     public Task<HttpObj> ProcessAsync(ProcessItem item)
     {
+        if (item.DataObjType == null)
+            return Task.FromResult(new HttpObj());
+
         return Task.FromResult(new HttpObj { HttpDataObj = GetHttpDataObjFromQuery(item) });
     }
 
@@ -156,9 +166,6 @@ internal sealed class HttpObjProcessorManager
 
     public async Task<HttpObj> ProcessAsync(ProcessItem item)
     {
-        if (item.DataObjType == null)
-            return new HttpObj();
-
         foreach (var p in _processors)
             if (p.MatchContentType(item.HttpRequest.ContentType))
             {

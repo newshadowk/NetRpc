@@ -12,8 +12,6 @@ public sealed class MergeArgType
 
     public string? StreamPropName { get; }
 
-    public bool IsEmptyTypeWithoutPathQueryStream { get; }
-
     public TypeName? CallbackAction { get; }
 
     public TypeName? CancelToken { get; }
@@ -22,14 +20,13 @@ public sealed class MergeArgType
 
     public ParameterInfo? SingleValue { get; }
 
-    public MergeArgType(Type? type, Type? typeWithoutPathQueryStream, string? streamPropName, TypeName? callbackAction, TypeName? cancelToken,
-        bool isEmptyTypeWithoutPathQueryStream, bool isSingleValue, ParameterInfo? singleValue, MethodInfo methodInfo)
+    public MergeArgType(Type? type, Type? typeWithoutPathQueryStream, string? streamPropName, TypeName? callbackAction, TypeName? cancelToken, 
+        bool isSingleValue, ParameterInfo? singleValue, MethodInfo methodInfo)
     {
         Type = type;
         StreamPropName = streamPropName;
         CallbackAction = callbackAction;
         CancelToken = cancelToken;
-        IsEmptyTypeWithoutPathQueryStream = isEmptyTypeWithoutPathQueryStream;
         IsSingleValue = isSingleValue;
         SingleValue = singleValue;
         MethodInfo = methodInfo;
