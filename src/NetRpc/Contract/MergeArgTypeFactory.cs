@@ -42,7 +42,7 @@ public static class MergeArgTypeFactory
         if (isSingleValue)
         {
             typeNameWithoutStreamName = GetName(singleValue!.ParameterType.Name);
-            typeName = GetName(singleValue!.ParameterType.Name);
+            typeName = GetName(singleValue.ParameterType.Name);
         }
         else
         {
@@ -60,7 +60,7 @@ public static class MergeArgTypeFactory
             //callback
             if (p.Type.IsFuncT())
             {
-                action = new TypeName(p.Name!, p.Type);
+                action = new TypeName(p.Name, p.Type);
                 addedCallId = true;
                 continue;
             }
@@ -68,7 +68,7 @@ public static class MergeArgTypeFactory
             //cancel
             if (p.Type.IsCancellationToken())
             {
-                cancelToken = new TypeName(p.Name!, p.Type);
+                cancelToken = new TypeName(p.Name, p.Type);
                 addedCallId = true;
                 continue;
             }
@@ -132,7 +132,7 @@ public static class MergeArgTypeFactory
 
         if (isSingleValue)
         {
-            InnerTypeMap.Add(new InnerTypeMapItem(singleValue!.ParameterType, mergeArgType));
+            InnerTypeMap.Add(new InnerTypeMapItem(singleValue.ParameterType, mergeArgType));
 
             var ps1 = mergeArgType.GetProperties().ToList();
             foreach (var p0 in singleValue.ParameterType.GetProperties())

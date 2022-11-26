@@ -142,6 +142,7 @@ public interface IService4Async
 
     [HttpPut("t1")]
     Task<object> T1(Stream s);
+    //Task<object> T1(Stream s, Func<double, Task> cb);
 }
 
 
