@@ -243,17 +243,11 @@ public class ServiceAsync : IServiceAsync
 
 public class Service4Async : IService4Async
 {
-    // public Task<object> T1(string i, int i2)
-    // {
-    //     throw new NotImplementedException();
-    // }
-
     // public async Task<object> T1(Obj5 i)
     // {
     //     throw new NotImplementedException();
     // }
-
-    public Task ApproveRealNameAsync(int id, bool isRealName)
+    public Task<object> T1(string i, int i2)
     {
         throw new NotImplementedException();
     }

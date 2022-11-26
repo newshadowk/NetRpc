@@ -137,11 +137,8 @@ public interface IService2Async
 //[FaultExceptionDefine(typeof(CustomException2), 400, "2", "errorCode2 error description")]
 public interface IService4Async
 {
-    // [HttpGet("t1")]
-    // Task<object> T1([AllowNullValue]string i, int i2);
-
-    [HttpPut("user/{id}/real-name/{isRealName}")]
-    Task ApproveRealNameAsync(int id, bool isRealName);
+    [HttpGet("t1")]
+    Task<object> T1([AllowNullValue]string i, int i2);
 }
 
 
