@@ -101,7 +101,8 @@ internal sealed class HttpClientOnceApiConvert : IClientOnceApiConvert
         {
             var mc = new MultipartFormDataContent("----WebKitFormBoundaryXQABsuJCc0RB2mEJ");
             //client.DefaultRequestHeaders.Add("Content-Type", "multipart/form-data");
-            mc.Add(new StringContent(postObj.ToDtoJson()!), "data");
+            if (postObj != null) 
+                mc.Add(new StringContent(postObj.ToDtoJson()), "data");
             mc.Add(new StreamContent(stream!), streamPropName, "testfilename");
             content = mc;
         }
