@@ -84,7 +84,7 @@ public static class MergeArgTypeFactory
             //Custom Type
             //ExampleAttribute
             var found = FindExampleCAD(exampleCAD, p);
-            cis.Add(new CustomsPropertyInfo(p.Type, p.Name, found, p.JsonCustomAttributeBuilder));
+            cis.Add(new CustomsPropertyInfo(p.Type, p.Name, p.DefineName, found, p.JsonCustomAttributeBuilder));
         }
 
         //connectionId callId
@@ -99,7 +99,7 @@ public static class MergeArgTypeFactory
             cis.Add(new CustomsPropertyInfo(typeof(long), CallConst.StreamLength));
 
         var t = TypeFactory.BuildType(typeName, cis);
-        (var t2, var isEmpty) = BuildTypeWithoutPathQueryStream(typeNameWithoutStreamName, cis, pathQueryParams);
+        var (t2, isEmpty) = BuildTypeWithoutPathQueryStream(typeNameWithoutStreamName, cis, pathQueryParams);
 
         if (cis.Count == 0)
             return new MergeArgType(null, null, null, null, null,
@@ -151,7 +151,7 @@ public static class MergeArgTypeFactory
         list.RemoveAll(i =>
                 (i.PropertyName.IsStreamName() && i.Type == typeof(string)) // stream
                 ||
-                (!i.Type.IsFuncT() && !i.Type.IsCancellationToken() && pathQueryParams.Any(j => j == i.PropertyName.ToLower())) // pathQueryParams
+                (!i.Type.IsFuncT() && !i.Type.IsCancellationToken() && pathQueryParams.Any(j => j == i.DefineName.ToLower())) // pathQueryParams
         );
 
         return (TypeFactory.BuildType(typeName, list), list.Count == 0);

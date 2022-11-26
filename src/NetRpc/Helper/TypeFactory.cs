@@ -16,10 +16,11 @@ public static class TypeFactory
 
 public class CustomsPropertyInfo
 {
-    public CustomsPropertyInfo(Type type, string propertyName, CustomAttributeData? cad = null, CustomAttributeBuilder? cab = null)
+    public CustomsPropertyInfo(Type type, string propertyName, string? defineName = null, CustomAttributeData? cad = null, CustomAttributeBuilder? cab = null)
     {
         Type = type;
         PropertyName = propertyName;
+        DefineName = defineName ?? propertyName;
         if (cad != null)
             Attributes = new List<CustomAttributeData> { cad };
         if (cab != null)
@@ -33,6 +34,8 @@ public class CustomsPropertyInfo
     public List<CustomAttributeBuilder> AttributeBuilders { get; } = new();
 
     public string PropertyName { get; }
+
+    public string DefineName { get; }
 
     public string FieldName => $"_{PropertyName.Substring(0, 1).ToLower()}{PropertyName.Substring(1)}";
 

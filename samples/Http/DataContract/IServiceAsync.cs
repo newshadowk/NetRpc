@@ -140,8 +140,8 @@ public interface IService4Async
     // [HttpGet("t1")]
     // Task<object> T1([AllowNullValue]string i, int i2);
 
-    [HttpGet("t1")]
-    Task<object> T1(Obj5 i);
+    [HttpPut("user/{id}/real-name/{isRealName}")]
+    Task ApproveRealNameAsync(int id, bool isRealName);
 }
 
 
