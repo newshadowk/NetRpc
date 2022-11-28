@@ -4,8 +4,11 @@ namespace NetRpc.Contract;
 
 public static class StringTrimExtension
 {
-    public static void StringTrim(this object obj)
+    public static void StringTrim(this object? obj)
     {
+        if (obj == null) 
+            return;
+
         foreach (var pi in obj.GetType().GetProperties())
         {
             if (pi.PropertyType != typeof(string))

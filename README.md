@@ -804,7 +804,11 @@ public class Obj
 }
 
 Obj obj = new { S1 = " 1 ", S2 = " 2 "}
+
 StringTrimExtension.StringTrim(obj);
+
+// StringTrimMiddleware avaliable;
+
 ```
 
 

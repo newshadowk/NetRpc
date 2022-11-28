@@ -15,7 +15,10 @@ public class ValidateMiddleware
     public async Task InvokeAsync(ActionExecutingContext context)
     {
         if (context.PureArgs.Length == 0)
+        {
+            await _next(context);
             return;
+        }
 
         var pis = context.ContractMethod.MethodInfo.GetParameters();
         for (int i = 0; i < context.PureArgs.Length; i++) 
