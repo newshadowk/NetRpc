@@ -133,6 +133,17 @@ public interface IService2Async
 }
 
 // [FaultExceptionDefine(typeof(CustomException), 300, "1", "errorCode1 error description2")]
+
+public class V1FilterAttribute : ValueFilterAttribute
+{
+    public override Task<object> InvokeAsync(object value, IServiceProvider serviceProvider)
+    {
+        Console.WriteLine($"value:{value}");
+        return Task.FromResult(value);
+    }
+}
+
+
 [FaultExceptionDefine(typeof(CustomException), 300, "1")]
 //[FaultExceptionDefine(typeof(CustomException2), 400, "2", "errorCode2 error description")]
 public interface IService4Async
@@ -141,30 +152,22 @@ public interface IService4Async
     // Task<object> T1([AllowNullValue]string i, int i2);
 
     [HttpPut("t1")]
-    Task<object> T1(Obj5 i, [V1] string s1);
+    Task<object> T1([Trim]string s1);
 }
 
-public class V1Attribute : ValidateValueAttribute
-{
-    public override void Validate(object value)
-    {
-        Console.WriteLine($"value:{value}");
-    }
-}
-
-[Validate]
 public class Obj5
 {
-    [V1]
+    [Trim]
+    [V1Filter]
     public string TaskId { get; set; }
 
-    public Obj51 Obj51 { get;set; }
+    // public Obj51 Obj51 { get;set; }
 }
 
-[Validate]
+
 public class Obj51
 {
-    [V1]
+    [V1Filter]
     public string TaskId { get; set; }
 }
 

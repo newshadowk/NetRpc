@@ -54,7 +54,7 @@ internal class Program
                         services.AddNHttpService();
                         services.AddNServiceContract<IService4Async, Service4Async>();
                         services.AddLogging(i => i.AddConsole());
-                        services.AddNMiddleware(i => i.UseMiddleware<ValidateMiddleware>());
+                        services.AddNMiddleware(i => i.UseMiddleware<ValueFilterMiddleware>());
                         //services.AddNServiceContract<IService2Async, Service2Async>();
                         //services.AddNServiceContract<IServiceAsync, ServiceAsync>();
                     })

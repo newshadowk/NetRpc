@@ -71,6 +71,8 @@ public class ActionExecutingContext : IActionExecutingContext
 
     public ActionInfo ActionInfo { get; }
 
+    public ValueItemWrapper ValueItemWrapper { get; }
+
     /// <summary>
     /// A central location for sharing state between components during the invoking process.
     /// </summary>
@@ -106,6 +108,7 @@ public class ActionExecutingContext : IActionExecutingContext
         Stream = stream;
         Contract = contract;
         CancellationToken = token;
+        ValueItemWrapper = new ValueItemWrapper(pureArgs, args, contractMethod.MethodInfo, serviceProvider);
         ResetProps();
     }
 

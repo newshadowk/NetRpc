@@ -792,26 +792,6 @@ public class Obj
 }
 
 ```
-
-## [Http] NoTrim Attribute
-```c#
-public class Obj
-{
-    [NoTrim]
-    public string S1 { get; set; }  //will not Trim
-
-    public string S2 { get; set; }  //will Trim
-}
-
-Obj obj = new { S1 = " 1 ", S2 = " 2 "}
-
-StringTrimExtension.StringTrim(obj);
-
-// StringTrimMiddleware avaliable;
-
-```
-
-
 ## [Http] Obsolete Attribute
 ```c#
 [Obsolete]
@@ -825,19 +805,20 @@ public interface IService4Async
     Task Call(string id);
 }
 ```
-## [Http] ValidateValue Attribute
+## [Http] ValueFilter Attribute
 ```c#
-public class V1Attribute : ValidateValueAttribute
+public class V1FilterAttribute : ValueFilterAttribute
 {
-    public override void Validate(object value)
+    public override Task<object> InvokeAsync(object value, IServiceProvider serviceProvider)
     {
-        throw new Exception(value.ToString());
+        Console.WriteLine($"value:{value}");
+        return Task.FromResult(value);
     }
 }
 
-[Validate]   //declare validate
 public class Obj5
 {
+    [Trim] // TrimAttribute will trim string.
     [V1]
     public string TaskId { get; set; }
 
@@ -859,7 +840,9 @@ public interface IService
 }
 
 // add ValidateMiddleware
-services.AddNMiddleware(i => i.UseMiddleware<ValidateMiddleware>());
+services.AddNMiddleware(i => i.UseMiddleware<ValueFilterMiddleware>());
+
+
 
 ```
 ## [Http] Auth
