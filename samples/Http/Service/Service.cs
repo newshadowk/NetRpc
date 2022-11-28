@@ -243,8 +243,8 @@ public class ServiceAsync : IServiceAsync
 
 public class Service4Async : IService4Async
 {
-    public async Task<object> T1(string s1)
+    public Task<object> T1(string s1, Stream stream)
     {
-        return 1;
+        throw new NotImplementedException();
     }
 }

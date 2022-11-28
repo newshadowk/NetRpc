@@ -152,7 +152,7 @@ public interface IService4Async
     // Task<object> T1([AllowNullValue]string i, int i2);
 
     [HttpPut("t1")]
-    Task<object> T1([Trim]string s1);
+    Task<object> T1(string s1, Stream stream);
 }
 
 public class Obj5

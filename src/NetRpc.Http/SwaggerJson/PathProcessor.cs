@@ -277,12 +277,17 @@ internal class PathProcessor
     private void GenerateRequestBodyByForm(OpenApiRequestBody body, params TypeName[] typeNames)
     {
         var properties = new Dictionary<string, OpenApiSchema?>();
+        var required = new HashSet<string>();
         foreach (var typeName in typeNames)
+        {
+            required.Add(typeName.Name);
             properties.Add(typeName.Name, GenerateSchema(typeName.Type));
+        }
 
         var openApiSchema = new OpenApiSchema
         {
             Type = "object",
+            Required = required,
             Properties = properties
         };
 
@@ -308,10 +313,6 @@ internal class PathProcessor
     {
         if (type == typeof(Task))
             return null;
-
-        if (type.Name.StartsWith("SimObj"))
-        {
-        }
 
         return _schemaGenerator.GenerateSchema(type, SchemaRepository);
     }
