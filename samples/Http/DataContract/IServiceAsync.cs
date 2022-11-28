@@ -141,16 +141,31 @@ public interface IService4Async
     // Task<object> T1([AllowNullValue]string i, int i2);
 
     [HttpPut("t1")]
-    Task<object> T1(Stream s);
-    //Task<object> T1(Stream s, Func<double, Task> cb);
+    Task<object> T1(Obj5 i);
 }
 
+public class V1Attribute : ValidateValueAttribute
+{
+    public override void Validate(object value)
+    {
+        throw new Exception(value.ToString());
+    }
+}
 
+[Validate]
 public class Obj5
 {
+    [V1]
     public string TaskId { get; set; }
 
-    public int? TaskId2 { get;set; }
+    public Obj51 Obj51 { get;set; }
+}
+
+[Validate]
+public class Obj51
+{
+    [V1]
+    public string TaskId { get; set; }
 }
 
 [Serializable]

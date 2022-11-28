@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using DataContract;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -8,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NetRpc;
 using NetRpc.Http;
 
 namespace Service;
@@ -55,6 +54,7 @@ internal class Program
                         services.AddNHttpService();
                         services.AddNServiceContract<IService4Async, Service4Async>();
                         services.AddLogging(i => i.AddConsole());
+                        services.AddNMiddleware(i => i.UseMiddleware<ValidateMiddleware>());
                         //services.AddNServiceContract<IService2Async, Service2Async>();
                         //services.AddNServiceContract<IServiceAsync, ServiceAsync>();
                     })

@@ -250,7 +250,8 @@ public class Service4Async : IService4Async
     //     throw new NotImplementedException();
     // }
 
-    public async Task<object> T1(Stream s)
+
+    public async Task<object> T1(Obj5 i)
     {
         throw new NotImplementedException();
     }

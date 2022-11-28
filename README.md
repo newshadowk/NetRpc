@@ -708,8 +708,6 @@ Convert long running call to short call with **start** **prog** **cancel** **rep
 **ref:** [samples/ShortConn](samples/ShortConn)
 ![](images/shortconn.png)
 
-
-
 ## [Http] FaultExceptionAttribute
 If contract has **Exception** defined, should use **FaultExceptionAttribute** to define **statuscode**, 
 use **response code** to define summary(will display in Swagger), 
@@ -822,6 +820,36 @@ public interface IService4Async
     [HttpGet("Call/{id}")]
     Task Call(string id);
 }
+```
+## [Http] ValidateValue Attribute
+```c#
+public class V1Attribute : ValidateValueAttribute
+{
+    public override void Validate(object value)
+    {
+        throw new Exception(value.ToString());
+    }
+}
+
+[Validate]   //declare validate
+public class Obj5
+{
+    [V1]
+    public string TaskId { get; set; }
+
+    public Obj51 Obj51 { get;set; }
+}
+
+[Validate]  //declare validate
+public class Obj51
+{
+    [V1]
+    public string TaskId { get; set; }
+}
+
+// add ValidateMiddleware
+services.AddNMiddleware(i => i.UseMiddleware<ValidateMiddleware>());
+
 ```
 ## [Http] Auth
 ```c#
