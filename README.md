@@ -769,12 +769,12 @@ public interface IService4Async
 }
 ```
 
-## [Http] AllowNullValue Attribute
+## [Http] NotRequired Attribute
 ```c#
 public interface IService4Async
 {
     [HttpGet("Call")]
-    Task<Obj4> Call([AllowNullValue] string s);
+    Task<Obj4> Call([NotRequired] string s);
 }
 ```
 
@@ -787,7 +787,7 @@ public interface IService4Async
 
 public class Obj
 {
-    [AllowNullValue]
+    [NotRequired]
     public string S1 {get;set;}
 }
 
@@ -845,6 +845,13 @@ public class Obj51
 {
     [V1]
     public string TaskId { get; set; }
+}
+
+public interface IService
+{
+    public Task T1([V1]string s1)
+
+    public Task T2(Obj5 obj5)
 }
 
 // add ValidateMiddleware

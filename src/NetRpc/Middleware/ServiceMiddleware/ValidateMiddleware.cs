@@ -14,26 +14,48 @@ public class ValidateMiddleware
 
     public async Task InvokeAsync(ActionExecutingContext context)
     {
-        foreach (var p in context.PureArgs)
-            ValidateStart(p);
+        if (context.PureArgs.Length == 0)
+            return;
+
+        var pis = context.ContractMethod.MethodInfo.GetParameters();
+        for (int i = 0; i < context.PureArgs.Length; i++) 
+            ValidateStart(pis[i], context.PureArgs[i]);
+
         await _next(context);
     }
 
-    private static void ValidateStart(object? obj)
+    private static void ValidateStart(ParameterInfo pi, object? obj)
     {
-        if (obj == null)
-            return;
-
-        var type = obj.GetType();
-        var v = type.GetCustomAttribute<ValidateValueAttribute>();
+        /*
+        [V1]
+        public class Obj5
+        {
+        }
+        */
+        var v = pi.ParameterType.GetCustomAttribute<ValidateValueAttribute>();
         v?.Validate(obj);
 
-        var v0 = type.GetCustomAttribute<ValidateAttribute>();
+        /*
+        public class Obj5
+        {
+            public Task T1([V1]string s1)
+        }
+        */
+        v = pi.GetCustomAttribute<ValidateValueAttribute>();
+        v?.Validate(obj);
+
+        /*
+        [Validate]
+        public class Obj5
+        {
+        }
+        */
+        var v0 = pi.ParameterType.GetCustomAttribute<ValidateAttribute>();
         if (v0 == null)
             return;
 
-        foreach (var pi in type.GetProperties())
-            Validate(pi, pi.GetValue(obj));
+        foreach (var i in pi.ParameterType.GetProperties())
+            Validate(i, obj == null? null : i.GetValue(obj));
     }
 
     private static void Validate(PropertyInfo pi, object? piValue)
@@ -41,14 +63,11 @@ public class ValidateMiddleware
         var v = pi.GetCustomAttribute<ValidateValueAttribute>();
         v?.Validate(piValue);
 
-        if (piValue == null)
-            return;
-
         var v0 = pi.PropertyType.GetCustomAttribute<ValidateAttribute>();
         if (v0 == null)
             return;
 
         foreach (var i in pi.PropertyType.GetProperties())
-            Validate(i, i.GetValue(piValue));
+            Validate(i, piValue == null ? null : i.GetValue(piValue));
     }
 }

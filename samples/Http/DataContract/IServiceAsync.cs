@@ -141,14 +141,14 @@ public interface IService4Async
     // Task<object> T1([AllowNullValue]string i, int i2);
 
     [HttpPut("t1")]
-    Task<object> T1(Obj5 i);
+    Task<object> T1(Obj5 i, [V1] string s1);
 }
 
 public class V1Attribute : ValidateValueAttribute
 {
     public override void Validate(object value)
     {
-        throw new Exception(value.ToString());
+        Console.WriteLine($"value:{value}");
     }
 }
 

@@ -12,7 +12,7 @@ public class PPInfo
 
     public ParameterInfo? ParameterInfo { get; }
 
-    public bool AllowNullValue { get; }
+    public bool NotRequired { get; }
 
     public Type Type { get; }
 
@@ -37,14 +37,14 @@ public class PPInfo
         PropertyInfo = propertyInfo;
         Type = propertyInfo.PropertyType;
 
-        var attr = propertyInfo.GetCustomAttribute<AllowNullValueAttribute>();
+        var attr = propertyInfo.GetCustomAttribute<NotRequiredAttribute>();
         if (attr != null) 
-            AllowNullValue = true;
+            NotRequired = true;
 
         if (propertyInfo is { PropertyType.IsGenericType: true } &&
             propertyInfo.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
         {
-            AllowNullValue = true;
+            NotRequired = true;
         }
     }
 
@@ -63,14 +63,14 @@ public class PPInfo
         ParameterInfo = parameterInfo;
         Type = parameterInfo.ParameterType;
 
-        var attr = parameterInfo.GetCustomAttribute<AllowNullValueAttribute>();
+        var attr = parameterInfo.GetCustomAttribute<NotRequiredAttribute>();
         if (attr != null) 
-            AllowNullValue = true;
+            NotRequired = true;
 
         if (parameterInfo is { ParameterType.IsGenericType: true } &&
             parameterInfo.ParameterType.GetGenericTypeDefinition() == typeof(Nullable<>))
         {
-            AllowNullValue = true;
+            NotRequired = true;
         }
     }
 

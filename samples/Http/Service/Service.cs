@@ -243,15 +243,8 @@ public class ServiceAsync : IServiceAsync
 
 public class Service4Async : IService4Async
 {
-    // public async Task<object> T1(Stream s, Func<double, Task> cb)
-    // {
-    //     MemoryStream ms = new MemoryStream();
-    //     await s.CopyToAsync(ms);
-    //     throw new NotImplementedException();
-    // }
 
-
-    public async Task<object> T1(Obj5 i)
+    public Task<object> T1(Obj5 i, string s1)
     {
         throw new NotImplementedException();
     }
