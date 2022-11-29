@@ -243,8 +243,9 @@ public class ServiceAsync : IServiceAsync
 
 public class Service4Async : IService4Async
 {
-    public async Task<object> T1(Obj5 obj5, string s1)
+    public async Task T1(int userId, Stream stream)
     {
-        return 1;
+        MemoryStream ms = new();
+        await stream.CopyToAsync(ms);
     }
 }

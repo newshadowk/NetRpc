@@ -183,7 +183,7 @@ internal sealed class HttpServiceOnceApiConvert : IServiceOnceApiConvert
     private async Task<HttpObj> GetHttpDataObjAndStream(HttpRoutInfo hri, string rawPath)
     {
         //dataObjType
-        return await _httpObjProcessorManager.ProcessAsync(new ProcessItem(_context.Request, hri, rawPath, hri.MergeArgType.Type));
+        return await _httpObjProcessorManager.ProcessAsync(new ProcessItem(_context.Request, hri, rawPath, hri.MergeArgType.Type, hri.MergeArgType.TypeWithoutPathQueryStream));
     }
 
     private void CallbackHubCanceled(object? sender, string e)

@@ -28,7 +28,7 @@ internal sealed class HttpDataObj
     /// <summary>
     /// web api type. is a InnerType from MergeArgType
     /// </summary>
-    public Type Type { get; set; } = null!;
+    public Type? Type { get; init; }
 
     public bool TrySetStreamName(string streamName)
     {
@@ -60,6 +60,9 @@ internal sealed class HttpDataObj
 
     public void SetValues(Dictionary<string, StringValues> keyValues)
     {
+        if (Type == null)
+            return;
+
         if (keyValues.Count == 0)
             return;
 
@@ -95,10 +98,10 @@ internal sealed class HttpDataObj
     private void CheckValue()
     {
         //if null, create default.
-        Value ??= Activator.CreateInstance(Type);
+        Value ??= Activator.CreateInstance(Type!);
 
         //if inner obj null, create default.
-        var ps = Type.GetProperties().ToList();
+        var ps = Type!.GetProperties().ToList();
         if (ps.IsSingleCustomValue() && ps[0].GetValue(Value) == null)
             ps[0].SetValue(Value, Activator.CreateInstance(ps[0].PropertyType));
     }

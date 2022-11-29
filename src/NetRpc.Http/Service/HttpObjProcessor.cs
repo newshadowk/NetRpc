@@ -37,16 +37,20 @@ internal sealed class FormDataHttpObjProcessor : IHttpObjProcessor
         var reader = new MultipartReader(boundary, item.HttpRequest.Body);
 
         //body
-        HttpDataObj dataObj = new HttpDataObj();
-        if (item.DataObjType != null)
+        HttpDataObj dataObj;
+        if (item.DataObjTypeWithoutPathQueryStream != null)
         {
             var bodySec = await reader.ReadNextSectionAsync();
             ValidateSection(bodySec);
             var ms = new MemoryStream();
             await bodySec!.Body.CopyToAsync(ms);
             var body = Encoding.UTF8.GetString(ms.ToArray());
-            dataObj = Helper.ToHttpDataObj(body, item.DataObjType!);
+            dataObj = Helper.ToHttpDataObj(body, item.DataObjTypeWithoutPathQueryStream!);
         }
+        else if (item.DataObjType != null)
+            dataObj = new HttpDataObj { Type = item.DataObjType };
+        else
+            dataObj = new HttpDataObj();
 
         //stream
         var streamSec = await reader.ReadNextSectionAsync();
@@ -213,16 +217,19 @@ internal sealed class HttpObjProcessorManager
 
 internal sealed class ProcessItem
 {
-    public ProcessItem(HttpRequest httpRequest, HttpRoutInfo httpRoutInfo, string formatRawPath, Type? dataObjType)
+    public ProcessItem(HttpRequest httpRequest, HttpRoutInfo httpRoutInfo, string formatRawPath, Type? dataObjType, Type? dataObjTypeWithoutPathQueryStream)
     {
         HttpRequest = httpRequest;
         HttpRoutInfo = httpRoutInfo;
         FormatRawPath = formatRawPath;
         DataObjType = dataObjType;
+        DataObjTypeWithoutPathQueryStream = dataObjTypeWithoutPathQueryStream;
     }
 
     public HttpRequest HttpRequest { get; }
     public HttpRoutInfo HttpRoutInfo { get; }
     public string FormatRawPath { get; }
+
     public Type? DataObjType { get; }
+    public Type? DataObjTypeWithoutPathQueryStream { get; }
 }

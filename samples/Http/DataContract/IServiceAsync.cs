@@ -150,8 +150,8 @@ public interface IService4Async
     // [HttpGet("t1")]
     // Task<object> T1([AllowNullValue]string i, int i2);
 
-    [HttpPut("t1")]
-    Task<object> T1(Obj5 obj5, [V1Filter]string s1);
+    [HttpPost("t1/{user_id}")]
+    Task T1([JsonParamName("user_id")]int userId, Stream stream);
 }
 
 public class Obj5
