@@ -248,14 +248,4 @@ public class Service4Async : IService4Async
     //     MemoryStream ms = new();
     //     await stream.CopyToAsync(ms);
     // }
-
-    public Task<Stream> GetImageAsync2(int id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<Stream> GetImageAsync(int id)
-    {
-        throw new NotImplementedException();
-    }
 }
