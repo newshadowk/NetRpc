@@ -136,13 +136,12 @@ public interface IService2Async
 
 public class V1FilterAttribute : ValueFilterAttribute
 {
-    public override Task<object> InvokeAsync(object value, IServiceProvider serviceProvider)
+    public override Task InvokeAsync(ValueContext context, IServiceProvider serviceProvider)
     {
-        Console.WriteLine($"value:{value}");
-        return Task.FromResult(value);
+        Console.WriteLine($"value:{context.Value}");
+        return Task.CompletedTask;
     }
 }
-
 
 [FaultExceptionDefine(typeof(CustomException), 300, "1")]
 //[FaultExceptionDefine(typeof(CustomException2), 400, "2", "errorCode2 error description")]
@@ -152,7 +151,7 @@ public interface IService4Async
     // Task<object> T1([AllowNullValue]string i, int i2);
 
     [HttpPut("t1")]
-    Task<object> T1(string s1, Stream stream);
+    Task<object> T1(Obj5 obj5, [V1Filter]string s1);
 }
 
 public class Obj5
@@ -161,7 +160,7 @@ public class Obj5
     [V1Filter]
     public string TaskId { get; set; }
 
-    // public Obj51 Obj51 { get;set; }
+    public Obj51 Obj51 { get;set; }
 }
 
 

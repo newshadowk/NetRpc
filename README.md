@@ -809,10 +809,10 @@ public interface IService4Async
 ```c#
 public class V1FilterAttribute : ValueFilterAttribute
 {
-    public override Task<object> InvokeAsync(object value, IServiceProvider serviceProvider)
+    public override Task InvokeAsync(ValueContext context, IServiceProvider serviceProvider)
     {
-        Console.WriteLine($"value:{value}");
-        return Task.FromResult(value);
+        Console.WriteLine($"value:{context.Value}");
+        return Task.CompletedTask;
     }
 }
 

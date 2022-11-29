@@ -2,14 +2,11 @@
 
 public class TrimAttribute : ValueFilterAttribute
 {
-    public override Task<object?> InvokeAsync(object? value, IServiceProvider serviceProvider)
+    public override Task InvokeAsync(ValueContext context, IServiceProvider serviceProvider)
     {
-        if (value == null)
-            return Task.FromResult<object?>(null);
+        if (context.Value is string s) 
+            context.Value = s.Trim();
 
-        if (value is string s)
-            return Task.FromResult<object?>(s.Trim());
-
-        return Task.FromResult<object?>(value);
+        return Task.CompletedTask;
     }
 }

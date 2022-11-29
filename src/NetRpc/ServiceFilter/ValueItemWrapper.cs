@@ -11,7 +11,7 @@ public class ValueItemWrapper
     private readonly IServiceProvider _serviceProvider;
     private List<ValueItemGroup>? _viGroups;
 
-    public List<ValueItemGroup> ValueItemGroups
+    internal List<ValueItemGroup> ValueItemGroups
     {
         get
         {
@@ -33,7 +33,7 @@ public class ValueItemWrapper
         _serviceProvider = serviceProvider;
     }
 
-    public async Task ValueFilterInvokeAsync()
+    internal async Task ValueFilterInvokeAsync()
     {
         foreach (var i in ValueItemGroups)
             await GroupInvokeAsync(i);
@@ -43,9 +43,8 @@ public class ValueItemWrapper
     {
         foreach (var vi in group.Items)
         {
-            var newValue = await vi.ValueFilterAttribute.InvokeAsync(group.Context.Value, _serviceProvider);
-            SetValue(vi, newValue);
-            group.Context.Value = newValue;
+            await vi.ValueFilterAttribute.InvokeAsync(group.Context, _serviceProvider);
+            SetValue(vi, group.Context.Value);
         }
     }
 
@@ -130,26 +129,21 @@ public class ValueItemWrapper
     }
 }
 
-public class ValueItemGroup
+internal class ValueItemGroup
 {
     public List<ValueItem> Items { get; }
 
-    public ValueItemContext Context { get; }
+    public ValueContext Context { get; }
 
     public ValueItemGroup(object? value, List<ValueItem> items)
     {
         Items = items;
-        Context = new ValueItemContext();
+        Context = new ValueContext();
         Context.Value = value;
     }
 }
 
-public class ValueItemContext
-{
-    public object? Value { get; set; }
-}
-
-public class ValueItem
+internal class ValueItem
 {
     public ValueFilterAttribute ValueFilterAttribute { get; }
 
