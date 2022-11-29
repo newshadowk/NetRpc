@@ -243,9 +243,19 @@ public class ServiceAsync : IServiceAsync
 
 public class Service4Async : IService4Async
 {
-    public async Task T1(int userId, Stream stream)
+    // public async Task T1(int userId, Stream stream)
+    // {
+    //     MemoryStream ms = new();
+    //     await stream.CopyToAsync(ms);
+    // }
+
+    public Task<Stream> GetImageAsync2(int id)
     {
-        MemoryStream ms = new();
-        await stream.CopyToAsync(ms);
+        throw new NotImplementedException();
+    }
+
+    public Task<Stream> GetImageAsync(int id)
+    {
+        throw new NotImplementedException();
     }
 }

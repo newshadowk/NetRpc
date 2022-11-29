@@ -12,7 +12,8 @@ public sealed class HttpRoutInfo
     //(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]
     //https://www.cnblogs.com/speeding/p/5097790.html
 
-    private const string CR = "[\\w+&@#/%?=~_|!:,.;]";
+    //private const string CR = "[\\w+&@#/%?=~_|!:,.;]";
+    private const string CR = "[\\w+&@#%?=~_|!:,.;]";
 
     /// <summary>
     /// lowercase

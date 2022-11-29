@@ -150,8 +150,16 @@ public interface IService4Async
     // [HttpGet("t1")]
     // Task<object> T1([AllowNullValue]string i, int i2);
 
-    [HttpPost("t1/{user_id}")]
-    Task T1([JsonParamName("user_id")]int userId, Stream stream);
+    [HttpImage]
+    [HttpGet("/p/{id}")]
+    Task<Stream> GetImageAsync2(int id);
+
+    [HttpImage]
+    [HttpGet("/p/image/{id}")]
+    Task<Stream> GetImageAsync(int id);
+
+    // [HttpPost("t1/{user_id}")]
+    // Task T1([JsonParamName("user_id")]int userId, Stream stream);
 }
 
 public class Obj5
