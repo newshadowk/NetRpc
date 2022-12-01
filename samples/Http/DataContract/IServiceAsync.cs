@@ -150,18 +150,19 @@ public interface IService4Async
     // [HttpGet("t1")]
     // Task<object> T1([AllowNullValue]string i, int i2);
 
+    [HttpGet("t1")]
+    Task T1(Obj5 obj);
+}
 
-    // [HttpPost("t1/{user_id}")]
-    // Task T1([JsonParamName("user_id")]int userId, Stream stream);
+public enum E2
+{
+    A,
+    B
 }
 
 public class Obj5
 {
-    [Trim]
-    [V1Filter]
-    public string TaskId { get; set; }
-
-    public Obj51 Obj51 { get;set; }
+    public E2 TaskId { get; set; }
 }
 
 

@@ -248,4 +248,8 @@ public class Service4Async : IService4Async
     //     MemoryStream ms = new();
     //     await stream.CopyToAsync(ms);
     // }
+    public Task T1(Obj5 obj)
+    {
+        throw new NotImplementedException();
+    }
 }
