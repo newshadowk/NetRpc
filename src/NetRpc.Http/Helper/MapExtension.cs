@@ -13,10 +13,10 @@ public static class MapExtension
         return l;
     }
 
-    public static T MapTo<T>(this object fromObj, bool ignoreNullValue = false) where T : new()
+    public static T MapTo<T>(this object fromObj) where T : new()
     {
         T toObj = new T();
-        toObj.MapFrom(fromObj, ignoreNullValue);
+        toObj.MapFrom(fromObj, true);
         return toObj;
     }
 
