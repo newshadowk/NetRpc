@@ -109,16 +109,10 @@ internal sealed class HttpDataObj
     private static void SetPropertyValue(object classInstance, PropertyInfo tgtProperty, object? propertyValue)
     {
         var type = classInstance.GetType();
-        if (tgtProperty.PropertyType.IsEnum && propertyValue != null)
-        {
-            if (propertyValue is string valueStr)
-            {
-                if (Enum.TryParse(tgtProperty.PropertyType, valueStr, true, out var enumV)) 
-                    propertyValue = enumV;
-            }
-            else
-                propertyValue = Enum.ToObject(tgtProperty.PropertyType, propertyValue);
-        }
+
+        var enumType = MapExtension.GetEnumType(tgtProperty.PropertyType);
+        if (enumType != null) 
+            propertyValue = MapExtension.GetEnumValue(enumType, propertyValue);
 
         if (SetBaseValue(classInstance, tgtProperty, propertyValue, type))
             return;

@@ -162,7 +162,7 @@ public enum E2
 
 public class Obj5
 {
-    public E2 TaskId { get; set; }
+    public E2? TaskId { get; set; }
 }
 
 
