@@ -1,4 +1,6 @@
-﻿namespace NetRpc.Contract;
+﻿using System.Reflection;
+
+namespace NetRpc.Contract;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Parameter | AttributeTargets.Property)]
 public abstract class ValueFilterAttribute : Attribute
@@ -10,5 +12,7 @@ public class ValueContext
 {
     public object? Value { get; set; }
 
-    public required Type ValueType { get; init; }
+    public ParameterInfo? ParameterInfo { get; init; }
+
+    public PropertyInfo? PropertyInfo { get; init; }
 }

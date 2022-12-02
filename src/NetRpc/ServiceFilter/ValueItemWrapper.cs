@@ -87,7 +87,7 @@ public class ValueItemWrapper
         List<ValueItem> list = new();
         foreach (var v in pi.ParameterType.GetCustomAttributes<ValueFilterAttribute>(true))
             list.Add(new ValueItem(v, index));
-        groups.Add(new ValueItemGroup(obj, pi.ParameterType, list));
+        groups.Add(new ValueItemGroup(obj, pi, null, list));
 
         /*
         public class Obj5
@@ -98,7 +98,7 @@ public class ValueItemWrapper
         list = new List<ValueItem>();
         foreach (var v in pi.GetCustomAttributes<ValueFilterAttribute>(true))
             list.Add(new ValueItem(v, index));
-        groups.Add(new ValueItemGroup(obj, pi.ParameterType, list));
+        groups.Add(new ValueItemGroup(obj, pi, null, list));
 
 
         if (pi.ParameterType.IsSystemTypeOrEnum())
@@ -117,7 +117,7 @@ public class ValueItemWrapper
         List<ValueItem> list = new();
         foreach (var v in pi.GetCustomAttributes<ValueFilterAttribute>())
             list.Add(new ValueItem(v, parent, pi));
-        groups.Add(new ValueItemGroup(piValue, pi.PropertyType, list));
+        groups.Add(new ValueItemGroup(piValue, null, pi, list));
 
         if (pi.PropertyType.IsSystemTypeOrEnum())
             return groups;
@@ -135,10 +135,10 @@ internal class ValueItemGroup
 
     public ValueContext Context { get; }
 
-    public ValueItemGroup(object? value, Type valueType, List<ValueItem> items)
+    public ValueItemGroup(object? value, ParameterInfo? parameterInfo, PropertyInfo? propertyInfo, List<ValueItem> items)
     {
         Items = items;
-        Context = new ValueContext { ValueType = valueType };
+        Context = new ValueContext { ParameterInfo = parameterInfo, PropertyInfo = propertyInfo };
         Context.Value = value;
     }
 }
