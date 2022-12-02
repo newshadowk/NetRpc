@@ -110,9 +110,9 @@ internal sealed class HttpDataObj
     {
         var type = classInstance.GetType();
 
-        var enumType = MapExtension.GetEnumType(tgtProperty.PropertyType);
+        var enumType = GetEnumType(tgtProperty.PropertyType);
         if (enumType != null) 
-            propertyValue = MapExtension.GetEnumValue(enumType, propertyValue);
+            propertyValue = GetEnumValue(enumType, propertyValue);
 
         if (SetBaseValue(classInstance, tgtProperty, propertyValue, type))
             return;
@@ -172,6 +172,35 @@ internal sealed class HttpDataObj
         else
             return false;
         return true;
+    }
+
+    private static object? GetEnumValue(Type enumType, object? fromValue)
+    {
+        if (fromValue == null)
+            return fromValue;
+     
+        if (fromValue is string valueStr)
+        {
+            if (Enum.TryParse(enumType, valueStr, true, out var enumV)) 
+                fromValue = enumV;
+        }
+        else
+            fromValue = Enum.ToObject(enumType, fromValue);
+
+        return fromValue;
+    }
+
+    private static Type? GetEnumType(Type t)
+    {
+        if (t.IsEnum)
+            return t;
+
+        var t2 = Nullable.GetUnderlyingType(t);
+
+        if (t2 is not { IsEnum: true })
+            return null;
+
+        return t2;
     }
 
     private static object ConvertValues(Type t, StringValues sv)
