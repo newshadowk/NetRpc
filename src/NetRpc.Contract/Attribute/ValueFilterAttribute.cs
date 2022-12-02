@@ -9,4 +9,6 @@ public abstract class ValueFilterAttribute : Attribute
 public class ValueContext
 {
     public object? Value { get; set; }
+
+    public required Type ValueType { get; init; }
 }
