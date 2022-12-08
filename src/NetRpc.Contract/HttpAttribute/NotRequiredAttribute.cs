@@ -1,9 +1,9 @@
 ﻿namespace NetRpc.Contract;
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = true)]
-public class NotRequiredAttribute : Attribute
+public class QueryRequiredAttribute : Attribute
 {
-    public NotRequiredAttribute()
+    public QueryRequiredAttribute()
     {
     }
 }

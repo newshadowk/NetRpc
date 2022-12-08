@@ -769,12 +769,12 @@ public interface IService4Async
 }
 ```
 
-## [Http] NotRequired Attribute
+## [Http] QureyRequired Attribute
 ```c#
 public interface IService4Async
 {
     [HttpGet("Call")]
-    Task<Obj4> Call([NotRequired] string s);
+    Task<Obj4> Call([QureyRequired] string s);
 }
 ```
 
@@ -787,7 +787,7 @@ public interface IService4Async
 
 public class Obj
 {
-    [NotRequired]
+    [QureyRequired]
     public string S1 {get;set;}
 }
 

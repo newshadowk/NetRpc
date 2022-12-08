@@ -90,8 +90,13 @@ internal class PathProcessor
         foreach (var p in contractMethod.InnerSystemTypeParameters)
         {
             var schema = _schemaGenerator.GenerateSchema(p.Type, SchemaRepository, p.PropertyInfo, p.ParameterInfo);
-            bool required = true;
-            if (p.NotRequired)
+            bool required;
+            if (p.QueryRequired)
+            {
+                schema.Nullable = false;
+                required = true;
+            }
+            else
             {
                 schema.Nullable = true;
                 required = false;

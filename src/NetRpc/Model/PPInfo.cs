@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.Json.Serialization;
 using NetRpc.Contract;
@@ -12,7 +11,7 @@ public class PPInfo
 
     public ParameterInfo? ParameterInfo { get; }
 
-    public bool NotRequired { get; }
+    public bool QueryRequired { get; }
 
     public Type Type { get; }
 
@@ -37,15 +36,18 @@ public class PPInfo
         PropertyInfo = propertyInfo;
         Type = propertyInfo.PropertyType;
 
-        var attr = propertyInfo.GetCustomAttribute<NotRequiredAttribute>();
-        if (attr != null) 
-            NotRequired = true;
+        var attr = propertyInfo.GetCustomAttribute<QueryRequiredAttribute>();
+        if (attr != null)
+            QueryRequired = true;
+
+        if (propertyInfo.PropertyType == typeof(string))
+            return;
 
         if (propertyInfo is { PropertyType.IsGenericType: true } &&
-            propertyInfo.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
-        {
-            NotRequired = true;
-        }
+            propertyInfo.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>)) 
+            return;
+
+        QueryRequired = true;
     }
 
     public PPInfo(ParameterInfo parameterInfo)
@@ -63,15 +65,18 @@ public class PPInfo
         ParameterInfo = parameterInfo;
         Type = parameterInfo.ParameterType;
 
-        var attr = parameterInfo.GetCustomAttribute<NotRequiredAttribute>();
-        if (attr != null) 
-            NotRequired = true;
+        var attr = parameterInfo.GetCustomAttribute<QueryRequiredAttribute>();
+        if (attr != null)
+            QueryRequired = true;
+
+        if (parameterInfo.ParameterType == typeof(string))
+            return;
 
         if (parameterInfo is { ParameterType.IsGenericType: true } &&
-            parameterInfo.ParameterType.GetGenericTypeDefinition() == typeof(Nullable<>))
-        {
-            NotRequired = true;
-        }
+            parameterInfo.ParameterType.GetGenericTypeDefinition() == typeof(Nullable<>)) 
+            return;
+
+        QueryRequired = true;
     }
 
     public PPInfo(string name, Type type)
