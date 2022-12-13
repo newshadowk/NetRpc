@@ -79,11 +79,15 @@ internal sealed class HttpDataObj
         //set values
         foreach (var p in keyValues)
         {
+            if (p.Value.ToString() == "")
+                continue;
+
             var f = ps.FirstOrDefault(i => string.Equals(i.GetJsonNameOrPropName(), p.Key, StringComparison.Ordinal));
             if (f != null)
             {
                 try
                 {
+                    
                     //may be need type convert
                     SetPropertyValue(Value!, f, ConvertValues(f.PropertyType, p.Value));
                 }
