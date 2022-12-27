@@ -7,6 +7,8 @@ namespace NetRpc;
 public sealed class ContractMethod
 {
     public MethodInfo MethodInfo { get; }
+    public ParameterInfo[] ParameterInfos { get; }
+    
 
     /// <summary>
     /// Func/Cancel will map to _conn_id, _callId
@@ -17,6 +19,7 @@ public sealed class ContractMethod
         List<FaultExceptionAttribute> faultExceptionAttributes, List<HttpHeaderAttribute> httpHeaderAttributes,
         List<ResponseTextAttribute> responseTextAttributes, List<SecurityApiKeyAttribute> securityApiKeyAttributes)
     {
+        ParameterInfos = methodInfo.GetParameters();
         MethodInfo = methodInfo;
         InnerSystemTypeParameters = new ReadOnlyCollection<PPInfo>(InnerType.GetInnerSystemTypeParameters(methodInfo));
         FaultExceptionAttributes = new ReadOnlyCollection<FaultExceptionAttribute>(faultExceptionAttributes);

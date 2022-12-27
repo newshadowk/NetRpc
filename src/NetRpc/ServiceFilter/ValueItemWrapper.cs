@@ -7,7 +7,7 @@ public class ValueItemWrapper
 {
     private readonly object?[] _pureArgs;
     private readonly object?[] _args;
-    private readonly MethodInfo _contractMethodInfo;
+    private readonly ParameterInfo[] _parameterInfos;
     private readonly IServiceProvider _serviceProvider;
     private List<ValueItemGroup>? _viGroups;
 
@@ -25,11 +25,11 @@ public class ValueItemWrapper
         }
     }
 
-    public ValueItemWrapper(object?[] pureArgs, object?[] args, MethodInfo contractMethodInfo, IServiceProvider serviceProvider)
+    public ValueItemWrapper(object?[] pureArgs, object?[] args, ParameterInfo[] parameterInfos, IServiceProvider serviceProvider)
     {
         _pureArgs = pureArgs;
         _args = args;
-        _contractMethodInfo = contractMethodInfo;
+        _parameterInfos = parameterInfos;
         _serviceProvider = serviceProvider;
     }
 
@@ -67,9 +67,8 @@ public class ValueItemWrapper
             return new List<ValueItemGroup>();
 
         List<ValueItemGroup> list = new();
-        var pis = _contractMethodInfo.GetParameters();
         for (var i = 0; i < _pureArgs.Length; i++)
-            list.AddRange(GetStart(pis[i], _pureArgs[i], i));
+            list.AddRange(GetStart(_parameterInfos[i], _pureArgs[i], i));
 
         return list;
     }

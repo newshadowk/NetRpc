@@ -162,7 +162,7 @@ public enum E2
 
 public class Obj5
 {
-    public bool P1 { get; set; }
+    public string Name { get; set; }
 }
 
 

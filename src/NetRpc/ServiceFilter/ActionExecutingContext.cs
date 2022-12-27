@@ -108,7 +108,7 @@ public class ActionExecutingContext : IActionExecutingContext
         Stream = stream;
         Contract = contract;
         CancellationToken = token;
-        ValueItemWrapper = new ValueItemWrapper(pureArgs, args, contractMethod.MethodInfo, serviceProvider);
+        ValueItemWrapper = new ValueItemWrapper(pureArgs, args, contractMethod.ParameterInfos, serviceProvider);
         ResetProps();
     }
 
