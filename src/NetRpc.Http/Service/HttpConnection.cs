@@ -130,12 +130,13 @@ internal sealed class HttpConnection : IDisposable
         aec.OnSendResultStreamEndOrFault();
     }
 
-    public async Task SendAsync(Result result)
+    public async Task<string> SendAsync(Result result)
     {
         _context.Response.ContentType = "application/json; charset=utf-8";
         _context.Response.StatusCode = result.StatusCode;
-        var s = result.ToJson();
-        await _context.Response.WriteAsync(s ?? "");
+        var s = result.ToJson() ?? "";
+        await _context.Response.WriteAsync(s);
+        return s;
     }
 
     public void Dispose()

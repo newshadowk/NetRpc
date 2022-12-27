@@ -96,12 +96,12 @@ internal sealed class HttpServiceOnceApiConvert : IServiceOnceApiConvert
 
         // Cancel
         if (body.GetExceptionFrom<OperationCanceledException>(true) != null)
-            return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(), ClientConst.CancelStatusCode));
+            return SendFaultAsync(Result.FromFaultException(new FaultExceptionJsonObj(), ClientConst.CancelStatusCode), context);
 
         // ResponseTextException
         var textEx = body.GetExceptionFrom<ResponseTextException>();
         if (textEx != null)
-            return _connection.SendAsync(Result.FromPainText(textEx.Text, textEx.StatusCode));
+            return SendFaultAsync(Result.FromPainText(textEx.Text, textEx.StatusCode), context);
 
         // customs Exception
         // ReSharper disable once UseNullPropagation
@@ -109,12 +109,11 @@ internal sealed class HttpServiceOnceApiConvert : IServiceOnceApiConvert
         {
             var t = context.ContractMethod.FaultExceptionAttributes.FirstOrDefault(i => body.GetExceptionFrom(i.DetailType) != null);
             if (t != null)
-                return _connection.SendAsync(Result.FromFaultException(
-                    new FaultExceptionJsonObj(t.ErrorCode, t.Description ?? body.Message), t.StatusCode));
+                return SendFaultAsync(Result.FromFaultException(new FaultExceptionJsonObj(t.ErrorCode, t.Description ?? body.Message), t.StatusCode), context);
         }
 
         // default Exception
-        return _connection.SendAsync(Result.FromFaultException(new FaultExceptionJsonObj(null, body.Message), ClientConst.DefaultExceptionStatusCode));
+        return SendFaultAsync(Result.FromFaultException(new FaultExceptionJsonObj(null, body.Message), ClientConst.DefaultExceptionStatusCode), context);
     }
 
     public Task SendCallbackAsync(object? callbackObj)
@@ -130,6 +129,13 @@ internal sealed class HttpServiceOnceApiConvert : IServiceOnceApiConvert
     }
 
     public bool NotMatched { get; private set; }
+
+    private async Task SendFaultAsync(Result result, ActionExecutingContext? context)
+    {
+        var err = await _connection.SendAsync(result);
+        if (context != null) 
+            context.Properties["http_err"] = err;
+    }
 
     private static object?[] GetPureArgsFromDataObj(Type? dataObjType, object? dataObj, HttpRoutInfo hri)
     {
