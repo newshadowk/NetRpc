@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NetRpc.Http.Client;
+using Polly;
 
 namespace NetRpc.Http;
 
@@ -130,13 +131,13 @@ internal sealed class HttpConnection : IDisposable
         aec.OnSendResultStreamEndOrFault();
     }
 
-    public async Task<string> SendAsync(Result result)
+    public async Task SendAsync(Result result)
     {
         _context.Response.ContentType = "application/json; charset=utf-8";
         _context.Response.StatusCode = result.StatusCode;
         var s = result.ToJson() ?? "";
         await _context.Response.WriteAsync(s);
-        return s;
+        _context.Items["Result"] = s;
     }
 
     public void Dispose()

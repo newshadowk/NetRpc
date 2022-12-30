@@ -160,8 +160,17 @@ public enum E2
     B
 }
 
+public class V2FilterAttribute : ValueFilterAttribute
+{
+    public override async Task InvokeAsync(ValueContext context, IServiceProvider serviceProvider)
+    {
+        throw new NotImplementedException();
+    }
+}
+
 public class Obj5
 {
+    [V2Filter]
     public string Name { get; set; }
 }
 

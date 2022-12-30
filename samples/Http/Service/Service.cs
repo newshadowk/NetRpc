@@ -3,6 +3,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContract;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using NetRpc;
 using NetRpc.Contract;
 using NetRpc.Http.Client;
@@ -248,8 +250,33 @@ public class Service4Async : IService4Async
     //     MemoryStream ms = new();
     //     await stream.CopyToAsync(ms);
     // }
-    public Task T1(Obj5 obj)
+    public async Task T1(Obj5 obj)
     {
         throw new NotImplementedException();
+    }
+}
+
+
+internal class HttpLogMiddleware
+{
+    private readonly Microsoft.AspNetCore.Http.RequestDelegate _next;
+
+    public HttpLogMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task Invoke(HttpContext httpContext)
+    {
+
+        try
+        {
+            await _next(httpContext);
+            var httpContextItem = httpContext.Items["http_err"];
+        }
+        catch
+        {
+         
+        }
     }
 }
