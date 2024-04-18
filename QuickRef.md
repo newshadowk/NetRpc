@@ -92,6 +92,7 @@ var httpHost = Host.CreateDefaultBuilder(args)
             {
                 services.AddCors();
                 services.AddSignalR();
+                services.AddNSwagger();
                 services.AddNHttpService();
                 services.AddNServiceContract<IServiceAsync, ServiceAsync>();
                 services.AddNServiceContract<IService, Service>();
@@ -108,6 +109,7 @@ var httpHost = Host.CreateDefaultBuilder(args)
 
                 app.UseRouting();
                 app.UseEndpoints(endpoints => { endpoints.MapHub<CallbackHub>("/callback"); });
+                app.UseNSwagger();
                 app.UseNHttp();
             });
     }).Build();
