@@ -48,7 +48,8 @@ internal sealed class FormDataHttpObjProcessor : IHttpObjProcessor
             dataObj = Helper.ToHttpDataObj(body, item.DataObjTypeWithoutPathQueryStream!);
         }
         else if (item.DataObjType != null)
-            dataObj = new HttpDataObj { Type = item.DataObjType };
+            dataObj = Helper.ToHttpDataObj("{}", item.DataObjType!);
+            // dataObj = new HttpDataObj { Type = item.DataObjType };
         else
             dataObj = new HttpDataObj();
 
