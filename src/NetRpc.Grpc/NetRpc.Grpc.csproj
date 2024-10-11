@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net7.0</TargetFrameworks>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <SignAssembly>true</SignAssembly>
     <Description>Provide grpc channel implementation for NetRpc.</Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Grpc.AspNetCore" Version="2.49.0" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.66.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NetRpc\NetRpc.csproj" />

@@ -111,7 +111,9 @@ internal sealed class HttpConnection : IDisposable
         {
             var json = result.Result.ToDtoJson();
             json = HttpUtility.UrlEncode(json, Encoding.UTF8);
+#pragma warning disable ASP0019
             _context.Response.Headers.Add(ClientConst.CustomResultHeaderKey, json);
+#pragma warning restore ASP0019
         }
 
         var executor = new FileStreamResultExecutor(NullLoggerFactory.Instance);

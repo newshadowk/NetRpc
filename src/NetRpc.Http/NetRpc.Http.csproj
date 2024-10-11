@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net7.0</TargetFrameworks>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <SignAssembly>true</SignAssembly>
     <Description>Provide http channel implementation for NetRpc.</Description>
   </PropertyGroup>
@@ -13,9 +13,9 @@
     <None Remove="SwaggerUi3\swagger-ui-es-bundle.js.map" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CSRedisCore" Version="3.8.669" />
-    <PackageReference Include="Microsoft.OpenApi" Version="1.4.3" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.4.0" />
+    <PackageReference Include="CSRedisCore" Version="3.8.803" />
+    <PackageReference Include="Microsoft.OpenApi" Version="1.6.22" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.8.1" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="SwaggerUi3\dialog\dialog.css" />

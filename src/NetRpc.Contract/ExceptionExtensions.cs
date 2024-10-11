@@ -29,9 +29,7 @@ public static class ExceptionExtensions
 
         using var stream = new MemoryStream();
         var formatter = new BinaryFormatter();
-#pragma warning disable SYSLIB0011
         formatter.Serialize(stream, obj);
-#pragma warning restore SYSLIB0011
         stream.Flush();
         return stream.ToArray();
     }
@@ -43,9 +41,7 @@ public static class ExceptionExtensions
 
         using var stream = new MemoryStream(bytes, 0, bytes.Length, false);
         var formatter = new BinaryFormatter();
-#pragma warning disable SYSLIB0011
         var data = formatter.Deserialize(stream);
-#pragma warning restore SYSLIB0011
         stream.Flush();
         return data;
     }
