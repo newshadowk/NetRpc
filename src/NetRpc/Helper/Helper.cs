@@ -426,6 +426,24 @@ public static class Helper
         }
     }
 
+
+    [return: NotNullIfNotNull("obj")]
+    public static string? ToDtoJson<T>(this T obj)
+    {
+        if (obj == null)
+            return null;
+        return JsonSerializer.Serialize(obj, JsOptions);
+    }
+
+    [return: NotNullIfNotNull("name")]
+    public static string? ToCamelCase(string? name)
+    {
+        if (name == null)
+            return null;
+
+        return char.ToLowerInvariant(name[0]) + name.Substring(1);
+    }
+
     private static async Task<int> GreedReadAsync(this Stream stream, byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         var sumCount = 0;
@@ -457,13 +475,5 @@ public static class Helper
             ret += "\r\n" + ee.StackTrace;
         ret += "\r\n";
         return ret;
-    }
-
-    [return: NotNullIfNotNull("obj")]
-    public static string? ToDtoJson<T>(this T obj)
-    {
-        if (obj == null)
-            return null;
-        return JsonSerializer.Serialize(obj, JsOptions);
     }
 }

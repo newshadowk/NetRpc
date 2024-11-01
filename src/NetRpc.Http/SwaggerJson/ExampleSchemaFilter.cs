@@ -49,11 +49,6 @@ public class ExampleSchemaFilter : ISchemaFilter
     {
         var jsonName = p.GetCustomAttribute<JsonPropertyNameAttribute>();
         var name = jsonName == null ? p.Name : jsonName.Name;
-        return ToCamelCase(name);
-    }
-
-    private static string ToCamelCase(string name)
-    {
-        return char.ToLowerInvariant(name[0]) + name.Substring(1);
+        return NetRpc.Helper.ToCamelCase(name);
     }
 }

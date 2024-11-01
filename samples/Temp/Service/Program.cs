@@ -61,18 +61,6 @@ public class ServiceAsync : IServiceAsync
 {
     public async Task<string> CallAsync(A1 a1)
     {
-        GlobalDebugContext.Context.Info("call...");
         return "1";
     }
-
-    // public async Task<string> Call3Async(string s)
-    // {
-    //     return "";
-    // }
-    //
-    // public async Task<string> Call2Async(Stream s)
-    // {
-    //     Console.WriteLine($"receive:{s.Length}");
-    //     return "1";
-    // }
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
@@ -410,7 +411,7 @@ internal class ParameterDefaultValue
 {
     private static readonly Type _nullable = typeof(Nullable<>);
 
-    public static bool TryGetDefaultValue(ParameterInfo parameter, out object? defaultValue)
+    public static bool TryGetDefaultValue(ParameterInfo parameter, [NotNullWhen(true)] out object? defaultValue)
     {
         bool hasDefaultValue;
         var tryToGetDefaultValue = true;

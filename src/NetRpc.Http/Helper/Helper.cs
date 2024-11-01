@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
 using NetRpc.Contract;
@@ -89,6 +90,8 @@ internal static class Helper
         return Path.Combine(dir, name);
     }
 
+   
+
     public static string GetJsonNameOrPropName(this PropertyInfo pi)
     {
         var a = pi.GetCustomAttribute<JsonPropertyNameAttribute>();
@@ -117,3 +120,4 @@ internal static class Helper
         return pi.GetValue(obj);
     }
 }
+
