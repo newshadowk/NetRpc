@@ -8,17 +8,10 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace NetRpc.Http;
 
-internal class PathProcessor
+internal class PathProcessor(ISchemaGenerator schemaGenerator, CommentXmlFixer commentXmlFixer, IOptions<SwaggerGeneratorOptions> options)
 {
-    private readonly ISchemaGenerator _schemaGenerator;
     public readonly SchemaRepository SchemaRepository = new();
-    private readonly SwaggerGeneratorOptions _options;
-
-    public PathProcessor(ISchemaGenerator schemaGenerator, IOptions<SwaggerGeneratorOptions> options)
-    {
-        _schemaGenerator = schemaGenerator;
-        _options = options.Value;
-    }
+    private readonly SwaggerGeneratorOptions _options = options.Value;
 
     public OpenApiOperation? Process(ContractMethod contractMethod, HttpRoutInfo routInfo, HttpMethodAttribute method)
     {
@@ -70,7 +63,7 @@ internal class PathProcessor
         {
             if (routInfo.IsPath(p.DefineName))
             {
-                var schema = _schemaGenerator.GenerateSchema(p.Type, SchemaRepository, p.PropertyInfo!, p.ParameterInfo!);
+                var schema = schemaGenerator.GenerateSchema(p.Type, SchemaRepository, p.PropertyInfo!, p.ParameterInfo!);
                 operation.Parameters.Add(new OpenApiParameter
                 {
                     In = ParameterLocation.Path,
@@ -89,7 +82,14 @@ internal class PathProcessor
 
         foreach (var p in contractMethod.InnerSystemTypeParameters)
         {
-            var schema = _schemaGenerator.GenerateSchema(p.Type, SchemaRepository, p.PropertyInfo, p.ParameterInfo);
+            var schema = schemaGenerator.GenerateSchema(p.Type, SchemaRepository, p.PropertyInfo, p.ParameterInfo);
+
+            // bug:if PPInfo.Type is enum and Query, the comment is null, seem _schemaGenerator is not work correctly.
+            // fix:
+            string? des = schema.Description;
+            if (string.IsNullOrEmpty(des)) 
+                des = commentXmlFixer.GetXmlDes(p);
+
             bool required;
             if (p.QueryRequired)
             {
@@ -109,7 +109,7 @@ internal class PathProcessor
                     In = ParameterLocation.Path,
                     Name = p.DefineName,
                     Schema = schema,
-                    Description = schema.Description,
+                    Description = des,
                     Required = required
                 });
             }
@@ -120,7 +120,7 @@ internal class PathProcessor
                     In = ParameterLocation.Query,
                     Name = p.DefineName,
                     Schema = schema,
-                    Description = schema.Description,
+                    Description = des,
                     Required = required
                 });
             }
@@ -155,7 +155,7 @@ internal class PathProcessor
 
     private void AddSummary(ContractMethod contractMethod, OpenApiOperation operation, HttpRoutInfo routInfo)
     {
-        var filterContext = new OperationFilterContext(new ApiDescription(), _schemaGenerator, SchemaRepository, contractMethod.MethodInfo);
+        var filterContext = new OperationFilterContext(new ApiDescription(), schemaGenerator, SchemaRepository, contractMethod.MethodInfo);
         foreach (var filter in _options.OperationFilters)
             filter.Apply(operation, filterContext);
         operation.Summary = AppendSummaryByCallbackAndCancel(operation.Summary, routInfo.MergeArgType.CallbackAction,
@@ -319,7 +319,7 @@ internal class PathProcessor
         if (type == typeof(Task))
             return null;
 
-        return _schemaGenerator.GenerateSchema(type, SchemaRepository);
+        return schemaGenerator.GenerateSchema(type, SchemaRepository);
     }
 
     private void GenerateException(OpenApiResponses ret, ContractMethod method)

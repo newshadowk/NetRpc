@@ -8,9 +8,9 @@ public class InnerTypeMapItem
 
     public Type? NewType { get; }
 
-    public MemberInfo? OldMemberInfo { get; }
+    public PropertyInfo? OldPropertyInfo { get; }
 
-    public MemberInfo? NewMemberInfo { get; }
+    public PropertyInfo? NewPropertyInfo { get; }
 
     public string? OldStr { get; }
 
@@ -25,12 +25,12 @@ public class InnerTypeMapItem
         NewStr = XmlCommentsNodeNameHelper.GetMemberNameForType(newType);
     }
 
-    public InnerTypeMapItem(MemberInfo oldMemberInfo, MemberInfo newMemberInfo)
+    public InnerTypeMapItem(PropertyInfo oldPropertyInfo, PropertyInfo newPropertyInfo)
     {
-        OldMemberInfo = oldMemberInfo;
-        NewMemberInfo = newMemberInfo;
+        OldPropertyInfo = oldPropertyInfo;
+        NewPropertyInfo = newPropertyInfo;
 
-        OldStr = XmlCommentsNodeNameHelper.GetMemberNameForFieldOrProperty(OldMemberInfo);
-        NewStr = XmlCommentsNodeNameHelper.GetMemberNameForFieldOrProperty(NewMemberInfo);
+        OldStr = XmlCommentsNodeNameHelper.GetMemberNameForFieldOrProperty(OldPropertyInfo);
+        NewStr = XmlCommentsNodeNameHelper.GetMemberNameForFieldOrProperty(NewPropertyInfo);
     }
 }

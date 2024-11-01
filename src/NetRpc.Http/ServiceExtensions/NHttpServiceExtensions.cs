@@ -35,6 +35,7 @@ public static class NHttpServiceExtensions
         services.AddControllers().AddJsonOptions(options =>
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
 
+        services.TryAddSingleton<CommentXmlFixer>();
         services.TryAddTransient<PathProcessor>();
         services.TryAddTransient<INSwaggerProvider, NSwaggerProvider>();
         services.TryAddSingleton<SwaggerKeyRoles>();

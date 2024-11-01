@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -60,6 +61,7 @@ public class SwaggerUiIndexMiddleware
                 {
                     var doc = nSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.Contracts, key);
                     var js = ToJson(doc);
+                    // js = TestJson();
                     _docJson.Add(key ?? "", js);
                 }
             }
@@ -101,11 +103,17 @@ public class SwaggerUiIndexMiddleware
         return await reader.ReadToEndAsync();
     }
 
-    public static string ToJson(OpenApiDocument doc)
+    private static string ToJson(OpenApiDocument doc)
     {
         using var textWriter = new StringWriter();
         var jsonWriter = new OpenApiJsonWriter(textWriter);
         doc.SerializeAsV3(jsonWriter);
         return textWriter.ToString();
+    }
+
+    private static string TestJson()
+    {
+        string s = "{\r\n  \"openapi\": \"3.0.1\",\r\n  \"info\": { },\r\n  \"paths\": {\r\n    \"/IServiceAsync/CallAsync\": {\r\n      \"get\": {\r\n        \"tags\": [\r\n          \"IServiceAsync\"\r\n        ],\r\n        \"summary\": \"\",\r\n        \"parameters\": [\r\n          {\r\n            \"name\": \"Year\",\r\n            \"in\": \"query\",\r\n            \"required\": true,\r\n\t    \"description\": \"1111111111111\",\r\n            \"schema\": {\r\n              \"$ref\": \"#/components/schemas/YearType\"\r\n            }\r\n          },\r\n          {\r\n            \"name\": \"S1\",\r\n            \"in\": \"query\",\r\n            \"description\": \"杩欐槸S1璇存槑\",\r\n            \"schema\": {\r\n              \"type\": \"string\",\r\n              \"description\": \"杩欐槸S1璇存槑\",\r\n              \"nullable\": true\r\n            }\r\n          }\r\n        ],\r\n        \"responses\": {\r\n          \"200\": {\r\n            \"description\": null,\r\n            \"content\": {\r\n              \"application/json\": {\r\n                \"schema\": {\r\n                  \"type\": \"string\"\r\n                }\r\n              }\r\n            }\r\n          }\r\n        }\r\n      }\r\n    }\r\n  },\r\n  \"components\": {\r\n    \"schemas\": {\r\n      \"YearType\": {\r\n        \"enum\": [\r\n          \"y2012\"\r\n        ],\r\n        \"type\": \"string\"\r\n      }\r\n    }\r\n  },\r\n  \"tags\": [\r\n    {\r\n      \"name\": \"IServiceAsync\"\r\n    }\r\n  ]\r\n}";
+        return s;
     }
 }

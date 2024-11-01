@@ -25,8 +25,8 @@ internal class Program
         try
         {
             Console.WriteLine("send start");
-            var r = await service.Call2Async(fs);
-            Console.WriteLine(r);
+            // var r = await service.Call2Async(fs);
+            // Console.WriteLine(r);
         }
         catch (Exception e)
         {
