@@ -30,7 +30,7 @@ public class PPInfo
             JsonCustomAttributeBuilder = GetJsonBuilder(DefineName);
         }
         else
-            DefineName = Helper.ToCamelCase(propertyInfo.Name);
+            DefineName = propertyInfo.Name;
 
         Name = propertyInfo.Name;
         PropertyInfo = propertyInfo;
