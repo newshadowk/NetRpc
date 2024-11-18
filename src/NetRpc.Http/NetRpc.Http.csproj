@@ -15,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="CSRedisCore" Version="3.8.803" />
     <PackageReference Include="Microsoft.OpenApi" Version="1.6.22" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.8.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="SwaggerUi3\dialog\dialog.css" />
