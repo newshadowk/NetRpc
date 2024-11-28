@@ -15,7 +15,6 @@ internal static class Helper
         var lastE = new List<Exception?>();
         var currE = e.InnerException;
         lastE.Add(e);
-        lastE.Add(currE);
         while (currE != null && !lastE.Contains(currE))
         {
             msgContent.Append("\r\n[InnerException]\r\n");
