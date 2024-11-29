@@ -87,7 +87,7 @@ internal class PathProcessor(ISchemaGenerator schemaGenerator, CommentXmlFixer c
             // bug:if PPInfo.Type is enum and Query, the comment is null, seem _schemaGenerator is not work correctly.
             // fix:
             string? des = schema.Description;
-            if (string.IsNullOrEmpty(des)) 
+            if (string.IsNullOrEmpty(des) && p.Type.IsEnum) 
                 des = commentXmlFixer.GetXmlDes(p);
 
             bool required;
