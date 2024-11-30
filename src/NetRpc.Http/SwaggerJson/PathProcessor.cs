@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using NetRpc.Contract;
@@ -87,7 +88,7 @@ internal class PathProcessor(ISchemaGenerator schemaGenerator, CommentXmlFixer c
             // bug:if PPInfo.Type is enum and Query, the comment is null, seem _schemaGenerator is not work correctly.
             // fix:
             string? des = schema.Description;
-            if (string.IsNullOrEmpty(des) && p.Type.IsEnum) 
+            if (string.IsNullOrEmpty(des) && IsEnum(p.Type)) 
                 des = commentXmlFixer.GetXmlDes(p);
 
             bool required;
@@ -355,5 +356,14 @@ internal class PathProcessor(ISchemaGenerator schemaGenerator, CommentXmlFixer c
             OperationType.Trace => false,
             _ => true
         };
+    }
+
+    private static bool IsEnum(Type type)
+    {
+        if (type.IsEnum) 
+            return true;
+
+        var underlyingType = Nullable.GetUnderlyingType(type);
+        return underlyingType is { IsEnum: true };
     }
 }

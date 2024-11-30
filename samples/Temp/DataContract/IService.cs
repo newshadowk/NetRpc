@@ -24,9 +24,9 @@ public enum E1
 public class A1
 {
     /// <summary>
-    /// Years
+    /// E sum 
     /// </summary>
-    public string Year { get; set; }
+    public E1 E { get; set; }
 }
 
 public class B1
