@@ -21,7 +21,7 @@ public class CommentXmlFixer
             if (i.OldPropertyInfo == null)
                 continue;
 
-            if (i.OldPropertyInfo!.PropertyType == ppInfo.Type)
+            if (i.OldPropertyInfo == ppInfo.PropertyInfo)
                 return FindSummary(i.OldStr);
         }
 

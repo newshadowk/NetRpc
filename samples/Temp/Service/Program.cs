@@ -35,7 +35,7 @@ internal class Program
                         services.AddNGrpcService();
                         services.AddNMiddleware(o => o.UseMiddleware<ValueFilterMiddleware>());
                         services.AddNServiceContract<IServiceAsync, ServiceAsync>();
-                        services.AddNServiceContract<IService2Async, Service2Async>();
+                        // services.AddNServiceContract<IService2Async, Service2Async>();
                     }).Configure(app =>
                     {
                         app.UseCors(set =>
@@ -66,10 +66,10 @@ public class ServiceAsync : IServiceAsync
     }
 }
 
-public class Service2Async : IService2Async
-{
-    public async Task<string> CallAsync(B1 a1)
-    {
-        return "1";
-    }
-}
+// public class Service2Async : IService2Async
+// {
+//     public async Task<string> CallAsync(B1 a1)
+//     {
+//         return "1";
+//     }
+// }
