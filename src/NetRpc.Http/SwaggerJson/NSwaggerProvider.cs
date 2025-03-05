@@ -58,6 +58,13 @@ internal class NSwaggerProvider : INSwaggerProvider
 
     private void ProcessComponents(List<ContractInfo> contracts)
     {
+        // 不加info会有一个验证错
+        // _doc.Info = new OpenApiInfo
+        // {
+        //     Title = "",
+        //     Version = ""
+        // };
+
         //Schemas
         _doc.Components = new OpenApiComponents
         {
