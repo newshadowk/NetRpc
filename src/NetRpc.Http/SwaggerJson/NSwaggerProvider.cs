@@ -61,8 +61,8 @@ internal class NSwaggerProvider : INSwaggerProvider
         // 不加info会有一个验证错
         // _doc.Info = new OpenApiInfo
         // {
-        //     Title = "",
-        //     Version = ""
+        //     Title = "aaaa",
+        //     Version = "2.0.1"
         // };
 
         //Schemas

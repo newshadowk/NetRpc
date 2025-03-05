@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -61,7 +62,7 @@ public class SwaggerUiIndexMiddleware
                 {
                     var doc = nSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.Contracts, key);
                     var js = ToJson(doc);
-                    // js = TestJson();
+                    js = ReplaceVersion(js);
                     _docJson.Add(key ?? "", js);
                 }
             }
@@ -111,9 +112,16 @@ public class SwaggerUiIndexMiddleware
         return textWriter.ToString();
     }
 
+    private static string ReplaceVersion(string json)
+    {
+        // 3.0.4 swagger ui 不支持
+        return json.Replace(@"""openapi"": ""3.0.4""", @"""openapi"": ""3.0.1""");
+    }
+
     private static string TestJson()
     {
-        string s = "{\r\n  \"openapi\": \"3.0.1\",\r\n  \"info\": { },\r\n  \"paths\": {\r\n    \"/IServiceAsync/CallAsync\": {\r\n      \"get\": {\r\n        \"tags\": [\r\n          \"IServiceAsync\"\r\n        ],\r\n        \"summary\": \"\",\r\n        \"parameters\": [\r\n          {\r\n            \"name\": \"Year\",\r\n            \"in\": \"query\",\r\n            \"required\": true,\r\n\t    \"description\": \"1111111111111\",\r\n            \"schema\": {\r\n              \"$ref\": \"#/components/schemas/YearType\"\r\n            }\r\n          },\r\n          {\r\n            \"name\": \"S1\",\r\n            \"in\": \"query\",\r\n            \"description\": \"杩欐槸S1璇存槑\",\r\n            \"schema\": {\r\n              \"type\": \"string\",\r\n              \"description\": \"杩欐槸S1璇存槑\",\r\n              \"nullable\": true\r\n            }\r\n          }\r\n        ],\r\n        \"responses\": {\r\n          \"200\": {\r\n            \"description\": null,\r\n            \"content\": {\r\n              \"application/json\": {\r\n                \"schema\": {\r\n                  \"type\": \"string\"\r\n                }\r\n              }\r\n            }\r\n          }\r\n        }\r\n      }\r\n    }\r\n  },\r\n  \"components\": {\r\n    \"schemas\": {\r\n      \"YearType\": {\r\n        \"enum\": [\r\n          \"y2012\"\r\n        ],\r\n        \"type\": \"string\"\r\n      }\r\n    }\r\n  },\r\n  \"tags\": [\r\n    {\r\n      \"name\": \"IServiceAsync\"\r\n    }\r\n  ]\r\n}";
+        string s =
+            "{\r\n  \"openapi\": \"3.0.1\",\r\n  \"info\": {\r\n    \"title\": \"aaaa\",\r\n    \"version\": \"2.0.1\"\r\n  },\r\n  \"paths\": {\r\n    \"/IServiceAsync/CallAsync\": {\r\n      \"get\": {\r\n        \"tags\": [\r\n          \"IServiceAsync\"\r\n        ],\r\n        \"summary\": \"\",\r\n        \"parameters\": [\r\n          {\r\n            \"name\": \"P1\",\r\n            \"in\": \"query\",\r\n            \"description\": \"P1 sum\",\r\n            \"required\": true,\r\n            \"schema\": {\r\n              \"$ref\": \"#/components/schemas/E1\"\r\n            }\r\n          },\r\n          {\r\n            \"name\": \"P2\",\r\n            \"in\": \"query\",\r\n            \"description\": \"P2 sum\",\r\n            \"required\": true,\r\n            \"schema\": {\r\n              \"$ref\": \"#/components/schemas/E1\"\r\n            }\r\n          }\r\n        ],\r\n        \"responses\": {\r\n          \"200\": {\r\n            \"description\": null,\r\n            \"content\": {\r\n              \"application/json\": {\r\n                \"schema\": {\r\n                  \"type\": \"string\"\r\n                }\r\n              }\r\n            }\r\n          }\r\n        }\r\n      }\r\n    }\r\n  },\r\n  \"components\": {\r\n    \"schemas\": {\r\n      \"E1\": {\r\n        \"enum\": [\r\n          \"e1V\",\r\n          \"e2V\"\r\n        ],\r\n        \"type\": \"string\"\r\n      }\r\n    }\r\n  },\r\n  \"tags\": [\r\n    {\r\n      \"name\": \"IServiceAsync\"\r\n    }\r\n  ]\r\n}";
         return s;
     }
 }

@@ -1,7 +1,7 @@
 ﻿<Project>
 	<PropertyGroup>
 		<Authors>ShadowK</Authors>
-		<Version>8.0.12</Version>
+		<Version>8.0.13</Version>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageProjectUrl>https://github.com/newshadowk/NetRpc</PackageProjectUrl>
