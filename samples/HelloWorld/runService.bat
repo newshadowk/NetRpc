@@ -1,1 +1,1 @@
-@dotnet %~dp0\Service\bin\Debug\net7.0\service.dll
+@dotnet %~dp0\Service\bin\Debug\net9.0\service.dll

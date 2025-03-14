@@ -199,8 +199,7 @@ public static class Helper
             return null;
 
         var bytes = new byte[stream.Length];
-        // ReSharper disable once MustUseReturnValue
-        stream.Read(bytes, 0, bytes.Length);
+        stream.ReadExactly(bytes, 0, bytes.Length);
         return bytes;
     }
 

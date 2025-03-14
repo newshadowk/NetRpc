@@ -1,7 +1,7 @@
 ﻿<Project>
 	<PropertyGroup>
 		<Authors>ShadowK</Authors>
-		<Version>8.0.13</Version>
+		<Version>9.0.0</Version>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageProjectUrl>https://github.com/newshadowk/NetRpc</PackageProjectUrl>
@@ -14,6 +14,7 @@
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<AssemblyOriginatorKeyFile>../NetRpc.snk</AssemblyOriginatorKeyFile>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
 		<NoWarn>SYSLIB0051,SYSLIB0011,CS0672</NoWarn>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
