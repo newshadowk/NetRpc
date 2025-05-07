@@ -103,7 +103,7 @@ public sealed class HttpRoutInfo
 
         //S/Get/C/CR+/sss
         var ret = Regex.Replace(temps, @"\\{[\w-]+}", $"{CR}+");
-        return ret + "$";
+        return $"^{ret}$";
     }
 
     public bool IsMatch(string path, string method)
