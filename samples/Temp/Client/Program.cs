@@ -14,25 +14,25 @@ internal class Program
         //register
         var services = new ServiceCollection();
 
-        services.AddNGrpcClient(options => { options.Url = "http://localhost:50001"; });
-        services.AddNClientContract<IServiceAsync>();
-        services.AddLogging(l => l.AddConsole());
-        var sp = services.BuildServiceProvider();
-
-        var service = sp.GetService<IServiceAsync>();
-        var fs = File.OpenRead(@"D:\TestFile\10MB.db");
-
-        try
-        {
-            Console.WriteLine("send start");
-            // var r = await service.Call2Async(fs);
-            // Console.WriteLine(r);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
+        // services.AddNGrpcClient(options => { options.Url = "http://localhost:50001"; });
+        // services.AddNClientContract<IServiceAsync>();
+        // services.AddLogging(l => l.AddConsole());
+        // var sp = services.BuildServiceProvider();
+        //
+        // var service = sp.GetService<IServiceAsync>();
+        // var fs = File.OpenRead(@"D:\TestFile\10MB.db");
+        //
+        // try
+        // {
+        //     Console.WriteLine("send start");
+        //     // var r = await service.Call2Async(fs);
+        //     // Console.WriteLine(r);
+        // }
+        // catch (Exception e)
+        // {
+        //     Console.WriteLine(e);
+        //     throw;
+        // }
 
 
         //get service
