@@ -75,7 +75,6 @@ internal class Program
                         });
 
                         app.UseRouting();
-                        app.UseEndpoints(endpoints => { endpoints.MapHub<CallbackHub>("/callback"); });
                         app.UseNSwagger();
                         app.UseNMiniProfiler();
                         app.UseMiddleware<HttpLogMiddleware>();

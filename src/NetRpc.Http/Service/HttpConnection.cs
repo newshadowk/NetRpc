@@ -13,72 +13,13 @@ using Polly;
 
 namespace NetRpc.Http;
 
-internal sealed class HttpConnection : IDisposable
+internal sealed class HttpConnection
 {
     private readonly HttpContext _context;
-    private readonly IHubContext<CallbackHub, ICallback> _hub;
-    private readonly ILogger _logger;
-    private readonly RateAction _ra = new(1000);
-    private readonly ProgressEvent _progressEvent = new();
 
-    public HttpConnection(HttpContext context, IHubContext<CallbackHub, ICallback> hub, ILogger logger)
+    public HttpConnection(HttpContext context)
     {
         _context = context;
-        _hub = hub;
-        _logger = logger;
-    }
-
-    public string? ConnId { get; set; }
-
-    public string? CallId { get; set; }
-
-    public ProxyStream? Stream
-    {
-        set
-        {
-            if (value == null)
-                return;
-
-            value.ProgressAsync += (_, e) =>
-            {
-                var args = _progressEvent.DownLoaderProgress(e.Value, value.Length);
-
-                _ra.Post(() =>
-                {
-#pragma warning disable 4014
-                    UploadProgress(args);
-#pragma warning restore 4014
-                });
-
-                return Task.CompletedTask;
-            };
-        }
-    }
-
-    public async Task CallBack(object? callbackObj)
-    {
-        try
-        {
-            if (ConnId != null)
-                await _hub.Clients.Client(ConnId).Callback(CallId, callbackObj.ToDtoJson());
-        }
-        catch (Exception e)
-        {
-            _logger.LogWarning(e, null);
-        }
-    }
-
-    private async Task UploadProgress(ProgressEventArgs args)
-    {
-        try
-        {
-            if (ConnId != null)
-                await _hub.Clients.Client(ConnId).UploadProgress(CallId, args.ToDtoJson());
-        }
-        catch (Exception e)
-        {
-            _logger.LogWarning(e, null);
-        }
     }
 
     public async Task SendWithStreamAsync(ActionExecutingContext aec, CustomResult result, Stream stream, string? streamName)
@@ -140,11 +81,5 @@ internal sealed class HttpConnection : IDisposable
         var s = result.ToJson() ?? "";
         await _context.Response.WriteAsync(s);
         _context.Items["Result"] = s;
-    }
-
-    public void Dispose()
-    {
-        _ra.Dispose();
-        _progressEvent.Dispose();
     }
 }

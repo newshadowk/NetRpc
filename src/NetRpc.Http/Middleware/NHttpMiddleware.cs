@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NetRpc.Contract;
@@ -15,9 +14,9 @@ internal class NHttpMiddleware
         _next = next;
     }
 
-    public async Task Invoke(HttpContext httpContext, IOptions<ContractOptions> contractOptions, IHubContext<CallbackHub, ICallback> hub,
-        IOptions<HttpServiceOptions> httpOptions, RequestHandler requestHandler, HttpObjProcessorManager httpObjProcessorManager,
-        ILoggerFactory loggerFactory)
+    public async Task Invoke(HttpContext httpContext, IOptions<ContractOptions> contractOptions, 
+        IOptions<HttpServiceOptions> httpOptions, RequestHandler requestHandler, 
+        HttpObjProcessorManager httpObjProcessorManager, ILoggerFactory loggerFactory)
     {
         //if grpc channel message go to next.
         if (httpContext.Request.Path.Value!.EndsWith("DuplexStreamingServerMethod"))
@@ -28,7 +27,7 @@ internal class NHttpMiddleware
 
         bool notMatched;
         await using (var convert = new HttpServiceOnceApiConvert(contractOptions.Value.Contracts, httpContext, httpOptions.Value.ApiRootPath,
-                         httpOptions.Value.IgnoreWhenNotMatched, hub, httpObjProcessorManager, loggerFactory))
+                         httpOptions.Value.IgnoreWhenNotMatched, httpObjProcessorManager))
         {
             await requestHandler.HandleAsync(convert, ChannelType.Http);
             notMatched = convert.NotMatched;

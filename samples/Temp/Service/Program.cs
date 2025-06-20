@@ -28,7 +28,6 @@ internal class Program
                     .ConfigureServices((_, services) =>
                     {
                         services.AddCors();
-                        services.AddSignalR();
                         services.AddNSwagger();
                         services.AddNHttpService();
 
@@ -47,7 +46,6 @@ internal class Program
                         });
 
                         app.UseRouting();
-                        app.UseEndpoints(endpoints => { endpoints.MapHub<CallbackHub>("/callback"); });
                         app.UseNSwagger();
                         app.UseNHttp();
                         app.UseNGrpc();

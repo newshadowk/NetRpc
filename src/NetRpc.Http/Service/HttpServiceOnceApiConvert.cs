@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
 using NetRpc.Http.Client;
 
 namespace NetRpc.Http;
@@ -13,24 +11,19 @@ internal sealed class HttpServiceOnceApiConvert : IServiceOnceApiConvert
     private readonly string? _rootPath;
     private readonly bool _ignoreWhenNotMatched;
     private readonly HttpObjProcessorManager _httpObjProcessorManager;
-    private CancellationTokenSource? _cts;
 
     public HttpServiceOnceApiConvert(List<ContractInfo> contracts,
         HttpContext context,
         string? rootPath,
         bool ignoreWhenNotMatched,
-        IHubContext<CallbackHub, ICallback> hub,
-        HttpObjProcessorManager httpObjProcessorManager,
-        ILoggerFactory loggerFactory)
+        HttpObjProcessorManager httpObjProcessorManager)
     {
-        var logger = loggerFactory.CreateLogger("NetRpc");
         _contracts = contracts;
         _context = context;
-        _connection = new HttpConnection(context, hub, logger);
+        _connection = new HttpConnection(context);
         _rootPath = rootPath;
         _ignoreWhenNotMatched = ignoreWhenNotMatched;
         _httpObjProcessorManager = httpObjProcessorManager;
-        CallbackHub.Canceled += CallbackHubCanceled;
     }
 
     public Task SendBufferAsync(ReadOnlyMemory<byte> buffer)
@@ -55,7 +48,6 @@ internal sealed class HttpServiceOnceApiConvert : IServiceOnceApiConvert
 
     public Task<bool> StartAsync(CancellationTokenSource cts)
     {
-        _cts = cts;
         return Task.FromResult(true);
     }
 
@@ -64,10 +56,6 @@ internal sealed class HttpServiceOnceApiConvert : IServiceOnceApiConvert
         var (actionInfo, hri, rawPath) = GetActionInfo();
         var header = GetHeader();
         var httpObj = await GetHttpDataObjAndStream(hri, rawPath);
-
-        _connection.CallId = httpObj.HttpDataObj.CallId;
-        _connection.ConnId = httpObj.HttpDataObj.ConnId;
-        _connection.Stream = httpObj.ProxyStream;
 
         var pureArgs = GetPureArgsFromDataObj(httpObj.HttpDataObj.Type, httpObj.HttpDataObj.Value, hri);
         return new ServiceOnceCallParam(actionInfo, pureArgs, httpObj.HttpDataObj.StreamLength, httpObj.ProxyStream, header);
@@ -118,13 +106,11 @@ internal sealed class HttpServiceOnceApiConvert : IServiceOnceApiConvert
 
     public Task SendCallbackAsync(object? callbackObj)
     {
-        return _connection.CallBack(callbackObj);
+        return Task.CompletedTask;
     }
 
     public ValueTask DisposeAsync()
     {
-        CallbackHub.Canceled -= CallbackHubCanceled;
-        _connection.Dispose();
         return new ValueTask();
     }
 
@@ -183,11 +169,5 @@ internal sealed class HttpServiceOnceApiConvert : IServiceOnceApiConvert
     {
         //dataObjType
         return await _httpObjProcessorManager.ProcessAsync(new ProcessItem(_context.Request, hri, rawPath, hri.MergeArgType.Type, hri.MergeArgType.TypeWithoutPathQueryStream));
-    }
-
-    private void CallbackHubCanceled(object? sender, string e)
-    {
-        if (_connection.CallId == e || string.IsNullOrEmpty(e))
-            _cts?.Cancel();
     }
 }

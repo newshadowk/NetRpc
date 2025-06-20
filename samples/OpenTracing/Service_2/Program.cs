@@ -52,7 +52,6 @@ internal class Program
                                 .AllowCredentials();
                         });
                         app.UseRouting();
-                        app.UseEndpoints(endpoints => { endpoints.MapHub<CallbackHub>("/callback"); });
                         app.UseNSwagger();
                         app.UseNHttp();
                         app.UseNGrpc();

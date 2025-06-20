@@ -45,7 +45,6 @@ internal class Program
                         });
 
                         app.UseRouting();
-                        app.UseEndpoints(endpoints => { endpoints.MapHub<CallbackHub>("/callback"); });
 
                         app.Use(static async (context, next) =>
                         {

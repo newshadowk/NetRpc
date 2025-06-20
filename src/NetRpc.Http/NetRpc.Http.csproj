@@ -5,7 +5,6 @@
     <Description>Provide http channel implementation for NetRpc.</Description>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="SwaggerUi3\dialog\dialog.css" />
     <None Remove="SwaggerUi3\index.css" />
     <None Remove="SwaggerUi3\swagger-ui-es-bundle-core.js" />
     <None Remove="SwaggerUi3\swagger-ui-es-bundle-core.js.map" />
@@ -18,11 +17,6 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="7.3.1" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="SwaggerUi3\dialog\dialog.css" />
-    <EmbeddedResource Include="SwaggerUi3\dialog\dialog.js" />
-    <EmbeddedResource Include="SwaggerUi3\dialog\session.js" />
-    <EmbeddedResource Include="SwaggerUi3\dialog\signalr.js" />
-    <EmbeddedResource Include="SwaggerUi3\dialog\signalr.min.js" />
     <EmbeddedResource Include="SwaggerUi3\favicon-16x16.png" />
     <EmbeddedResource Include="SwaggerUi3\favicon-32x32.png" />
     <EmbeddedResource Include="SwaggerUi3\index.css" />
