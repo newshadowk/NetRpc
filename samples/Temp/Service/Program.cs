@@ -34,9 +34,7 @@ internal class Program
 
                         services.AddNGrpcService();
                         services.AddNMiddleware(o => o.UseMiddleware<ValueFilterMiddleware>());
-                         services.AddNServiceContract<ISchoolService, SchoolService>();
-                         services.AddNServiceContract<IMajorService, MajorService>();
-                        // services.AddNServiceContract<IServiceAsync, ServiceAsync>();
+                        services.AddNServiceContract<IServiceAsync, ServiceAsync>();
                         // services.AddNServiceContract<IService2Async, Service2Async>();
                     }).Configure(app =>
                     {
@@ -60,13 +58,13 @@ internal class Program
     }
 }
 
-// public class ServiceAsync : IServiceAsync
-// {
-//     public async Task<string> CallAsync(A1 a1)
-//     {
-//         return "1";
-//     }
-// }
+public class ServiceAsync : IServiceAsync
+{
+    public Task<string> CallAsync(C1 a1)
+    {
+        throw new NotImplementedException();
+    }
+}
 
 // public class Service2Async : IService2Async
 // {

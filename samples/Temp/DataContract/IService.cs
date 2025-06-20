@@ -4,11 +4,10 @@ using NetRpc.Contract;
 
 namespace DataContract;
 
-// public interface IServiceAsync
-// {
-//     [HttpGet]
-//     Task<string> CallAsync(A1 a1);
-// }
+public interface IServiceAsync
+{
+    Task<string> CallAsync(C1 a1);
+}
 //
 // public interface IService2Async
 // {
@@ -16,50 +15,24 @@ namespace DataContract;
 //     Task<string> CallAsync(B1 b1);
 // }
 
-[Tag("全国院校")]
-public interface ISchoolService
+
+public class C1
 {
     /// <summary>
-    /// [基础数据] 获取所有科类
+    /// Name des
     /// </summary>
-    [HttpGet("/category/{id}/list")]
-    Task<List<IdName>> GetAdmissionCategoryListAsync(int id);
-}
+    public string Name { get; set; } = string.Empty;
 
-public class IdName(int id, string name)
-{
-    public int Id { get; set; } = id;
-
-    public string Name { get; set; } = name;
-
-    public override string ToString()
-    {
-        return $" {Id}, {Name}";
-    }
-}
-
-[Tag("专业数据")]
-public interface IMajorService
-{
     /// <summary>
-    /// 获取所有的专业类别列表，包含三层
+    /// C2 des
     /// </summary>
-    [HttpGet("/major-category/{id}/list")]
-    Task<List<IdName>> GetMajorCategoryListAsync(int id);
+    public C2 C2 { get; set; } = new C2();
 }
 
-public class SchoolService : ISchoolService
+/// <summary>
+/// C2 1.0
+/// </summary>
+public class C2
 {
-    public Task<List<IdName>> GetAdmissionCategoryListAsync(int id)
-    {
-        throw new System.NotImplementedException();
-    }
-}
-
-public class MajorService : IMajorService
-{
-    public Task<List<IdName>> GetMajorCategoryListAsync(int id)
-    {
-        throw new System.NotImplementedException();
-    }
+    public string Name { get; set; } = string.Empty;
 }

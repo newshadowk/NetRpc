@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
+using Microsoft.VisualBasic;
 
 namespace NetRpc.Http;
 
@@ -14,7 +15,7 @@ public class SwaggerUiIndexMiddleware
     private readonly IEnumerable<IInjectSwaggerHtml> _injectSwaggerHtmlList;
     private volatile string _html = null!;
     private readonly Dictionary<string, string> _docJson = new();
-    private readonly object _lockDocJson = new();
+    private readonly Lock _lockDocJson = new();
 
     public SwaggerUiIndexMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, IEnumerable<IInjectSwaggerHtml> injectSwaggerHtmlList)
     {
@@ -56,16 +57,7 @@ public class SwaggerUiIndexMiddleware
                 _html = _html.Replace("{url}", $"{swaggerFilePath}?k={key}");
             _html = InjectHtml(_html);
 
-            lock (_lockDocJson)
-            {
-                if (!_docJson.ContainsKey(key ?? ""))
-                {
-                    var doc = nSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.Contracts, key);
-                    var js = ToJson(doc);
-                    js = ReplaceVersion(js);
-                    _docJson.Add(key ?? "", js);
-                }
-            }
+            TryGetDocJson(nSwaggerProvider, apiRootApi, contractOptions, key);
 
             context.Response.Headers["Content-Type"] = "text/html; charset=utf-8";
             context.Response.StatusCode = 200;
@@ -74,9 +66,7 @@ public class SwaggerUiIndexMiddleware
         // api/swagger/swagger.json
         else if (IsUrl(requestPath, swaggerFilePath))
         {
-            string js;
-            lock (_lockDocJson)
-                js = _docJson[key ?? ""];
+            string js = TryGetDocJson(nSwaggerProvider, apiRootApi, contractOptions, key);
             await context.Response.WriteAsync(js);
         }
         //api/swagger/dialog/session.js
@@ -90,6 +80,26 @@ public class SwaggerUiIndexMiddleware
         {
             await _next(context);
         }
+    }
+
+    private string TryGetDocJson(INSwaggerProvider nSwaggerProvider, string? apiRootApi, IOptions<ContractOptions> contractOptions, string? key)
+    {
+        lock (_lockDocJson)
+        {
+            if (!_docJson.ContainsKey(key ?? ""))
+            {
+                var js = GetDocJson(nSwaggerProvider, apiRootApi, contractOptions, key);
+                _docJson.Add(key ?? "", js);
+            }
+            return _docJson[key ?? ""];
+        }
+    }
+
+    private static string GetDocJson(INSwaggerProvider nSwaggerProvider, string? apiRootApi, IOptions<ContractOptions> contractOptions, string? key)
+    {
+        var doc = nSwaggerProvider.GetSwagger(apiRootApi, contractOptions.Value.Contracts, key);
+        var js = ToJson(doc);
+        return ReplaceVersion(js);
     }
 
     private static bool IsUrl(PathString path, string url)
